@@ -431,6 +431,10 @@
     color: var(--warn);
     font-size: 15px;
     font-weight: 900;
+    line-height: 1.6;
+  }
+  .assignment-alert-detail {
+    display: block;
   }
   .assignment-commander-box {
     margin-bottom: 12px;
@@ -793,7 +797,7 @@
           </div>
           <div class="panel-body">
             <div class="tab-panel active" data-tab-panel="assignment">
-              <div class="assignment-alert">分工和指揮名單可修改</div>
+              <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮）</span></div>
               <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
               <div class="table-actions">
                 <div class="table-actions-left">
