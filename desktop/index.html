@@ -293,6 +293,25 @@
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
   }
+  #opponent_focus_cards.summary-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #opponent_focus_cards .stat {
+    padding: 8px 10px;
+  }
+  #opponent_focus_cards .stat-label {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+  #opponent_focus_cards .stat-value {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  #opponent_focus_cards .subtle {
+    font-size: 11px;
+    line-height: 1.35;
+  }
   .stat {
     background: linear-gradient(180deg, #fff 0%, #faf4eb 100%);
     border: 1px solid #e0d4c6;
@@ -1283,18 +1302,26 @@
               <div class="summary-grid" id="opponent_focus_cards"></div>
               <div style="height:12px;"></div>
               <div class="grid-3">
-                <div class="detail-box">
-                  <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">拆塔前 5</div>
+                <details class="detail-box">
+                  <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">拆塔前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div id="opponent_top_build"></div>
-                </div>
-                <div class="detail-box">
-                  <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">打人前 5</div>
+                </details>
+                <details class="detail-box">
+                  <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">打人前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div id="opponent_top_pvp"></div>
-                </div>
-                <div class="detail-box">
-                  <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">擊殺前 5</div>
+                </details>
+                <details class="detail-box">
+                  <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">擊殺前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div id="opponent_top_kill"></div>
-                </div>
+                </details>
+                <details class="detail-box">
+                  <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div id="opponent_top_iron"></div>
+                </details>
+                <details class="detail-box">
+                  <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">素問重點六人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div id="opponent_top_healer"></div>
+                </details>
               </div>
             </div>
 
@@ -1768,6 +1795,10 @@ function aggregateOpponentPlayers(opponentName) {
           pvpDamage: 0,
           buildDamage: 0,
           takenDamage: 0,
+          heal: 0,
+          saveCount: 0,
+          burnCount: 0,
+          netHeal: 0,
         });
       }
       const item = bucket.get(key);
@@ -1778,6 +1809,10 @@ function aggregateOpponentPlayers(opponentName) {
       item.pvpDamage += Number(player.pvpDamage || 0);
       item.buildDamage += Number(player.buildDamage || 0);
       item.takenDamage += Number(player.takenDamage || 0);
+      item.heal += Number(player.heal || 0);
+      item.saveCount += Number(player.saveCount || 0);
+      item.burnCount += Number(player.burnCount || 0);
+      item.netHeal += Number(player.netHeal || 0);
     });
   });
   return {
@@ -1790,6 +1825,11 @@ function aggregateOpponentPlayers(opponentName) {
       avgPvpDamage: item.pvpDamage / Math.max(battles.length, 1),
       avgBuildDamage: item.buildDamage / Math.max(battles.length, 1),
       avgTakenDamage: item.takenDamage / Math.max(battles.length, 1),
+      avgTakenPerDeath: item.takenDamage / Math.max(item.death, 1),
+      avgHeal: item.heal / Math.max(battles.length, 1),
+      avgSave: item.saveCount / Math.max(battles.length, 1),
+      avgBurn: item.burnCount / Math.max(battles.length, 1),
+      avgNetHeal: item.netHeal / Math.max(battles.length, 1),
     })),
   };
 }
@@ -3647,19 +3687,60 @@ function renderSingleBattleMatchup() {
   });
 }
 
-function renderOpponentList(el, rows, metricKey) {
+function buildOpponentMetricText(row, metricKey) {
+  const parts = [];
+  if (metricKey === 'avgTakenDamage' || metricKey === 'avgTakenPerDeath') {
+    parts.push(`承傷 ${fmtLarge(row.avgTakenDamage)}`);
+    parts.push(`承傷/重傷 ${fmtLarge(row.avgTakenPerDeath)}`);
+    parts.push(`重傷 ${fmtAvg(row.avgDeath)}`);
+  } else if (metricKey === 'avgSave' || metricKey === 'avgNetHeal') {
+    parts.push(`化羽 ${fmtAvg(row.avgSave)}`);
+    parts.push(`淨治療 ${fmtLarge(row.avgNetHeal)}`);
+    parts.push(`治療 ${fmtLarge(row.avgHeal)}`);
+    parts.push(`承傷 ${fmtLarge(row.avgTakenDamage)}`);
+    parts.push(`死亡 ${fmtAvg(row.avgDeath)}`);
+  } else {
+    parts.push(`擊殺 ${fmtAvg(row.avgKill)}`);
+    parts.push(`人傷 ${fmtLarge(row.avgPvpDamage)}`);
+    parts.push(`塔傷 ${fmtLarge(row.avgBuildDamage)}`);
+    parts.push(`死亡 ${fmtAvg(row.avgDeath)}`);
+  }
+  if (row.job === '九靈') parts.push(`焚骨 ${fmtAvg(row.avgBurn)}`);
+  return parts.join(' / ');
+}
+
+function renderOpponentList(el, rows, metricKey, options = {}) {
   if (!el) return;
   if (!rows.length) {
     el.innerHTML = '<div class="empty">目前沒有可顯示的對手資料。</div>';
     return;
   }
   const sorted = [...rows].sort((a, b) => Number(b[metricKey] || 0) - Number(a[metricKey] || 0) || a.name.localeCompare(b.name, 'zh-Hant'));
-  const top = sorted.slice(0, 5);
+  const limit = Number(options.limit || 5);
+  const top = sorted.slice(0, limit);
   el.innerHTML = top.map((row, index) => `
     <div class="note-box" style="margin-bottom:8px;">
       <b>${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
-      平均擊殺 ${fmtAvg(row.avgKill)} / 平均人傷 ${fmtLarge(row.avgPvpDamage)} / 平均塔傷 ${fmtLarge(row.avgBuildDamage)} / 平均死亡 ${fmtAvg(row.avgDeath)}
+      ${escHtml(buildOpponentMetricText(row, metricKey))}
     </div>
+  `).join('');
+}
+
+function renderOpponentSectionList(el, sections) {
+  if (!el) return;
+  const validSections = sections.filter(section => Array.isArray(section.rows) && section.rows.length);
+  if (!validSections.length) {
+    el.innerHTML = '<div class="empty">目前沒有可顯示的對手資料。</div>';
+    return;
+  }
+  el.innerHTML = validSections.map(section => `
+    <div style="font-weight:800; color:var(--accent); margin:0 0 8px;">${escHtml(section.title)}</div>
+    ${section.rows.map((row, index) => `
+      <div class="note-box" style="margin-bottom:8px;">
+        <b>${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
+        ${escHtml(buildOpponentMetricText(row, section.metricKey))}
+      </div>
+    `).join('')}
   `).join('');
 }
 
@@ -3671,12 +3752,16 @@ function renderOpponentFocus() {
   const buildEl = document.getElementById('opponent_top_build');
   const pvpEl = document.getElementById('opponent_top_pvp');
   const killEl = document.getElementById('opponent_top_kill');
+  const ironEl = document.getElementById('opponent_top_iron');
+  const healerEl = document.getElementById('opponent_top_healer');
   if (!target) {
     if (meta) meta.textContent = '請先選擇對手。';
     if (cards) cards.innerHTML = '';
     renderOpponentList(buildEl, [], 'avgBuildDamage');
     renderOpponentList(pvpEl, [], 'avgPvpDamage');
     renderOpponentList(killEl, [], 'avgKill');
+    renderOpponentSectionList(ironEl, []);
+    renderOpponentSectionList(healerEl, []);
     return;
   }
   const data = aggregateOpponentPlayers(target);
@@ -3689,15 +3774,35 @@ function renderOpponentFocus() {
     const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage)[0];
     const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage)[0];
     const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill)[0];
+    const ironRows = [...data.rows].filter(row => row.job === '鐵衣');
+    const healerRows = [...data.rows].filter(row => row.job === '素問');
+    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage)[0];
+    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath)[0];
+    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave)[0];
+    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal)[0];
     cards.innerHTML = data.battleCount ? `
       <div class="stat"><div class="stat-label">拆塔最強</div><div class="stat-value" style="font-size:18px;">${topBuild ? escHtml(topBuild.name) : '-'}</div><div class="subtle">${topBuild ? fmtLarge(topBuild.avgBuildDamage) : ''}</div></div>
       <div class="stat"><div class="stat-label">打人最強</div><div class="stat-value" style="font-size:18px;">${topPvp ? escHtml(topPvp.name) : '-'}</div><div class="subtle">${topPvp ? fmtLarge(topPvp.avgPvpDamage) : ''}</div></div>
       <div class="stat"><div class="stat-label">擊殺最多</div><div class="stat-value" style="font-size:18px;">${topKill ? escHtml(topKill.name) : '-'}</div><div class="subtle">${topKill ? fmtAvg(topKill.avgKill) : ''}</div></div>
+      <div class="stat"><div class="stat-label">鐵衣最扛</div><div class="stat-value" style="font-size:18px;">${topIronTaken ? escHtml(topIronTaken.name) : '-'}</div><div class="subtle">${topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : ''}</div></div>
+      <div class="stat"><div class="stat-label">鐵衣最硬</div><div class="stat-value" style="font-size:18px;">${topIronRatio ? escHtml(topIronRatio.name) : '-'}</div><div class="subtle">${topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)}/${fmtAvg(topIronRatio.avgDeath)}重傷` : ''}</div></div>
+      <div class="stat"><div class="stat-label">化羽最強</div><div class="stat-value" style="font-size:18px;">${topHealerSave ? escHtml(topHealerSave.name) : '-'}</div><div class="subtle">${topHealerSave ? fmtAvg(topHealerSave.avgSave) : ''}</div></div>
+      <div class="stat"><div class="stat-label">淨治療最高</div><div class="stat-value" style="font-size:18px;">${topHealerNet ? escHtml(topHealerNet.name) : '-'}</div><div class="subtle">${topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : ''}</div></div>
     ` : '<div class="empty">目前沒有可用的對手原始名單資料。舊場次若未保存 opponentPlayers，需重新加入場次後才會顯示。</div>';
   }
-  renderOpponentList(buildEl, data.rows, 'avgBuildDamage');
-  renderOpponentList(pvpEl, data.rows, 'avgPvpDamage');
-  renderOpponentList(killEl, data.rows, 'avgKill');
+  renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { limit: 5 });
+  renderOpponentList(pvpEl, data.rows, 'avgPvpDamage', { limit: 5 });
+  renderOpponentList(killEl, data.rows, 'avgKill', { limit: 5 });
+  const ironRows = data.rows.filter(row => row.job === '鐵衣');
+  const healerRows = data.rows.filter(row => row.job === '素問');
+  renderOpponentSectionList(ironEl, [
+    { title: '承傷前 2', metricKey: 'avgTakenDamage', rows: [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant')).slice(0, 2) },
+    { title: '承傷/重傷前 2', metricKey: 'avgTakenPerDeath', rows: [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant')).slice(0, 2) },
+  ]);
+  renderOpponentSectionList(healerEl, [
+    { title: '化羽前 3', metricKey: 'avgSave', rows: [...healerRows].sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant')).slice(0, 3) },
+    { title: '淨治療前 3', metricKey: 'avgNetHeal', rows: [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant')).slice(0, 3) },
+  ]);
 }
 
 function refreshJobFilterOptions() {
