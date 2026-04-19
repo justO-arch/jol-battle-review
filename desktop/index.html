@@ -532,6 +532,11 @@
     font-weight: 900;
     font-size: 13px;
   }
+  .matchup-strong {
+    color: #1a7c2a;
+    font-weight: 900;
+    font-size: 13px;
+  }
   .matchup-rosters {
     display: flex;
     gap: 10px;
@@ -3301,6 +3306,30 @@ function matchupNeedsWeakMark(key, mode, myList, foeList, options = {}) {
   return Math.ceil(((foeValue - myValue) / foeValue) * 100) >= weakPct;
 }
 
+function matchupNeedsStrongMark(key, mode, myList, foeList, options = {}) {
+  if (!myList.length || !foeList.length) return false;
+  const scope = options.scope || 'group';
+  const isDpsJob = !!options.isDpsJob;
+  const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
+  const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
+  const strongPct = Math.max(1, Number(options.strongPct || 10));
+  const tracked =
+    (mode === 'average' && ['burnCount', 'saveCount', 'death'].includes(key)) ||
+    (mode === 'total' && ['burnCount', 'saveCount'].includes(key)) ||
+    (mode === 'total' && scope === 'overall' && allowOverallTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
+    (mode === 'total' && scope === 'group' && allowGroupTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
+    (mode === 'average' && isDpsJob && ['buildDamage', 'kill'].includes(key));
+  if (!tracked) return false;
+  const myValue = mode === 'total' ? sum(myList, key) : (sum(myList, key) / myList.length);
+  const foeValue = mode === 'total' ? sum(foeList, key) : (sum(foeList, key) / foeList.length);
+  if (key === 'death') {
+    if (myValue <= 0) return foeValue > 0;
+    return Math.ceil(((foeValue - myValue) / myValue) * 100) >= strongPct;
+  }
+  if (myValue <= 0) return false;
+  return Math.ceil(((myValue - foeValue) / foeValue) * 100) >= strongPct;
+}
+
 function syncMatchupTableWidthToRoster() {
   const visualLeftScale = 1.1;
   document.querySelectorAll('[data-matchup-scope]').forEach(section => {
@@ -3358,6 +3387,7 @@ function syncMatchupTableWidthToRoster() {
 
 function renderMatchupAggregateTable(myList, foeList, rows = matchupDpsGroupMetricsRows(), options = {}) {
   const weakPct = Math.max(1, Number(options.weakPct || 10));
+  const strongPct = options.strongPct != null ? Math.max(1, Number(options.strongPct)) : null;
   return `
     <div class="matchup-compare-table-wrap">
     <table class="matchup-compare-table">
@@ -3378,15 +3408,21 @@ function renderMatchupAggregateTable(myList, foeList, rows = matchupDpsGroupMetr
         </tr>
       </thead>
       <tbody>
-        ${rows.map(([label, key]) => `
+        ${rows.map(([label, key]) => {
+          const wTotal = matchupNeedsWeakMark(key, 'total', myList, foeList, { ...options, weakPct });
+          const wAvg = matchupNeedsWeakMark(key, 'average', myList, foeList, { ...options, weakPct });
+          const sTotal = strongPct != null && !wTotal && matchupNeedsStrongMark(key, 'total', myList, foeList, { ...options, strongPct });
+          const sAvg = strongPct != null && !wAvg && matchupNeedsStrongMark(key, 'average', myList, foeList, { ...options, strongPct });
+          return `
           <tr>
             <td>${escHtml(label)}</td>
-            <td class="${matchupNeedsWeakMark(key, 'total', myList, foeList, { ...options, weakPct }) ? 'matchup-weak' : ''}">${matchupNeedsWeakMark(key, 'total', myList, foeList, { ...options, weakPct }) ? '*' : ''}${matchupValueLabel(myList, key, 'total')}</td>
+            <td class="${wTotal ? 'matchup-weak' : sTotal ? 'matchup-strong' : ''}">${wTotal ? '*' : sTotal ? '#' : ''}${matchupValueLabel(myList, key, 'total')}</td>
             <td>${matchupValueLabel(foeList, key, 'total')}</td>
-            <td class="matchup-divider ${matchupNeedsWeakMark(key, 'average', myList, foeList, { ...options, weakPct }) ? 'matchup-weak' : ''}">${matchupNeedsWeakMark(key, 'average', myList, foeList, { ...options, weakPct }) ? '*' : ''}${matchupValueLabel(myList, key, 'average')}</td>
+            <td class="matchup-divider ${wAvg ? 'matchup-weak' : sAvg ? 'matchup-strong' : ''}">${wAvg ? '*' : sAvg ? '#' : ''}${matchupValueLabel(myList, key, 'average')}</td>
             <td>${matchupValueLabel(foeList, key, 'average')}</td>
           </tr>
-        `).join('')}
+          `;
+        }).join('')}
       </tbody>
     </table>
     </div>
@@ -3416,7 +3452,7 @@ function renderMatchupNestedSection(title, myList, foeList, options = {}) {
         <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
       </summary>
       <div class="matchup-nested-body" data-matchup-scope="${scope}">
-        ${renderMatchupAggregateTable(myList, foeList, rows, { scope: 'group', isDpsJob: !!options.isDpsJob, allowGroupTotalKillBuild: !!options.allowGroupTotalKillBuild, allowOverallTotalKillBuild: options.allowOverallTotalKillBuild, weakPct: options.weakPct })}
+        ${renderMatchupAggregateTable(myList, foeList, rows, { scope: 'group', isDpsJob: !!options.isDpsJob, allowGroupTotalKillBuild: !!options.allowGroupTotalKillBuild, allowOverallTotalKillBuild: options.allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct })}
         ${hideRoster ? '' : `
         <div class="matchup-roster-scroll">
           <div class="matchup-rosters">
@@ -3437,6 +3473,7 @@ function renderDpsBundleCard(title, myList, foeList, threshold, options = {}) {
   const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const weakPct = Math.max(1, Number(options.weakPct || 10));
+  const strongPct = options.strongPct != null ? Math.max(1, Number(options.strongPct)) : null;
   const myAttack = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'attack');
   const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'defense');
   const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'attack');
@@ -3450,7 +3487,7 @@ function renderDpsBundleCard(title, myList, foeList, threshold, options = {}) {
       <div class="matchup-body">
         <div class="matchup-subsection" data-matchup-scope="overall">
           <div class="matchup-subsection-title">整體</div>
-          ${renderMatchupAggregateTable(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct })}
+          ${renderMatchupAggregateTable(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct, strongPct })}
           ${hideOverallRoster ? '' : `
           <div class="matchup-roster-scroll" style="margin-top:10px;">
             <div class="matchup-rosters">
@@ -3459,8 +3496,8 @@ function renderDpsBundleCard(title, myList, foeList, threshold, options = {}) {
             </div>
           </div>`}
         </div>
-        ${renderMatchupNestedSection('進攻組', myAttack, foeAttack, { scope: 'attack', metricRows, myTitle: `己方 ${title}・進攻組`, foeTitle: `對方 ${title}・進攻組`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, bottomPct: options.bottomPct })}
-        ${renderMatchupNestedSection('防守+保鑣組', myDefense, foeDefense, { scope: 'defense', metricRows, myTitle: `己方 ${title}・防守+保鑣組`, foeTitle: `對方 ${title}・防守+保鑣組`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, bottomPct: options.bottomPct })}
+        ${renderMatchupNestedSection('進攻組', myAttack, foeAttack, { scope: 'attack', metricRows, myTitle: `己方 ${title}・進攻組`, foeTitle: `對方 ${title}・進攻組`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, strongPct, bottomPct: options.bottomPct })}
+        ${renderMatchupNestedSection('防守+保鑣組', myDefense, foeDefense, { scope: 'defense', metricRows, myTitle: `己方 ${title}・防守+保鑣組`, foeTitle: `對方 ${title}・防守+保鑣組`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, strongPct, bottomPct: options.bottomPct })}
       </div>
     </details>
   `;
@@ -3475,7 +3512,7 @@ function renderSimpleJobCard(title, myList, foeList, options = {}) {
         <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
       </summary>
       <div class="matchup-body" data-matchup-scope="overall">
-        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct })}
+        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct })}
         <div class="matchup-roster-scroll">
           <div class="matchup-rosters">
             ${renderMatchupRoster(`己方 ${title}`, myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'overall', weakPct: options.weakPct } })}
@@ -3517,6 +3554,7 @@ function renderSingleBattleMatchup() {
   const supportJobs = jobs.filter(job => job === '素問' || job === '鐵衣');
   const threshold = Math.max(0, Number(document.getElementById('matchup_kill_split')?.value || 5));
   const weakPct = Math.max(1, Number(document.getElementById('matchup_weak_pct')?.value || 10));
+  const strongPct = Math.max(1, Number(document.getElementById('matchup_strong_pct')?.value || 10));
   const rosterBottomPct = Math.max(1, Number(document.getElementById('matchup_roster_bottom_pct')?.value || 20));
   const myDps = myPlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
   const foeDps = foePlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
@@ -3539,6 +3577,13 @@ function renderSingleBattleMatchup() {
       </div>
       <div class="matchup-setting-row">
         <div class="field">
+          <label>強勢標綠門檻 %</label>
+          <input id="matchup_strong_pct" type="number" min="1" step="1" value="${String(strongPct)}">
+        </div>
+        <div class="note-box">強勢綠字標準：我方相對對方的差距百分比，無條件進位後達 ${fmtNumber(strongPct)}% 就標綠（#）。重傷則反向判定。只標總量/平均表格，不標個人名單。若同一格已被標紅，不再標綠。</div>
+      </div>
+      <div class="matchup-setting-row">
+        <div class="field">
           <label>個人弱勢後段 %</label>
           <input id="matchup_roster_bottom_pct" type="number" min="1" max="100" step="1" value="${String(rosterBottomPct)}">
         </div>
@@ -3550,21 +3595,22 @@ function renderSingleBattleMatchup() {
       <div class="note-box">若雙方人數差異大，結果僅供參考。</div>
     </div>
     <div class="matchup-grid">
-      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { hideOverallRoster: true, hideGroupRoster: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, bottomPct: rosterBottomPct })}
+      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { hideOverallRoster: true, hideGroupRoster: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
       ${dpsJobs.map(job => {
         const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
         const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-        return renderDpsBundleCard(job, myList, foeList, threshold, { metricRows: matchupMetricRows(job), isDpsJob: true, hideOverallRoster: true, allowOverallTotalKillBuild: false, weakPct, bottomPct: rosterBottomPct });
+        return renderDpsBundleCard(job, myList, foeList, threshold, { metricRows: matchupMetricRows(job), isDpsJob: true, hideOverallRoster: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct });
       }).join('')}
       ${supportJobs.map(job => {
         const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
         const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-        return renderSimpleJobCard(job, myList, foeList, { metricRows: matchupMetricRows(job), weakPct, bottomPct: rosterBottomPct });
+        return renderSimpleJobCard(job, myList, foeList, { metricRows: matchupMetricRows(job), weakPct, strongPct, bottomPct: rosterBottomPct });
       }).join('')}
     </div>
   `;
   document.getElementById('matchup_kill_split')?.addEventListener('change', renderSingleBattleMatchup);
   document.getElementById('matchup_weak_pct')?.addEventListener('change', renderSingleBattleMatchup);
+  document.getElementById('matchup_strong_pct')?.addEventListener('change', renderSingleBattleMatchup);
   document.getElementById('matchup_roster_bottom_pct')?.addEventListener('change', renderSingleBattleMatchup);
   requestAnimationFrame(syncMatchupTableWidthToRoster);
   document.getElementById('single_battle_matchup_box')?.querySelectorAll('details').forEach(el => {
