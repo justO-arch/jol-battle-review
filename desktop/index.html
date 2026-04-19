@@ -1808,6 +1808,29 @@ function isAutoReviewExcluded(player) {
   return (player.groupType || 'unknown') === 'unknown' || isCommander(player);
 }
 
+function hasUniversalProtection(player, options = {}) {
+  const takenDamage = Number(player.takenDamage || 0);
+  const death = Number(player.death || 0);
+  const kill = Number(player.kill || 0);
+  const buildDamage = Number(player.buildDamage || 0);
+  const takenPerDeath = takenDamage / Math.max(death, 1);
+  const killPerDeath = kill / Math.max(death, 1);
+  const buildPerDeath = buildDamage / Math.max(death, 1);
+  const topBuildProtected = options.topBuildNames
+    ? options.topBuildNames.has(player.name)
+    : !!player._topBuildProtected;
+  const tankStable =
+    (takenDamage > 35000000 && takenPerDeath > 4000000)
+    || (takenDamage > 25000000 && takenPerDeath > 6000000);
+  const carryStable =
+    (kill >= 10 && killPerDeath >= 2)
+    || (kill >= 20 && killPerDeath >= 1.5);
+  const buildStable =
+    buildPerDeath > 17000000
+    || topBuildProtected;
+  return tankStable || carryStable || buildStable;
+}
+
 function bottomNames(players, metric, pct = 0.3) {
   if (!players.length) return [];
   const count = Math.max(1, Math.ceil(players.length * pct));
@@ -1850,7 +1873,6 @@ function computeBattleReview(battle) {
   const defenseIron = defensePlayers.filter(player => player.job === '鐵衣');
   const topBuildNames = new Set(
     [...players]
-      .filter(player => isDps(player))
       .sort((a, b) => Number(b.buildDamage || 0) - Number(a.buildDamage || 0) || a.name.localeCompare(b.name, 'zh-Hant'))
       .slice(0, 10)
       .map(player => player.name)
@@ -1902,22 +1924,7 @@ function computeBattleReview(battle) {
     const ironSideCohort = players.filter(item => sideKey(item.groupType) === sideKey(player.groupType) && item.job === '鐵衣');
     const takenPct = percentile(ironSideCohort.length ? ironSideCohort : [player], 'takenDamage', player.name, true);
     const ratioPct = percentile(ironSideCohort.length ? ironSideCohort : [player], 'takenPerDeath', player.name, true);
-    const tankStable = player.job === '鐵衣'
-      && (
-        (Number(player.takenDamage || 0) >= 35000000 && Number(player.takenPerDeath || 0) >= 4000000)
-        || (Number(player.takenDamage || 0) >= 25000000 && Number(player.takenPerDeath || 0) >= 6000000)
-      );
-    const dpsCarryStable = isDps(player)
-      && (player.groupType === 'attack' || player.groupType === 'defense' || player.groupType === 'bodyguard')
-      && (
-        (Number(player.kill || 0) >= 10 && Number(player.killPerDeath || 0) >= 2)
-        || (Number(player.kill || 0) >= 20 && Number(player.killPerDeath || 0) >= 1.5)
-      );
-    const dpsBuildStable = isDps(player)
-      && (
-        topBuildNames.has(player.name)
-        || Number(player.buildPerDeath || 0) > 17000000
-      );
+    const protectedAuto = hasUniversalProtection(player, { topBuildNames });
     const pvpPct = percentile(cohort, 'pvpDamage', player.name, true);
     const assistPct = percentile(cohort, 'assist', player.name, true);
     const buildPct = percentile(cohort, 'buildDamage', player.name, true);
@@ -1926,7 +1933,7 @@ function computeBattleReview(battle) {
     const hasPvpWeak = hits.some(hit => hit.includes('人傷後'));
     const hasKillWeak = hits.some(hit => hit.includes('擊殺後'));
 
-    if (excludedAuto || tankStable || dpsCarryStable || dpsBuildStable) {
+    if (excludedAuto || protectedAuto) {
       level = '';
     } else if (player.job === '鐵衣') {
       if (ironOffenseHitCount >= 1 && ironTankHitCount >= 1 && hasHighDeath) level = 'priority';
@@ -1966,19 +1973,19 @@ function computeBattleReview(battle) {
       else if (attackLikeDeath && hasHighDeath && primaryPct !== null && primaryPct < 40) level = 'secondary';
     }
 
-    if (!level && !excludedAuto && !tankStable && !dpsBuildStable && player.job === '九靈') {
+    if (!level && !excludedAuto && !protectedAuto && player.job === '九靈') {
       const burnPct = percentile(players.filter(item => sideKey(item.groupType) === sideKey(player.groupType) && item.job === '九靈'), 'burnCount', player.name, true);
       if (burnPct < 30 && primaryPct !== null && primaryPct < 50) level = 'observation';
     }
 
-    if (!level && !excludedAuto && !tankStable && !dpsBuildStable && player.job === '素問') {
+    if (!level && !excludedAuto && !protectedAuto && player.job === '素問') {
       const saveCohort = player.groupType === 'defense' ? defenseHealers : attackHealers;
       const savePct = percentile(saveCohort.length ? saveCohort : [player], 'saveCount', player.name, true);
       const netHealPct = percentile(cohort, 'netHeal', player.name, true);
       if (savePct < 30 && netHealPct < 30) level = 'observation';
     }
 
-    if (!level && !excludedAuto && !tankStable && !dpsBuildStable && player.job === '鐵衣' && !isTank(player)) {
+    if (!level && !excludedAuto && !protectedAuto && player.job === '鐵衣' && !isTank(player)) {
       if (takenPct >= 70 || ratioPct >= 70) level = 'observation';
     }
 
@@ -3203,32 +3210,7 @@ function matchupShouldSuppressRosterWeak(key, rows, bottomPct) {
 }
 
 function matchupRosterProtected(player) {
-  const takenDamage = Number(player.takenDamage || 0);
-  const death = Number(player.death || 0);
-  const kill = Number(player.kill || 0);
-  const buildDamage = Number(player.buildDamage || 0);
-  const takenPerDeath = takenDamage / Math.max(death, 1);
-  const killPerDeath = kill / Math.max(death, 1);
-  const buildPerDeath = buildDamage / Math.max(death, 1);
-  const tankStable = player.job === '鐵衣'
-    && (
-      (takenDamage > 35000000 && takenPerDeath > 4000000)
-      || (takenDamage > 25000000 && takenPerDeath > 6000000)
-    );
-  const dpsStable = player.job !== '鐵衣'
-    && player.job !== '素問'
-    && (player.groupType === 'attack' || player.groupType === 'defense' || player.groupType === 'bodyguard')
-    && (
-      (kill >= 10 && killPerDeath >= 2)
-      || (kill >= 20 && killPerDeath >= 1.5)
-    );
-  const dpsBuildStable = player.job !== '鐵衣'
-    && player.job !== '素問'
-    && (
-      buildPerDeath > 17000000
-      || !!player._topBuildProtected
-    );
-  return tankStable || dpsStable || dpsBuildStable;
+  return hasUniversalProtection(player);
 }
 
 function renderMatchupRoster(title, rows, options = {}) {
@@ -3535,7 +3517,6 @@ function renderSingleBattleMatchup() {
   }
   const topBuildProtectedNames = new Set(
     [...myPlayers]
-      .filter(player => isDps(player))
       .sort((a, b) => Number(b.buildDamage || 0) - Number(a.buildDamage || 0) || a.name.localeCompare(b.name, 'zh-Hant'))
       .slice(0, 10)
       .map(player => player.name)
@@ -3755,7 +3736,7 @@ function renderRulesExplain() {
     <div class="explain-item"><b>第一輪主指標</b><span class="subtle">進攻團 DPS 看塔傷；防守 / 保鑣 DPS 看擊殺與人傷；素問主看化羽與淨奶量。後段篩選的切點由個人或幫會幹部自行定義。</span></div>
     <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把死亡成本補回來。</span></div>
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">系統難以判定通常是資料有警訊，但還不足以直接進建議覆盤名單；優先找幹部覆盤通常是主指標偏弱又進高重傷，或同時命中多個主條件；歡迎找幹部覆盤則是主指標偏弱但還沒到最嚴重，或進攻側高重傷且主責沒有補回成本。</span></div>
-    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮，以及有坦住的鐵衣，會先排除在自動名單外，再交由人工備註補充。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦住的硬門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。進攻 / 防守 / 保鑣 DPS 若擊殺 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。另補一條塔傷保護：單場塔傷排名前 10 名，或塔傷/重傷 > 1700萬 的 DPS，也不進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
+    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮會先排除在自動名單外，再交由人工備註補充。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦度門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。塔傷門檻定為單場塔傷排名前 10 名，或塔傷/重傷 > 1700萬。達標以上門檻，即使其他數據不佳也不會進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。只中單一弱項時，不自動進名單；只有雙主責都弱，或再疊加高重傷，才會升到待查名單。需要時再由人工備註補充。</span></div>
   `;
 }
