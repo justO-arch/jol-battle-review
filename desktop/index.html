@@ -3758,7 +3758,7 @@ function switchTab(tab) {
   });
   const tools = document.querySelector('.current-battle-tools');
   if (tools) {
-    const show = tab === 'assignment' || tab === 'review';
+    const show = tab === 'assignment' || tab === 'review' || tab === 'matchup';
     tools.hidden = !show;
     tools.style.display = show ? 'flex' : 'none';
   }
