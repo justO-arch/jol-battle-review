@@ -664,6 +664,9 @@
     justify-content: stretch;
     text-align: left;
   }
+  body.mobile-app .mobile-import-panel {
+    display: none;
+  }
   body.mobile-app .hero h1 {
     font-size: 24px;
     line-height: 1.35;
@@ -719,6 +722,22 @@
   body.mobile-app .radar-grid,
   body.mobile-app .mini-grid {
     grid-template-columns: 1fr;
+  }
+  body.mobile-app .radar-card {
+    padding: 10px;
+  }
+  body.mobile-app .radar-title {
+    font-size: 12px;
+  }
+  body.mobile-app .radar-note {
+    font-size: 11px;
+  }
+  body.mobile-app .radar-svg {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+  body.mobile-app .radar-axis-label {
+    font-size: 10px;
   }
   body.mobile-app .detail-box {
     padding: 12px;
@@ -787,7 +806,7 @@
 
     <div class="layout">
       <div class="stack">
-        <section class="panel">
+        <section class="panel mobile-import-panel">
           <div class="panel-title">場次匯入 <small>先匯入戰報，再加入場次庫</small></div>
           <div class="panel-body">
             <div class="steps" style="margin-bottom:12px;">
@@ -2236,9 +2255,9 @@ function radarGridPolygon(step, count, radius, centerX, centerY) {
 }
 
 function renderRadarCard(title, axes, scores, color, note) {
-  const centerX = 120;
-  const centerY = 120;
-  const radius = 72;
+  const centerX = 110;
+  const centerY = 108;
+  const radius = 58;
   const count = axes.length;
   const polygon = radarPolygonPoints(scores, radius, centerX, centerY);
   const grid = [0.2, 0.4, 0.6, 0.8, 1];
@@ -2250,14 +2269,14 @@ function renderRadarCard(title, axes, scores, color, note) {
   }).join('');
   const labels = axes.map((axis, index) => {
     const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
-    const x = centerX + Math.cos(angle) * (radius + 26);
-    const y = centerY + Math.sin(angle) * (radius + 26);
+    const x = centerX + Math.cos(angle) * (radius + 20);
+    const y = centerY + Math.sin(angle) * (radius + 20);
     return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" class="radar-axis-label">${escHtml(axis.label)}</text>`;
   }).join('');
   return `
     <div class="radar-card">
       <div class="radar-title">${escHtml(title)}</div>
-      <svg class="radar-svg" viewBox="0 0 240 250" role="img" aria-label="${escHtml(title)}">
+      <svg class="radar-svg" viewBox="0 0 220 228" role="img" aria-label="${escHtml(title)}">
         ${grid.map(step => `<polygon points="${radarGridPolygon(step, count, radius, centerX, centerY)}" fill="none" stroke="#e5dacd" stroke-width="1" />`).join('')}
         ${spokes}
         <polygon points="${polygon}" fill="${color}33" stroke="${color}" stroke-width="2.5" />
