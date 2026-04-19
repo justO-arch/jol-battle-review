@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幫戰覆盤工具</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --bg: #f4f0e8;
+    --panel: #fffdf8;
+    --line: #d8cfc1;
+    --text: #2b241d;
+    --muted: #6e6356;
+    --accent: #9b4d1d;
+    --accent-soft: #f4e5d8;
+    --accent-2: #0f6b61;
+    --accent-2-soft: #dff1ee;
+    --warn: #b23a2b;
+    --warn-soft: #fde4de;
+    --mid: #c88c28;
+    --mid-soft: #fff1d8;
+    --obs: #346a95;
+    --obs-soft: #e1eef9;
+  }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at top left, rgba(155,77,29,0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(15,107,97,0.08), transparent 22%),
+      linear-gradient(180deg, #f7f4ed 0%, var(--bg) 100%);
+    color: var(--text);
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    line-height: 1.45;
+  }
+  .page {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .hero {
+    background: linear-gradient(135deg, #fffaf1 0%, #f4ede1 55%, #efe6d8 100%);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .hero-main {
+    min-width: 0;
+  }
+  .hero-tools {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-tools .inline-actions {
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+  .hero-tools-note {
+    font-size: 12px;
+    color: #b42318;
+    font-weight: 800;
+    text-align: right;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -30px -40px auto;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(15,107,97,0.16) 0%, transparent 68%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: 1px;
+    font-size: 30px;
+  }
+  .hero p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    max-width: 860px;
+  }
+  .hero-note {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .stack {
+    display: grid;
+    gap: 18px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(60, 44, 20, 0.05);
+  }
+  .panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(90deg, #faf4eb 0%, #f6ede0 100%);
+    border-bottom: 1px solid var(--line);
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .panel-title small {
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+  .panel-body { padding: 16px 18px 18px; }
+  .grid-2, .grid-3, .grid-4 {
+    display: grid;
+    gap: 12px;
+  }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .field { display: grid; gap: 4px; }
+  .field label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  input, select, textarea, button {
+    font: inherit;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbbfac;
+    border-radius: 10px;
+    background: #fffdfa;
+    color: var(--text);
+  }
+  textarea { min-height: 74px; resize: vertical; }
+  button {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: 0.18s ease;
+    font-weight: 700;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { filter: brightness(1.06); }
+  .btn-secondary {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: #e2c8b3;
+  }
+  .btn-secondary:hover { background: #efd9c6; }
+  .btn-danger {
+    background: var(--warn-soft);
+    color: var(--warn);
+    border-color: #e8b6aa;
+  }
+  .btn-danger:hover { background: #f6d5cc; }
+  .btn-ghost {
+    background: white;
+    border-color: #d5cabd;
+    color: var(--text);
+  }
+  .inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .subtle {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .note-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f8f1e8;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .alert-note {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff1f0;
+    color: #b42318;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.7;
+    border: 1px solid #f4c7c3;
+  }
+  .steps {
+    display: grid;
+    gap: 10px;
+  }
+  .step {
+    border: 1px solid #e0d4c6;
+    border-radius: 12px;
+    background: #fff9f1;
+    padding: 10px 12px;
+  }
+  .step b {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .checklist-box {
+    border: 1px solid #ddd2c6;
+    border-radius: 12px;
+    background: #fffdfa;
+    padding: 8px 10px;
+    max-height: 148px;
+    overflow: auto;
+    display: grid;
+    gap: 6px;
+  }
+  .check-item {
+    display: flex;
+    align-items: start;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .check-item input[type="checkbox"] {
+    width: auto;
+    margin-top: 2px;
+  }
+  .battle-list {
+    display: grid;
+    gap: 10px;
+  }
+  .battle-card {
+    border: 1px solid #dacfc2;
+    border-radius: 14px;
+    padding: 12px;
+    background: #fffaf4;
+    display: grid;
+    gap: 8px;
+  }
+  .battle-card.active {
+    border-color: var(--accent);
+    background: #fff5ea;
+    box-shadow: inset 0 0 0 1px rgba(155,77,29,0.08);
+  }
+  .battle-card-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: start;
+  }
+  .battle-name {
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .battle-meta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .stat {
+    background: linear-gradient(180deg, #fff 0%, #faf4eb 100%);
+    border: 1px solid #e0d4c6;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent-2);
+  }
+  .screening-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .screening-card {
+    border-radius: 14px;
+    border: 1px solid #ddd2c6;
+    background: #fffaf4;
+    padding: 12px;
+    min-height: 120px;
+  }
+  .screening-card h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #f6ede2;
+    color: #71431f;
+  }
+  .review-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .settings-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .review-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .review-topbar .settings-strip {
+    margin-bottom: 0;
+    flex: 0 0 auto;
+  }
+  .review-note {
+    margin-left: auto;
+    max-width: none;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #b42318;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 18px 0;
+    align-items: center;
+  }
+  .tab-bar-spacer {
+    flex: 1 1 auto;
+  }
+  .current-battle-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .current-battle-tools label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .current-battle-tools select {
+    min-width: 320px;
+  }
+  .tab-btn {
+    background: #f4eadc;
+    color: var(--accent);
+    border-color: #dfc9b2;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .review-box {
+    border-radius: 16px;
+    border: 1px solid #ddd2c6;
+    overflow: hidden;
+    background: #fff;
+  }
+  .review-box.priority .review-head { background: var(--warn-soft); color: var(--warn); }
+  .review-box.secondary .review-head { background: var(--mid-soft); color: #8b5d12; }
+  .review-box.observation .review-head { background: var(--obs-soft); color: var(--obs); }
+  .review-head {
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .review-list { padding: 12px; display: grid; gap: 10px; }
+  .review-item {
+    border: 1px solid #e3d9cd;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fffdfa;
+  }
+  .review-item h5 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .review-item p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .flag-row {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .flag {
+    font-size: 11px;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: #f1ece4;
+    color: var(--text);
+  }
+  .table-wrap {
+    overflow: auto;
+    border: 1px solid #ddd2c6;
+    border-radius: 14px;
+    background: white;
+  }
+  .top-scroll-wrap {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    border: 1px solid #ddd2c6;
+    border-radius: 14px;
+    background: #fffaf4;
+    height: 24px;
+    scrollbar-width: auto;
+    scrollbar-color: #b89d83 #f2e8da;
+  }
+  .top-scroll-inner {
+    height: 8px;
+  }
+  .top-scroll-wrap::-webkit-scrollbar {
+    height: 14px;
+  }
+  .top-scroll-wrap::-webkit-scrollbar-track {
+    background: #f2e8da;
+    border-radius: 999px;
+  }
+  .top-scroll-wrap::-webkit-scrollbar-thumb {
+    background: #b89d83;
+    border-radius: 999px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1020px;
+  }
+  th, td {
+    padding: 10px 10px;
+    border-bottom: 1px solid #eee5da;
+    text-align: left;
+    font-size: 12px;
+    vertical-align: top;
+  }
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #faf3e7;
+    color: var(--accent);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: #fff8ef; }
+  .clickable-row { cursor: pointer; }
+  .tag {
+    display: inline-block;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .tag-attack { background: #fce2d5; color: #9b4d1d; }
+  .tag-defense { background: #dff1ee; color: #0f6b61; }
+  .tag-bodyguard { background: #e7e5f9; color: #5b4cb2; }
+  .tag-unknown { background: #f1ece4; color: #6e6356; }
+  .table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .table-actions-left {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .assignment-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 10px;
+    margin-left: auto;
+  }
+  .assignment-stat {
+    border: 1px solid #e0d4c6;
+    border-radius: 999px;
+    background: #fff9f1;
+    color: var(--muted);
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .assignment-stat b {
+    color: var(--accent);
+    margin-left: 4px;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .status-win { background: #dff1e5; color: #17603c; }
+  .status-loss { background: #fde4de; color: #a53b2a; }
+  .status-unknown { background: #f1ece4; color: #6e6356; }
+  .empty {
+    padding: 22px 14px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+  }
+  .detail-box {
+    border: 1px solid #ddd2c6;
+    border-radius: 16px;
+    background: #fffdf8;
+    padding: 14px;
+    display: grid;
+    gap: 14px;
+  }
+  .metric-table td:first-child { color: var(--muted); width: 160px; }
+  .metric-table td:last-child { font-weight: 700; }
+  .mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mini-stat {
+    border-radius: 12px;
+    border: 1px solid #e6dbcf;
+    background: #fffcf7;
+    padding: 10px;
+  }
+  .mini-stat b {
+    display: block;
+    font-size: 18px;
+    color: var(--accent-2);
+    margin-top: 3px;
+  }
+  .radar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .radar-card {
+    border: 1px solid #e0d4c6;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fff 0%, #faf4eb 100%);
+    padding: 12px;
+  }
+  .radar-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .radar-note {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .radar-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .radar-axis-label {
+    font-size: 11px;
+    fill: var(--muted);
+    font-weight: 700;
+  }
+  .explain-list {
+    display: grid;
+    gap: 10px;
+  }
+  .explain-item {
+    border: 1px solid #e3d9cd;
+    border-radius: 12px;
+    background: #fffaf4;
+    padding: 12px;
+  }
+  .explain-item b {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+  @media (max-width: 1100px) {
+    .layout, .split, .review-columns { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hero-top { flex-direction: column; }
+    .hero-tools { width: 100%; align-items: flex-start; }
+    .hero-tools .inline-actions { justify-content: flex-start; }
+    .hero-tools-note { text-align: left; }
+  }
+  @media (max-width: 720px) {
+    .page { padding: 18px 12px 40px; }
+    .hero { padding: 20px 18px; }
+    .hero h1 { font-size: 24px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-main">
+          <h1>幫戰覆盤工具 <span style="color:var(--warn); font-size:0.72em; font-weight:900;">（不能單憑數據直接判定誰打不好）</span></h1>
+          <p>這一頁獨立處理幫戰戰報。核心流程固定依照覆盤規則：先切資料、再分工、再跑第一輪門檻篩選，最後用交集名單與特殊職責做人工判讀。</p>
+          <div class="hero-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、別名合併、能力六邊形。</div>
+        </div>
+        <div class="hero-tools">
+          <div class="inline-actions">
+            <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
+            <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
+            <input id="snapshot_file" type="file" accept=".json,application/json" hidden>
+          </div>
+          <div class="hero-tools-note">提醒：匯入覆盤資料會覆蓋現有資料。</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-title">場次匯入 <small>先匯入戰報，再加入場次庫</small></div>
+          <div class="panel-body">
+            <div class="steps" style="margin-bottom:12px;">
+              <div class="step"><b>步驟 1：匯入戰報 CSV</b><span class="subtle">先讀取單場戰報，確認己方區段、日期、對手與結果。</span></div>
+              <div class="step"><b>步驟 2：匯入分工 CSV</b><span class="subtle">分工 CSV 決定進攻 / 防守 / 保鑣與特殊職責；沒套分工前，覆盤結果不可靠。</span></div>
+              <div class="step"><b>步驟 3：加入場次</b><span class="subtle">正常流程只要按這個。加入場次時，系統會自動把目前已讀取的分工 CSV 套進新場次。</span></div>
+              <div class="step"><b>補救流程：重新套用分工</b><span class="subtle">平常不用按。只有你先前已加入戰報、但後來才補讀分工 CSV，或想用新版分工表重套目前場次時才需要。</span></div>
+              <div class="step"><b>步驟 4：切到右側分頁看結果</b><span class="subtle">右側分成分工、單場覆盤、玩家查詢、職業表現、判讀說明五個分頁。</span></div>
+            </div>
+            <div class="field">
+              <label>戰報 CSV</label>
+              <input id="csv_file" type="file" accept=".csv,text/csv">
+            </div>
+            <div class="field" style="margin-top:12px;">
+              <label>分工 CSV</label>
+              <input id="role_csv_file" type="file" accept=".csv,text/csv">
+            </div>
+            <div class="grid-2" style="margin-top:12px;">
+              <div class="field">
+                <label>戰報區段</label>
+                <select id="import_section"></select>
+              </div>
+              <div class="field">
+                <label>結果</label>
+                <select id="import_result">
+                  <option value="unknown">未標記</option>
+                  <option value="win">勝</option>
+                  <option value="loss">敗</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:12px;">
+              <div class="field">
+                <label>日期</label>
+                <input id="import_date" type="date">
+              </div>
+              <div class="field">
+                <label>對手</label>
+                <select id="import_opponent">
+                  <option value="">請先讀取戰報</option>
+                </select>
+              </div>
+            </div>
+            <div class="field" style="margin-top:12px;">
+              <label>己方名稱</label>
+              <select id="import_team_name">
+                <option value="">請先讀取戰報</option>
+              </select>
+            </div>
+            <div class="field" style="margin-top:12px;">
+              <label>備註</label>
+              <textarea id="import_note" placeholder="例如：0418 幫戰、分工按圖片手動指定"></textarea>
+            </div>
+            <div class="inline-actions">
+              <button class="btn-primary" id="btn_parse_csv">讀取戰報</button>
+              <button class="btn-secondary" id="btn_parse_role_csv">讀取分工</button>
+              <button class="btn-secondary" id="btn_add_battle">加入場次</button>
+              <button class="btn-ghost" id="btn_apply_roles">重新套用分工（平常不用按，事後才補分工表才要按）</button>
+            </div>
+            <div class="note-box" id="import_note_box">尚未讀取戰報 CSV。</div>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-title">覆盤主區 <small>右側分頁查看分工、單場、累積與職業表現</small></div>
+          <div class="tab-bar">
+            <button class="btn-secondary tab-btn active" data-tab="assignment">分工</button>
+            <button class="btn-secondary tab-btn" data-tab="review">單場覆盤</button>
+            <button class="btn-secondary tab-btn" data-tab="players">玩家查詢</button>
+            <button class="btn-secondary tab-btn" data-tab="profession">職業表現</button>
+            <button class="btn-secondary tab-btn" data-tab="opponents">對手重點人物</button>
+            <button class="btn-secondary tab-btn" data-tab="rules">判讀說明</button>
+            <div class="tab-bar-spacer"></div>
+            <div class="current-battle-tools">
+              <label for="current_battle_select">切換場次</label>
+              <select id="current_battle_select">
+                <option value="">尚未加入場次</option>
+              </select>
+              <button class="btn-danger" id="btn_delete_current_battle">刪除目前場次</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="tab-panel active" data-tab-panel="assignment">
+              <div class="table-actions">
+                <div class="table-actions-left">
+                  <button class="btn-secondary" id="btn_group_attack">將選取玩家設為進攻</button>
+                  <button class="btn-secondary" id="btn_group_defense">將選取玩家設為防守</button>
+                  <button class="btn-secondary" id="btn_group_bodyguard">將選取玩家設為保鑣</button>
+                  <button class="btn-ghost" id="btn_group_unknown">將選取玩家設為未定</button>
+                </div>
+                <div class="assignment-stats" id="assignment_stats"></div>
+              </div>
+              <div class="table-wrap">
+                <table id="assignment_table">
+                  <thead>
+                    <tr>
+                      <th>選</th>
+                      <th>玩家</th>
+                      <th>職業</th>
+                      <th>團別</th>
+                      <th>分隊</th>
+                      <th>特殊職責</th>
+                      <th>重傷</th>
+                      <th>塔傷</th>
+                      <th>人傷</th>
+                      <th>治療</th>
+                      <th>化羽</th>
+                      <th>焚骨</th>
+                    </tr>
+                  </thead>
+                  <tbody id="assignment_body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-tab-panel="review">
+              <div class="review-topbar">
+                <div class="settings-strip">
+                  <div class="field">
+                    <label>後段門檻 %</label>
+                    <input id="weak_pct" type="number" min="1" max="50" step="1" value="30">
+                  </div>
+                  <div class="field">
+                    <label>高重傷門檻 %</label>
+                    <input id="death_pct" type="number" min="1" max="50" step="1" value="30">
+                  </div>
+                </div>
+                <div class="review-note">重要提醒：數據很多時候無法體現戰術價值，系統規則是寫死的，實際狀況還要結合錄像和人員覆盤判斷。</div>
+              </div>
+              <div class="summary-grid" id="battle_summary"></div>
+              <div style="height:14px;"></div>
+              <div class="screening-grid" id="screening_grid"></div>
+              <div style="height:14px;"></div>
+              <div class="review-columns">
+                <div class="review-box priority">
+                  <div class="review-head">優先找幹部覆盤</div>
+                  <div class="review-list" id="priority_list"></div>
+                </div>
+                <div class="review-box secondary">
+                  <div class="review-head">歡迎找幹部覆盤</div>
+                  <div class="review-list" id="secondary_list"></div>
+                </div>
+                <div class="review-box observation">
+                  <div class="review-head">系統難以判定（可能隊友搶走你的數據!）</div>
+                  <div class="review-list" id="observation_list"></div>
+                </div>
+              </div>
+              <div style="height:14px;"></div>
+              <div class="field">
+                <label>人工觀察 / 備註（單場保存）</label>
+                <textarea id="battle_manual_note" placeholder="可補充：指揮判斷、臨時分工、特殊站位、手動觀察結果。"></textarea>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-tab-panel="players">
+              <div class="panel" style="margin-bottom:12px;">
+                <div class="panel-title">玩家別名合併</div>
+                <div class="subtle" style="margin-bottom:10px;">只影響累積統計，不會改單場原始戰報名字。設定後會記住，下次打開頁面仍會自動套用。</div>
+                <div class="grid-4">
+                  <div class="field">
+                    <label>原始名字</label>
+                    <input id="alias_source" type="text" placeholder="例如：小王">
+                  </div>
+                  <div class="field">
+                    <label>統一名字</label>
+                    <input id="alias_target" type="text" placeholder="例如：小丁">
+                  </div>
+                  <div class="field" style="display:flex;align-items:end;">
+                    <button class="btn-secondary" id="btn_alias_add" style="width:100%;">新增別名合併</button>
+                  </div>
+                </div>
+                <div style="height:10px;"></div>
+                <div id="alias_list" class="note-box">尚未設定別名合併。</div>
+              </div>
+              <div class="grid-4">
+                <div class="field">
+                  <label>玩家名稱搜尋</label>
+                  <input id="player_search" type="text" placeholder="輸入玩家名稱">
+                </div>
+                <div class="field">
+                  <label>團別篩選</label>
+                  <select id="player_group_filter">
+                    <option value="all">全部</option>
+                    <option value="attack">進攻</option>
+                    <option value="defense">防守</option>
+                    <option value="bodyguard">保鑣</option>
+                    <option value="defense_bodyguard">保鑣+防守</option>
+                    <option value="attack_bodyguard">保鑣+進攻</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>比較母體</label>
+                  <select id="player_cohort_filter">
+                    <option value="same_job">同職業</option>
+                    <option value="all">所有職業</option>
+                    <option value="dps1">所有DPS1（奶媽除外）</option>
+                    <option value="dps2">所有DPS2（奶媽/鐵衣除外）</option>
+                  </select>
+                </div>
+                <div class="field" style="grid-column: span 3;">
+                  <label>勾選要納入統計的場次</label>
+                  <div class="inline-actions" style="margin-top:0;">
+                    <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
+                    <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
+                    <button class="btn-danger" type="button" id="btn_player_delete_checked">刪除勾選場次</button>
+                  </div>
+                  <div id="player_battle_select" class="checklist-box"></div>
+                </div>
+              </div>
+              <div style="height:12px;"></div>
+              <div class="detail-box" id="player_detail_box">
+                <div class="empty">輸入玩家名稱後，這裡會顯示該玩家在指定場次內的個人數據。</div>
+              </div>
+              <div style="height:12px;"></div>
+              <div class="detail-box" id="player_leaderboard_box">
+                <div class="empty">勾選場次後，這裡會顯示系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤次數最高的玩家。</div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-tab-panel="profession">
+              <div class="grid-4">
+                <div class="field">
+                  <label>玩家名稱搜尋</label>
+                  <input id="profession_search" type="text" placeholder="搜尋玩家名稱">
+                </div>
+                <div class="field">
+                  <label>職業</label>
+                  <select id="profession_job_filter"></select>
+                </div>
+                <div class="field">
+                  <label>團別</label>
+                  <select id="profession_group_filter">
+                    <option value="all">全部</option>
+                    <option value="attack">進攻</option>
+                    <option value="defense">防守</option>
+                    <option value="bodyguard">保鑣</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>最低場次</label>
+                  <input id="profession_min_battles" type="number" min="1" step="1" value="1">
+                </div>
+                <div class="field">
+                  <label>排序欄位</label>
+                  <select id="profession_sort_field">
+                    <option value="battles">場數</option>
+                    <option value="wins">勝場</option>
+                    <option value="losses">敗場</option>
+                    <option value="winRate">勝率</option>
+                    <option value="avgKill">平均擊敗</option>
+                    <option value="avgAssist">平均助攻</option>
+                    <option value="avgDeath">平均死亡</option>
+                    <option value="avgKillPerDeath">擊殺/死亡</option>
+                    <option value="avgPvpDamage">平均人傷</option>
+                    <option value="avgPvpPerKill">人傷/擊殺數</option>
+                    <option value="avgBuildDamage">平均塔傷</option>
+                    <option value="avgTakenDamage">平均承傷</option>
+                    <option value="avgTakenPerDeath">承傷/重傷</option>
+                    <option value="avgHeal">平均治療</option>
+                    <option value="avgNetHeal">平均淨奶</option>
+                    <option value="avgBurn">平均焚骨</option>
+                    <option value="avgSave">平均化羽</option>
+                    <option value="reviewSuggestCount">建議覆盤次數</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>排序方向</label>
+                  <select id="profession_sort_order">
+                    <option value="desc">由大到小</option>
+                    <option value="asc">由小到大</option>
+                  </select>
+                </div>
+                <div class="field" style="grid-column: span 2;">
+                  <label>勾選要納入統計的場次</label>
+                  <div class="inline-actions" style="margin-top:0;">
+                    <button class="btn-secondary" type="button" id="btn_prof_check_all">全勾</button>
+                    <button class="btn-ghost" type="button" id="btn_prof_uncheck_all">全不勾</button>
+                    <button class="btn-danger" type="button" id="btn_prof_delete_checked">刪除勾選場次</button>
+                  </div>
+                  <div id="profession_battle_select" class="checklist-box"></div>
+                </div>
+              </div>
+              <div style="height:12px;"></div>
+              <div class="top-scroll-wrap" id="profession_top_scroll"><div class="top-scroll-inner" id="profession_top_scroll_inner"></div></div>
+              <div style="height:8px;"></div>
+              <div class="table-wrap" id="profession_table_wrap">
+                <table id="profession_table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>玩家</th>
+                      <th>職業</th>
+                      <th>場數</th>
+                      <th>勝/敗</th>
+                      <th>勝率</th>
+                      <th>平均擊敗</th>
+                      <th>平均助攻</th>
+                      <th>平均死亡</th>
+                      <th>擊殺/死亡</th>
+                      <th>平均人傷</th>
+                      <th>人傷/擊殺數</th>
+                      <th>平均塔傷</th>
+                      <th>平均承傷</th>
+                      <th>承傷/重傷</th>
+                      <th>平均治療</th>
+                      <th>平均淨奶</th>
+                      <th>平均焚骨</th>
+                      <th>平均化羽</th>
+                      <th>建議覆盤次數</th>
+                    </tr>
+                  </thead>
+                  <tbody id="profession_body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-tab-panel="opponents">
+              <div class="grid-4">
+                <div class="field">
+                  <label>對手</label>
+                  <select id="opponent_focus_select"></select>
+                </div>
+                <div class="field">
+                  <label>平均場次</label>
+                  <div class="note-box" id="opponent_focus_meta">請先選擇對手。</div>
+                </div>
+              </div>
+              <div style="height:12px;"></div>
+              <div class="summary-grid" id="opponent_focus_cards"></div>
+              <div style="height:12px;"></div>
+              <div class="grid-3">
+                <div class="detail-box">
+                  <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">拆塔前 5</div>
+                  <div id="opponent_top_build"></div>
+                </div>
+                <div class="detail-box">
+                  <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">打人前 5</div>
+                  <div id="opponent_top_pvp"></div>
+                </div>
+                <div class="detail-box">
+                  <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">擊殺前 5</div>
+                  <div id="opponent_top_kill"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-tab-panel="rules">
+              <div class="explain-list" id="rules_explain_box"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+<script>
+const STORAGE_KEY = 'jol_battle_review_v1';
+const JOB_ORDER = ['碎夢', '血河', '龍吟', '九靈', '神相', '玄機', '鐵衣', '素問'];
+const GROUP_LABELS = {
+  attack: '進攻',
+  defense: '防守',
+  bodyguard: '保鑣',
+  unknown: '未定',
+};
+const PLAYER_GROUP_FILTER_LABELS = {
+  all: '全部',
+  attack: '進攻',
+  defense: '防守',
+  bodyguard: '保鑣',
+  defense_bodyguard: '保鑣+防守',
+  attack_bodyguard: '保鑣+進攻',
+};
+const PLAYER_COHORT_LABELS = {
+  all: '所有職業',
+  same_job: '同職業',
+  dps1: '所有DPS1（奶媽除外）',
+  dps2: '所有DPS2（奶媽/鐵衣除外）',
+};
+const PLAYER_COMPARE_METRICS = [
+  { key: 'avgKill', label: '平均擊敗', better: 'high', format: value => fmtAvg(value), applicable: player => player.job !== '素問' },
+  { key: 'avgAssist', label: '平均助攻', better: 'high', format: value => fmtAvg(value) },
+  { key: 'avgDeath', label: '平均重傷', better: 'low', format: value => fmtAvg(value) },
+  { key: 'avgKillPerDeath', label: '擊殺/死亡', better: 'high', format: value => fmtF(value || 0, 2), applicable: player => player.job !== '素問' },
+  { key: 'avgPvpDamage', label: '平均人傷', better: 'high', format: value => fmtLarge(value), applicable: player => player.job !== '素問' },
+  { key: 'avgBuildDamage', label: '平均塔傷', better: 'high', format: value => fmtLarge(value), applicable: player => player.job !== '素問' },
+  { key: 'avgTakenDamage', label: '平均承傷', better: 'high', format: value => fmtLarge(value) },
+  { key: 'avgTakenPerDeath', label: '承傷/重傷', better: 'high', format: value => fmtLarge(value) },
+  { key: 'avgHeal', label: '平均治療', better: 'high', format: value => fmtLarge(value), applicable: player => player.job === '素問' },
+  { key: 'avgNetHeal', label: '平均淨奶', better: 'high', format: value => fmtLarge(value), applicable: player => player.job === '素問' },
+  { key: 'avgSave', label: '平均化羽', better: 'high', format: value => fmtAvg(value), applicable: player => player.job === '素問' },
+  { key: 'avgBurn', label: '平均焚骨', better: 'high', format: value => fmtAvg(value), applicable: player => player.job === '九靈' },
+];
+
+let state = loadState();
+let importedSections = [];
+let importedRoleRows = [];
+let selectedPlayer = '';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {} };
+    const parsed = JSON.parse(raw);
+    return {
+      battles: Array.isArray(parsed.battles) ? parsed.battles : [],
+      activeBattleId: parsed.activeBattleId || '',
+      importDraft: parsed.importDraft || {},
+      aliasMap: parsed.aliasMap || {},
+      settings: {
+        weakPct: Number(parsed.settings?.weakPct || 30),
+        deathPct: Number(parsed.settings?.deathPct || 30),
+      },
+    };
+  } catch (err) {
+    console.error(err);
+    return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 } };
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function activeTabName() {
+  return document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment';
+}
+
+function collectUiState() {
+  return {
+    activeTab: activeTabName(),
+    playerSearch: document.getElementById('player_search')?.value || '',
+    playerBattleIds: selectedBattleIds('player_battle_select'),
+    playerGroupFilter: document.getElementById('player_group_filter')?.value || 'all',
+    playerCohortFilter: document.getElementById('player_cohort_filter')?.value || 'same_job',
+    professionSearch: document.getElementById('profession_search')?.value || '',
+    professionJob: document.getElementById('profession_job_filter')?.value || 'all',
+    professionGroup: document.getElementById('profession_group_filter')?.value || 'all',
+    professionMinBattles: document.getElementById('profession_min_battles')?.value || '1',
+    professionSortField: document.getElementById('profession_sort_field')?.value || 'reviewSuggestCount',
+    professionSortOrder: document.getElementById('profession_sort_order')?.value || 'desc',
+    professionBattleIds: selectedBattleIds('profession_battle_select'),
+  };
+}
+
+function restoreBattleCheckboxes(selectId, ids) {
+  if (!Array.isArray(ids) || !ids.length) return;
+  const set = new Set(ids);
+  document.querySelectorAll(`#${selectId} input[type="checkbox"]`).forEach(input => {
+    input.checked = set.has(input.value);
+  });
+}
+
+function restoreUiState(uiState = {}) {
+  if (!uiState || typeof uiState !== 'object') return;
+  if (document.getElementById('player_search')) document.getElementById('player_search').value = uiState.playerSearch || '';
+  if (document.getElementById('player_group_filter')) document.getElementById('player_group_filter').value = uiState.playerGroupFilter || 'all';
+  if (document.getElementById('player_cohort_filter')) document.getElementById('player_cohort_filter').value = uiState.playerCohortFilter || 'same_job';
+  if (document.getElementById('profession_search')) document.getElementById('profession_search').value = uiState.professionSearch || '';
+  if (document.getElementById('profession_job_filter')) document.getElementById('profession_job_filter').value = uiState.professionJob || 'all';
+  if (document.getElementById('profession_group_filter')) document.getElementById('profession_group_filter').value = uiState.professionGroup || 'all';
+  if (document.getElementById('profession_min_battles')) document.getElementById('profession_min_battles').value = uiState.professionMinBattles || '1';
+  if (document.getElementById('profession_sort_field')) document.getElementById('profession_sort_field').value = uiState.professionSortField || 'reviewSuggestCount';
+  if (document.getElementById('profession_sort_order')) document.getElementById('profession_sort_order').value = uiState.professionSortOrder || 'desc';
+  restoreBattleCheckboxes('player_battle_select', uiState.playerBattleIds || []);
+  restoreBattleCheckboxes('profession_battle_select', uiState.professionBattleIds || []);
+  renderPlayerLookup();
+  renderProfessionTable();
+  switchTab(uiState.activeTab || 'assignment');
+}
+
+function exportReviewSnapshot() {
+  const payload = {
+    app: 'battle_review',
+    version: 1,
+    exported_at: new Date().toISOString(),
+    state: {
+      battles: state.battles,
+      activeBattleId: state.activeBattleId,
+      importDraft: state.importDraft || {},
+      aliasMap: state.aliasMap || {},
+      settings: state.settings || { weakPct: 30, deathPct: 30 },
+    },
+    ui_state: collectUiState(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `battle_review_export_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importReviewSnapshot(file) {
+  if (!file) return;
+  const fileName = String(file.name || '');
+  if (/Zone\.Identifier$/i.test(fileName)) {
+    throw new Error('你選到的是 Windows 附帶資訊檔（Zone.Identifier），不是覆盤資料 JSON。請改選真正的 .json 檔。');
+  }
+  const text = await file.text();
+  const trimmed = String(text || '').trim();
+  if (!trimmed) {
+    throw new Error('匯入檔是空的，請重新選擇真正的覆盤資料 JSON。');
+  }
+  if (/^\[ZoneTransfer\]/i.test(trimmed) || /^ZoneId=/i.test(trimmed)) {
+    throw new Error('你選到的是 Windows 附帶資訊檔（Zone.Identifier），不是覆盤資料 JSON。請改選真正的 .json 檔。');
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch (err) {
+    if (/Unexpected token 'Z'|Unexpected token Z/i.test(String(err?.message || ''))) {
+      throw new Error('這個檔案不是有效的覆盤資料 JSON。若你是在 Windows 上複製檔案，請不要選到附帶的 Zone.Identifier 檔。');
+    }
+    throw new Error('這個檔案不是有效的覆盤資料 JSON。請確認你選的是用「批量匯出目前所有資料」產生的 .json 檔。');
+  }
+  if (parsed?.app !== 'battle_review' || !parsed?.state) {
+    throw new Error('不是有效的覆盤資料 JSON。');
+  }
+  const next = parsed.state || {};
+  state = {
+    battles: Array.isArray(next.battles) ? next.battles : [],
+    activeBattleId: next.activeBattleId || (Array.isArray(next.battles) && next.battles[0]?.id) || '',
+    importDraft: next.importDraft || {},
+    aliasMap: next.aliasMap || {},
+    settings: {
+      weakPct: Number(next.settings?.weakPct || 30),
+      deathPct: Number(next.settings?.deathPct || 30),
+    },
+  };
+  importedSections = [];
+  importedRoleRows = [];
+  saveState();
+  refreshAll();
+  restoreUiState(parsed.ui_state || {});
+}
+
+function resolveAliasName(name, map = state.aliasMap || {}) {
+  let current = String(name || '').trim();
+  const visited = new Set();
+  while (current && map[current] && !visited.has(current)) {
+    visited.add(current);
+    current = String(map[current] || '').trim();
+  }
+  return current || String(name || '').trim();
+}
+
+function canonicalPlayerName(name) {
+  return resolveAliasName(name, state.aliasMap || {});
+}
+
+function currentSettings() {
+  return {
+    weakPct: Math.max(1, Math.min(50, Number(state.settings?.weakPct || 30))),
+    deathPct: Math.max(1, Math.min(50, Number(state.settings?.deathPct || 30))),
+  };
+}
+
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function fmtNumber(value) {
+  return Number(value || 0).toLocaleString('zh-TW');
+}
+
+function fmtAvg(value) {
+  return Number(value || 0).toLocaleString('zh-TW', { maximumFractionDigits: 1 });
+}
+
+function fmtF(value, digits = 2) {
+  return Number(value || 0).toLocaleString('zh-TW', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+}
+
+function fmtLarge(value) {
+  const num = Number(value || 0);
+  if (Math.abs(num) >= 100000000) return `${(num / 100000000).toFixed(2)} 億`;
+  if (Math.abs(num) >= 10000) return `${(num / 10000).toFixed(1)} 萬`;
+  return fmtNumber(num);
+}
+
+function fmtPvpPerKill(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '-';
+  return fmtLarge(num);
+}
+
+function statusPill(result) {
+  if (result === 'win') return '<span class="status-pill status-win">勝</span>';
+  if (result === 'loss') return '<span class="status-pill status-loss">敗</span>';
+  return '<span class="status-pill status-unknown">未標記</span>';
+}
+
+function groupTag(type) {
+  const cls = `tag-${type}`;
+  return `<span class="tag ${cls}">${escHtml(GROUP_LABELS[type] || GROUP_LABELS.unknown)}</span>`;
+}
+
+function jobSortValue(job) {
+  const idx = JOB_ORDER.indexOf(job);
+  return idx >= 0 ? idx : 999;
+}
+
+function comparePlayers(a, b) {
+  const jobDiff = jobSortValue(a.job) - jobSortValue(b.job);
+  if (jobDiff !== 0) return jobDiff;
+  return a.name.localeCompare(b.name, 'zh-Hant');
+}
+
+function hasBattleAssignments(battle) {
+  if (!battle?.players?.length) return false;
+  return battle.players.some(player => (player.groupType || 'unknown') !== 'unknown');
+}
+
+function parseCsvSections(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean);
+  const sections = [];
+  let i = 0;
+  while (i < lines.length) {
+    const row = splitCsvLine(lines[i]);
+    if (row.length === 2 && /^\d+$/.test(row[1])) {
+      const teamName = row[0];
+      const count = Number(row[1]);
+      const header = splitCsvLine(lines[i + 1] || '');
+      const players = [];
+      let cursor = i + 2;
+      while (cursor < lines.length) {
+        const next = splitCsvLine(lines[cursor]);
+        if (next.length === 2 && /^\d+$/.test(next[1])) break;
+        if (next.length >= 12 && next[0] !== '玩家名字') {
+          players.push(parsePlayerRow(next));
+        }
+        cursor += 1;
+      }
+      sections.push({ teamName, declaredCount: count, header, players });
+      i = cursor;
+      continue;
+    }
+    i += 1;
+  }
+  return sections;
+}
+
+function splitCsvLine(line) {
+  const out = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      out.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  out.push(current);
+  return out;
+}
+
+function parsePlayerRow(row) {
+  const keys = ['name', 'job', 'kill', 'assist', 'resource', 'pvpDamage', 'buildDamage', 'heal', 'takenDamage', 'death', 'saveCount', 'burnCount'];
+  const player = {};
+  keys.forEach((key, idx) => {
+    if (idx < 2) {
+      player[key] = row[idx] || '';
+    } else {
+      player[key] = Number(row[idx] || 0);
+    }
+  });
+  player.groupType = 'unknown';
+  player.subgroup = '';
+  player.specialRoles = [];
+  return player;
+}
+
+function parseRoleCsv(text) {
+  const rows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean).map(splitCsvLine);
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => String(h || '').trim());
+  return rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((header, idx) => { obj[header] = row[idx] || ''; });
+    return {
+      name: (obj.name || '').trim(),
+      job: (obj.job || '').trim(),
+      groupType: normalizeGroupType(obj.group_type || obj.groupType || ''),
+      subgroup: (obj.subgroup || '').trim(),
+      specialRoles: String(obj.special_roles || obj.specialRoles || '')
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean),
+      note: (obj.note || '').trim(),
+      confidence: (obj.confidence || '').trim(),
+    };
+  }).filter(row => row.name);
+}
+
+function normalizeGroupType(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (['attack', '進攻'].includes(raw)) return 'attack';
+  if (['defense', '防守'].includes(raw)) return 'defense';
+  if (['bodyguard', '保鑣'].includes(raw)) return 'bodyguard';
+  return 'unknown';
+}
+
+function makeBattleId() {
+  return `battle_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function applyRoleRowsToBattle(battle, roleRows) {
+  if (!battle || !Array.isArray(roleRows) || !roleRows.length) {
+    return { matched: 0, unmatchedRoles: roleRows?.length || 0, battleOnly: battle?.players?.length || 0 };
+  }
+  const roleMap = new Map(roleRows.map(row => [row.name, row]));
+  let matched = 0;
+  battle.players.forEach(player => {
+    const role = roleMap.get(player.name);
+    if (!role) return;
+    matched += 1;
+    if (role.job && player.job && role.job !== player.job) {
+      // keep battle job as source of truth, only note mismatch via subgroup note field if needed later
+    }
+    player.groupType = role.groupType || player.groupType || 'unknown';
+    player.subgroup = role.subgroup || player.subgroup || '';
+    player.specialRoles = Array.isArray(role.specialRoles) ? [...role.specialRoles] : [];
+    player.assignmentNote = role.note || '';
+    player.assignmentConfidence = role.confidence || '';
+  });
+  return {
+    matched,
+    unmatchedRoles: roleRows.filter(row => !battle.players.some(player => player.name === row.name)).length,
+    battleOnly: battle.players.filter(player => !roleMap.has(player.name)).length,
+  };
+}
+
+function activeBattle() {
+  return state.battles.find(b => b.id === state.activeBattleId) || null;
+}
+
+function derivePlayer(player) {
+  const death = Number(player.death || 0);
+  const takenDamage = Number(player.takenDamage || 0);
+  return {
+    ...player,
+    netHeal: Number(player.heal || 0) - Number(player.takenDamage || 0),
+    takenPerDeath: takenDamage / Math.max(death, 1),
+    killPerDeath: Number(player.kill || 0) / Math.max(death, 1),
+  };
+}
+
+function summarizePlayers(players) {
+  const list = (players || []).map(derivePlayer);
+  return {
+    totalPlayers: list.length,
+    totalKill: sum(list, 'kill'),
+    totalAssist: sum(list, 'assist'),
+    totalResource: sum(list, 'resource'),
+    totalPvp: sum(list, 'pvpDamage'),
+    totalBuild: sum(list, 'buildDamage'),
+    totalHeal: sum(list, 'heal'),
+    totalTaken: sum(list, 'takenDamage'),
+  };
+}
+
+function aggregateOpponentPlayers(opponentName) {
+  const battles = state.battles.filter(battle => battle.opponent === opponentName && Array.isArray(battle.opponentPlayers) && battle.opponentPlayers.length);
+  const bucket = new Map();
+  battles.forEach(battle => {
+    battle.opponentPlayers.map(derivePlayer).forEach(player => {
+      const key = player.name;
+      if (!bucket.has(key)) {
+        bucket.set(key, {
+          name: player.name,
+          job: player.job || '',
+          battles: 0,
+          kill: 0,
+          assist: 0,
+          death: 0,
+          pvpDamage: 0,
+          buildDamage: 0,
+          takenDamage: 0,
+        });
+      }
+      const item = bucket.get(key);
+      item.battles += 1;
+      item.kill += Number(player.kill || 0);
+      item.assist += Number(player.assist || 0);
+      item.death += Number(player.death || 0);
+      item.pvpDamage += Number(player.pvpDamage || 0);
+      item.buildDamage += Number(player.buildDamage || 0);
+      item.takenDamage += Number(player.takenDamage || 0);
+    });
+  });
+  return {
+    battleCount: battles.length,
+    rows: [...bucket.values()].map(item => ({
+      ...item,
+      avgKill: item.kill / Math.max(battles.length, 1),
+      avgAssist: item.assist / Math.max(battles.length, 1),
+      avgDeath: item.death / Math.max(battles.length, 1),
+      avgPvpDamage: item.pvpDamage / Math.max(battles.length, 1),
+      avgBuildDamage: item.buildDamage / Math.max(battles.length, 1),
+      avgTakenDamage: item.takenDamage / Math.max(battles.length, 1),
+    })),
+  };
+}
+
+function groupedPlayers(battle) {
+  const players = (battle?.players || []).map(derivePlayer);
+  const map = {};
+  players.forEach(player => {
+    const groupType = player.groupType || 'unknown';
+    const key = `${groupType}::${player.job}`;
+    if (!map[key]) map[key] = [];
+    map[key].push(player);
+  });
+  Object.values(map).forEach(list => list.sort(comparePlayers));
+  return map;
+}
+
+function sideKey(groupType) {
+  return groupType === 'attack' ? 'attack' : (groupType === 'defense' || groupType === 'bodyguard' ? 'defense' : 'unknown');
+}
+
+function isHealer(player) {
+  return player.job === '素問';
+}
+
+function isDps(player) {
+  return !isHealer(player);
+}
+
+function isTank(player) {
+  const roles = Array.isArray(player.specialRoles) ? player.specialRoles.join(',') : '';
+  return /tank|御|坦/.test(roles);
+}
+
+function isCommander(player) {
+  const roles = Array.isArray(player.specialRoles) ? player.specialRoles.join(',') : '';
+  return /commander|指揮/.test(roles);
+}
+
+function isAutoReviewExcluded(player) {
+  return (player.groupType || 'unknown') === 'unknown' || isCommander(player);
+}
+
+function bottomNames(players, metric, pct = 0.3) {
+  if (!players.length) return [];
+  const count = Math.max(1, Math.ceil(players.length * pct));
+  return [...players].sort((a, b) => (a[metric] || 0) - (b[metric] || 0)).slice(0, count).map(p => p.name);
+}
+
+function topNames(players, metric, pct = 0.3) {
+  if (!players.length) return [];
+  const count = Math.max(1, Math.ceil(players.length * pct));
+  return [...players].sort((a, b) => (b[metric] || 0) - (a[metric] || 0)).slice(0, count).map(p => p.name);
+}
+
+function percentile(players, metric, targetName, higherBetter = true) {
+  if (players.length <= 1) return 100;
+  const target = players.find(p => p.name === targetName);
+  if (!target) return 0;
+  const targetValue = target[metric] || 0;
+  const betterCount = players.filter(p => higherBetter ? (p[metric] || 0) > targetValue : (p[metric] || 0) < targetValue).length;
+  const rank = 1 + betterCount;
+  return Math.round(((players.length - rank) / (players.length - 1)) * 100);
+}
+
+function computeBattleReview(battle) {
+  if (!battle) return null;
+  const players = battle.players.map(derivePlayer);
+  const settings = currentSettings();
+  const screenMap = {};
+  const addScreen = (label, names) => {
+    screenMap[label] = names;
+  };
+  const attackDps = players.filter(player => player.groupType === 'attack' && isDps(player));
+  const defenseDps = players.filter(player => (player.groupType === 'defense' || player.groupType === 'bodyguard') && isDps(player));
+  const attackHealers = players.filter(player => player.groupType === 'attack' && isHealer(player));
+  const defenseHealers = players.filter(player => player.groupType === 'defense' && isHealer(player));
+  const bodyguardHealers = players.filter(player => player.groupType === 'bodyguard' && isHealer(player));
+  const attackLikeHealers = [...attackHealers, ...bodyguardHealers];
+  const attackLikePlayers = players.filter(player => player.groupType === 'attack' || player.groupType === 'bodyguard');
+  const defensePlayers = players.filter(player => player.groupType === 'defense');
+  const attackIron = attackLikePlayers.filter(player => player.job === '鐵衣');
+  const defenseIron = defensePlayers.filter(player => player.job === '鐵衣');
+
+  addScreen(`進攻團DPS・塔傷後${settings.weakPct}%`, bottomNames(attackDps, 'buildDamage', settings.weakPct / 100));
+  addScreen(`防守/保鑣DPS・人傷後${settings.weakPct}%`, bottomNames(defenseDps, 'pvpDamage', settings.weakPct / 100));
+  addScreen(`防守/保鑣DPS・擊殺後${settings.weakPct}%`, bottomNames(defenseDps, 'kill', settings.weakPct / 100));
+  addScreen(`進攻團素問・化羽後${settings.weakPct}%`, bottomNames(attackHealers, 'saveCount', settings.weakPct / 100));
+  addScreen(`進攻/保鑣素問・淨奶量後${settings.weakPct}%`, bottomNames(attackLikeHealers, 'netHeal', settings.weakPct / 100));
+  addScreen(`防守團素問・化羽後${settings.weakPct}%`, bottomNames(defenseHealers, 'saveCount', settings.weakPct / 100));
+  addScreen(`防守團素問・淨奶量後${settings.weakPct}%`, bottomNames(defenseHealers, 'netHeal', settings.weakPct / 100));
+  addScreen(`進攻/保鑣團・重傷前${settings.deathPct}%`, topNames(attackLikePlayers, 'death', settings.deathPct / 100));
+  addScreen(`防守團・重傷前${settings.deathPct}%`, topNames(defensePlayers, 'death', settings.deathPct / 100));
+  addScreen(`進攻/保鑣鐵衣・承傷後${settings.weakPct}%`, bottomNames(attackIron, 'takenDamage', settings.weakPct / 100));
+  addScreen(`進攻/保鑣鐵衣・承傷/死後${settings.weakPct}%`, bottomNames(attackIron, 'takenPerDeath', settings.weakPct / 100));
+  addScreen(`防守鐵衣・承傷後${settings.weakPct}%`, bottomNames(defenseIron, 'takenDamage', settings.weakPct / 100));
+  addScreen(`防守鐵衣・承傷/死後${settings.weakPct}%`, bottomNames(defenseIron, 'takenPerDeath', settings.weakPct / 100));
+
+  const hitMap = Object.fromEntries(players.map(player => [player.name, []]));
+  Object.entries(screenMap).forEach(([label, names]) => {
+    names.forEach(name => {
+      if (!hitMap[name]) hitMap[name] = [];
+      hitMap[name].push(label);
+    });
+  });
+
+  const summaries = players.map(player => {
+    const cohort = getPrimaryCohort(player, { attackDps, defenseDps, attackHealers, defenseHealers, attackLikeHealers });
+    const primaryMetric = getPrimaryMetric(player);
+    const primaryPct = primaryMetric ? percentile(cohort, primaryMetric.key, player.name, true) : null;
+    const deathCohort = (player.groupType === 'attack' || player.groupType === 'bodyguard') ? attackLikePlayers : (player.groupType === 'defense' ? defensePlayers : players);
+    const deathPct = percentile(deathCohort, 'death', player.name, false);
+    const hits = hitMap[player.name] || [];
+    const hasHighDeath = hits.some(hit => hit.includes('重傷前'));
+    let level = '';
+    const primaryHitCount = hits.filter(hit => !hit.includes('重傷前')).length;
+    const excludedAuto = isAutoReviewExcluded(player);
+
+    const ironTankHitCount = hits.filter(hit => hit.includes('鐵衣・承傷') || hit.includes('鐵衣・承傷/死')).length;
+    const ironOffenseHitCount = hits.filter(hit => {
+      if (player.job !== '鐵衣') return false;
+      if (player.groupType === 'attack' || player.groupType === 'bodyguard') return hit.includes('進攻團DPS・塔傷後');
+      if (player.groupType === 'defense') return hit.includes('防守/保鑣DPS・人傷後') || hit.includes('防守/保鑣DPS・擊殺後');
+      return false;
+    }).length;
+    const healerPrimaryHitCount = hits.filter(hit => hit.includes('素問・化羽後') || hit.includes('素問・淨奶量後')).length;
+    const attackLikeDeath = player.groupType === 'attack' || player.groupType === 'bodyguard';
+    const ironSideCohort = players.filter(item => sideKey(item.groupType) === sideKey(player.groupType) && item.job === '鐵衣');
+    const takenPct = percentile(ironSideCohort.length ? ironSideCohort : [player], 'takenDamage', player.name, true);
+    const ratioPct = percentile(ironSideCohort.length ? ironSideCohort : [player], 'takenPerDeath', player.name, true);
+    const tankStable = player.job === '鐵衣'
+      && (
+        (Number(player.takenDamage || 0) >= 35000000 && Number(player.takenPerDeath || 0) >= 4000000)
+        || (Number(player.takenDamage || 0) >= 25000000 && Number(player.takenPerDeath || 0) >= 6000000)
+      );
+    const dpsCarryStable = isDps(player)
+      && (player.groupType === 'attack' || player.groupType === 'defense' || player.groupType === 'bodyguard')
+      && (
+        (Number(player.kill || 0) >= 10 && Number(player.killPerDeath || 0) >= 2)
+        || (Number(player.kill || 0) >= 20 && Number(player.killPerDeath || 0) >= 1.5)
+      );
+    const pvpPct = percentile(cohort, 'pvpDamage', player.name, true);
+    const assistPct = percentile(cohort, 'assist', player.name, true);
+    const buildPct = percentile(cohort, 'buildDamage', player.name, true);
+    const killPct = percentile(cohort, 'kill', player.name, true);
+    const hasBuildWeak = hits.some(hit => hit.includes('塔傷後'));
+    const hasPvpWeak = hits.some(hit => hit.includes('人傷後'));
+    const hasKillWeak = hits.some(hit => hit.includes('擊殺後'));
+
+    if (excludedAuto || tankStable || dpsCarryStable) {
+      level = '';
+    } else if (player.job === '鐵衣') {
+      if (ironOffenseHitCount >= 1 && ironTankHitCount >= 1 && hasHighDeath) level = 'priority';
+      else if (ironOffenseHitCount >= 1 && ironTankHitCount >= 1) level = 'secondary';
+      else if (attackLikeDeath && hasHighDeath && ironOffenseHitCount >= 1) level = 'secondary';
+    } else if (player.job === '素問') {
+      if (healerPrimaryHitCount >= 2 && hasHighDeath) level = 'priority';
+      else if (healerPrimaryHitCount >= 2) level = 'secondary';
+      else if (healerPrimaryHitCount === 1 && hasHighDeath) level = 'secondary';
+    } else {
+      if (primaryHitCount >= 2 && (hasHighDeath || (primaryPct !== null && primaryPct <= 5))) level = 'priority';
+      else if (primaryHitCount >= 2) level = 'secondary';
+      else if (primaryHitCount === 1 && hasHighDeath) {
+        if ((player.groupType === 'defense' || player.groupType === 'bodyguard')
+          && ((hasPvpWeak && ((killPct !== null && killPct < 20) || (assistPct !== null && assistPct < 20)))
+            || (hasKillWeak && ((pvpPct !== null && pvpPct < 20) || (assistPct !== null && assistPct < 20))))) {
+          level = (primaryPct !== null && primaryPct < 20) ? 'priority' : 'secondary';
+        } else if ((player.groupType === 'defense' || player.groupType === 'bodyguard')) {
+          level = 'observation';
+        } else {
+          level = (primaryPct !== null && primaryPct < 20) ? 'priority' : 'secondary';
+        }
+      }
+      else if (primaryHitCount === 1) {
+        if ((player.groupType === 'attack' || player.groupType === 'bodyguard')
+          && hasBuildWeak
+          && ((pvpPct !== null && pvpPct < 20) || (assistPct !== null && assistPct < 20))) {
+          level = 'secondary';
+        } else if ((player.groupType === 'defense' || player.groupType === 'bodyguard')
+          && ((hasPvpWeak && ((killPct !== null && killPct < 20) || (assistPct !== null && assistPct < 20)))
+            || (hasKillWeak && ((pvpPct !== null && pvpPct < 20) || (assistPct !== null && assistPct < 20))))) {
+          level = 'secondary';
+        } else if (primaryPct !== null && primaryPct < 20) {
+          level = 'observation';
+        }
+      }
+      else if (attackLikeDeath && hasHighDeath && primaryPct !== null && primaryPct < 40) level = 'secondary';
+    }
+
+    if (!level && !excludedAuto && !tankStable && player.job === '九靈') {
+      const burnPct = percentile(players.filter(item => sideKey(item.groupType) === sideKey(player.groupType) && item.job === '九靈'), 'burnCount', player.name, true);
+      if (burnPct < 30 && primaryPct !== null && primaryPct < 50) level = 'observation';
+    }
+
+    if (!level && !excludedAuto && !tankStable && player.job === '素問') {
+      const saveCohort = player.groupType === 'defense' ? defenseHealers : attackHealers;
+      const savePct = percentile(saveCohort.length ? saveCohort : [player], 'saveCount', player.name, true);
+      const netHealPct = percentile(cohort, 'netHeal', player.name, true);
+      if (savePct < 30 && netHealPct < 30) level = 'observation';
+    }
+
+    if (!level && !excludedAuto && !tankStable && player.job === '鐵衣' && !isTank(player)) {
+      if (takenPct >= 70 || ratioPct >= 70) level = 'observation';
+    }
+
+    return {
+      ...player,
+      hits,
+      level,
+      primaryPct,
+      deathPct,
+      cohortSize: cohort.length,
+      summary: buildPlayerSummary(player, primaryMetric, hits, primaryPct, deathPct),
+    };
+  }).sort(comparePlayers);
+
+  return {
+    battle,
+    players,
+    screenMap,
+    summaries,
+    teamSummary: {
+      totalPlayers: players.length,
+      totalKill: sum(players, 'kill'),
+      totalAssist: sum(players, 'assist'),
+      totalResource: sum(players, 'resource'),
+      totalPvp: sum(players, 'pvpDamage'),
+      totalBuild: sum(players, 'buildDamage'),
+      totalHeal: sum(players, 'heal'),
+      totalTaken: sum(players, 'takenDamage'),
+    },
+  };
+}
+
+function sum(list, key) {
+  return list.reduce((acc, item) => acc + Number(item[key] || 0), 0);
+}
+
+function getPrimaryCohort(player, pools) {
+  if (player.groupType === 'attack' && isDps(player)) return pools.attackDps.length ? pools.attackDps : [player];
+  if ((player.groupType === 'defense' || player.groupType === 'bodyguard') && isDps(player)) return pools.defenseDps.length ? pools.defenseDps : [player];
+  if (player.groupType === 'attack' && isHealer(player)) return pools.attackHealers.length ? pools.attackHealers : [player];
+  if (player.groupType === 'bodyguard' && isHealer(player)) return pools.attackLikeHealers.length ? pools.attackLikeHealers : [player];
+  if (player.groupType === 'defense' && isHealer(player)) return pools.defenseHealers.length ? pools.defenseHealers : [player];
+  return [player];
+}
+
+function getPrimaryMetric(player) {
+  if (player.job === '素問') return { key: 'saveCount', label: '化羽' };
+  if (player.groupType === 'attack') return { key: 'buildDamage', label: '塔傷' };
+  if (player.groupType === 'defense' || player.groupType === 'bodyguard') return { key: 'kill', label: '擊殺' };
+  return null;
+}
+
+function pctDesc(pct) {
+  if (pct === null || Number.isNaN(pct)) return '未知';
+  if (pct >= 80) return `前段（${pct}%）`;
+  if (pct >= 60) return `中前段（${pct}%）`;
+  if (pct >= 40) return `中段（${pct}%）`;
+  if (pct >= 20) return `中後段（${pct}%）`;
+  return `後段（${pct}%）`;
+}
+
+function deathSideLabel(groupType) {
+  if (groupType === 'attack' || groupType === 'bodyguard') return '進攻/保鑣團';
+  if (groupType === 'defense') return '防守團';
+  return '本組';
+}
+
+function buildPlayerSummary(player, primaryMetric, hits, primaryPct, deathPct) {
+  const lines = [];
+  if (player.job === '素問') {
+    lines.push(`化羽 ${fmtNumber(player.saveCount)} / 淨奶 ${fmtLarge(player.netHeal)} / 治療 ${fmtLarge(player.heal)} / 承傷 ${fmtLarge(player.takenDamage)}`);
+  } else {
+    lines.push(`塔傷 ${fmtLarge(player.buildDamage)} / 人傷 ${fmtLarge(player.pvpDamage)} / 擊殺 ${fmtNumber(player.kill)} / 助攻 ${fmtNumber(player.assist)} / 承傷 ${fmtLarge(player.takenDamage)}`);
+  }
+  if (player.job === '九靈') lines.push(`焚骨 ${fmtNumber(player.burnCount)}`);
+  if (player.job === '鐵衣') lines.push(`承傷/重傷 ${fmtLarge(player.takenPerDeath)}`);
+  if (primaryPct !== null && primaryMetric?.label) lines.push(`${primaryMetric.label}：${pctDesc(primaryPct)}`);
+  lines.push(`重傷 ${fmtNumber(player.death)}（${deathSideLabel(player.groupType)}：${pctDesc(deathPct)}）`);
+  return lines.join('｜');
+}
+
+function aggregatePlayers(battleIds = null) {
+  const bucket = new Map();
+  const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
+  battles.forEach(battle => {
+    const review = computeBattleReview(battle);
+    (review?.summaries || []).forEach(player => {
+      const key = canonicalPlayerName(player.name);
+      if (!bucket.has(key)) {
+        bucket.set(key, {
+          name: key,
+          job: player.job,
+          aliasNames: new Set(),
+          battles: 0,
+          wins: 0,
+          losses: 0,
+          attackCount: 0,
+          defenseCount: 0,
+          bodyguardCount: 0,
+          kill: 0,
+          assist: 0,
+          death: 0,
+          pvpDamage: 0,
+          buildDamage: 0,
+          heal: 0,
+          takenDamage: 0,
+          takenPerDeathSum: 0,
+          saveCount: 0,
+          burnCount: 0,
+          netHeal: 0,
+          hitCount: 0,
+          highDeathCount: 0,
+          intersectionCount: 0,
+          priorityCount: 0,
+          secondaryCount: 0,
+          observationCount: 0,
+          history: [],
+        });
+      }
+      const item = bucket.get(key);
+      item.aliasNames.add(player.name);
+      if (!item.job && player.job) item.job = player.job;
+      item.battles += 1;
+      if (battle.result === 'win') item.wins += 1;
+      if (battle.result === 'loss') item.losses += 1;
+      if (player.groupType === 'attack') item.attackCount += 1;
+      if (player.groupType === 'defense') item.defenseCount += 1;
+      if (player.groupType === 'bodyguard') item.bodyguardCount += 1;
+      ['kill', 'assist', 'death', 'pvpDamage', 'buildDamage', 'heal', 'takenDamage', 'saveCount', 'burnCount', 'netHeal'].forEach(key2 => {
+        item[key2] += Number(player[key2] || 0);
+      });
+      item.takenPerDeathSum += Number(player.takenPerDeath || 0);
+      item.hitCount += player.hits.length;
+      if (player.hits.some(hit => hit.includes('重傷前'))) item.highDeathCount += 1;
+      if (player.hits.length >= 2) item.intersectionCount += 1;
+      if (player.level === 'priority') item.priorityCount += 1;
+      if (player.level === 'secondary') item.secondaryCount += 1;
+      if (player.level === 'observation') item.observationCount += 1;
+      item.history.push({
+        battleId: battle.id,
+        date: battle.date,
+        opponent: battle.opponent,
+        result: battle.result,
+        rawName: player.name,
+        groupType: player.groupType,
+        subgroup: player.subgroup,
+        hits: player.hits,
+        summary: player.summary,
+        raw: player,
+      });
+    });
+  });
+  return [...bucket.values()].map(item => ({
+    ...item,
+    aliasNames: [...item.aliasNames].sort((a, b) => a.localeCompare(b, 'zh-Hant')),
+    avgKill: item.kill / item.battles,
+    avgAssist: item.assist / item.battles,
+    avgDeath: item.death / item.battles,
+    avgKillPerDeath: item.kill / Math.max(item.death, 1),
+    avgPvpDamage: item.pvpDamage / item.battles,
+    avgPvpPerKill: item.kill > 0 ? item.pvpDamage / item.kill : Infinity,
+    avgBuildDamage: item.buildDamage / item.battles,
+    avgHeal: item.heal / item.battles,
+    avgTakenDamage: item.takenDamage / item.battles,
+    avgTakenPerDeath: item.takenDamage / Math.max(item.death, 1),
+    avgNetHeal: item.netHeal / item.battles,
+    avgBurn: item.burnCount / item.battles,
+    avgSave: item.saveCount / item.battles,
+    winRate: item.battles ? item.wins / item.battles : 0,
+  })).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+}
+
+function historyMatchesPlayerGroupFilter(filterKey, groupType) {
+  if (filterKey === 'all') return ['attack', 'defense', 'bodyguard'].includes(groupType);
+  if (filterKey === 'attack') return groupType === 'attack';
+  if (filterKey === 'defense') return groupType === 'defense';
+  if (filterKey === 'bodyguard') return groupType === 'bodyguard';
+  if (filterKey === 'defense_bodyguard') return groupType === 'defense' || groupType === 'bodyguard';
+  if (filterKey === 'attack_bodyguard') return groupType === 'attack' || groupType === 'bodyguard';
+  return false;
+}
+
+function summarizeLookupHistory(item, history, groupFilter) {
+  const sample = history.map(entry => entry.raw);
+  const wins = history.filter(entry => entry.result === 'win').length;
+  const losses = history.filter(entry => entry.result === 'loss').length;
+  const countGroups = key => history.filter(entry => entry.groupType === key).length;
+  return {
+    name: item.name,
+    job: item.job,
+    aliasNames: item.aliasNames || [],
+    history,
+    battles: history.length,
+    wins,
+    losses,
+    winRate: history.length ? wins / history.length : 0,
+    attackCount: countGroups('attack'),
+    defenseCount: countGroups('defense'),
+    bodyguardCount: countGroups('bodyguard'),
+    avgKill: sum(sample, 'kill') / history.length,
+    avgAssist: sum(sample, 'assist') / history.length,
+    avgDeath: sum(sample, 'death') / history.length,
+    avgKillPerDeath: sum(sample, 'kill') / Math.max(sum(sample, 'death'), 1),
+    avgPvpDamage: sum(sample, 'pvpDamage') / history.length,
+    avgBuildDamage: sum(sample, 'buildDamage') / history.length,
+    avgHeal: sum(sample, 'heal') / history.length,
+    avgTakenDamage: sum(sample, 'takenDamage') / history.length,
+    avgTakenPerDeath: sum(sample, 'takenDamage') / Math.max(sum(sample, 'death'), 1),
+    avgNetHeal: sum(sample, 'netHeal') / history.length,
+    avgBurn: sum(sample, 'burnCount') / history.length,
+    avgSave: sum(sample, 'saveCount') / history.length,
+    priorityCount: history.filter(entry => entry.raw.level === 'priority').length,
+    secondaryCount: history.filter(entry => entry.raw.level === 'secondary').length,
+    observationCount: history.filter(entry => entry.raw.level === 'observation').length,
+    groupFilter,
+  };
+}
+
+function lookupPlayerRows(battleIds, groupFilter = 'all') {
+  return aggregatePlayers(battleIds)
+    .map(item => {
+      const history = item.history.filter(entry => historyMatchesPlayerGroupFilter(groupFilter, entry.groupType));
+      if (!history.length) return null;
+      return summarizeLookupHistory(item, history, groupFilter);
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+}
+
+function median(values) {
+  const nums = values.map(value => Number(value || 0)).sort((a, b) => a - b);
+  if (!nums.length) return 0;
+  const mid = Math.floor(nums.length / 2);
+  return nums.length % 2 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+}
+
+function dominantGroupType(row) {
+  const counts = [
+    { key: 'attack', count: Number(row.attackCount || 0) },
+    { key: 'defense', count: Number(row.defenseCount || 0) },
+    { key: 'bodyguard', count: Number(row.bodyguardCount || 0) },
+  ].sort((a, b) => b.count - a.count);
+  return counts[0]?.count ? counts[0].key : 'attack';
+}
+
+function buildGroupCountText(row) {
+  return `進攻 ${fmtNumber(row.attackCount)} 場 / 防守 ${fmtNumber(row.defenseCount)} 場 / 保鑣 ${fmtNumber(row.bodyguardCount)} 場`;
+}
+
+function filterPlayerCohortRows(rows, player, cohortFilter) {
+  if (cohortFilter === 'all') return rows;
+  if (cohortFilter === 'same_job') return rows.filter(row => row.job === player.job);
+  if (cohortFilter === 'dps1') return rows.filter(row => row.job !== '素問');
+  if (cohortFilter === 'dps2') return rows.filter(row => row.job !== '素問' && row.job !== '鐵衣');
+  return rows;
+}
+
+function compareMetricDirection(metric) {
+  return metric?.better === 'low' ? 'asc' : 'desc';
+}
+
+function scoreValueAgainstCohort(value, cohortRows, metric) {
+  const direction = compareMetricDirection(metric);
+  const numericValue = Number(value || 0);
+  const betterCount = cohortRows.filter(row => {
+    const rowValue = Number(row[metric.key] || 0);
+    return direction === 'asc' ? rowValue < numericValue : rowValue > numericValue;
+  }).length;
+  const equalCount = cohortRows.filter(row => Number(row[metric.key] || 0) === numericValue).length + 1;
+  const count = cohortRows.length + 1;
+  const rankStart = betterCount + 1;
+  const rankEnd = betterCount + equalCount;
+  const avgRank = (rankStart + rankEnd) / 2;
+  return count ? Math.round(((count - avgRank + 1) / count) * 100) : 0;
+}
+
+function computeMetricComparison(player, cohortRows, metric) {
+  const values = cohortRows.map(row => Number(row[metric.key] || 0));
+  const playerValue = Number(player?.[metric.key] || 0);
+  const average = values.length ? values.reduce((acc, value) => acc + value, 0) / values.length : 0;
+  const med = median(values);
+  const variance = values.length
+    ? values.reduce((acc, value) => acc + ((value - average) ** 2), 0) / values.length
+    : 0;
+  const stddev = Math.sqrt(variance);
+  const extreme = values.length
+    ? (metric?.better === 'low' ? Math.min(...values) : Math.max(...values))
+    : 0;
+  if (typeof metric.applicable === 'function' && !metric.applicable(player)) {
+    return {
+      metric,
+      playerValue,
+      average,
+      median: med,
+      extreme,
+      stddev,
+      rank: null,
+      count: cohortRows.length || 0,
+      percentile: null,
+      averageScore: null,
+      medianScore: null,
+      note: '不適用',
+      na: true,
+    };
+  }
+  const direction = compareMetricDirection(metric);
+  const allZero = values.length > 0 && values.every(value => value === 0) && playerValue === 0;
+  if (allZero) {
+    return {
+      metric,
+      playerValue,
+      average,
+      median: med,
+      extreme,
+      stddev,
+      rank: null,
+      count: cohortRows.length || 0,
+      percentile: null,
+      averageScore: null,
+      medianScore: null,
+      note: '不適用',
+      na: true,
+    };
+  }
+  const betterCount = cohortRows.filter(row => {
+    const value = Number(row[metric.key] || 0);
+    return direction === 'asc' ? value < playerValue : value > playerValue;
+  }).length;
+  const includesPlayer = cohortRows.some(row => row.name === player.name);
+  const equalCount = cohortRows.filter(row => Number(row[metric.key] || 0) === playerValue).length;
+  const count = cohortRows.length + (includesPlayer ? 0 : 1);
+  const tieCount = equalCount + (includesPlayer ? 0 : 1);
+  const rankStart = betterCount + 1;
+  const rankEnd = betterCount + tieCount;
+  const avgRank = (rankStart + rankEnd) / 2;
+  const rank = Math.max(1, Math.round(avgRank));
+  const percentile = count ? Math.round(((count - avgRank + 1) / count) * 100) : 0;
+  let note = '中段';
+  if (percentile >= 80) note = '前段';
+  else if (percentile >= 60) note = '中前段';
+  else if (percentile >= 40) note = '中段';
+  else if (percentile >= 20) note = '中後段';
+  else note = '後段';
+  return {
+    metric,
+    playerValue,
+    average,
+    median: med,
+    extreme,
+    stddev,
+    rank,
+    count,
+    percentile,
+    averageScore: scoreValueAgainstCohort(average, cohortRows, metric),
+    medianScore: scoreValueAgainstCohort(med, cohortRows, metric),
+    note,
+    na: false,
+  };
+}
+
+function playerRadarAxes(player) {
+  if (player.job === '素問') {
+    return [
+      { key: 'avgHeal', label: '治療' },
+      { key: 'avgNetHeal', label: '淨奶' },
+      { key: 'avgSave', label: '化羽' },
+      { key: 'avgAssist', label: '助攻' },
+      { key: 'avgTakenDamage', label: '承傷' },
+      { key: 'avgDeath', label: '生存' },
+    ];
+  }
+  const base = [
+    { key: 'avgKill', label: '擊敗' },
+    { key: 'avgAssist', label: '助攻' },
+    { key: 'avgPvpDamage', label: '人傷' },
+    { key: 'avgBuildDamage', label: '塔傷' },
+    { key: 'avgTakenDamage', label: '承傷' },
+    { key: 'avgDeath', label: '生存' },
+  ];
+  if (player.job === '九靈') base[4] = { key: 'avgBurn', label: '焚骨' };
+  return base;
+}
+
+function absoluteRadarUpperBound(axis, comparisons) {
+  const item = comparisons.find(entry => entry.metric.key === axis.key);
+  if (!item || item.na) return 1;
+  const extreme = Number(item.extreme || 0);
+  const average = Number(item.average || 0);
+  const stddev = Number(item.stddev || 0);
+  return Math.max(1, extreme * 1.15, average + (stddev * 2.5));
+}
+
+function absoluteRadarScore(value, upperBound, invert = false) {
+  const numericValue = Math.max(0, Number(value || 0));
+  if (!upperBound || upperBound <= 0) return 0;
+  if (invert) return Math.max(0, Math.min(100, (1 - (numericValue / upperBound)) * 100));
+  return Math.max(0, Math.min(100, (numericValue / upperBound) * 100));
+}
+
+function radarPolygonPoints(scores, radius, centerX, centerY) {
+  const count = scores.length;
+  return scores.map((score, index) => {
+    const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
+    const r = radius * (Math.max(0, Math.min(100, Number(score || 0))) / 100);
+    const x = centerX + Math.cos(angle) * r;
+    const y = centerY + Math.sin(angle) * r;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function radarGridPolygon(step, count, radius, centerX, centerY) {
+  const points = [];
+  for (let index = 0; index < count; index += 1) {
+    const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
+    const x = centerX + Math.cos(angle) * radius * step;
+    const y = centerY + Math.sin(angle) * radius * step;
+    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  return points.join(' ');
+}
+
+function renderRadarCard(title, axes, scores, color, note) {
+  const centerX = 120;
+  const centerY = 120;
+  const radius = 72;
+  const count = axes.length;
+  const polygon = radarPolygonPoints(scores, radius, centerX, centerY);
+  const grid = [0.2, 0.4, 0.6, 0.8, 1];
+  const spokes = axes.map((axis, index) => {
+    const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
+    const x = centerX + Math.cos(angle) * radius;
+    const y = centerY + Math.sin(angle) * radius;
+    return `<line x1="${centerX}" y1="${centerY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#d9cebf" stroke-width="1" />`;
+  }).join('');
+  const labels = axes.map((axis, index) => {
+    const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
+    const x = centerX + Math.cos(angle) * (radius + 26);
+    const y = centerY + Math.sin(angle) * (radius + 26);
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" class="radar-axis-label">${escHtml(axis.label)}</text>`;
+  }).join('');
+  return `
+    <div class="radar-card">
+      <div class="radar-title">${escHtml(title)}</div>
+      <svg class="radar-svg" viewBox="0 0 240 250" role="img" aria-label="${escHtml(title)}">
+        ${grid.map(step => `<polygon points="${radarGridPolygon(step, count, radius, centerX, centerY)}" fill="none" stroke="#e5dacd" stroke-width="1" />`).join('')}
+        ${spokes}
+        <polygon points="${polygon}" fill="${color}33" stroke="${color}" stroke-width="2.5" />
+        ${polygon.split(' ').map(point => {
+          const [x, y] = point.split(',');
+          return `<circle cx="${x}" cy="${y}" r="3.2" fill="${color}" />`;
+        }).join('')}
+        ${labels}
+      </svg>
+      <div class="radar-note">${escHtml(note)}</div>
+    </div>
+  `;
+}
+
+function renderPlayerRadarSection(player, comparisons, cohortRows) {
+  const axes = playerRadarAxes(player);
+  const map = new Map(comparisons.map(item => [item.metric.key, item]));
+  const scalePr = value => Math.max(0, Math.min(95, Number(value || 0) * 0.95));
+  const playerScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    return item?.na ? 0 : scalePr(item?.percentile || 0);
+  });
+  const medianScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    return item?.na ? 0 : scalePr(item?.medianScore || 0);
+  });
+  const averageScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    return item?.na ? 0 : scalePr(item?.averageScore || 0);
+  });
+  const playerAbsoluteScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    const upperBound = absoluteRadarUpperBound(axis, comparisons);
+    return item?.na ? 0 : absoluteRadarScore(item?.playerValue || 0, upperBound, axis.key === 'avgDeath');
+  });
+  const medianAbsoluteScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    const upperBound = absoluteRadarUpperBound(axis, comparisons);
+    return item?.na ? 0 : absoluteRadarScore(item?.median || 0, upperBound, axis.key === 'avgDeath');
+  });
+  const averageAbsoluteScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    const upperBound = absoluteRadarUpperBound(axis, comparisons);
+    return item?.na ? 0 : absoluteRadarScore(item?.average || 0, upperBound, axis.key === 'avgDeath');
+  });
+  return `
+    <div>
+      <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">能力圖對比</div>
+      <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">相對位置（PR）</div>
+      <div class="subtle" style="margin-bottom:10px;">能力圖改用 PR 繪製，但保留最外圈空白。PR100 不會直接滿格，而是約畫到 95% 半徑，避免幫內相對排名而造成天下無敵錯覺。</div>
+      <div class="radar-grid">
+        ${renderRadarCard('玩家能力圖', axes, playerScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
+        ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianScores, '#0f6b61', '依母體中位數對應的 PR 畫出。')}
+        ${renderRadarCard(`母體平均數圖（${fmtNumber(cohortRows.length)}人）`, axes, averageScores, '#346a95', '依母體平均數對應的 PR 畫出。')}
+      </div>
+      <div style="height:12px;"></div>
+      <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">絕對數值</div>
+      <div class="subtle" style="margin-bottom:10px;">絕對數值圖以目前比較母體為基準。每一軸上限 = max(母體極值 × 1.15, 母體平均 + 2.5σ)。生存軸則是死亡越少越外圈。</div>
+      <div class="radar-grid">
+        ${renderRadarCard('玩家絕對數值圖', axes, playerAbsoluteScores, '#9b4d1d', '依玩家目前平均數值換算。')}
+        ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianAbsoluteScores, '#0f6b61', '依母體中位數換算。')}
+        ${renderRadarCard(`母體平均數圖（${fmtNumber(cohortRows.length)}人）`, axes, averageAbsoluteScores, '#346a95', '依母體平均數換算。')}
+      </div>
+    </div>
+  `;
+}
+
+function playerFocusMetrics(row) {
+  const groupType = dominantGroupType(row);
+  if (row.job === '素問') return ['avgSave', 'avgNetHeal', 'avgHeal', 'avgTakenDamage'];
+  if (row.job === '九靈') {
+    return groupType === 'defense'
+      ? ['avgKill', 'avgPvpDamage', 'avgBurn', 'avgAssist']
+      : ['avgBuildDamage', 'avgBurn', 'avgPvpDamage', 'avgKill'];
+  }
+  if (row.job === '鐵衣') {
+    return groupType === 'defense'
+      ? ['avgTakenDamage', 'avgTakenPerDeath', 'avgKill', 'avgDeath']
+      : ['avgTakenDamage', 'avgTakenPerDeath', 'avgBuildDamage', 'avgDeath'];
+  }
+  return groupType === 'defense'
+    ? ['avgKill', 'avgPvpDamage', 'avgAssist', 'avgDeath']
+    : ['avgBuildDamage', 'avgKill', 'avgAssist', 'avgDeath'];
+}
+
+function renderPlayerFocusCards(comparisons) {
+  if (!comparisons.length) {
+    return '<div class="empty">目前沒有可顯示的重點對比。</div>';
+  }
+  return `
+    <div style="margin-bottom:10px; color:var(--danger); font-weight:800;">以下 PR 值大致上是越高越好。</div>
+    <div class="summary-grid">
+      ${comparisons.map(item => `
+        <div class="summary-card">
+          <div class="summary-label">${escHtml(item.metric.label)}</div>
+          <div class="summary-value" style="font-size:20px;">${escHtml(item.metric.format(item.playerValue))}</div>
+          <div class="subtle" style="margin-top:8px; line-height:1.7;">
+            中位數 ${escHtml(item.metric.format(item.median))}<br>
+            平均數 ${escHtml(item.metric.format(item.average))}<br>
+            ${item.na ? '-｜不適用' : `PR${fmtNumber(item.percentile)}%｜第 ${fmtNumber(item.rank)}/${fmtNumber(item.count)} 名`}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderPlayerCompareTable(comparisons) {
+  return `
+    <div class="table-wrap">
+      <div style="margin-bottom:10px; color:var(--danger); font-weight:800;">以下 PR 值大致上是越高越好。</div>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>玩家</th>
+            <th>母體中位數</th>
+            <th>母體平均</th>
+            <th>母體極值</th>
+            <th>標準差</th>
+            <th>排名</th>
+            <th>PR</th>
+            <th>判讀</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${comparisons.map(item => `
+            <tr>
+              <td>${escHtml(item.metric.label)}</td>
+              <td>${escHtml(item.metric.format(item.playerValue))}</td>
+              <td>${escHtml(item.metric.format(item.median))}</td>
+              <td>${escHtml(item.metric.format(item.average))}</td>
+              <td>${escHtml(item.metric.format(item.extreme))}</td>
+              <td>${escHtml(item.metric.format(item.stddev))}</td>
+              <td>${item.na ? '-' : `${fmtNumber(item.rank)}/${fmtNumber(item.count)}`}</td>
+              <td>${item.na ? '-' : `PR${fmtNumber(item.percentile)}%`}</td>
+              <td>${escHtml(item.note)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function professionRows() {
+  const job = document.getElementById('profession_job_filter').value;
+  const groupType = document.getElementById('profession_group_filter').value;
+  const search = document.getElementById('profession_search').value.trim();
+  const minBattles = Number(document.getElementById('profession_min_battles').value || 1);
+  const sortField = document.getElementById('profession_sort_field').value || 'reviewSuggestCount';
+  const sortOrder = document.getElementById('profession_sort_order').value || 'desc';
+  const battleIds = selectedBattleIds('profession_battle_select');
+  return aggregatePlayers(battleIds)
+    .filter(item => !job || job === 'all' || item.job === job)
+    .filter(item => !search || item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search)))
+    .map(item => {
+      const history = groupType === 'all' ? item.history : item.history.filter(h => h.groupType === groupType);
+      if (!history.length) return null;
+      const sample = history.map(h => h.raw);
+      const wins = history.filter(h => h.result === 'win').length;
+      const losses = history.filter(h => h.result === 'loss').length;
+      const row = {
+        name: item.name,
+        job: item.job,
+        battles: history.length,
+        wins,
+        losses,
+        winRate: history.length ? wins / history.length : 0,
+        avgKill: sum(sample, 'kill') / history.length,
+        avgAssist: sum(sample, 'assist') / history.length,
+        avgDeath: sum(sample, 'death') / history.length,
+        avgKillPerDeath: sum(sample, 'kill') / Math.max(sum(sample, 'death'), 1),
+        avgPvpDamage: sum(sample, 'pvpDamage') / history.length,
+        avgPvpPerKill: sum(sample, 'kill') > 0 ? sum(sample, 'pvpDamage') / sum(sample, 'kill') : Infinity,
+        avgBuildDamage: sum(sample, 'buildDamage') / history.length,
+        avgHeal: sum(sample, 'heal') / history.length,
+        avgTakenDamage: sum(sample, 'takenDamage') / history.length,
+        avgTakenPerDeath: sum(sample, 'takenDamage') / Math.max(sum(sample, 'death'), 1),
+        avgNetHeal: sum(sample, 'netHeal') / history.length,
+        avgBurn: sum(sample, 'burnCount') / history.length,
+        avgSave: sum(sample, 'saveCount') / history.length,
+        reviewSuggestCount: history.filter(h => ['priority', 'secondary'].includes(h.raw.level)).length,
+      };
+      return row;
+    })
+    .filter(Boolean)
+    .filter(item => item.battles >= minBattles)
+    .sort((a, b) => {
+      const av = Number(a[sortField] || 0);
+      const bv = Number(b[sortField] || 0);
+      if (av !== bv) return sortOrder === 'asc' ? av - bv : bv - av;
+      return a.name.localeCompare(b.name, 'zh-Hant');
+    });
+}
+
+function renderImportSections() {
+  const select = document.getElementById('import_section');
+  if (!importedSections.length) {
+    select.innerHTML = '<option value="">尚未讀取</option>';
+    renderTeamOpponentOptions();
+    return;
+  }
+  select.innerHTML = importedSections.map((section, index) => (
+    `<option value="${index}">${escHtml(section.teamName)}（${section.players.length} 人）</option>`
+  )).join('');
+  renderTeamOpponentOptions();
+}
+
+function renderTeamOpponentOptions() {
+  const teamSelect = document.getElementById('import_team_name');
+  const oppSelect = document.getElementById('import_opponent');
+  if (!teamSelect || !oppSelect) return;
+  if (!importedSections.length) {
+    teamSelect.innerHTML = '<option value="">請先讀取戰報</option>';
+    oppSelect.innerHTML = '<option value="">請先讀取戰報</option>';
+    return;
+  }
+  const names = importedSections.map(section => section.teamName || '未命名區段');
+  const options = names.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join('');
+  teamSelect.innerHTML = options;
+  oppSelect.innerHTML = `<option value="">未指定</option>${options}`;
+  syncTeamOpponentFromSection();
+}
+
+function syncTeamOpponentFromSection() {
+  const sectionIndex = Number(document.getElementById('import_section').value || 0);
+  const section = importedSections[sectionIndex];
+  const teamSelect = document.getElementById('import_team_name');
+  const oppSelect = document.getElementById('import_opponent');
+  if (!section || !teamSelect || !oppSelect) return;
+  teamSelect.value = section.teamName || '';
+  const other = importedSections.find((item, idx) => idx !== sectionIndex)?.teamName || '';
+  oppSelect.value = other || '';
+}
+
+function syncSectionFromTeam() {
+  const teamName = document.getElementById('import_team_name').value;
+  const sectionIndex = importedSections.findIndex(section => section.teamName === teamName);
+  if (sectionIndex >= 0) {
+    document.getElementById('import_section').value = String(sectionIndex);
+    syncTeamOpponentFromSection();
+  }
+}
+
+function renderCurrentBattleSelect() {
+  const select = document.getElementById('current_battle_select');
+  if (!select) return;
+  if (!state.battles.length) {
+    select.innerHTML = '<option value="">尚未加入場次</option>';
+    select.value = '';
+    return;
+  }
+  select.innerHTML = state.battles.map(battle => {
+    const label = `${battle.date || '未填日期'}｜${battle.teamName || '未命名場次'} vs ${battle.opponent || '未填對手'}｜${battle.players.length}人`;
+    return `<option value="${escHtml(battle.id)}">${escHtml(label)}</option>`;
+  }).join('');
+  select.value = state.activeBattleId || state.battles[0].id;
+}
+
+function renderAssignmentTable() {
+  const tbody = document.getElementById('assignment_body');
+  const stats = document.getElementById('assignment_stats');
+  const battle = activeBattle();
+  if (!battle) {
+    tbody.innerHTML = '<tr><td colspan="12" class="empty">請先加入並選取一場戰報。</td></tr>';
+    if (stats) stats.innerHTML = '';
+    return;
+  }
+  const counts = {
+    attack: battle.players.filter(player => player.groupType === 'attack').length,
+    defense: battle.players.filter(player => player.groupType === 'defense').length,
+    bodyguard: battle.players.filter(player => player.groupType === 'bodyguard').length,
+    unknown: battle.players.filter(player => (player.groupType || 'unknown') === 'unknown').length,
+  };
+  if (stats) {
+    stats.innerHTML = `
+      <div class="assignment-stat">進攻人數<b>${fmtNumber(counts.attack)}</b></div>
+      <div class="assignment-stat">防守人數<b>${fmtNumber(counts.defense)}</b></div>
+      <div class="assignment-stat">保鑣人數<b>${fmtNumber(counts.bodyguard)}</b></div>
+      <div class="assignment-stat">未定人數<b>${fmtNumber(counts.unknown)}</b></div>
+    `;
+  }
+  const rows = [...battle.players].sort(comparePlayers).map(player => `
+    <tr>
+      <td><input type="checkbox" class="assign-check" value="${escHtml(player.name)}"></td>
+      <td>${escHtml(player.name)}</td>
+      <td>${escHtml(player.job)}</td>
+      <td>
+        <select onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','groupType',this.value)">
+          ${renderGroupOptions(player.groupType)}
+        </select>
+      </td>
+      <td><input type="text" value="${escHtml(player.subgroup || '')}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','subgroup',this.value)" placeholder="例如：進攻一隊"></td>
+      <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','specialRoles',this.value)" placeholder="例如：commander,burner"></td>
+      <td>${fmtNumber(player.death)}</td>
+      <td>${fmtLarge(player.buildDamage)}</td>
+      <td>${fmtLarge(player.pvpDamage)}</td>
+      <td>${fmtLarge(player.heal)}</td>
+      <td>${fmtNumber(player.saveCount)}</td>
+      <td>${fmtNumber(player.burnCount)}</td>
+    </tr>
+  `).join('');
+  tbody.innerHTML = rows;
+}
+
+function renderGroupOptions(current) {
+  return ['unknown', 'attack', 'defense', 'bodyguard']
+    .map(value => `<option value="${value}" ${value === current ? 'selected' : ''}>${GROUP_LABELS[value]}</option>`)
+    .join('');
+}
+
+function renderBattleSummary(review) {
+  const container = document.getElementById('battle_summary');
+  if (!review) {
+    container.innerHTML = '<div class="empty">尚未選取場次。</div>';
+    return;
+  }
+  if (!hasBattleAssignments(review.battle || activeBattle())) {
+    container.innerHTML = '<div class="empty">若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。</div>';
+    return;
+  }
+  const s = review.teamSummary;
+  const items = [
+    ['人數', s.totalPlayers],
+    ['總擊敗', s.totalKill],
+    ['總助攻', s.totalAssist],
+    ['總資源', s.totalResource],
+    ['總人傷', fmtLarge(s.totalPvp)],
+    ['總塔傷', fmtLarge(s.totalBuild)],
+    ['總治療', fmtLarge(s.totalHeal)],
+    ['總承傷', fmtLarge(s.totalTaken)],
+  ];
+  const battle = review.battle || activeBattle();
+  const foe = battle?.opponentSummary;
+  const renderItems = rows => rows.map(([label, value]) => `
+    <div class="stat">
+      <div class="stat-label">${escHtml(label)}</div>
+      <div class="stat-value">${typeof value === 'number' ? fmtNumber(value) : escHtml(value)}</div>
+    </div>
+  `).join('');
+  container.innerHTML = `
+    <div style="grid-column: 1 / -1; font-weight:800; color:var(--accent); margin-bottom:4px;">己方整體數據</div>
+    ${renderItems(items)}
+    ${foe ? `<div style="grid-column: 1 / -1; font-weight:800; color:var(--accent); margin:10px 0 4px;">對手整體數據</div>
+      ${renderItems([
+        ['人數', foe.totalPlayers],
+        ['總擊敗', foe.totalKill],
+        ['總助攻', foe.totalAssist],
+        ['總資源', foe.totalResource],
+        ['總人傷', fmtLarge(foe.totalPvp)],
+        ['總塔傷', fmtLarge(foe.totalBuild)],
+        ['總治療', fmtLarge(foe.totalHeal)],
+        ['總承傷', fmtLarge(foe.totalTaken)],
+      ])}` : ''}
+  `;
+}
+
+function renderScreenings(review) {
+  const container = document.getElementById('screening_grid');
+  if (!review) {
+    container.innerHTML = '<div class="empty">尚未選取場次。</div>';
+    return;
+  }
+  if (!hasBattleAssignments(review.battle || activeBattle())) {
+    container.innerHTML = '<div class="empty">若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。</div>';
+    return;
+  }
+  container.innerHTML = '<div class="alert-note">重要提醒：數據很多時候無法體現戰術價值，系統規則是寫死的，實際狀況還要結合錄像和人員覆盤判斷。</div>';
+}
+
+function renderReviewLists(review) {
+  const map = {
+    priority: document.getElementById('priority_list'),
+    secondary: document.getElementById('secondary_list'),
+    observation: document.getElementById('observation_list'),
+  };
+  Object.values(map).forEach(el => { el.innerHTML = ''; });
+  if (!review) {
+    Object.values(map).forEach(el => { el.innerHTML = '<div class="empty">尚未選取場次。</div>'; });
+    return;
+  }
+  if (!hasBattleAssignments(review.battle || activeBattle())) {
+    Object.values(map).forEach(el => { el.innerHTML = '<div class="empty">若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。</div>'; });
+    return;
+  }
+  const buckets = {
+    priority: review.summaries.filter(player => player.level === 'priority'),
+    secondary: review.summaries.filter(player => player.level === 'secondary'),
+    observation: review.summaries.filter(player => player.level === 'observation'),
+  };
+  Object.entries(buckets).forEach(([key, list]) => {
+    map[key].innerHTML = list.length ? list.map(player => `
+      <div class="review-item">
+        <h5>${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}</h5>
+        <div class="flag-row">${(player.hits || []).map(hit => `<span class="flag">${escHtml(hit)}</span>`).join('')}</div>
+        <p>數據：${escHtml(player.summary)}</p>
+      </div>
+    `).join('') : '<div class="empty">目前沒有對應名單。</div>';
+  });
+}
+
+function selectedBattleIds(selectId) {
+  const checked = [...(document.querySelectorAll(`#${selectId} input[type="checkbox"]:checked`) || [])]
+    .map(input => input.value)
+    .filter(Boolean);
+  return checked.length ? checked : state.battles.map(battle => battle.id);
+}
+
+function filteredBattlesByIds(ids) {
+  if (!Array.isArray(ids) || !ids.length) return [];
+  const set = new Set(ids);
+  return state.battles.filter(battle => set.has(battle.id));
+}
+
+function renderPlayerLookup() {
+  const search = document.getElementById('player_search').value.trim();
+  const battleIds = selectedBattleIds('player_battle_select');
+  const groupFilter = document.getElementById('player_group_filter')?.value || 'all';
+  const cohortFilter = document.getElementById('player_cohort_filter')?.value || 'same_job';
+  const lookupRows = lookupPlayerRows(battleIds, groupFilter);
+  renderPlayerLeaders(battleIds, groupFilter);
+  if (!search) {
+    renderPlayerDetail(null, '請先輸入玩家名稱。');
+    return;
+  }
+  const rows = lookupRows.filter(item =>
+    item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search))
+  );
+  if (!rows.length) {
+    renderPlayerDetail(null, '找不到符合條件的玩家，或該玩家在目前選取場次內沒有資料。');
+    return;
+  }
+  const exact = rows.find(item => item.name === search) || rows[0];
+  renderPlayerDetail(exact, undefined, { groupFilter, cohortFilter, allRows: lookupRows });
+}
+
+function topPlayersWithTies(rows, key, limit = 5) {
+  const sorted = [...rows]
+    .filter(row => Number(row[key] || 0) > 0)
+    .map(row => ({
+      ...row,
+      _ratio: row.battles ? Number(row[key] || 0) / row.battles : 0,
+    }))
+    .sort((a, b) =>
+      b._ratio - a._ratio ||
+      Number(b[key] || 0) - Number(a[key] || 0) ||
+      b.battles - a.battles ||
+      a.name.localeCompare(b.name, 'zh-Hant')
+    );
+  if (!sorted.length) return [];
+  if (sorted.length <= limit) return sorted;
+  const threshold = Number(sorted[Math.min(limit - 1, sorted.length - 1)]._ratio || 0);
+  return sorted.filter(row => Number(row._ratio || 0) >= threshold);
+}
+
+function renderPlayerLeaders(battleIds, groupFilter = 'all') {
+  const box = document.getElementById('player_leaderboard_box');
+  const rows = lookupPlayerRows(battleIds, groupFilter);
+  if (!rows.length) {
+    box.innerHTML = '<div class="empty">目前選取場次內沒有可統計的玩家資料。</div>';
+    return;
+  }
+  const groups = [
+    { title: '優先找幹部覆盤', key: 'priorityCount' },
+    { title: '歡迎找幹部覆盤', key: 'secondaryCount' },
+  ];
+  box.innerHTML = `
+    <details open>
+      <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">建議覆盤場次統計</summary>
+      <div class="summary-grid">
+        ${groups.map(group => {
+          const leaders = topPlayersWithTies(rows, group.key, 5);
+          return `
+            <div class="summary-card">
+              <div class="summary-label">${group.title}</div>
+              <div class="summary-value">${leaders.length ? `${leaders.length} 人` : '0 人'}</div>
+              <div class="subtle" style="margin-top:8px; line-height:1.7;">
+                ${leaders.length
+                  ? leaders.map(player => `${escHtml(player.name)}（${fmtF(player._ratio * 100, 0)}%：${fmtNumber(Number(player[group.key] || 0))}/${fmtNumber(player.battles)}）`).join('<br>')
+                  : '目前沒有符合資料'}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </details>
+  `;
+}
+
+function renderPlayerDetail(player, emptyText = '輸入玩家名稱後，這裡會顯示該玩家在指定場次內的個人數據。', options = {}) {
+  const box = document.getElementById('player_detail_box');
+  if (!player) {
+    box.innerHTML = `<div class="empty">${escHtml(emptyText)}</div>`;
+    return;
+  }
+  selectedPlayer = player.name;
+  const groupFilter = options.groupFilter || 'all';
+  const cohortFilter = options.cohortFilter || 'same_job';
+  const allRows = Array.isArray(options.allRows) ? options.allRows : [];
+  const cohortRows = filterPlayerCohortRows(allRows, player, cohortFilter);
+  const comparisonRows = cohortRows.length ? cohortRows : [player];
+  const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(player, comparisonRows, metric));
+  const focusSet = new Set(playerFocusMetrics(player));
+  const focusComparisons = comparisons.filter(item => focusSet.has(item.metric.key));
+  const latest = [...player.history].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+  const cohortIncludesPlayer = cohortRows.some(row => row.name === player.name);
+  const warningLines = [];
+  if (player.battles < 3) warningLines.push(`玩家樣本偏少：目前只有 ${fmtNumber(player.battles)} 場。`);
+  if (cohortRows.length < 5) warningLines.push(`比較母體偏小：目前只有 ${fmtNumber(cohortRows.length)} 人。`);
+  if (!cohortIncludesPlayer) warningLines.push('目前玩家不屬於此比較母體，以下對比僅供橫向參考。');
+  box.innerHTML = `
+    <div>
+      <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">${escHtml(player.name)}｜${escHtml(player.job)} <small>${player.battles} 場</small></div>
+      ${(player.aliasNames || []).length > 1 ? `<div class="subtle" style="margin-bottom:8px;">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
+      <div class="mini-grid">
+        <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%</b></div>
+        <div class="mini-stat">分工場次<b>${escHtml(buildGroupCountText(player))}</b></div>
+        <div class="mini-stat">母體比較條件<b>${escHtml(`${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
+        <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
+        <div class="mini-stat">優先找幹部覆盤<b>${fmtNumber(player.priorityCount)}</b></div>
+        <div class="mini-stat">歡迎找幹部覆盤<b>${fmtNumber(player.secondaryCount)}</b></div>
+      </div>
+    </div>
+    ${warningLines.length ? `<div class="note-box">${warningLines.map(line => escHtml(line)).join('<br>')}</div>` : ''}
+    ${renderPlayerRadarSection(player, comparisons, comparisonRows)}
+    <div>
+      <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">重點對比</div>
+      ${renderPlayerFocusCards(focusComparisons)}
+    </div>
+    <div>
+      <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">完整對比表</div>
+      ${renderPlayerCompareTable(comparisons)}
+    </div>
+    <div>
+      <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">最近一場</div>
+      <div class="subtle">${latest ? `${latest.date || '未填日期'}｜對手：${latest.opponent || '未填'}｜${GROUP_LABELS[latest.groupType] || '未定'}` : '尚無資料'}</div>
+      <div class="note-box" style="margin-top:8px;">${latest ? escHtml(latest.summary) : '尚無資料'}</div>
+    </div>
+  `;
+}
+
+function renderProfessionTable() {
+  const body = document.getElementById('profession_body');
+  const rows = professionRows();
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="20" class="empty">目前沒有符合條件的職業資料。</td></tr>';
+    syncProfessionScrollbars();
+    return;
+  }
+  body.innerHTML = rows.map((row, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escHtml(row.name)}</td>
+      <td>${escHtml(row.job)}</td>
+      <td>${fmtNumber(row.battles)}</td>
+      <td>${fmtNumber(row.wins)}/${fmtNumber(row.losses)}</td>
+      <td>${(row.winRate * 100).toFixed(0)}%</td>
+      <td>${fmtAvg(row.avgKill)}</td>
+      <td>${fmtAvg(row.avgAssist)}</td>
+      <td>${fmtAvg(row.avgDeath)}</td>
+      <td>${fmtF(row.avgKillPerDeath || 0, 2)}</td>
+      <td>${fmtLarge(row.avgPvpDamage)}</td>
+      <td>${fmtPvpPerKill(row.avgPvpPerKill)}</td>
+      <td>${fmtLarge(row.avgBuildDamage)}</td>
+      <td>${fmtLarge(row.avgTakenDamage)}</td>
+      <td>${fmtLarge(row.avgTakenPerDeath)}</td>
+      <td>${fmtLarge(row.avgHeal)}</td>
+      <td>${fmtLarge(row.avgNetHeal)}</td>
+      <td>${fmtAvg(row.avgBurn)}</td>
+      <td>${fmtAvg(row.avgSave)}</td>
+      <td>${fmtNumber(row.reviewSuggestCount)}</td>
+    </tr>
+  `).join('');
+  syncProfessionScrollbars();
+}
+
+function syncProfessionScrollbars() {
+  const top = document.getElementById('profession_top_scroll');
+  const inner = document.getElementById('profession_top_scroll_inner');
+  const wrap = document.getElementById('profession_table_wrap');
+  const table = document.getElementById('profession_table');
+  if (!top || !inner || !wrap || !table) return;
+  inner.style.width = `${table.scrollWidth}px`;
+  top.scrollLeft = wrap.scrollLeft;
+}
+
+function renderOpponentFocusOptions() {
+  const select = document.getElementById('opponent_focus_select');
+  if (!select) return;
+  const opponents = [...new Set(state.battles.map(battle => battle.opponent).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+  select.innerHTML = opponents.length
+    ? opponents.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join('')
+    : '<option value="">尚無對手資料</option>';
+}
+
+function renderOpponentList(el, rows, metricKey) {
+  if (!el) return;
+  if (!rows.length) {
+    el.innerHTML = '<div class="empty">目前沒有可顯示的對手資料。</div>';
+    return;
+  }
+  const sorted = [...rows].sort((a, b) => Number(b[metricKey] || 0) - Number(a[metricKey] || 0) || a.name.localeCompare(b.name, 'zh-Hant'));
+  const top = sorted.slice(0, 5);
+  el.innerHTML = top.map((row, index) => `
+    <div class="note-box" style="margin-bottom:8px;">
+      <b>${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
+      平均擊殺 ${fmtAvg(row.avgKill)} / 平均人傷 ${fmtLarge(row.avgPvpDamage)} / 平均塔傷 ${fmtLarge(row.avgBuildDamage)} / 平均死亡 ${fmtAvg(row.avgDeath)}
+    </div>
+  `).join('');
+}
+
+function renderOpponentFocus() {
+  const select = document.getElementById('opponent_focus_select');
+  const meta = document.getElementById('opponent_focus_meta');
+  const cards = document.getElementById('opponent_focus_cards');
+  const target = select?.value || '';
+  const buildEl = document.getElementById('opponent_top_build');
+  const pvpEl = document.getElementById('opponent_top_pvp');
+  const killEl = document.getElementById('opponent_top_kill');
+  if (!target) {
+    if (meta) meta.textContent = '請先選擇對手。';
+    if (cards) cards.innerHTML = '';
+    renderOpponentList(buildEl, [], 'avgBuildDamage');
+    renderOpponentList(pvpEl, [], 'avgPvpDamage');
+    renderOpponentList(killEl, [], 'avgKill');
+    return;
+  }
+  const data = aggregateOpponentPlayers(target);
+  if (meta) {
+    meta.textContent = data.battleCount
+      ? `目前以 ${fmtNumber(data.battleCount)} 場對上 ${target} 的戰報做平均。`
+      : `目前沒有 ${target} 的對手原始名單資料。`;
+  }
+  if (cards) {
+    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage)[0];
+    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage)[0];
+    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill)[0];
+    cards.innerHTML = data.battleCount ? `
+      <div class="stat"><div class="stat-label">拆塔最強</div><div class="stat-value" style="font-size:18px;">${topBuild ? escHtml(topBuild.name) : '-'}</div><div class="subtle">${topBuild ? fmtLarge(topBuild.avgBuildDamage) : ''}</div></div>
+      <div class="stat"><div class="stat-label">打人最強</div><div class="stat-value" style="font-size:18px;">${topPvp ? escHtml(topPvp.name) : '-'}</div><div class="subtle">${topPvp ? fmtLarge(topPvp.avgPvpDamage) : ''}</div></div>
+      <div class="stat"><div class="stat-label">擊殺最多</div><div class="stat-value" style="font-size:18px;">${topKill ? escHtml(topKill.name) : '-'}</div><div class="subtle">${topKill ? fmtAvg(topKill.avgKill) : ''}</div></div>
+    ` : '<div class="empty">目前沒有可用的對手原始名單資料。舊場次若未保存 opponentPlayers，需重新加入場次後才會顯示。</div>';
+  }
+  renderOpponentList(buildEl, data.rows, 'avgBuildDamage');
+  renderOpponentList(pvpEl, data.rows, 'avgPvpDamage');
+  renderOpponentList(killEl, data.rows, 'avgKill');
+}
+
+function refreshJobFilterOptions() {
+  const jobs = [...new Set(aggregatePlayers().map(item => item.job))].sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
+  const select = document.getElementById('profession_job_filter');
+  select.innerHTML = '<option value="all">全部職業</option>' + jobs.map(job => `<option value="${escHtml(job)}">${escHtml(job)}</option>`).join('');
+}
+
+function renderBattleFilterOptions(selectId) {
+  const box = document.getElementById(selectId);
+  if (!box) return;
+  if (!state.battles.length) {
+    box.innerHTML = '<div class="subtle">尚未加入場次。</div>';
+    return;
+  }
+  box.innerHTML = state.battles.map((battle, index) => {
+    const label = `${battle.date || '未填日期'}｜${battle.teamName || '未命名'} vs ${battle.opponent || '未填對手'}`;
+    return `<label class="check-item">
+      <input type="checkbox" value="${escHtml(battle.id)}" ${index === 0 ? '' : ''}>
+      <span>${escHtml(label)}</span>
+    </label>`;
+  }).join('');
+}
+
+function setBattleCheckboxes(selectId, checked) {
+  document.querySelectorAll(`#${selectId} input[type="checkbox"]`).forEach(input => {
+    input.checked = checked;
+  });
+}
+
+function deleteCheckedBattles(selectId) {
+  const ids = [...document.querySelectorAll(`#${selectId} input[type="checkbox"]:checked`)]
+    .map(input => input.value)
+    .filter(Boolean);
+  if (!ids.length) return;
+  const set = new Set(ids);
+  state.battles = state.battles.filter(battle => !set.has(battle.id));
+  if (!state.battles.some(battle => battle.id === state.activeBattleId)) {
+    state.activeBattleId = state.battles[0]?.id || '';
+  }
+  saveState();
+  refreshAll();
+}
+
+function renderAliasList() {
+  const box = document.getElementById('alias_list');
+  if (!box) return;
+  const entries = Object.entries(state.aliasMap || {}).sort((a, b) => a[0].localeCompare(b[0], 'zh-Hant'));
+  if (!entries.length) {
+    box.innerHTML = '尚未設定別名合併。';
+    return;
+  }
+  box.innerHTML = entries.map(([source, target]) => `
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:4px 0;border-bottom:1px solid #eadfce;">
+      <div><b>${escHtml(source)}</b> → ${escHtml(resolveAliasName(target))}</div>
+      <button class="btn-ghost" type="button" onclick="removeAliasMapping(decodeURIComponent('${encodeURIComponent(source)}'))">刪除</button>
+    </div>
+  `).join('');
+}
+
+function addAliasMapping() {
+  const sourceEl = document.getElementById('alias_source');
+  const targetEl = document.getElementById('alias_target');
+  const source = String(sourceEl?.value || '').trim();
+  const targetRaw = String(targetEl?.value || '').trim();
+  if (!source || !targetRaw) return;
+  const target = resolveAliasName(targetRaw);
+  if (!target || source === target) return;
+  if (!state.aliasMap) state.aliasMap = {};
+  state.aliasMap[source] = target;
+  saveState();
+  refreshAll();
+  sourceEl.value = '';
+  targetEl.value = '';
+}
+
+function removeAliasMapping(source) {
+  if (!state.aliasMap) return;
+  delete state.aliasMap[source];
+  saveState();
+  refreshAll();
+}
+
+function renderRulesExplain() {
+  const el = document.getElementById('rules_explain_box');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="explain-item"><b style="color:var(--warn); font-weight:900; font-size:20px; line-height:1.4;">這個系統不能直接判定誰打得差</b><span class="subtle">這裡先用門檻抓「值得複查」的人，再結合分工、特殊職責與指揮資訊做人工判讀。</span></div>
+    <div class="explain-item"><b>第一輪主指標</b><span class="subtle">進攻團 DPS 看塔傷；防守 / 保鑣 DPS 看擊殺與人傷；素問主看化羽與淨奶量。後段篩選的切點由個人或幫會幹部自行定義。</span></div>
+    <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把死亡成本補回來。</span></div>
+    <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">系統難以判定通常是資料有警訊，但還不足以直接進建議覆盤名單；優先找幹部覆盤通常是主指標偏弱又進高重傷，或同時命中多個主條件；歡迎找幹部覆盤則是主指標偏弱但還沒到最嚴重，或進攻側高重傷且主責沒有補回成本。</span></div>
+    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮，以及有坦住的鐵衣，會先排除在自動名單外，再交由人工備註補充。坦住的硬門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。進攻 / 防守 / 保鑣 DPS 若擊殺 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。</span></div>
+    <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。只中單一弱項時，不自動進名單；只有雙主責都弱，或再疊加高重傷，才會升到待查名單。需要時再由人工備註補充。</span></div>
+  `;
+}
+
+function renderBattleManualNote() {
+  const el = document.getElementById('battle_manual_note');
+  if (!el) return;
+  const battle = activeBattle();
+  el.value = battle?.manualReviewNote || '';
+}
+
+function refreshAll() {
+  renderImportSections();
+  renderCurrentBattleSelect();
+  renderAssignmentTable();
+  const review = computeBattleReview(activeBattle());
+  renderBattleSummary(review);
+  renderScreenings(review);
+  renderReviewLists(review);
+  renderBattleManualNote();
+  refreshJobFilterOptions();
+  renderBattleFilterOptions('player_battle_select');
+  renderBattleFilterOptions('profession_battle_select');
+  renderAliasList();
+  renderPlayerLookup();
+  renderProfessionTable();
+  renderOpponentFocusOptions();
+  renderOpponentFocus();
+  renderRulesExplain();
+  document.getElementById('weak_pct').value = String(currentSettings().weakPct);
+  document.getElementById('death_pct').value = String(currentSettings().deathPct);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.dataset.tabPanel === tab);
+  });
+  const tools = document.querySelector('.current-battle-tools');
+  if (tools) {
+    const show = tab === 'assignment' || tab === 'review';
+    tools.hidden = !show;
+    tools.style.display = show ? 'flex' : 'none';
+  }
+  if (tab === 'profession') {
+    requestAnimationFrame(() => {
+      syncProfessionScrollbars();
+    });
+  }
+}
+
+function setActiveBattle(id) {
+  state.activeBattleId = id;
+  saveState();
+  refreshAll();
+}
+
+function deleteBattle(id) {
+  state.battles = state.battles.filter(battle => battle.id !== id);
+  if (state.activeBattleId === id) {
+    state.activeBattleId = state.battles[0]?.id || '';
+  }
+  saveState();
+  refreshAll();
+}
+
+function updatePlayerAssignment(battleId, playerName, field, value) {
+  const battle = state.battles.find(item => item.id === battleId);
+  if (!battle) return;
+  const player = battle.players.find(item => item.name === playerName);
+  if (!player) return;
+  if (field === 'specialRoles') {
+    player.specialRoles = String(value).split(',').map(item => item.trim()).filter(Boolean);
+  } else {
+    player[field] = value;
+  }
+  saveState();
+  refreshAll();
+}
+
+function selectedAssignmentNames() {
+  return [...document.querySelectorAll('.assign-check:checked')].map(input => input.value);
+}
+
+function bulkSetGroup(groupType) {
+  const battle = activeBattle();
+  if (!battle) return;
+  const names = selectedAssignmentNames();
+  battle.players.forEach(player => {
+    if (names.includes(player.name)) player.groupType = groupType;
+  });
+  saveState();
+  refreshAll();
+}
+
+async function handleParseCsv() {
+  const input = document.getElementById('csv_file');
+  const noteBox = document.getElementById('import_note_box');
+  if (!input.files?.length) {
+    noteBox.textContent = '請先選擇戰報 CSV。';
+    return;
+  }
+  const text = await input.files[0].text();
+  importedSections = parseCsvSections(text);
+  renderImportSections();
+  if (!importedSections.length) {
+    noteBox.textContent = '讀不到有效戰報區段。';
+    return;
+  }
+  const first = importedSections[0];
+  document.getElementById('import_section').value = '0';
+  syncTeamOpponentFromSection();
+  noteBox.textContent = `已讀取 ${importedSections.length} 個戰報區段；目前預設 ${first.teamName}（${first.players.length} 人）。${importedRoleRows.length ? ` 已載入分工 ${importedRoleRows.length} 筆。` : ''}`;
+}
+
+async function handleParseRoleCsv() {
+  const input = document.getElementById('role_csv_file');
+  const noteBox = document.getElementById('import_note_box');
+  if (!input.files?.length) {
+    noteBox.textContent = '請先選擇分工 CSV。';
+    return;
+  }
+  const text = await input.files[0].text();
+  importedRoleRows = parseRoleCsv(text);
+  if (!importedRoleRows.length) {
+    noteBox.textContent = '讀不到有效分工資料。';
+    return;
+  }
+  const unknownCount = importedRoleRows.filter(row => row.groupType === 'unknown').length;
+  noteBox.textContent = `已讀取分工 ${importedRoleRows.length} 筆。${unknownCount ? ` 其中 ${unknownCount} 筆團別未定。` : ''}${importedSections.length ? ` 戰報區段目前 ${importedSections.length} 個。` : ''}`;
+}
+
+function handleApplyRolesToActiveBattle() {
+  const battle = activeBattle();
+  const noteBox = document.getElementById('import_note_box');
+  if (!battle) {
+    noteBox.textContent = '請先選取場次。';
+    return;
+  }
+  if (!importedRoleRows.length) {
+    noteBox.textContent = '請先讀取分工 CSV。';
+    return;
+  }
+  const result = applyRoleRowsToBattle(battle, importedRoleRows);
+  saveState();
+  refreshAll();
+  noteBox.textContent = `已套用分工到目前場次：成功對上 ${result.matched} 人，戰報中仍有 ${result.battleOnly} 人未對上分工，分工表另有 ${result.unmatchedRoles} 筆未出現在戰報。`;
+}
+
+function handleAddBattle() {
+  if (!importedSections.length) {
+    document.getElementById('import_note_box').textContent = '請先讀取 CSV。';
+    return;
+  }
+  const sectionIndex = Number(document.getElementById('import_section').value || 0);
+  const section = importedSections[sectionIndex];
+  if (!section) return;
+  const opponentName = document.getElementById('import_opponent').value.trim();
+  const opponentSection = importedSections.find((item, idx) => idx !== sectionIndex && (!opponentName || item.teamName === opponentName));
+  const battle = {
+    id: makeBattleId(),
+    date: document.getElementById('import_date').value || '',
+    opponent: opponentName,
+    teamName: document.getElementById('import_team_name').value.trim() || section.teamName,
+    note: document.getElementById('import_note').value.trim(),
+    result: document.getElementById('import_result').value || 'unknown',
+    players: section.players.map(player => ({ ...player })),
+    opponentPlayers: opponentSection ? opponentSection.players.map(player => ({ ...player })) : [],
+    opponentSummary: opponentSection ? summarizePlayers(opponentSection.players) : null,
+  };
+  const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
+  state.battles.unshift(battle);
+  state.activeBattleId = battle.id;
+  saveState();
+  refreshAll();
+  document.getElementById('import_note_box').textContent = `已加入場次：${battle.teamName}｜${battle.players.length} 人。${importedRoleRows.length ? ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。` : ' 目前尚未套入分工 CSV。'}`;
+}
+
+document.getElementById('btn_parse_csv').addEventListener('click', handleParseCsv);
+document.getElementById('btn_parse_role_csv').addEventListener('click', handleParseRoleCsv);
+document.getElementById('btn_add_battle').addEventListener('click', handleAddBattle);
+document.getElementById('btn_apply_roles').addEventListener('click', handleApplyRolesToActiveBattle);
+document.getElementById('btn_export_snapshot').addEventListener('click', exportReviewSnapshot);
+document.getElementById('btn_import_snapshot').addEventListener('click', () => {
+  document.getElementById('snapshot_file').click();
+});
+document.getElementById('snapshot_file').addEventListener('change', async event => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const ok = window.confirm('匯入覆盤資料會覆蓋現有資料，是否繼續？');
+  if (!ok) {
+    event.target.value = '';
+    return;
+  }
+  try {
+    await importReviewSnapshot(file);
+  } catch (err) {
+    console.error(err);
+    window.alert(err?.message || '匯入失敗。');
+  } finally {
+    event.target.value = '';
+  }
+});
+document.getElementById('btn_group_attack').addEventListener('click', () => bulkSetGroup('attack'));
+document.getElementById('btn_group_defense').addEventListener('click', () => bulkSetGroup('defense'));
+document.getElementById('btn_group_bodyguard').addEventListener('click', () => bulkSetGroup('bodyguard'));
+document.getElementById('btn_group_unknown').addEventListener('click', () => bulkSetGroup('unknown'));
+document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
+document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
+document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
+document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
+document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
+document.getElementById('profession_search').addEventListener('input', renderProfessionTable);
+document.getElementById('profession_job_filter').addEventListener('change', renderProfessionTable);
+document.getElementById('profession_group_filter').addEventListener('change', renderProfessionTable);
+document.getElementById('profession_min_battles').addEventListener('input', renderProfessionTable);
+document.getElementById('profession_battle_select').addEventListener('change', renderProfessionTable);
+document.getElementById('profession_sort_field').addEventListener('change', renderProfessionTable);
+document.getElementById('profession_sort_order').addEventListener('change', renderProfessionTable);
+document.getElementById('opponent_focus_select').addEventListener('change', renderOpponentFocus);
+document.getElementById('profession_top_scroll').addEventListener('scroll', event => {
+  const wrap = document.getElementById('profession_table_wrap');
+  if (wrap && wrap.scrollLeft !== event.target.scrollLeft) wrap.scrollLeft = event.target.scrollLeft;
+});
+document.getElementById('profession_table_wrap').addEventListener('scroll', event => {
+  const top = document.getElementById('profession_top_scroll');
+  if (top && top.scrollLeft !== event.target.scrollLeft) top.scrollLeft = event.target.scrollLeft;
+});
+window.addEventListener('resize', syncProfessionScrollbars);
+document.getElementById('btn_player_check_all').addEventListener('click', () => {
+  setBattleCheckboxes('player_battle_select', true);
+  renderPlayerLookup();
+});
+document.getElementById('btn_player_uncheck_all').addEventListener('click', () => {
+  setBattleCheckboxes('player_battle_select', false);
+  renderPlayerLookup();
+});
+document.getElementById('btn_player_delete_checked').addEventListener('click', () => deleteCheckedBattles('player_battle_select'));
+document.getElementById('btn_prof_check_all').addEventListener('click', () => {
+  setBattleCheckboxes('profession_battle_select', true);
+  renderProfessionTable();
+});
+document.getElementById('btn_prof_uncheck_all').addEventListener('click', () => {
+  setBattleCheckboxes('profession_battle_select', false);
+  renderProfessionTable();
+});
+document.getElementById('btn_prof_delete_checked').addEventListener('click', () => deleteCheckedBattles('profession_battle_select'));
+document.getElementById('weak_pct').addEventListener('input', event => {
+  state.settings.weakPct = Number(event.target.value || 30);
+  saveState();
+  refreshAll();
+});
+document.getElementById('death_pct').addEventListener('input', event => {
+  state.settings.deathPct = Number(event.target.value || 30);
+  saveState();
+  refreshAll();
+});
+document.getElementById('import_section').addEventListener('change', syncTeamOpponentFromSection);
+document.getElementById('import_team_name').addEventListener('change', syncSectionFromTeam);
+document.getElementById('current_battle_select').addEventListener('change', event => setActiveBattle(event.target.value));
+document.getElementById('btn_delete_current_battle').addEventListener('click', () => {
+  const battle = activeBattle();
+  if (battle) deleteBattle(battle.id);
+});
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+document.getElementById('battle_manual_note').addEventListener('input', event => {
+  const battle = activeBattle();
+  if (!battle) return;
+  battle.manualReviewNote = event.target.value;
+  saveState();
+});
+
+refreshAll();
+switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
+</script>
+</body>
+</html>
