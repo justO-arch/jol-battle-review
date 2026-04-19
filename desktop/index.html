@@ -1861,7 +1861,7 @@ function hasHealerTopProtection(player, options = {}) {
   const attackHealers = Array.isArray(options.attackHealers) ? options.attackHealers : [];
   const defenseHealers = Array.isArray(options.defenseHealers) ? options.defenseHealers : [];
   const attackLikeHealers = Array.isArray(options.attackLikeHealers) ? options.attackLikeHealers : [];
-  const isDefenseSide = sideKey(player.groupType) === 'defense';
+  const isDefenseSide = player.groupType === 'defense';
   const saveCohort = isDefenseSide ? defenseHealers : attackLikeHealers;
   const netHealCohort = isDefenseSide ? defenseHealers : attackLikeHealers;
   const saveTop = saveCohort.length ? Math.max(...saveCohort.map(item => Number(item.saveCount || 0))) : Number(player.saveCount || 0);
@@ -1919,7 +1919,7 @@ function computeBattleReview(battle) {
   addScreen(`進攻團DPS・塔傷後${settings.weakPct}%`, bottomNames(attackDps, 'buildDamage', settings.weakPct / 100));
   addScreen(`防守/保鑣DPS・人傷後${settings.weakPct}%`, bottomNames(defenseDps, 'pvpDamage', settings.weakPct / 100));
   addScreen(`防守/保鑣DPS・擊殺後${settings.weakPct}%`, bottomNames(defenseDps, 'kill', settings.weakPct / 100));
-  addScreen(`進攻團素問・化羽後${settings.weakPct}%`, bottomNames(attackHealers, 'saveCount', settings.weakPct / 100));
+  addScreen(`進攻/保鑣素問・化羽後${settings.weakPct}%`, bottomNames(attackLikeHealers, 'saveCount', settings.weakPct / 100));
   addScreen(`進攻/保鑣素問・淨奶量後${settings.weakPct}%`, bottomNames(attackLikeHealers, 'netHeal', settings.weakPct / 100));
   addScreen(`防守團素問・化羽後${settings.weakPct}%`, bottomNames(defenseHealers, 'saveCount', settings.weakPct / 100));
   addScreen(`防守團素問・淨奶量後${settings.weakPct}%`, bottomNames(defenseHealers, 'netHeal', settings.weakPct / 100));
