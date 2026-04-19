@@ -635,6 +635,15 @@
     fill: var(--muted);
     font-weight: 700;
   }
+  .search-stack {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+  }
+  .search-stack input,
+  .search-stack button {
+    width: 100%;
+  }
   body.mobile-app .page {
     max-width: 760px;
     padding: 14px 12px 36px;
@@ -987,8 +996,8 @@
               <div class="grid-4">
                 <div class="field">
                   <label>玩家名稱搜尋</label>
-                  <div class="inline-actions" style="margin-top:0; grid-template-columns: minmax(0, 1fr) auto;">
-                    <input id="player_search" type="text" placeholder="輸入玩家名稱">
+                  <div class="search-stack" style="margin-top:0;">
+                    <input id="player_search" type="text" placeholder="輸入玩家名稱" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
                     <button class="btn-secondary" type="button" id="btn_player_search">搜尋</button>
                   </div>
                 </div>
@@ -1036,8 +1045,8 @@
               <div class="grid-4">
                 <div class="field">
                   <label>玩家名稱搜尋</label>
-                  <div class="inline-actions" style="margin-top:0; grid-template-columns: minmax(0, 1fr) auto;">
-                    <input id="profession_search" type="text" placeholder="搜尋玩家名稱">
+                  <div class="search-stack" style="margin-top:0;">
+                    <input id="profession_search" type="text" placeholder="搜尋玩家名稱" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
                     <button class="btn-secondary" type="button" id="btn_profession_search">搜尋</button>
                   </div>
                 </div>
