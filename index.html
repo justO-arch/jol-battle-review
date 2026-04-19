@@ -987,7 +987,10 @@
               <div class="grid-4">
                 <div class="field">
                   <label>玩家名稱搜尋</label>
-                  <input id="player_search" type="text" placeholder="輸入玩家名稱">
+                  <div class="inline-actions" style="margin-top:0; grid-template-columns: minmax(0, 1fr) auto;">
+                    <input id="player_search" type="text" placeholder="輸入玩家名稱">
+                    <button class="btn-secondary" type="button" id="btn_player_search">搜尋</button>
+                  </div>
                 </div>
                 <div class="field">
                   <label>團別篩選</label>
@@ -1033,7 +1036,10 @@
               <div class="grid-4">
                 <div class="field">
                   <label>玩家名稱搜尋</label>
-                  <input id="profession_search" type="text" placeholder="搜尋玩家名稱">
+                  <div class="inline-actions" style="margin-top:0; grid-template-columns: minmax(0, 1fr) auto;">
+                    <input id="profession_search" type="text" placeholder="搜尋玩家名稱">
+                    <button class="btn-secondary" type="button" id="btn_profession_search">搜尋</button>
+                  </div>
                 </div>
                 <div class="field">
                   <label>職業</label>
@@ -1208,6 +1214,7 @@ let importedSections = [];
 let importedRoleRows = [];
 let selectedPlayer = '';
 let playerSearchComposing = false;
+let professionSearchComposing = false;
 
 function loadState() {
   try {
@@ -3232,19 +3239,33 @@ document.getElementById('player_search').addEventListener('compositionstart', ()
 });
 document.getElementById('player_search').addEventListener('compositionend', () => {
   playerSearchComposing = false;
-  renderPlayerLookup();
 });
-document.getElementById('player_search').addEventListener('input', () => {
-  if (playerSearchComposing) return;
-  renderPlayerLookup();
+document.getElementById('player_search').addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !playerSearchComposing) {
+    event.preventDefault();
+    renderPlayerLookup();
+  }
 });
+document.getElementById('btn_player_search').addEventListener('click', renderPlayerLookup);
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
-document.getElementById('profession_search').addEventListener('input', renderProfessionTable);
+document.getElementById('profession_search').addEventListener('compositionstart', () => {
+  professionSearchComposing = true;
+});
+document.getElementById('profession_search').addEventListener('compositionend', () => {
+  professionSearchComposing = false;
+});
+document.getElementById('profession_search').addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !professionSearchComposing) {
+    event.preventDefault();
+    renderProfessionTable();
+  }
+});
+document.getElementById('btn_profession_search').addEventListener('click', renderProfessionTable);
 document.getElementById('profession_job_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_group_filter').addEventListener('change', renderProfessionTable);
-document.getElementById('profession_min_battles').addEventListener('input', renderProfessionTable);
+document.getElementById('profession_min_battles').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_battle_select').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_sort_field').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_sort_order').addEventListener('change', renderProfessionTable);
