@@ -417,6 +417,9 @@
     overflow: hidden;
     background: #fff;
   }
+  .review-box details {
+    display: block;
+  }
   .review-box.priority .review-head { background: var(--warn-soft); color: var(--warn); }
   .review-box.secondary .review-head { background: var(--mid-soft); color: #8b5d12; }
   .review-box.observation .review-head { background: var(--obs-soft); color: var(--obs); }
@@ -426,6 +429,22 @@
     padding: 10px 12px;
     font-size: 13px;
     font-weight: 800;
+  }
+  .review-box summary.review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .review-box summary.review-head::-webkit-details-marker { display: none; }
+  .review-head-meta {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+    opacity: 0.82;
   }
   .assignment-alert {
     margin-bottom: 10px;
@@ -1036,16 +1055,22 @@
               <div style="height:14px;"></div>
               <div class="review-columns">
                 <div class="review-box priority">
-                  <div class="review-head">優先找幹部覆盤</div>
-                  <div class="review-list" id="priority_list"></div>
+                  <details>
+                    <summary class="review-head">優先找幹部覆盤 <span class="review-head-meta" id="priority_meta">（0 人，點擊即可展開）</span></summary>
+                    <div class="review-list" id="priority_list"></div>
+                  </details>
                 </div>
                 <div class="review-box secondary">
-                  <div class="review-head">歡迎找幹部覆盤</div>
-                  <div class="review-list" id="secondary_list"></div>
+                  <details>
+                    <summary class="review-head">歡迎找幹部覆盤 <span class="review-head-meta" id="secondary_meta">（0 人，點擊即可展開）</span></summary>
+                    <div class="review-list" id="secondary_list"></div>
+                  </details>
                 </div>
                 <div class="review-box observation">
-                  <div class="review-head">系統難以判定（可能隊友搶走你的數據!）</div>
-                  <div class="review-list" id="observation_list"></div>
+                  <details>
+                    <summary class="review-head">系統難以判定（可能隊友搶走你的數據!） <span class="review-head-meta" id="observation_meta">（0 人，點擊即可展開）</span></summary>
+                    <div class="review-list" id="observation_list"></div>
+                  </details>
                 </div>
               </div>
               <div style="height:14px;"></div>
@@ -2832,6 +2857,16 @@ function renderReviewLists(review) {
     secondary: document.getElementById('secondary_list'),
     observation: document.getElementById('observation_list'),
   };
+  const metaMap = {
+    priority: document.getElementById('priority_meta'),
+    secondary: document.getElementById('secondary_meta'),
+    observation: document.getElementById('observation_meta'),
+  };
+  const setMeta = (key, count = 0) => {
+    if (!metaMap[key]) return;
+    metaMap[key].textContent = `（${fmtNumber(count)} 人，點擊即可展開）`;
+  };
+  ['priority', 'secondary', 'observation'].forEach(key => setMeta(key, 0));
   Object.values(map).forEach(el => { el.innerHTML = ''; });
   if (!review) {
     Object.values(map).forEach(el => { el.innerHTML = '<div class="empty">尚未選取場次。</div>'; });
@@ -2849,6 +2884,7 @@ function renderReviewLists(review) {
     observation: review.summaries.filter(player => player.level === 'observation'),
   };
   Object.entries(buckets).forEach(([key, list]) => {
+    if (key in metaMap) setMeta(key, list.length);
     if (key === 'commander') {
       map[key].innerHTML = list.length ? list.map(player => `
         <div class="review-item">
