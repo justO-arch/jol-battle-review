@@ -2237,18 +2237,18 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
     <div>
       <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">能力圖對比</div>
       <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">相對位置（PR）</div>
-      <div class="subtle" style="margin-bottom:10px;">能力圖改用 PR 繪製，但保留最外圈空白。PR100 不會直接滿格，而是約畫到 95% 半徑，避免幫內相對排名而造成天下無敵錯覺。</div>
+      <div style="margin-bottom:10px; color:var(--text);">排名越前面表現越好。你各項數據都排名接近第一，保活也很好，就越接近滿滿的六邊形。</div>
       <div class="radar-grid">
         ${renderRadarCard('玩家能力圖', axes, playerScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
-        ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianScores, '#0f6b61', '依母體中位數對應的 PR 畫出。')}
+        ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianScores, '#0f6b61', '中位數 = 排名正中間那個人的對應數據；這張圖依母體中位數對應的 PR 畫出。')}
         ${renderRadarCard(`母體平均數圖（${fmtNumber(cohortRows.length)}人）`, axes, averageScores, '#346a95', '依母體平均數對應的 PR 畫出。')}
       </div>
       <div style="height:12px;"></div>
       <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">絕對數值</div>
-      <div class="subtle" style="margin-bottom:10px;">絕對數值圖以目前比較母體為基準。每一軸上限 = max(母體極值 × 1.15, 母體平均 + 2.5σ)。生存軸則是死亡越少越外圈。</div>
+      <div style="margin-bottom:10px; color:var(--text);">絕對數據越接近第一名越好。假設你是擊殺第二名，但你的擊殺數據只有第一名的一半，那這個圖上看起來也不會很厲害。</div>
       <div class="radar-grid">
         ${renderRadarCard('玩家絕對數值圖', axes, playerAbsoluteScores, '#9b4d1d', '依玩家目前平均數值換算。')}
-        ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianAbsoluteScores, '#0f6b61', '依母體中位數換算。')}
+        ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianAbsoluteScores, '#0f6b61', '中位數 = 排名正中間那個人的對應數據；這張圖依母體中位數換算。')}
         ${renderRadarCard(`母體平均數圖（${fmtNumber(cohortRows.length)}人）`, axes, averageAbsoluteScores, '#346a95', '依母體平均數換算。')}
       </div>
     </div>
