@@ -421,6 +421,7 @@
   .review-box.secondary .review-head { background: var(--mid-soft); color: #8b5d12; }
   .review-box.observation .review-head { background: var(--obs-soft); color: var(--obs); }
   .review-box.commander .review-head { background: var(--accent-2-soft); color: var(--accent-2); }
+  .review-box.unknown-group .review-head { background: #f1ece4; color: #6e6356; }
   .review-head {
     padding: 10px 12px;
     font-size: 13px;
@@ -799,6 +800,7 @@
             <div class="tab-panel active" data-tab-panel="assignment">
               <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮）</span></div>
               <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
+              <div class="assignment-commander-box" id="assignment_unknown_box" style="margin-top:-2px;">目前沒有分工未知的玩家。</div>
               <div class="table-actions">
                 <div class="table-actions-left">
                   <button class="btn-secondary" id="btn_group_attack">將選取玩家設為進攻</button>
@@ -854,6 +856,11 @@
                 <div class="review-list" id="commander_list"></div>
               </div>
               <div style="height:14px;"></div>
+              <div class="review-box unknown-group">
+                <div class="review-head">分工未知（不確定哪團）</div>
+                <div class="review-list" id="unknown_group_list"></div>
+              </div>
+              <div style="height:14px;"></div>
               <div class="review-columns">
                 <div class="review-box priority">
                   <div class="review-head">優先找幹部覆盤</div>
@@ -901,6 +908,15 @@
                   <input id="player_search" type="text" placeholder="輸入玩家名稱">
                 </div>
                 <div class="field">
+                  <label>己方</label>
+                  <select id="player_own_team_filter">
+                    <option value="all">全部</option>
+                    <option value="chenyan">塵煙如夢</option>
+                    <option value="jianzhao">劍照霜寒</option>
+                    <option value="flower_other">花舞或其他</option>
+                  </select>
+                </div>
+                <div class="field">
                   <label>團別篩選</label>
                   <select id="player_group_filter">
                     <option value="all">全部</option>
@@ -945,6 +961,15 @@
                 <div class="field">
                   <label>玩家名稱搜尋</label>
                   <input id="profession_search" type="text" placeholder="搜尋玩家名稱">
+                </div>
+                <div class="field">
+                  <label>己方</label>
+                  <select id="profession_own_team_filter">
+                    <option value="all">全部</option>
+                    <option value="chenyan">塵煙如夢</option>
+                    <option value="jianzhao">劍照霜寒</option>
+                    <option value="flower_other">花舞或其他</option>
+                  </select>
                 </div>
                 <div class="field">
                   <label>職業</label>
@@ -1093,6 +1118,12 @@ const PLAYER_GROUP_FILTER_LABELS = {
   defense_bodyguard: '保鑣+防守',
   attack_bodyguard: '保鑣+進攻',
 };
+const OWN_TEAM_FILTER_LABELS = {
+  all: '全部',
+  chenyan: '塵煙如夢',
+  jianzhao: '劍照霜寒',
+  flower_other: '花舞或其他',
+};
 const PLAYER_COHORT_LABELS = {
   all: '所有職業',
   same_job: '同職業',
@@ -1153,9 +1184,11 @@ function collectUiState() {
     activeTab: activeTabName(),
     playerSearch: document.getElementById('player_search')?.value || '',
     playerBattleIds: selectedBattleIds('player_battle_select'),
+    playerOwnTeamFilter: document.getElementById('player_own_team_filter')?.value || 'all',
     playerGroupFilter: document.getElementById('player_group_filter')?.value || 'all',
     playerCohortFilter: document.getElementById('player_cohort_filter')?.value || 'same_job',
     professionSearch: document.getElementById('profession_search')?.value || '',
+    professionOwnTeamFilter: document.getElementById('profession_own_team_filter')?.value || 'all',
     professionJob: document.getElementById('profession_job_filter')?.value || 'all',
     professionGroup: document.getElementById('profession_group_filter')?.value || 'all',
     professionMinBattles: document.getElementById('profession_min_battles')?.value || '1',
@@ -1176,9 +1209,11 @@ function restoreBattleCheckboxes(selectId, ids) {
 function restoreUiState(uiState = {}) {
   if (!uiState || typeof uiState !== 'object') return;
   if (document.getElementById('player_search')) document.getElementById('player_search').value = uiState.playerSearch || '';
+  if (document.getElementById('player_own_team_filter')) document.getElementById('player_own_team_filter').value = uiState.playerOwnTeamFilter || 'all';
   if (document.getElementById('player_group_filter')) document.getElementById('player_group_filter').value = uiState.playerGroupFilter || 'all';
   if (document.getElementById('player_cohort_filter')) document.getElementById('player_cohort_filter').value = uiState.playerCohortFilter || 'same_job';
   if (document.getElementById('profession_search')) document.getElementById('profession_search').value = uiState.professionSearch || '';
+  if (document.getElementById('profession_own_team_filter')) document.getElementById('profession_own_team_filter').value = uiState.professionOwnTeamFilter || 'all';
   if (document.getElementById('profession_job_filter')) document.getElementById('profession_job_filter').value = uiState.professionJob || 'all';
   if (document.getElementById('profession_group_filter')) document.getElementById('profession_group_filter').value = uiState.professionGroup || 'all';
   if (document.getElementById('profession_min_battles')) document.getElementById('profession_min_battles').value = uiState.professionMinBattles || '1';
@@ -2335,12 +2370,13 @@ function renderPlayerCompareTable(comparisons) {
 
 function professionRows() {
   const job = document.getElementById('profession_job_filter').value;
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
   const groupType = document.getElementById('profession_group_filter').value;
   const search = document.getElementById('profession_search').value.trim();
   const minBattles = Number(document.getElementById('profession_min_battles').value || 1);
   const sortField = document.getElementById('profession_sort_field').value || 'reviewSuggestCount';
   const sortOrder = document.getElementById('profession_sort_order').value || 'desc';
-  const battleIds = selectedBattleIds('profession_battle_select');
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
   return aggregatePlayers(battleIds)
     .filter(item => !job || job === 'all' || item.job === job)
     .filter(item => !search || item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search)))
@@ -2452,11 +2488,13 @@ function renderAssignmentTable() {
   const tbody = document.getElementById('assignment_body');
   const stats = document.getElementById('assignment_stats');
   const commanderBox = document.getElementById('assignment_commander_box');
+  const unknownBox = document.getElementById('assignment_unknown_box');
   const battle = activeBattle();
   if (!battle) {
     tbody.innerHTML = '<tr><td colspan="12" class="empty">請先加入並選取一場戰報。</td></tr>';
     if (stats) stats.innerHTML = '';
     if (commanderBox) commanderBox.textContent = '請先加入並選取一場戰報。';
+    if (unknownBox) unknownBox.textContent = '請先加入並選取一場戰報。';
     return;
   }
   const counts = {
@@ -2480,6 +2518,14 @@ function renderAssignmentTable() {
     commanderBox.innerHTML = commanders.length
       ? `<b>目前指揮（commander）名單：</b> ${commanders.map(player => `${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}`).join('、')}`
       : '目前沒有標記為 commander 的玩家。';
+  }
+  if (unknownBox) {
+    const unknownPlayers = [...battle.players]
+      .filter(player => (player.groupType || 'unknown') === 'unknown')
+      .sort(comparePlayers);
+    unknownBox.innerHTML = unknownPlayers.length
+      ? `<b>目前分工未知名單：</b> ${unknownPlayers.map(player => `${escHtml(player.name)}｜${escHtml(player.job)}`).join('、')}<br><span class="subtle">不會納入系統數據評估。</span>`
+      : '目前沒有分工未知的玩家。';
   }
   const rows = [...battle.players].sort(comparePlayers).map(player => `
     <tr>
@@ -2572,6 +2618,7 @@ function renderScreenings(review) {
 function renderReviewLists(review) {
   const map = {
     commander: document.getElementById('commander_list'),
+    unknownGroup: document.getElementById('unknown_group_list'),
     priority: document.getElementById('priority_list'),
     secondary: document.getElementById('secondary_list'),
     observation: document.getElementById('observation_list'),
@@ -2587,6 +2634,7 @@ function renderReviewLists(review) {
   }
   const buckets = {
     commander: review.summaries.filter(player => isCommander(player)),
+    unknownGroup: review.summaries.filter(player => (player.groupType || 'unknown') === 'unknown'),
     priority: review.summaries.filter(player => player.level === 'priority'),
     secondary: review.summaries.filter(player => player.level === 'secondary'),
     observation: review.summaries.filter(player => player.level === 'observation'),
@@ -2599,6 +2647,15 @@ function renderReviewLists(review) {
           <p>不列入數據評估，建議看錄像評估決策狀況。</p>
         </div>
       `).join('') : '<div class="empty">本場沒有標記為 commander 的玩家。</div>';
+      return;
+    }
+    if (key === 'unknownGroup') {
+      map[key].innerHTML = list.length ? list.map(player => `
+        <div class="review-item">
+          <h5>${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}</h5>
+          <p>不會納入系統數據評估，建議先確認這位玩家屬於哪一團。</p>
+        </div>
+      `).join('') : '<div class="empty">本場沒有分工未知的玩家。</div>';
       return;
     }
     map[key].innerHTML = list.length ? list.map(player => `
@@ -2624,9 +2681,26 @@ function filteredBattlesByIds(ids) {
   return state.battles.filter(battle => set.has(battle.id));
 }
 
+function ownTeamMatchesFilter(teamName, filterKey = 'all') {
+  const value = String(teamName || '').trim();
+  if (filterKey === 'all') return true;
+  if (filterKey === 'chenyan') return value === '塵煙如夢';
+  if (filterKey === 'jianzhao') return value === '劍照霜寒';
+  if (filterKey === 'flower_other') return value !== '塵煙如夢' && value !== '劍照霜寒';
+  return true;
+}
+
+function filterBattleIdsByOwnTeam(battleIds, filterKey = 'all') {
+  const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
+  return battles
+    .filter(battle => ownTeamMatchesFilter(battle.teamName, filterKey))
+    .map(battle => battle.id);
+}
+
 function renderPlayerLookup() {
   const search = document.getElementById('player_search').value.trim();
-  const battleIds = selectedBattleIds('player_battle_select');
+  const ownTeamFilter = document.getElementById('player_own_team_filter')?.value || 'all';
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('player_battle_select'), ownTeamFilter);
   const groupFilter = document.getElementById('player_group_filter')?.value || 'all';
   const cohortFilter = document.getElementById('player_cohort_filter')?.value || 'same_job';
   const lookupRows = lookupPlayerRows(battleIds, groupFilter);
@@ -2643,7 +2717,7 @@ function renderPlayerLookup() {
     return;
   }
   const exact = rows.find(item => item.name === search) || rows[0];
-  renderPlayerDetail(exact, undefined, { groupFilter, cohortFilter, allRows: lookupRows });
+  renderPlayerDetail(exact, undefined, { ownTeamFilter, groupFilter, cohortFilter, allRows: lookupRows });
 }
 
 function topPlayersWithTies(rows, key, limit = 5) {
@@ -2706,6 +2780,7 @@ function renderPlayerDetail(player, emptyText = '輸入玩家名稱後，這裡�
     return;
   }
   selectedPlayer = player.name;
+  const ownTeamFilter = options.ownTeamFilter || 'all';
   const groupFilter = options.groupFilter || 'all';
   const cohortFilter = options.cohortFilter || 'same_job';
   const allRows = Array.isArray(options.allRows) ? options.allRows : [];
@@ -2727,7 +2802,7 @@ function renderPlayerDetail(player, emptyText = '輸入玩家名稱後，這裡�
       <div class="mini-grid">
         <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%</b></div>
         <div class="mini-stat">分工場次<b>${escHtml(buildGroupCountText(player))}</b></div>
-        <div class="mini-stat">母體比較條件<b>${escHtml(`${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
+        <div class="mini-stat">母體比較條件<b>${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
         <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
         <div class="mini-stat">優先找幹部覆盤<b>${fmtNumber(player.priorityCount)}</b></div>
         <div class="mini-stat">歡迎找幹部覆盤<b>${fmtNumber(player.secondaryCount)}</b></div>
@@ -2947,7 +3022,7 @@ function renderRulesExplain() {
     <div class="explain-item"><b>第一輪主指標</b><span class="subtle">進攻團 DPS 看塔傷；防守 / 保鑣 DPS 看擊殺與人傷；素問主看化羽與淨奶量。後段篩選的切點由個人或幫會幹部自行定義。</span></div>
     <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把死亡成本補回來。</span></div>
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">系統難以判定通常是資料有警訊，但還不足以直接進建議覆盤名單；優先找幹部覆盤通常是主指標偏弱又進高重傷，或同時命中多個主條件；歡迎找幹部覆盤則是主指標偏弱但還沒到最嚴重，或進攻側高重傷且主責沒有補回成本。</span></div>
-    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮，以及有坦住的鐵衣，會先排除在自動名單外，再交由人工備註補充。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。坦住的硬門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。進攻 / 防守 / 保鑣 DPS 若擊殺 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。</span></div>
+    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮，以及有坦住的鐵衣，會先排除在自動名單外，再交由人工備註補充。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦住的硬門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。進攻 / 防守 / 保鑣 DPS 若擊殺 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。只中單一弱項時，不自動進名單；只有雙主責都弱，或再疊加高重傷，才會升到待查名單。需要時再由人工備註補充。</span></div>
   `;
 }
@@ -3160,9 +3235,11 @@ document.getElementById('btn_group_unknown').addEventListener('click', () => bul
 document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
 document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
+document.getElementById('player_own_team_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('profession_search').addEventListener('input', renderProfessionTable);
+document.getElementById('profession_own_team_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_job_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_group_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_min_battles').addEventListener('input', renderProfessionTable);
