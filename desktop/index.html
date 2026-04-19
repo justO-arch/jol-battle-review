@@ -2953,8 +2953,8 @@ function renderPlayerLeaders(battleIds, groupFilter = 'all') {
     { title: '歡迎找幹部覆盤', key: 'secondaryCount' },
   ];
   box.innerHTML = `
-    <details open>
-      <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">建議覆盤場次統計</summary>
+    <details>
+      <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">建議覆盤場次統計 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊可展開）</span></summary>
       <div class="summary-grid">
         ${groups.map(group => {
           const leaders = topPlayersWithTies(rows, group.key, 5);
