@@ -420,10 +420,27 @@
   .review-box.priority .review-head { background: var(--warn-soft); color: var(--warn); }
   .review-box.secondary .review-head { background: var(--mid-soft); color: #8b5d12; }
   .review-box.observation .review-head { background: var(--obs-soft); color: var(--obs); }
+  .review-box.commander .review-head { background: var(--accent-2-soft); color: var(--accent-2); }
   .review-head {
     padding: 10px 12px;
     font-size: 13px;
     font-weight: 800;
+  }
+  .assignment-alert {
+    margin-bottom: 10px;
+    color: var(--warn);
+    font-size: 15px;
+    font-weight: 900;
+  }
+  .assignment-commander-box {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f6fbfa;
+    border: 1px solid #cde4e0;
+  }
+  .assignment-commander-box b {
+    color: var(--accent-2);
   }
   .review-list { padding: 12px; display: grid; gap: 10px; }
   .review-item {
@@ -776,6 +793,8 @@
           </div>
           <div class="panel-body">
             <div class="tab-panel active" data-tab-panel="assignment">
+              <div class="assignment-alert">分工和指揮名單可修改</div>
+              <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
               <div class="table-actions">
                 <div class="table-actions-left">
                   <button class="btn-secondary" id="btn_group_attack">將選取玩家設為進攻</button>
@@ -825,6 +844,11 @@
               <div class="summary-grid" id="battle_summary"></div>
               <div style="height:14px;"></div>
               <div class="screening-grid" id="screening_grid"></div>
+              <div style="height:14px;"></div>
+              <div class="review-box commander">
+                <div class="review-head">指揮（commander）</div>
+                <div class="review-list" id="commander_list"></div>
+              </div>
               <div style="height:14px;"></div>
               <div class="review-columns">
                 <div class="review-box priority">
@@ -2423,10 +2447,12 @@ function renderCurrentBattleSelect() {
 function renderAssignmentTable() {
   const tbody = document.getElementById('assignment_body');
   const stats = document.getElementById('assignment_stats');
+  const commanderBox = document.getElementById('assignment_commander_box');
   const battle = activeBattle();
   if (!battle) {
     tbody.innerHTML = '<tr><td colspan="12" class="empty">請先加入並選取一場戰報。</td></tr>';
     if (stats) stats.innerHTML = '';
+    if (commanderBox) commanderBox.textContent = '請先加入並選取一場戰報。';
     return;
   }
   const counts = {
@@ -2442,6 +2468,14 @@ function renderAssignmentTable() {
       <div class="assignment-stat">保鑣人數<b>${fmtNumber(counts.bodyguard)}</b></div>
       <div class="assignment-stat">未定人數<b>${fmtNumber(counts.unknown)}</b></div>
     `;
+  }
+  if (commanderBox) {
+    const commanders = [...battle.players]
+      .filter(player => isCommander(player))
+      .sort(comparePlayers);
+    commanderBox.innerHTML = commanders.length
+      ? `<b>目前指揮（commander）名單：</b> ${commanders.map(player => `${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}`).join('、')}`
+      : '目前沒有標記為 commander 的玩家。';
   }
   const rows = [...battle.players].sort(comparePlayers).map(player => `
     <tr>
@@ -2533,6 +2567,7 @@ function renderScreenings(review) {
 
 function renderReviewLists(review) {
   const map = {
+    commander: document.getElementById('commander_list'),
     priority: document.getElementById('priority_list'),
     secondary: document.getElementById('secondary_list'),
     observation: document.getElementById('observation_list'),
@@ -2547,11 +2582,21 @@ function renderReviewLists(review) {
     return;
   }
   const buckets = {
+    commander: review.summaries.filter(player => isCommander(player)),
     priority: review.summaries.filter(player => player.level === 'priority'),
     secondary: review.summaries.filter(player => player.level === 'secondary'),
     observation: review.summaries.filter(player => player.level === 'observation'),
   };
   Object.entries(buckets).forEach(([key, list]) => {
+    if (key === 'commander') {
+      map[key].innerHTML = list.length ? list.map(player => `
+        <div class="review-item">
+          <h5>${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}</h5>
+          <p>不列入數據評估，建議看錄像評估決策狀況。</p>
+        </div>
+      `).join('') : '<div class="empty">本場沒有標記為 commander 的玩家。</div>';
+      return;
+    }
     map[key].innerHTML = list.length ? list.map(player => `
       <div class="review-item">
         <h5>${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}</h5>
@@ -2898,7 +2943,7 @@ function renderRulesExplain() {
     <div class="explain-item"><b>第一輪主指標</b><span class="subtle">進攻團 DPS 看塔傷；防守 / 保鑣 DPS 看擊殺與人傷；素問主看化羽與淨奶量。後段篩選的切點由個人或幫會幹部自行定義。</span></div>
     <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把死亡成本補回來。</span></div>
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">系統難以判定通常是資料有警訊，但還不足以直接進建議覆盤名單；優先找幹部覆盤通常是主指標偏弱又進高重傷，或同時命中多個主條件；歡迎找幹部覆盤則是主指標偏弱但還沒到最嚴重，或進攻側高重傷且主責沒有補回成本。</span></div>
-    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮，以及有坦住的鐵衣，會先排除在自動名單外，再交由人工備註補充。坦住的硬門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。進攻 / 防守 / 保鑣 DPS 若擊殺 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。</span></div>
+    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。未定分工、指揮，以及有坦住的鐵衣，會先排除在自動名單外，再交由人工備註補充。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。坦住的硬門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。進攻 / 防守 / 保鑣 DPS 若擊殺 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。只中單一弱項時，不自動進名單；只有雙主責都弱，或再疊加高重傷，才會升到待查名單。需要時再由人工備註補充。</span></div>
   `;
 }
