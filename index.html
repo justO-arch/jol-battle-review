@@ -1207,6 +1207,7 @@ let state = loadState();
 let importedSections = [];
 let importedRoleRows = [];
 let selectedPlayer = '';
+let playerSearchComposing = false;
 
 function loadState() {
   try {
@@ -3226,7 +3227,17 @@ document.getElementById('btn_group_defense').addEventListener('click', () => bul
 document.getElementById('btn_group_bodyguard').addEventListener('click', () => bulkSetGroup('bodyguard'));
 document.getElementById('btn_group_unknown').addEventListener('click', () => bulkSetGroup('unknown'));
 document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
-document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
+document.getElementById('player_search').addEventListener('compositionstart', () => {
+  playerSearchComposing = true;
+});
+document.getElementById('player_search').addEventListener('compositionend', () => {
+  playerSearchComposing = false;
+  renderPlayerLookup();
+});
+document.getElementById('player_search').addEventListener('input', () => {
+  if (playerSearchComposing) return;
+  renderPlayerLookup();
+});
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
