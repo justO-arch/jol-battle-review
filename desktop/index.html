@@ -293,6 +293,23 @@
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
   }
+  #battle_summary.summary-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #battle_summary .stat {
+    padding: 7px 8px;
+    border-radius: 12px;
+  }
+  #battle_summary .stat-label {
+    font-size: 10px;
+    color: #51473d;
+    margin-bottom: 2px;
+  }
+  #battle_summary .stat-value {
+    font-size: 16px;
+    line-height: 1.15;
+  }
   #opponent_focus_cards.summary-grid {
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
@@ -581,9 +598,59 @@
   }
   .matchup-card summary::-webkit-details-marker { display: none; }
   .matchup-title {
-    font-weight: 800;
+    font-size: 22px;
+    font-weight: 900;
     color: var(--accent);
     margin-bottom: 4px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 2px solid #e3d9cd;
+    background: #faf4eb;
+  }
+  .matchup-title.matchup-title-all-dps {
+    background: #f7f1df;
+    border-color: #e6d8af;
+    color: #8d6a17;
+  }
+  .matchup-title.matchup-title-suimeng {
+    background: #eaf6ff;
+    border-color: #bddcf2;
+    color: #2f78aa;
+  }
+  .matchup-title.matchup-title-xuehe {
+    background: #f9e7e1;
+    border-color: #e0b9ab;
+    color: #9a4d3a;
+  }
+  .matchup-title.matchup-title-shenxiang {
+    background: #dfeefb;
+    border-color: #b6d0e8;
+    color: #2f6397;
+  }
+  .matchup-title.matchup-title-jiuling {
+    background: #f1e7f8;
+    border-color: #d3bddf;
+    color: #7a52a0;
+  }
+  .matchup-title.matchup-title-longyin {
+    background: #e4f5ef;
+    border-color: #bbdccf;
+    color: #2f8571;
+  }
+  .matchup-title.matchup-title-tieyi {
+    background: #f5ecdf;
+    border-color: #d9c5aa;
+    color: #8b6842;
+  }
+  .matchup-title.matchup-title-suwen {
+    background: #fae8f0;
+    border-color: #e6bfd0;
+    color: #b25d86;
+  }
+  .matchup-title.matchup-title-xuanji {
+    background: #fbf4d9;
+    border-color: #e5d79b;
+    color: #9a8220;
   }
   .matchup-meta {
     font-size: 12px;
@@ -993,6 +1060,32 @@
     padding: 18px 20px;
     margin-bottom: 12px;
   }
+  .review-export-summary-panel {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    margin-bottom: 0;
+  }
+  .review-export-summary-panel .summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .review-export-summary-panel .stat {
+    border-radius: 12px;
+    padding: 7px 9px;
+  }
+  .review-export-summary-panel .stat-label {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+  .review-export-summary-panel .stat-value {
+    font-size: 17px;
+    line-height: 1.15;
+  }
+  .review-export-list-page {
+    break-before: page;
+    page-break-before: always;
+    margin-top: 16px;
+  }
   .player-export-title {
     margin: 0;
     color: var(--accent);
@@ -1012,12 +1105,10 @@
     line-height: 1.6;
   }
   .player-export-meta {
-    min-width: 280px;
     display: grid;
     gap: 8px;
   }
   .player-export-meta.compact-meta {
-    min-width: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: 12px;
   }
@@ -1083,46 +1174,11 @@
   .player-export-footer b {
     color: var(--accent);
   }
-  .review-export-summary-panel {
-    break-inside: auto !important;
-    page-break-inside: auto !important;
-    margin-bottom: 0;
-  }
-  .review-export-summary-panel .summary-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .review-export-summary-panel .stat {
-    border-radius: 12px;
-    padding: 7px 9px;
-  }
-  .review-export-summary-panel .stat-label {
-    font-size: 10px;
-    margin-bottom: 2px;
-  }
-  .review-export-summary-panel .stat-value {
-    font-size: 17px;
-    line-height: 1.15;
-  }
-  .review-export-list-page {
-    break-before: page;
-    page-break-before: always;
-    margin-top: 16px;
-  }
-  .review-export-section {
-    margin-bottom: 16px;
-  }
-  .review-export-list {
-    display: grid;
-    gap: 12px;
-  }
-  .review-export-empty {
-    border: 1px dashed #d9cdbd;
-    border-radius: 12px;
-    background: #fffaf4;
-    padding: 14px 16px;
-    color: var(--muted);
-    font-size: 13px;
+  .review-export-warning {
+    color: #8f1f16;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.75;
   }
   .battle-summary-details {
     border: 1px solid #e3d9cd;
@@ -1366,7 +1422,9 @@
                     <input id="death_pct" type="number" min="1" max="50" step="1" value="30">
                   </div>
                 </div>
-                <div class="review-note">重要提醒：數據很多時候無法體現戰術價值，系統規則是寫死的，實際狀況還要結合錄像和人員覆盤判斷。</div>
+                <div class="review-topbar-actions">
+                  <div class="review-note">重要提醒：數據很多時候無法體現戰術價值，系統規則是寫死的，實際狀況還要結合錄像和人員覆盤判斷。</div>
+                </div>
               </div>
               <div class="summary-grid" id="battle_summary"></div>
               <div style="height:14px;"></div>
@@ -4963,6 +5021,20 @@ function renderMatchupExportSection(title, tableHtml, rosterHtml = '') {
   `;
 }
 
+function matchupExportTitleClass(title) {
+  const key = String(title || '').trim();
+  if (key === '所有DPS（排除鐵衣、素問）') return 'matchup-title-all-dps';
+  if (key === '碎夢') return 'matchup-title-suimeng';
+  if (key === '血河') return 'matchup-title-xuehe';
+  if (key === '神相') return 'matchup-title-shenxiang';
+  if (key === '九靈') return 'matchup-title-jiuling';
+  if (key === '龍吟') return 'matchup-title-longyin';
+  if (key === '鐵衣') return 'matchup-title-tieyi';
+  if (key === '素問') return 'matchup-title-suwen';
+  if (key === '玄機') return 'matchup-title-xuanji';
+  return '';
+}
+
 function renderMatchupExportDpsCard(title, myList, foeList, threshold, options = {}) {
   const metricRows = options.metricRows || matchupDpsGroupMetricsRows();
   const isDpsJob = !!options.isDpsJob;
@@ -4972,10 +5044,11 @@ function renderMatchupExportDpsCard(title, myList, foeList, threshold, options =
   const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'defense');
   const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'attack');
   const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'defense');
+  const titleClass = matchupExportTitleClass(title);
   return `
     <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
       <div class="matchup-body">
-        <div class="matchup-title">${escHtml(title)}</div>
+        <div class="matchup-title ${titleClass}">${escHtml(title)}</div>
         <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
         ${renderMatchupExportSection(
           '整體',
@@ -4998,10 +5071,11 @@ function renderMatchupExportDpsCard(title, myList, foeList, threshold, options =
 
 function renderMatchupExportSimpleCard(title, myList, foeList, options = {}) {
   const metricRows = options.metricRows || matchupMetricRows(title);
+  const titleClass = matchupExportTitleClass(title);
   return `
     <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
       <div class="matchup-body">
-        <div class="matchup-title">${escHtml(title)}</div>
+        <div class="matchup-title ${titleClass}">${escHtml(title)}</div>
         <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
         ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct })}
         <div class="matchup-roster-scroll">
@@ -5177,7 +5251,7 @@ function renderBattleReviewExportSheet(context) {
         ${renderBattleReviewExportSection(reviewBucketLabel('observation'), buckets.observation)}
       </div>
 
-      <div class="player-export-footer">
+      <div class="player-export-footer review-export-warning">
         <b>附註：</b>本頁為單場覆盤輔助資料，不能單憑數據直接判定玩家表現。實際情況仍需結合分工、錄像與戰場脈絡一起判讀。
       </div>
     </div>
@@ -5885,6 +5959,7 @@ document.getElementById('profession_sort_field').addEventListener('change', rend
 document.getElementById('profession_sort_order').addEventListener('change', renderProfessionTable);
 document.getElementById('btn_export_profession_pdf').addEventListener('click', exportProfessionPdf);
 document.getElementById('btn_export_focus_pdf').addEventListener('click', exportFocusPdf);
+document.getElementById('btn_export_review_pdf')?.addEventListener('click', exportBattleReviewPdf);
 document.getElementById('opponent_focus_select').addEventListener('change', () => {
   renderFocusBattleOptions();
   renderOpponentFocus();
