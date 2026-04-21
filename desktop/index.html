@@ -4158,7 +4158,7 @@ async function exportCurrentPlayerPdf() {
   <meta charset="UTF-8">
   <title>${escHtml(titleText)}</title>
   <style>${styleText}</style>
-  <style>@page { size: A4 portrait; }</style>
+  <style>@page { size: A4 landscape; }</style>
 </head>
 <body class="print-export">
   <div class="print-host">${exportNode.outerHTML}</div>
@@ -4205,6 +4205,7 @@ async function exportCurrentPlayerLeadersPdf() {
   <meta charset="UTF-8">
   <title>${escHtml(titleText)}</title>
   <style>${styleText}</style>
+  <style>@page { size: A4 portrait; }</style>
 </head>
 <body class="print-export">
   <div class="print-host">${exportNode.outerHTML}</div>
@@ -4305,6 +4306,7 @@ async function exportFocusPdf() {
   <meta charset="UTF-8">
   <title>${escHtml(titleText)}</title>
   <style>${styleText}</style>
+  <style>@page { size: A4 portrait; }</style>
 </head>
 <body class="print-export">
   <div class="print-host">${exportNode.outerHTML}</div>
@@ -4723,8 +4725,8 @@ function renderMatchupAggregateTable(myList, foeList, rows = matchupDpsGroupMetr
         <tr>
           <th>指標</th>
           <th>己方總量</th>
-          <th>對方總量</th>
-          <th class="matchup-divider">己方平均</th>
+          <th>己方平均</th>
+          <th class="matchup-divider">對方總量</th>
           <th>對方平均</th>
         </tr>
       </thead>
@@ -4738,8 +4740,8 @@ function renderMatchupAggregateTable(myList, foeList, rows = matchupDpsGroupMetr
           <tr>
             <td>${escHtml(label)}</td>
             <td class="${wTotal ? 'matchup-weak' : sTotal ? 'matchup-strong' : ''}">${wTotal ? '*' : sTotal ? '#' : ''}${matchupValueLabel(myList, key, 'total')}</td>
-            <td>${matchupValueLabel(foeList, key, 'total')}</td>
-            <td class="matchup-divider ${wAvg ? 'matchup-weak' : sAvg ? 'matchup-strong' : ''}">${wAvg ? '*' : sAvg ? '#' : ''}${matchupValueLabel(myList, key, 'average')}</td>
+            <td class="${wAvg ? 'matchup-weak' : sAvg ? 'matchup-strong' : ''}">${wAvg ? '*' : sAvg ? '#' : ''}${matchupValueLabel(myList, key, 'average')}</td>
+            <td class="matchup-divider">${matchupValueLabel(foeList, key, 'total')}</td>
             <td>${matchupValueLabel(foeList, key, 'average')}</td>
           </tr>
           `;
@@ -4845,6 +4847,205 @@ function renderSimpleJobCard(title, myList, foeList, options = {}) {
   `;
 }
 
+function currentMatchupExportContext() {
+  const battle = activeBattle();
+  if (!battle) return null;
+  const myPlayers = (battle.players || []).map(derivePlayer);
+  const foePlayers = (battle.opponentPlayers || []).map(derivePlayer);
+  const threshold = Math.max(0, Number(document.getElementById('matchup_kill_split')?.value || 5));
+  const weakPct = Math.max(1, Number(document.getElementById('matchup_weak_pct')?.value || 10));
+  const strongPct = Math.max(1, Number(document.getElementById('matchup_strong_pct')?.value || 10));
+  const rosterBottomPct = Math.max(1, Number(document.getElementById('matchup_roster_bottom_pct')?.value || 20));
+  const topBuildProtectedNames = new Set(
+    [...myPlayers]
+      .sort((a, b) => Number(b.buildDamage || 0) - Number(a.buildDamage || 0) || a.name.localeCompare(b.name, 'zh-Hant'))
+      .slice(0, 10)
+      .map(player => player.name)
+  );
+  myPlayers.forEach(player => {
+    player._topBuildProtected = topBuildProtectedNames.has(player.name);
+  });
+  const jobs = [...new Set([...myPlayers.map(player => player.job), ...foePlayers.map(player => player.job)].filter(Boolean))]
+    .sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
+  const dpsJobs = jobs.filter(job => job !== '素問' && job !== '鐵衣');
+  const supportJobs = jobs.filter(job => job === '素問' || job === '鐵衣');
+  return {
+    battle,
+    myPlayers,
+    foePlayers,
+    jobs,
+    dpsJobs,
+    supportJobs,
+    threshold,
+    weakPct,
+    strongPct,
+    rosterBottomPct,
+  };
+}
+
+function renderMatchupExportSection(title, tableHtml, rosterHtml = '') {
+  return `
+    <div class="matchup-subsection" data-matchup-scope="export">
+      <div class="matchup-subsection-title">${escHtml(title)}</div>
+      ${tableHtml}
+      ${rosterHtml}
+    </div>
+  `;
+}
+
+function renderMatchupExportDpsCard(title, myList, foeList, threshold, options = {}) {
+  const metricRows = options.metricRows || matchupDpsGroupMetricsRows();
+  const isDpsJob = !!options.isDpsJob;
+  const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
+  const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
+  const myAttack = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'attack');
+  const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'defense');
+  const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'attack');
+  const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'defense');
+  return `
+    <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
+      <div class="matchup-body">
+        <div class="matchup-title">${escHtml(title)}</div>
+        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
+        ${renderMatchupExportSection(
+          '整體',
+          renderMatchupAggregateTable(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct })
+        )}
+        ${renderMatchupExportSection(
+          '進攻組',
+          renderMatchupAggregateTable(myAttack, foeAttack, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
+          `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(`己方 ${title}・進攻組`, myAttack, { highlightWeak: true, myList: myAttack, foeList: foeAttack, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(`對方 ${title}・進攻組`, foeAttack)}</div></div>`
+        )}
+        ${renderMatchupExportSection(
+          '防守+保鑣組',
+          renderMatchupAggregateTable(myDefense, foeDefense, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
+          `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(`己方 ${title}・防守+保鑣組`, myDefense, { highlightWeak: true, myList: myDefense, foeList: foeDefense, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(`對方 ${title}・防守+保鑣組`, foeDefense)}</div></div>`
+        )}
+      </div>
+    </div>
+  `;
+}
+
+function renderMatchupExportSimpleCard(title, myList, foeList, options = {}) {
+  const metricRows = options.metricRows || matchupMetricRows(title);
+  return `
+    <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
+      <div class="matchup-body">
+        <div class="matchup-title">${escHtml(title)}</div>
+        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
+        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct })}
+        <div class="matchup-roster-scroll">
+          <div class="matchup-rosters">
+            ${renderMatchupRoster(`己方 ${title}`, myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'overall', weakPct: options.weakPct } })}
+            ${renderMatchupRoster(`對方 ${title}`, foeList)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMatchupExportSheet(context) {
+  const { battle, myPlayers, foePlayers, dpsJobs, supportJobs, threshold, weakPct, strongPct, rosterBottomPct } = context;
+  const myDps = myPlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
+  const foeDps = foePlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
+  return `
+    <div class="player-export-sheet">
+      <div class="player-export-header">
+        <div>
+          <h1 class="player-export-title">幫戰覆盤 單場對位比較</h1>
+          <div class="player-export-player">${escHtml(`${battle?.date || '未填日期'}｜${battle?.teamName || '未命名'} vs ${battle?.opponent || '未填對手'}`)}</div>
+          <div class="player-export-subtitle">依目前單場對位頁的門檻設定匯出本場同職對位比較。</div>
+          <div class="player-export-subtitle">主要用於觀察這場同職對位差異；若雙方人數差異大，結果僅供參考。</div>
+        </div>
+        <div class="player-export-meta">
+          <div class="player-export-meta-item">勝敗<b>${escHtml(battle?.result === 'win' ? '勝' : battle?.result === 'loss' ? '敗' : '未填結果')}</b></div>
+          <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-title">條件摘要</div>
+        <div class="panel-body">
+          <div class="mini-grid">
+            <div class="mini-stat">對手 DPS 分組門檻<b>${fmtNumber(threshold)}</b></div>
+            <div class="mini-stat">弱勢標紅門檻<b>${fmtNumber(weakPct)}%</b></div>
+            <div class="mini-stat">強勢標綠門檻<b>${fmtNumber(strongPct)}%</b></div>
+            <div class="mini-stat">個人弱勢後段<b>${fmtNumber(rosterBottomPct)}%</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="matchup-grid">
+        ${renderMatchupExportDpsCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
+        ${dpsJobs.map(job => {
+          const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+          const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+          return renderMatchupExportDpsCard(job, myList, foeList, threshold, { metricRows: matchupMetricRows(job), isDpsJob: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true });
+        }).join('')}
+        ${supportJobs.map(job => {
+          const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+          const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+          return renderMatchupExportSimpleCard(job, myList, foeList, { metricRows: matchupMetricRows(job), weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true });
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+async function exportMatchupPdf() {
+  const context = currentMatchupExportContext();
+  if (!context?.battle) {
+    window.alert('請先選取場次。');
+    return;
+  }
+  if (!context.foePlayers.length) {
+    window.alert('目前這場沒有對手原始名單資料，無法匯出單場對位比較。');
+    return;
+  }
+  try {
+    const stage = document.getElementById('player_export_stage');
+    if (!stage) throw new Error('找不到匯出容器。');
+    stage.innerHTML = renderMatchupExportSheet(context);
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const exportNode = stage.firstElementChild;
+    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+    const titleText = `單場對位比較_${context.battle?.date || '未填日期'}_${context.battle?.teamName || '未命名'}_vs_${context.battle?.opponent || '未填對手'}`;
+    const printWindow = window.open('', '_blank', 'width=1600,height=1000');
+    if (!printWindow) throw new Error('無法開啟列印視窗。');
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>${escHtml(titleText)}</title>
+  <style>${styleText}</style>
+  <style>@page { size: A4 landscape; }</style>
+  <style>@media print { .matchup-export-job-break { break-before: page; page-break-before: always; } }</style>
+</head>
+<body class="print-export">
+  <div class="print-host">${exportNode.outerHTML}</div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 120);
+    });
+  <\/script>
+</body>
+</html>`);
+    printWindow.document.close();
+  } catch (err) {
+    console.error(err);
+    window.alert('匯出 PDF 失敗，請稍後再試。');
+  }
+}
+
 function renderSingleBattleMatchup() {
   const box = document.getElementById('single_battle_matchup_box');
   if (!box) return;
@@ -4879,7 +5080,10 @@ function renderSingleBattleMatchup() {
   const myDps = myPlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
   const foeDps = foePlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
   box.innerHTML = `
-    <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">單場對位比較</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px;">
+      <div style="font-weight:800; color:var(--accent);">單場對位比較</div>
+      <button class="btn-primary" type="button" id="btn_export_matchup_pdf">匯出 PDF</button>
+    </div>
     <div class="matchup-setting-stack">
       <div class="matchup-setting-row">
         <div class="field">
@@ -4932,6 +5136,7 @@ function renderSingleBattleMatchup() {
   document.getElementById('matchup_weak_pct')?.addEventListener('change', renderSingleBattleMatchup);
   document.getElementById('matchup_strong_pct')?.addEventListener('change', renderSingleBattleMatchup);
   document.getElementById('matchup_roster_bottom_pct')?.addEventListener('change', renderSingleBattleMatchup);
+  document.getElementById('btn_export_matchup_pdf')?.addEventListener('click', exportMatchupPdf);
   requestAnimationFrame(syncMatchupTableWidthToRoster);
   document.getElementById('single_battle_matchup_box')?.querySelectorAll('details').forEach(el => {
     el.addEventListener('toggle', () => requestAnimationFrame(syncMatchupTableWidthToRoster));
