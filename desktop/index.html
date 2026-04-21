@@ -431,6 +431,22 @@
     text-align: right;
     white-space: nowrap;
   }
+  .summary-section-head {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .summary-section-head .summary-head-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+  }
   .tab-bar {
     display: flex;
     flex-wrap: wrap;
@@ -972,6 +988,11 @@
     background: linear-gradient(135deg, #fffaf1 0%, #f4ede1 55%, #efe6d8 100%);
     margin-bottom: 16px;
   }
+  .player-export-header.review-export-header-compact {
+    display: block;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
   .player-export-title {
     margin: 0;
     color: var(--accent);
@@ -994,6 +1015,11 @@
     min-width: 280px;
     display: grid;
     gap: 8px;
+  }
+  .player-export-meta.compact-meta {
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 12px;
   }
   .player-export-meta-item {
     border: 1px solid #e0d4c6;
@@ -1056,6 +1082,47 @@
   }
   .player-export-footer b {
     color: var(--accent);
+  }
+  .review-export-summary-panel {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    margin-bottom: 0;
+  }
+  .review-export-summary-panel .summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .review-export-summary-panel .stat {
+    border-radius: 12px;
+    padding: 7px 9px;
+  }
+  .review-export-summary-panel .stat-label {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+  .review-export-summary-panel .stat-value {
+    font-size: 17px;
+    line-height: 1.15;
+  }
+  .review-export-list-page {
+    break-before: page;
+    page-break-before: always;
+    margin-top: 16px;
+  }
+  .review-export-section {
+    margin-bottom: 16px;
+  }
+  .review-export-list {
+    display: grid;
+    gap: 12px;
+  }
+  .review-export-empty {
+    border: 1px dashed #d9cdbd;
+    border-radius: 12px;
+    background: #fffaf4;
+    padding: 14px 16px;
+    color: var(--muted);
+    font-size: 13px;
   }
   .battle-summary-details {
     border: 1px solid #e3d9cd;
@@ -3254,9 +3321,12 @@ function renderBattleSummary(review) {
     </div>
   `).join('');
   container.innerHTML = `
-    <div style="grid-column: 1 / -1; font-weight:800; color:var(--accent); margin-bottom:4px;">己方整體數據</div>
+    <div class="summary-section-head">
+      <span>己方整體數據</span>
+      <span class="summary-head-actions"><button class="btn-primary" type="button" id="btn_export_review_pdf" onclick="exportBattleReviewPdf()">匯出 PDF</button></span>
+    </div>
     ${renderItems(items)}
-    ${foe ? `<div style="grid-column: 1 / -1; font-weight:800; color:var(--accent); margin:10px 0 4px;">對手整體數據</div>
+    ${foe ? `<div class="summary-section-head" style="margin-top:10px;"><span>對手整體數據</span></div>
       ${renderItems([
         ['人數', foe.totalPlayers],
         ['總擊敗', foe.totalKill],
@@ -4991,6 +5061,179 @@ function renderMatchupExportSheet(context) {
       </div>
     </div>
   `;
+}
+
+function reviewBucketLabel(key) {
+  if (key === 'priority') return '優先找幹部覆盤';
+  if (key === 'secondary') return '歡迎找幹部覆盤';
+  if (key === 'observation') return '系統難以判定';
+  return key;
+}
+
+function renderBattleSummaryExportGrid(teamSummary, opponentSummary = null) {
+  const renderItems = rows => rows.map(([label, value]) => `
+    <div class="stat">
+      <div class="stat-label">${escHtml(label)}</div>
+      <div class="stat-value">${typeof value === 'number' ? fmtNumber(value) : escHtml(value)}</div>
+    </div>
+  `).join('');
+  const myRows = [
+    ['人數', teamSummary.totalPlayers],
+    ['總擊敗', teamSummary.totalKill],
+    ['總助攻', teamSummary.totalAssist],
+    ['總資源', teamSummary.totalResource],
+    ['總人傷', fmtLarge(teamSummary.totalPvp)],
+    ['總塔傷', fmtLarge(teamSummary.totalBuild)],
+    ['總治療', fmtLarge(teamSummary.totalHeal)],
+    ['總承傷', fmtLarge(teamSummary.totalTaken)],
+  ];
+  const foeRows = opponentSummary ? [
+    ['人數', opponentSummary.totalPlayers],
+    ['總擊敗', opponentSummary.totalKill],
+    ['總助攻', opponentSummary.totalAssist],
+    ['總資源', opponentSummary.totalResource],
+    ['總人傷', fmtLarge(opponentSummary.totalPvp)],
+    ['總塔傷', fmtLarge(opponentSummary.totalBuild)],
+    ['總治療', fmtLarge(opponentSummary.totalHeal)],
+    ['總承傷', fmtLarge(opponentSummary.totalTaken)],
+  ] : [];
+  return `
+    <div class="panel review-export-section review-export-summary-panel">
+      <div class="panel-title">團隊摘要</div>
+      <div class="panel-body">
+        <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">己方整體數據</div>
+        <div class="summary-grid">${renderItems(myRows)}</div>
+        ${opponentSummary ? `
+          <div style="font-weight:800; color:var(--accent); margin:16px 0 8px;">對手整體數據</div>
+          <div class="summary-grid">${renderItems(foeRows)}</div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderBattleReviewExportItem(player) {
+  return `
+    <div class="review-item">
+      <h5>${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}</h5>
+      <div class="flag-row">${(player.hits || []).map(hit => `<span class="flag">${escHtml(hit)}</span>`).join('')}</div>
+      <p>數據：${escHtml(player.summary)}</p>
+    </div>
+  `;
+}
+
+function renderBattleReviewExportSection(title, players) {
+  return `
+    <div class="panel review-export-section">
+      <div class="panel-title">${escHtml(title)}</div>
+      <div class="panel-body">
+        ${players.length
+          ? `<div class="review-export-list">${players.map(renderBattleReviewExportItem).join('')}</div>`
+          : '<div class="review-export-empty">目前沒有對應名單。</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function currentBattleReviewExportContext() {
+  const battle = activeBattle();
+  const review = computeBattleReview(battle);
+  if (!review || !battle || !hasBattleAssignments(battle)) return null;
+  const buckets = {
+    priority: review.summaries.filter(player => player.level === 'priority'),
+    secondary: review.summaries.filter(player => player.level === 'secondary'),
+    observation: review.summaries.filter(player => player.level === 'observation'),
+  };
+  return {
+    battle,
+    review,
+    weakPct: currentSettings().weakPct,
+    deathPct: currentSettings().deathPct,
+    buckets,
+  };
+}
+
+function renderBattleReviewExportSheet(context) {
+  const { battle, review, weakPct, deathPct, buckets } = context;
+  return `
+    <div class="player-export-sheet">
+      <div class="player-export-header review-export-header-compact">
+        <div>
+          <h1 class="player-export-title">幫戰覆盤 單場覆盤</h1>
+          <div class="player-export-player">${escHtml(`${battle?.date || '未填日期'}｜${battle?.teamName || '未命名'} vs ${battle?.opponent || '未填對手'}`)}</div>
+          <div class="player-export-subtitle">依目前單場覆盤頁的分工設定與門檻條件匯出本場正式覆盤名單。</div>
+          <div class="player-export-meta compact-meta">
+            <div class="player-export-meta-item">勝敗<b>${escHtml(battle?.result === 'win' ? '勝' : battle?.result === 'loss' ? '敗' : '未填結果')}</b></div>
+            <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
+            <div class="player-export-meta-item">後段門檻<b>${fmtNumber(weakPct)}%</b></div>
+            <div class="player-export-meta-item">高重傷門檻<b>${fmtNumber(deathPct)}%</b></div>
+          </div>
+        </div>
+      </div>
+      ${renderBattleSummaryExportGrid(review.teamSummary, battle?.opponentSummary || null)}
+      <div class="review-export-list-page">
+        ${renderBattleReviewExportSection(reviewBucketLabel('priority'), buckets.priority)}
+        ${renderBattleReviewExportSection(reviewBucketLabel('secondary'), buckets.secondary)}
+        ${renderBattleReviewExportSection(reviewBucketLabel('observation'), buckets.observation)}
+      </div>
+
+      <div class="player-export-footer">
+        <b>附註：</b>本頁為單場覆盤輔助資料，不能單憑數據直接判定玩家表現。實際情況仍需結合分工、錄像與戰場脈絡一起判讀。
+      </div>
+    </div>
+  `;
+}
+
+async function exportBattleReviewPdf() {
+  const context = currentBattleReviewExportContext();
+  if (!activeBattle()) {
+    window.alert('請先選取場次。');
+    return;
+  }
+  if (!context) {
+    window.alert('若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。');
+    return;
+  }
+  try {
+    const stage = document.getElementById('player_export_stage');
+    if (!stage) throw new Error('找不到匯出容器。');
+    stage.innerHTML = renderBattleReviewExportSheet(context);
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const exportNode = stage.firstElementChild;
+    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+    const titleText = `單場覆盤_${context.battle?.date || '未填日期'}_${context.battle?.teamName || '未命名'}_vs_${context.battle?.opponent || '未填對手'}`;
+    const printWindow = window.open('', '_blank', 'width=1280,height=1000');
+    if (!printWindow) throw new Error('無法開啟列印視窗。');
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>${escHtml(titleText)}</title>
+  <style>${styleText}</style>
+  <style>@page { size: A4 landscape; }</style>
+</head>
+<body class="print-export">
+  <div class="print-host">${exportNode.outerHTML}</div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 120);
+    });
+  <\/script>
+</body>
+</html>`);
+    printWindow.document.close();
+  } catch (err) {
+    console.error(err);
+    window.alert('匯出 PDF 失敗，請稍後再試。');
+  }
 }
 
 async function exportMatchupPdf() {
