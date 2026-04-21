@@ -776,6 +776,24 @@
     font-weight: 800;
     white-space: nowrap;
   }
+  .nowrap {
+    white-space: nowrap;
+  }
+  .profession-name-cell {
+    min-width: 7em;
+    line-height: 1.4;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+  #profession_table td:not(:nth-child(2)),
+  #profession_table th:not(:nth-child(2)) {
+    white-space: nowrap;
+  }
+  #profession_table td:nth-child(2),
+  #profession_table th:nth-child(2) {
+    min-width: 7em;
+  }
   tbody tr:hover { background: #fff8ef; }
   .clickable-row { cursor: pointer; }
   .tag {
@@ -1002,6 +1020,31 @@
     font-size: 13px;
     color: var(--text);
   }
+  .profession-export-table table {
+    min-width: 0;
+  }
+  .profession-export-panel {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  .profession-export-panel .panel-body {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  .profession-export-panel .panel-title {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  .profession-export-panel .table-wrap {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  .profession-export-table th,
+  .profession-export-table td {
+    font-size: 11px;
+    padding: 8px 8px;
+    white-space: nowrap;
+  }
   .player-export-footer {
     border: 1px solid #e0d4c6;
     border-radius: 16px;
@@ -1013,6 +1056,37 @@
   }
   .player-export-footer b {
     color: var(--accent);
+  }
+  .battle-summary-details {
+    border: 1px solid #e3d9cd;
+    border-radius: 14px;
+    background: #fffaf4;
+    overflow: hidden;
+  }
+  .battle-summary-details summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 10px 12px;
+    font-weight: 800;
+    color: var(--accent);
+    background: #faf4eb;
+    border-bottom: 1px solid #e6dbcf;
+  }
+  .battle-summary-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .battle-summary-list {
+    display: grid;
+    gap: 8px;
+    padding: 10px 12px 12px;
+  }
+  .battle-summary-item {
+    border: 1px solid #e6dbcf;
+    border-radius: 12px;
+    background: #fffdf8;
+    padding: 9px 10px;
+    font-size: 12px;
+    color: var(--text);
   }
   .print-host {
     background:
@@ -1339,9 +1413,6 @@
                 </div>
               </div>
               <div style="height:12px;"></div>
-              <div class="player-export-actions" id="player_export_actions" hidden>
-                <button class="btn-primary" type="button" id="btn_export_player_pdf">匯出 PDF</button>
-              </div>
               <div class="detail-box" id="player_detail_box">
                 <div class="empty">輸入玩家名稱後，這裡會顯示該玩家在指定場次內的個人數據。</div>
               </div>
@@ -1364,7 +1435,10 @@
                 </div>
                 <div class="field">
                   <label>職業</label>
-                  <select id="profession_job_filter"></select>
+                  <select id="profession_job_filter">
+                    <option value="all">全部職業</option>
+                    <option value="non_suwen">素問外所有職業</option>
+                  </select>
                 </div>
                 <div class="field">
                   <label>團別</label>
@@ -1382,6 +1456,7 @@
                 <div class="field">
                   <label>排序欄位</label>
                   <select id="profession_sort_field">
+                    <option value="job">職業</option>
                     <option value="battles">場數</option>
                     <option value="wins">勝場</option>
                     <option value="losses">敗場</option>
@@ -1421,6 +1496,9 @@
                 </div>
               </div>
               <div style="height:12px;"></div>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+                <button class="btn-primary" type="button" id="btn_export_profession_pdf">匯出 PDF</button>
+              </div>
               <div class="top-scroll-wrap" id="profession_top_scroll"><div class="top-scroll-inner" id="profession_top_scroll_inner"></div></div>
               <div style="height:8px;"></div>
               <div class="table-wrap" id="profession_table_wrap">
@@ -1475,6 +1553,9 @@
                 </div>
               </div>
               <div style="height:12px;"></div>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+                <button class="btn-primary" type="button" id="btn_export_focus_pdf">匯出 PDF</button>
+              </div>
               <div class="note-box" id="focus_match_meta">請先選擇己方與對手。</div>
               <div style="height:12px;"></div>
               <div class="panel-title" style="margin:0 -18px 12px;">對手重點人物</div>
@@ -1590,6 +1671,7 @@ let importedSections = [];
 let importedRoleRows = [];
 let selectedPlayer = '';
 let currentPlayerLookupContext = null;
+let currentPlayerLeadersContext = null;
 
 function loadState() {
   try {
@@ -2940,7 +3022,11 @@ function professionRows() {
   const sortOrder = document.getElementById('profession_sort_order').value || 'desc';
   const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
   return aggregatePlayers(battleIds)
-    .filter(item => !job || job === 'all' || item.job === job)
+    .filter(item => {
+      if (!job || job === 'all') return true;
+      if (job === 'non_suwen') return item.job !== '素問';
+      return item.job === job;
+    })
     .map(item => {
       const history = groupType === 'all' ? item.history : item.history.filter(h => h.groupType === groupType);
       if (!history.length) return null;
@@ -2975,11 +3061,31 @@ function professionRows() {
     .filter(Boolean)
     .filter(item => item.battles >= minBattles)
     .sort((a, b) => {
+      if (sortField === 'job') {
+        const diff = jobSortValue(a.job) - jobSortValue(b.job);
+        if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
+        return a.name.localeCompare(b.name, 'zh-Hant');
+      }
       const av = Number(a[sortField] || 0);
       const bv = Number(b[sortField] || 0);
       if (av !== bv) return sortOrder === 'asc' ? av - bv : bv - av;
       return a.name.localeCompare(b.name, 'zh-Hant');
     });
+}
+
+function professionNameWithBreaks(name) {
+  const chars = Array.from(String(name || ''));
+  const parts = [];
+  let index = 0;
+  while (index < chars.length) {
+    let size = 4;
+    const remain = chars.length - index;
+    if (remain <= 4) size = remain;
+    else if (remain === 5) size = 3;
+    parts.push(escHtml(chars.slice(index, index + size).join('')));
+    index += size;
+  }
+  return parts.join('<wbr>');
 }
 
 function renderImportSections() {
@@ -3277,9 +3383,8 @@ function renderPlayerLookup() {
   const groupFilter = document.getElementById('player_group_filter')?.value || 'all';
   const cohortFilter = document.getElementById('player_cohort_filter')?.value || 'same_job';
   const lookupRows = lookupPlayerRows(battleIds, groupFilter);
-  renderPlayerLeaders(battleIds, groupFilter);
+  renderPlayerLeaders(battleIds, { groupFilter, ownTeamFilter });
   currentPlayerLookupContext = null;
-  togglePlayerExportActions(false);
   if (!search) {
     renderPlayerDetail(null, '請先輸入玩家名稱。');
     return;
@@ -3294,7 +3399,6 @@ function renderPlayerLookup() {
   const exact = rows.find(item => item.name === search) || rows[0];
   const context = buildPlayerDetailContext(exact, { ownTeamFilter, groupFilter, cohortFilter, allRows: lookupRows, battleIds });
   currentPlayerLookupContext = context;
-  togglePlayerExportActions(true);
   renderPlayerDetailFromContext(context);
 }
 
@@ -3317,10 +3421,13 @@ function topPlayersWithTies(rows, key, limit = 5) {
   return sorted.filter(row => Number(row._ratio || 0) >= threshold);
 }
 
-function renderPlayerLeaders(battleIds, groupFilter = 'all') {
+function renderPlayerLeaders(battleIds, options = {}) {
   const box = document.getElementById('player_leaderboard_box');
+  const groupFilter = options.groupFilter || 'all';
+  const ownTeamFilter = options.ownTeamFilter || 'all';
   const rows = lookupPlayerRows(battleIds, groupFilter);
   if (!rows.length) {
+    currentPlayerLeadersContext = null;
     box.innerHTML = '<div class="empty">目前選取場次內沒有可統計的玩家資料。</div>';
     return;
   }
@@ -3328,12 +3435,25 @@ function renderPlayerLeaders(battleIds, groupFilter = 'all') {
     { title: '優先找幹部覆盤', key: 'priorityCount' },
     { title: '歡迎找幹部覆盤', key: 'secondaryCount' },
   ];
+  const groupLeaders = groups.map(group => ({
+    ...group,
+    leaders: topPlayersWithTies(rows, group.key, 5),
+  }));
+  currentPlayerLeadersContext = {
+    battleIds,
+    ownTeamFilter,
+    groupFilter,
+    groups: groupLeaders,
+  };
   box.innerHTML = `
     <details>
-      <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">建議覆盤場次統計 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊可展開）</span></summary>
+      <summary class="panel-title" style="margin:0 0 10px; border-radius:16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <span>建議覆盤場次統計 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊可展開）</span></span>
+        <button class="btn-primary" type="button" onclick="event.preventDefault(); event.stopPropagation(); exportCurrentPlayerLeadersPdf();">匯出 PDF</button>
+      </summary>
       <div class="summary-grid">
-        ${groups.map(group => {
-          const leaders = topPlayersWithTies(rows, group.key, 5);
+        ${groupLeaders.map(group => {
+          const leaders = group.leaders;
           return `
             <div class="summary-card">
               <div class="summary-label">${group.title}</div>
@@ -3397,14 +3517,19 @@ function renderPlayerDetailFromContext(context) {
     box.innerHTML = '<div class="empty">輸入玩家名稱後，這裡會顯示該玩家在指定場次內的個人數據。</div>';
     return;
   }
-  const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, focusComparisons, warningLines } = context;
+  const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, focusComparisons, warningLines, battleIds } = context;
+  const battles = filteredBattlesByIds(battleIds);
+  const battleMeta = battleSummaryMeta(battles);
   selectedPlayer = player.name;
   box.innerHTML = `
     <div>
-      <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">${escHtml(player.name)}｜${escHtml(player.job)} <small>${player.battles} 場</small></div>
+      <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">
+        <span>${escHtml(player.name)}｜${escHtml(player.job)} <small>${player.battles} 場</small></span>
+        <button class="btn-primary" type="button" onclick="exportCurrentPlayerPdf()">匯出 PDF</button>
+      </div>
       ${(player.aliasNames || []).length > 1 ? `<div class="subtle" style="margin-bottom:8px;">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
       <div class="mini-grid">
-        <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%</b></div>
+        <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%（${fmtNumber(player.wins)}/${fmtNumber(player.battles)}）</b></div>
         <div class="mini-stat">分工場次<b>${escHtml(buildGroupCountText(player))}</b></div>
         <div class="mini-stat">母體比較條件<b>${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
         <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
@@ -3412,6 +3537,13 @@ function renderPlayerDetailFromContext(context) {
         <div class="mini-stat">歡迎找幹部覆盤<b>${fmtNumber(player.secondaryCount)}</b></div>
       </div>
     </div>
+    <div class="mini-grid">
+      <div class="mini-stat">納入場次<b>${fmtNumber(battleMeta.count)} 場</b></div>
+      <div class="mini-stat">日期範圍<b>${escHtml(battleMeta.dateRange)}</b></div>
+      <div class="mini-stat">己方分布<b>${escHtml(battleMeta.teamsText)}</b></div>
+      <div class="mini-stat">對手分布<b>${escHtml(battleMeta.opponentsText)}</b></div>
+    </div>
+    ${renderBattleSummaryDetails(battles)}
     ${warningLines.length ? `<div class="note-box">${warningLines.map(line => escHtml(line)).join('<br>')}</div>` : ''}
     ${renderPlayerRadarSection(player, comparisons, comparisonRows)}
     <div>
@@ -3423,12 +3555,6 @@ function renderPlayerDetailFromContext(context) {
       ${renderPlayerCompareTable(comparisons)}
     </div>
   `;
-}
-
-function togglePlayerExportActions(show) {
-  const el = document.getElementById('player_export_actions');
-  if (!el) return;
-  el.hidden = !show;
 }
 
 function buildExportTimestamp() {
@@ -3451,9 +3577,88 @@ function exportBattleLabel(battle) {
   ].join('｜');
 }
 
+function battleDateValue(battle) {
+  const raw = String(battle?.date || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  return '';
+}
+
+function battleSummaryMeta(battles) {
+  const list = Array.isArray(battles) ? battles : [];
+  const dated = list.map(battleDateValue).filter(Boolean).sort();
+  const opponents = new Map();
+  const teams = new Map();
+  list.forEach(battle => {
+    const opponent = String(battle?.opponent || '').trim();
+    const team = String(battle?.teamName || '').trim();
+    if (opponent) opponents.set(opponent, (opponents.get(opponent) || 0) + 1);
+    if (team) teams.set(team, (teams.get(team) || 0) + 1);
+  });
+  const topEntriesText = (map, fallback) => {
+    if (!map.size) return fallback;
+    return [...map.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'))
+      .map(([name, count]) => `${name} × ${fmtNumber(count)}`)
+      .join('、');
+  };
+  return {
+    count: list.length,
+    dateRange: dated.length ? `${dated[0]} 至 ${dated[dated.length - 1]}` : '未填日期',
+    teamsText: topEntriesText(teams, '未填己方'),
+    opponentsText: topEntriesText(opponents, '未填對手'),
+  };
+}
+
+function renderBattleSummaryDetails(battles, title = '納入統計場次') {
+  const meta = battleSummaryMeta(battles);
+  return `
+    <details class="battle-summary-details">
+      <summary>${escHtml(`${title}（已納入 ${fmtNumber(meta.count)} 場，點擊展開完整清單）`)}</summary>
+      <div class="battle-summary-list">
+        ${battles.length
+          ? battles.map(battle => `<div class="battle-summary-item">${escHtml(exportBattleLabel(battle))}</div>`).join('')
+          : '<div class="battle-summary-item">目前沒有納入統計的場次。</div>'}
+      </div>
+    </details>
+  `;
+}
+
+function renderExportBattleSummarySection(battles, title = '場次摘要') {
+  const meta = battleSummaryMeta(battles);
+  return `
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">${escHtml(title)}</div>
+      <div class="panel-body">
+        <div class="mini-grid">
+          <div class="mini-stat">納入場次<b>${fmtNumber(meta.count)} 場</b></div>
+          <div class="mini-stat">日期範圍<b>${escHtml(meta.dateRange)}</b></div>
+          <div class="mini-stat">己方分布<b>${escHtml(meta.teamsText)}</b></div>
+          <div class="mini-stat">對手分布<b>${escHtml(meta.opponentsText)}</b></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderExportBattleAppendix(battles, title = '納入統計場次附錄') {
+  return `
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">${escHtml(title)}</div>
+      <div class="panel-body">
+        <div class="player-export-battles">
+          ${battles.length
+            ? battles.map(battle => `<div class="player-export-battle">${escHtml(exportBattleLabel(battle))}</div>`).join('')
+            : '<div class="player-export-battle">目前沒有納入統計的場次。</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderPlayerExportSheet(context) {
   const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, focusComparisons, warningLines, battleIds } = context;
   const battles = filteredBattlesByIds(battleIds);
+  const showBattleAppendix = battles.length > 5;
   return `
     <div class="player-export-sheet">
       <div class="player-export-header">
@@ -3480,19 +3685,15 @@ function renderPlayerExportSheet(context) {
             <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
           </div>
           ${(player.aliasNames || []).length > 1 ? `<div class="note-box">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
-          <div class="player-export-battles">
-            ${battles.length
-              ? battles.map(battle => `<div class="player-export-battle">${escHtml(exportBattleLabel(battle))}</div>`).join('')
-              : '<div class="player-export-battle">目前沒有納入統計的場次。</div>'}
-          </div>
         </div>
       </div>
+      ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
 
       <div class="panel" style="margin-bottom:16px;">
         <div class="panel-title">玩家摘要</div>
         <div class="panel-body">
           <div class="mini-grid">
-            <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%</b></div>
+            <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%（${fmtNumber(player.wins)}/${fmtNumber(player.battles)}）</b></div>
             <div class="mini-stat">分工場次<b>${escHtml(buildGroupCountText(player))}</b></div>
             <div class="mini-stat">母體比較條件<b>${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
             <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
@@ -3523,6 +3724,403 @@ function renderPlayerExportSheet(context) {
           ${renderPlayerCompareTable(comparisons)}
         </div>
       </div>
+      ${showBattleAppendix ? renderExportBattleAppendix(battles) : ''}
+    </div>
+  `;
+}
+
+function renderPlayerLeadersExportSheet(context) {
+  const battles = filteredBattlesByIds(context.battleIds || []);
+  const showBattleAppendix = battles.length > 5;
+  return `
+    <div class="player-export-sheet">
+      <div class="player-export-header">
+        <div>
+          <h1 class="player-export-title">幫戰覆盤 建議覆盤名單</h1>
+          <div class="player-export-player">${escHtml(`${OWN_TEAM_FILTER_LABELS[context.ownTeamFilter] || '全部'}｜${PLAYER_GROUP_FILTER_LABELS[context.groupFilter] || '全部'}`)}</div>
+          <div class="player-export-subtitle">依目前玩家查詢頁的己方、團別與勾選場次統計，列出建議覆盤比例最高的玩家。</div>
+        </div>
+        <div class="player-export-meta">
+          <div class="player-export-meta-item">納入統計場數<b>${fmtNumber((context.battleIds || []).length)} 場</b></div>
+          <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
+        </div>
+      </div>
+
+      ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-title">建議覆盤場次統計</div>
+        <div class="panel-body">
+          <div class="summary-grid">
+            ${(context.groups || []).map(group => `
+              <div class="summary-card">
+                <div class="summary-label">${escHtml(group.title)}</div>
+                <div class="summary-value">${group.leaders?.length ? `${group.leaders.length} 人` : '0 人'}</div>
+                <div class="subtle" style="margin-top:8px; line-height:1.7;">
+                  ${group.leaders?.length
+                    ? group.leaders.map(player => `${escHtml(player.name)}（${fmtF(player._ratio * 100, 0)}%：${fmtNumber(Number(player[group.key] || 0))}/${fmtNumber(player.battles)}）`).join('<br>')
+                    : '目前沒有符合資料'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      ${showBattleAppendix ? renderExportBattleAppendix(battles) : ''}
+    </div>
+  `;
+}
+
+function professionSortFieldLabel(value) {
+  const select = document.getElementById('profession_sort_field');
+  const option = [...(select?.options || [])].find(item => item.value === value);
+  return option?.textContent || value || '未指定';
+}
+
+function professionSortOrderLabel(value) {
+  return value === 'asc' ? '由小到大' : '由大到小';
+}
+
+function exportDateStamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function currentProfessionExportContext() {
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
+  const job = document.getElementById('profession_job_filter')?.value || 'all';
+  const groupType = document.getElementById('profession_group_filter')?.value || 'all';
+  const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
+  const sortField = document.getElementById('profession_sort_field')?.value || 'reviewSuggestCount';
+  const sortOrder = document.getElementById('profession_sort_order')?.value || 'desc';
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
+  return {
+    ownTeamFilter,
+    job,
+    groupType,
+    minBattles,
+    sortField,
+    sortOrder,
+    battleIds,
+    rows: professionRows(),
+  };
+}
+
+function focusSelectionModeLabel(teamName, opponentName) {
+  const matched = focusMatchBattles(teamName, opponentName);
+  const checked = [...document.querySelectorAll('#focus_battle_select input[type="checkbox"]:checked')]
+    .map(input => input.value)
+    .filter(Boolean);
+  if (!matched.length) return '未選取';
+  if (!checked.length || checked.length === matched.length) return '全選場次';
+  return `部分勾選（${fmtNumber(checked.length)}/${fmtNumber(matched.length)}）`;
+}
+
+function focusSummaryCardsFromRows(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const topBy = (filterFn, sortFn) => [...list].filter(filterFn || (() => true)).sort(sortFn)[0] || null;
+  const topBuild = topBy(null, (a, b) => b.avgBuildDamage - a.avgBuildDamage || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topPvp = topBy(null, (a, b) => b.avgPvpDamage - a.avgPvpDamage || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topKill = topBy(null, (a, b) => b.avgKill - a.avgKill || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topIronTaken = topBy(row => row.job === '鐵衣', (a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topIronRatio = topBy(row => row.job === '鐵衣', (a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topHealerSave = topBy(row => row.job === '素問', (a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topHealerNet = topBy(row => row.job === '素問', (a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'));
+  return [
+    { title: '拆塔最強', row: topBuild, valueText: topBuild ? `塔傷 ${fmtLarge(topBuild.avgBuildDamage)}` : '-' },
+    { title: '打人最強', row: topPvp, valueText: topPvp ? `人傷 ${fmtLarge(topPvp.avgPvpDamage)}` : '-' },
+    { title: '擊殺最多', row: topKill, valueText: topKill ? `擊殺 ${fmtAvg(topKill.avgKill)}` : '-' },
+    { title: '鐵衣最扛', row: topIronTaken, valueText: topIronTaken ? `承傷 ${fmtLarge(topIronTaken.avgTakenDamage)}` : '-' },
+    { title: '鐵衣最硬', row: topIronRatio, valueText: topIronRatio ? `承傷 ${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : '-' },
+    { title: '化羽最強', row: topHealerSave, valueText: topHealerSave ? `化羽 ${fmtAvg(topHealerSave.avgSave)}` : '-' },
+    { title: '淨治療最高', row: topHealerNet, valueText: topHealerNet ? `淨治療 ${fmtLarge(topHealerNet.avgNetHeal)}` : '-' },
+  ];
+}
+
+function focusDetailSectionsFromRows(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const ironRows = list.filter(row => row.job === '鐵衣');
+  const healerRows = list.filter(row => row.job === '素問');
+  return [
+    {
+      title: '拆塔前五',
+      items: [...list]
+        .sort((a, b) => b.avgBuildDamage - a.avgBuildDamage || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 5),
+      metricKey: 'avgBuildDamage',
+    },
+    {
+      title: '打人前五',
+      items: [...list]
+        .sort((a, b) => b.avgPvpDamage - a.avgPvpDamage || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 5),
+      metricKey: 'avgPvpDamage',
+    },
+    {
+      title: '擊殺前五',
+      items: [...list]
+        .sort((a, b) => b.avgKill - a.avgKill || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 5),
+      metricKey: 'avgKill',
+    },
+    {
+      title: '鐵衣重點四人',
+      items: [
+        ...[...ironRows]
+          .sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))
+          .slice(0, 2),
+        ...[...ironRows]
+          .sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))
+          .slice(0, 2),
+      ].filter((row, index, arr) => arr.findIndex(item => item.name === row.name) === index).slice(0, 4),
+      metricKey: 'avgTakenDamage',
+    },
+    {
+      title: '素問重點六人',
+      items: [
+        ...[...healerRows]
+          .sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))
+          .slice(0, 3),
+        ...[...healerRows]
+          .sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))
+          .slice(0, 3),
+      ].filter((row, index, arr) => arr.findIndex(item => item.name === row.name) === index).slice(0, 6),
+      metricKey: 'avgSave',
+    },
+  ];
+}
+
+function currentFocusExportContext() {
+  const teamName = document.getElementById('team_focus_select')?.value || '';
+  const opponentName = document.getElementById('opponent_focus_select')?.value || '';
+  const battleIds = selectedFocusBattleIds();
+  const battles = filteredBattlesByIds(battleIds);
+  const opponentData = aggregateOpponentPlayers(opponentName, battleIds);
+  const teamData = aggregateTeamPlayers(teamName, battleIds);
+  return {
+    teamName,
+    opponentName,
+    battleIds,
+    battles,
+    selectionMode: focusSelectionModeLabel(teamName, opponentName),
+    opponentData,
+    teamData,
+    opponentSummaryCards: focusSummaryCardsFromRows(opponentData.rows),
+    teamSummaryCards: focusSummaryCardsFromRows(teamData.rows),
+    opponentSections: focusDetailSectionsFromRows(opponentData.rows),
+    teamSections: focusDetailSectionsFromRows(teamData.rows),
+  };
+}
+
+function renderFocusExportSummaryCards(cards) {
+  return `
+    <div class="summary-grid">
+      ${cards.map(card => `
+        <div class="summary-card">
+          <div class="summary-label">${escHtml(card.title)}</div>
+          <div class="summary-value" style="font-size:18px;">${escHtml(card.row?.name || '-')}</div>
+          <div class="subtle" style="margin-top:8px; line-height:1.5;">${escHtml(card.valueText || '-')}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderFocusExportDetailSections(sections, emptyText) {
+  const validSections = (sections || []).filter(section => Array.isArray(section.items) && section.items.length);
+  if (!validSections.length) return `<div class="empty">${escHtml(emptyText)}</div>`;
+  return `
+    <div class="grid-3">
+      ${validSections.map(section => `
+        <div class="panel" style="margin-bottom:0;">
+          <div class="panel-title">${escHtml(section.title)}</div>
+          <div class="panel-body">
+            ${section.items.map((row, index) => `
+              <div class="note-box" style="margin-bottom:8px;">
+                <b>${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
+                ${escHtml(buildOpponentMetricText(row, section.metricKey))}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderFocusExportSide(title, cards, sections, emptyText) {
+  return `
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">${escHtml(title)}</div>
+      <div class="panel-body">
+        ${renderFocusExportSummaryCards(cards)}
+        <div style="height:12px;"></div>
+        ${renderFocusExportDetailSections(sections, emptyText)}
+      </div>
+    </div>
+  `;
+}
+
+function renderFocusExportSheet(context) {
+  const battles = context.battles || [];
+  const showBattleAppendix = battles.length > 5;
+  return `
+    <div class="player-export-sheet">
+      <div class="player-export-header">
+        <div>
+          <h1 class="player-export-title">幫戰覆盤 重點人物</h1>
+          <div class="player-export-player">${escHtml(`${context.teamName || '未選己方'} vs ${context.opponentName || '未選對手'}`)}</div>
+          <div class="player-export-subtitle">依目前重點人物頁的己方、對手與勾選場次，整理雙方重點人物摘要與詳細名單。</div>
+          <div class="player-export-subtitle">本頁為依已選場次平均後整理的重點人物摘要。數據僅供覆盤輔助，仍需結合分工、對位與實際戰況判讀。</div>
+        </div>
+        <div class="player-export-meta">
+          <div class="player-export-meta-item">納入統計場數<b>${fmtNumber(battles.length)} 場</b></div>
+          <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-title">條件摘要</div>
+        <div class="panel-body">
+          <div class="mini-grid">
+            <div class="mini-stat">己方<b>${escHtml(context.teamName || '未選取')}</b></div>
+            <div class="mini-stat">對手<b>${escHtml(context.opponentName || '未選取')}</b></div>
+            <div class="mini-stat">納入場次<b>${fmtNumber(battles.length)} 場</b></div>
+            <div class="mini-stat">日期範圍<b>${escHtml(battleSummaryMeta(battles).dateRange)}</b></div>
+            <div class="mini-stat">場次模式<b>${escHtml(context.selectionMode)}</b></div>
+          </div>
+        </div>
+      </div>
+
+      ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
+
+      ${renderFocusExportSide('對手重點人物', context.opponentSummaryCards, context.opponentSections, '目前沒有可用的對手原始名單資料。')}
+      ${renderFocusExportSide('己方重點人物', context.teamSummaryCards, context.teamSections, '目前沒有可用的己方資料。')}
+
+      ${showBattleAppendix ? renderExportBattleAppendix(battles) : ''}
+    </div>
+  `;
+}
+
+function professionExportColumns(jobFilter = 'all') {
+  const common = [
+    { key: 'name', label: '玩家', render: row => escHtml(row.name) },
+    { key: 'job', label: '職業', render: row => escHtml(row.job) },
+    { key: 'battles', label: '場數', render: row => fmtNumber(row.battles) },
+    { key: 'winRate', label: '勝率', render: row => `${(row.winRate * 100).toFixed(0)}%` },
+  ];
+  const allJobsCompact = [
+    { key: 'avgKill', label: '擊敗', render: row => row.job === '素問' ? '-' : fmtAvg(row.avgKill) },
+    { key: 'avgAssist', label: '助攻', render: row => fmtAvg(row.avgAssist) },
+    { key: 'avgDeath', label: '重傷', render: row => fmtAvg(row.avgDeath) },
+    { key: 'avgPvpDamage', label: '人傷', render: row => row.job === '素問' ? '-' : fmtLarge(row.avgPvpDamage) },
+    { key: 'avgBuildDamage', label: '塔傷', render: row => row.job === '素問' ? '-' : fmtLarge(row.avgBuildDamage) },
+    { key: 'avgTakenDamage', label: '承傷', render: row => fmtLarge(row.avgTakenDamage) },
+    { key: 'avgNetHeal', label: '淨奶', render: row => row.job === '素問' ? fmtLarge(row.avgNetHeal) : '-' },
+    { key: 'avgBurn', label: '焚骨', render: row => row.job === '素問' ? '-' : fmtAvg(row.avgBurn) },
+    { key: 'avgSave', label: '化羽', render: row => row.job === '素問' ? fmtAvg(row.avgSave) : '-' },
+    { key: 'reviewSuggestCount', label: '宜覆盤', render: row => fmtNumber(row.reviewSuggestCount) },
+  ];
+  const nonSuwen = [
+    { key: 'avgKill', label: '擊敗', render: row => fmtAvg(row.avgKill) },
+    { key: 'avgAssist', label: '助攻', render: row => fmtAvg(row.avgAssist) },
+    { key: 'avgDeath', label: '重傷', render: row => fmtAvg(row.avgDeath) },
+    { key: 'avgKillPerDeath', label: '擊殺/重傷', render: row => fmtF(row.avgKillPerDeath || 0, 2) },
+    { key: 'avgPvpDamage', label: '人傷', render: row => fmtLarge(row.avgPvpDamage) },
+    { key: 'avgPvpPerKill', label: '人傷/擊殺數', render: row => fmtPvpPerKill(row.avgPvpPerKill) },
+    { key: 'avgBuildDamage', label: '塔傷', render: row => fmtLarge(row.avgBuildDamage) },
+    { key: 'avgBuildPerDeath', label: '塔傷/重傷', render: row => fmtLarge(row.avgBuildPerDeath) },
+    { key: 'avgTakenDamage', label: '承傷', render: row => fmtLarge(row.avgTakenDamage) },
+    { key: 'avgTakenPerDeath', label: '承傷/重傷', render: row => fmtLarge(row.avgTakenPerDeath) },
+    { key: 'avgBurn', label: '焚骨', render: row => fmtAvg(row.avgBurn) },
+    { key: 'reviewSuggestCount', label: '宜覆盤', render: row => fmtNumber(row.reviewSuggestCount) },
+  ];
+  const suwen = [
+    { key: 'avgAssist', label: '助攻', render: row => fmtAvg(row.avgAssist) },
+    { key: 'avgDeath', label: '重傷', render: row => fmtAvg(row.avgDeath) },
+    { key: 'avgTakenDamage', label: '承傷', render: row => fmtLarge(row.avgTakenDamage) },
+    { key: 'avgTakenPerDeath', label: '承傷/重傷', render: row => fmtLarge(row.avgTakenPerDeath) },
+    { key: 'avgHeal', label: '治療', render: row => fmtLarge(row.avgHeal) },
+    { key: 'avgNetHeal', label: '淨奶', render: row => fmtLarge(row.avgNetHeal) },
+    { key: 'avgSave', label: '化羽', render: row => fmtAvg(row.avgSave) },
+    { key: 'reviewSuggestCount', label: '宜覆盤', render: row => fmtNumber(row.reviewSuggestCount) },
+  ];
+  if (jobFilter === '素問') return [...common, ...suwen];
+  if (jobFilter === 'non_suwen') return [...common, ...nonSuwen];
+  if (jobFilter && jobFilter !== 'all') return [...common, ...(jobFilter === '素問' ? suwen : nonSuwen)];
+  return [...common, ...allJobsCompact];
+}
+
+function renderProfessionExportTable(rows, jobFilter = 'all') {
+  const columns = professionExportColumns(jobFilter);
+  return `
+    <div class="table-wrap profession-export-table">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            ${columns.map(column => `<th>${escHtml(column.label)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.length ? rows.map((row, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              ${columns.map(column => `<td>${column.render(row)}</td>`).join('')}
+            </tr>
+          `).join('') : `<tr><td colspan="${columns.length + 1}" class="empty">目前沒有符合條件的職業資料。</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderProfessionExportSheet(context) {
+  const battles = filteredBattlesByIds(context.battleIds || []);
+  const showBattleAppendix = battles.length > 5;
+  const jobLabel = context.job === 'all' ? '全部職業' : context.job === 'non_suwen' ? '素問外所有職業' : context.job;
+  const groupLabel = context.groupType === 'all' ? '全部' : (GROUP_LABELS[context.groupType] || context.groupType);
+  return `
+    <div class="player-export-sheet">
+      <div class="player-export-header">
+        <div>
+          <h1 class="player-export-title">幫戰覆盤 職業表現</h1>
+          <div class="player-export-subtitle">依目前職業表現頁的篩選與排序條件匯出統計表。</div>
+          <div class="player-export-subtitle">本表為目前篩選條件下的統計結果，不能單憑數據直接判定玩家表現。</div>
+        </div>
+        <div class="player-export-meta">
+          <div class="player-export-meta-item">資料筆數<b>${fmtNumber(context.rows.length)} 人</b></div>
+          <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-title">條件摘要</div>
+        <div class="panel-body">
+          <div class="mini-grid">
+            <div class="mini-stat">己方<b>${escHtml(OWN_TEAM_FILTER_LABELS[context.ownTeamFilter] || '全部')}</b></div>
+            <div class="mini-stat">職業<b>${escHtml(jobLabel)}</b></div>
+            <div class="mini-stat">團別<b>${escHtml(groupLabel)}</b></div>
+            <div class="mini-stat">最低場次<b>${fmtNumber(context.minBattles)}</b></div>
+            <div class="mini-stat">排序欄位<b>${escHtml(professionSortFieldLabel(context.sortField))}</b></div>
+            <div class="mini-stat">排序方向<b>${escHtml(professionSortOrderLabel(context.sortOrder))}</b></div>
+          </div>
+        </div>
+      </div>
+
+      ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
+
+      <div class="panel profession-export-panel" style="margin-bottom:16px;">
+        <div class="panel-title">職業表現統計表</div>
+        <div class="panel-body">
+          ${renderProfessionExportTable(context.rows, context.job)}
+        </div>
+      </div>
+
+      ${showBattleAppendix ? renderExportBattleAppendix(battles) : ''}
     </div>
   `;
 }
@@ -3550,6 +4148,7 @@ async function exportCurrentPlayerPdf() {
   try {
     const exportNode = await preparePlayerExportStage(currentPlayerLookupContext);
     const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+    const titleText = `${currentPlayerLookupContext.player.name}_玩家查詢報表`;
     const printWindow = window.open('', '_blank', 'width=1440,height=960');
     if (!printWindow) throw new Error('無法開啟列印視窗。');
     printWindow.document.open();
@@ -3557,7 +4156,154 @@ async function exportCurrentPlayerPdf() {
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>${escHtml(currentPlayerLookupContext.player.name)} PDF 匯出</title>
+  <title>${escHtml(titleText)}</title>
+  <style>${styleText}</style>
+  <style>@page { size: A4 portrait; }</style>
+</head>
+<body class="print-export">
+  <div class="print-host">${exportNode.outerHTML}</div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 120);
+    });
+  <\/script>
+</body>
+</html>`);
+    printWindow.document.close();
+  } catch (err) {
+    console.error(err);
+    window.alert('匯出 PDF 失敗，請稍後再試。');
+  }
+}
+
+async function exportCurrentPlayerLeadersPdf() {
+  if (!currentPlayerLeadersContext?.groups?.length) {
+    window.alert('目前沒有可匯出的建議覆盤名單。');
+    return;
+  }
+  try {
+    const stage = document.getElementById('player_export_stage');
+    if (!stage) throw new Error('找不到匯出容器。');
+    stage.innerHTML = renderPlayerLeadersExportSheet(currentPlayerLeadersContext);
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const exportNode = stage.firstElementChild;
+    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+    const titleText = `建議覆盤場次統計_${exportDateStamp()}`;
+    const printWindow = window.open('', '_blank', 'width=1440,height=960');
+    if (!printWindow) throw new Error('無法開啟列印視窗。');
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>${escHtml(titleText)}</title>
+  <style>${styleText}</style>
+</head>
+<body class="print-export">
+  <div class="print-host">${exportNode.outerHTML}</div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 120);
+    });
+  <\/script>
+</body>
+</html>`);
+    printWindow.document.close();
+  } catch (err) {
+    console.error(err);
+    window.alert('匯出 PDF 失敗，請稍後再試。');
+  }
+}
+
+async function exportProfessionPdf() {
+  try {
+    const context = currentProfessionExportContext();
+    const stage = document.getElementById('player_export_stage');
+    if (!stage) throw new Error('找不到匯出容器。');
+    stage.innerHTML = renderProfessionExportSheet(context);
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const exportNode = stage.firstElementChild;
+    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+    const jobLabel = context.job === 'all' ? '全部職業' : context.job === 'non_suwen' ? '素問外所有職業' : context.job;
+    const titleText = `職業表現_${jobLabel}_${exportDateStamp()}`;
+    const printWindow = window.open('', '_blank', 'width=1600,height=1000');
+    if (!printWindow) throw new Error('無法開啟列印視窗。');
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>${escHtml(titleText)}</title>
+  <style>${styleText}</style>
+  <style>@page { size: A4 landscape; }</style>
+</head>
+<body class="print-export">
+  <div class="print-host">${exportNode.outerHTML}</div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 120);
+    });
+  <\/script>
+</body>
+</html>`);
+    printWindow.document.close();
+  } catch (err) {
+    console.error(err);
+    window.alert('匯出 PDF 失敗，請稍後再試。');
+  }
+}
+
+async function exportFocusPdf() {
+  const context = currentFocusExportContext();
+  if (!context.teamName || !context.opponentName) {
+    window.alert('請先選擇己方與對手。');
+    return;
+  }
+  if (!context.battles.length) {
+    window.alert('目前沒有符合條件的場次可匯出。');
+    return;
+  }
+  if (!context.opponentData.battleCount && !context.teamData.battleCount) {
+    window.alert('目前沒有可匯出的重點人物資料。');
+    return;
+  }
+  try {
+    const stage = document.getElementById('player_export_stage');
+    if (!stage) throw new Error('找不到匯出容器。');
+    stage.innerHTML = renderFocusExportSheet(context);
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const exportNode = stage.firstElementChild;
+    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+    const titleText = `重點人物_${context.teamName}_vs_${context.opponentName}_${exportDateStamp()}`;
+    const printWindow = window.open('', '_blank', 'width=1440,height=960');
+    if (!printWindow) throw new Error('無法開啟列印視窗。');
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>${escHtml(titleText)}</title>
   <style>${styleText}</style>
 </head>
 <body class="print-export">
@@ -3586,27 +4332,27 @@ function renderProfessionTable() {
   }
   body.innerHTML = rows.map((row, index) => `
     <tr>
-      <td>${index + 1}</td>
-      <td>${escHtml(row.name)}</td>
-      <td>${escHtml(row.job)}</td>
-      <td>${fmtNumber(row.battles)}</td>
-      <td>${fmtNumber(row.wins)}/${fmtNumber(row.losses)}</td>
-      <td>${(row.winRate * 100).toFixed(0)}%</td>
-      <td>${fmtAvg(row.avgKill)}</td>
-      <td>${fmtAvg(row.avgAssist)}</td>
-      <td>${fmtAvg(row.avgDeath)}</td>
-      <td>${fmtF(row.avgKillPerDeath || 0, 2)}</td>
-      <td>${fmtLarge(row.avgPvpDamage)}</td>
-      <td>${fmtPvpPerKill(row.avgPvpPerKill)}</td>
-      <td>${fmtLarge(row.avgBuildDamage)}</td>
-      <td>${fmtLarge(row.avgBuildPerDeath)}</td>
-      <td>${fmtLarge(row.avgTakenDamage)}</td>
-      <td>${fmtLarge(row.avgTakenPerDeath)}</td>
-      <td>${fmtLarge(row.avgHeal)}</td>
-      <td>${fmtLarge(row.avgNetHeal)}</td>
-      <td>${fmtAvg(row.avgBurn)}</td>
-      <td>${fmtAvg(row.avgSave)}</td>
-      <td>${fmtNumber(row.reviewSuggestCount)}</td>
+      <td><span class="nowrap">${index + 1}</span></td>
+      <td class="profession-name-cell">${professionNameWithBreaks(row.name)}</td>
+      <td><span class="nowrap">${escHtml(row.job)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.wins)}/${fmtNumber(row.losses)}</span></td>
+      <td><span class="nowrap">${(row.winRate * 100).toFixed(0)}%</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgKill)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgAssist)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgDeath)}</span></td>
+      <td><span class="nowrap">${fmtF(row.avgKillPerDeath || 0, 2)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgPvpDamage)}</span></td>
+      <td><span class="nowrap">${fmtPvpPerKill(row.avgPvpPerKill)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgBuildDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgBuildPerDeath)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenPerDeath)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgHeal)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgNetHeal)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgBurn)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgSave)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.reviewSuggestCount)}</span></td>
     </tr>
   `).join('');
   syncProfessionScrollbars();
@@ -4371,7 +5117,9 @@ function renderTeamFocus() {
 function refreshJobFilterOptions() {
   const jobs = [...new Set(aggregatePlayers().map(item => item.job))].sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
   const select = document.getElementById('profession_job_filter');
-  select.innerHTML = '<option value="all">全部職業</option>' + jobs.map(job => `<option value="${escHtml(job)}">${escHtml(job)}</option>`).join('');
+  const currentValue = select.value || 'all';
+  select.innerHTML = '<option value="all">全部職業</option><option value="non_suwen">素問外所有職業</option>' + jobs.map(job => `<option value="${escHtml(job)}">${escHtml(job)}</option>`).join('');
+  select.value = [...select.options].some(option => option.value === currentValue) ? currentValue : 'all';
 }
 
 function renderBattleFilterOptions(selectId) {
@@ -4680,7 +5428,6 @@ document.getElementById('player_battle_select').addEventListener('change', rende
 document.getElementById('player_own_team_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
-document.getElementById('btn_export_player_pdf').addEventListener('click', exportCurrentPlayerPdf);
 document.getElementById('profession_own_team_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_job_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_group_filter').addEventListener('change', renderProfessionTable);
@@ -4688,6 +5435,8 @@ document.getElementById('profession_min_battles').addEventListener('input', rend
 document.getElementById('profession_battle_select').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_sort_field').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_sort_order').addEventListener('change', renderProfessionTable);
+document.getElementById('btn_export_profession_pdf').addEventListener('click', exportProfessionPdf);
+document.getElementById('btn_export_focus_pdf').addEventListener('click', exportFocusPdf);
 document.getElementById('opponent_focus_select').addEventListener('change', () => {
   renderFocusBattleOptions();
   renderOpponentFocus();
