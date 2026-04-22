@@ -340,6 +340,29 @@
     font-size: 15px;
     line-height: 1.15;
   }
+  .focus-detail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .focus-detail-card {
+    min-width: 0;
+  }
+  .focus-detail-card-normal {
+    flex: 1 1 calc((100% - 24px) / 3);
+  }
+  .focus-detail-card-iron {
+    flex: 1.1 1 0;
+  }
+  .focus-detail-card-healer {
+    flex: 1.5 1 0;
+  }
+  .focus-detail-item {
+    margin-bottom: 8px;
+  }
+  .focus-detail-metric {
+    white-space: nowrap;
+  }
   #opponent_focus_cards .subtle {
     font-size: 11px;
     line-height: 1.35;
@@ -1248,6 +1271,102 @@
     display: block;
     margin-bottom: 6px;
   }
+  .batch-export-panel {
+    border: 1px solid #d9cdbd;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fffaf3 0%, #fff7ef 100%);
+    padding: 16px;
+  }
+  .batch-export-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .batch-export-head h3 {
+    margin: 0;
+    color: var(--accent);
+    font-size: 20px;
+  }
+  .batch-export-note {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .batch-export-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .batch-export-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .batch-export-table th,
+  .batch-export-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eadfce;
+    text-align: left;
+    vertical-align: top;
+    font-size: 13px;
+  }
+  .batch-export-table th {
+    color: var(--accent);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .batch-export-table tr:last-child td {
+    border-bottom: none;
+  }
+  .batch-export-order {
+    width: 70px;
+  }
+  .batch-export-summary {
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  .batch-export-status {
+    font-weight: 800;
+    line-height: 1.5;
+  }
+  .batch-export-status.ok {
+    color: var(--ok);
+  }
+  .batch-export-status.error {
+    color: var(--warn);
+  }
+  .batch-export-status.idle {
+    color: var(--muted);
+  }
+  .batch-export-preview {
+    color: #67584a;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+  .batch-export-queue {
+    border: 1px dashed #d5c7b6;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.6);
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  .batch-export-queue b {
+    color: var(--accent);
+  }
+  .batch-export-queue-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .batch-export-warning {
+    color: var(--warn);
+    font-weight: 800;
+  }
   @media (max-width: 1100px) {
     .layout, .split, .review-columns { grid-template-columns: 1fr; }
     .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1683,55 +1802,55 @@
               </div>
               <div class="note-box" id="focus_match_meta">請先選擇己方與對手。</div>
               <div style="height:12px;"></div>
-              <div class="panel-title" style="margin:0 -18px 12px;">對手重點人物</div>
-              <div class="summary-grid" id="opponent_focus_cards"></div>
-              <div style="height:12px;"></div>
-              <div class="grid-3">
-                <details class="opponent-card">
-                  <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
-                  <div class="opponent-card-body" id="opponent_top_build"></div>
-                </details>
-                <details class="opponent-card">
-                  <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
-                  <div class="opponent-card-body" id="opponent_top_pvp"></div>
-                </details>
-                <details class="opponent-card">
-                  <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
-                  <div class="opponent-card-body" id="opponent_top_kill"></div>
-                </details>
-                <details class="opponent-card">
-                  <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
-                  <div class="opponent-card-body" id="opponent_top_iron"></div>
-                </details>
-                <details class="opponent-card">
-                  <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
-                  <div class="opponent-card-body" id="opponent_top_healer"></div>
-                </details>
-              </div>
-              <div style="height:18px;"></div>
               <div class="panel-title" style="margin:0 -18px 12px;">己方重點人物</div>
               <div class="summary-grid" id="team_focus_cards"></div>
               <div style="height:12px;"></div>
-              <div class="grid-3">
-                <details class="opponent-card">
+              <div class="focus-detail-grid">
+                <details class="opponent-card focus-detail-card focus-detail-card-normal">
                   <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_build"></div>
                 </details>
-                <details class="opponent-card">
+                <details class="opponent-card focus-detail-card focus-detail-card-normal">
                   <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_pvp"></div>
                 </details>
-                <details class="opponent-card">
+                <details class="opponent-card focus-detail-card focus-detail-card-normal">
                   <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_kill"></div>
                 </details>
-                <details class="opponent-card">
+                <details class="opponent-card focus-detail-card focus-detail-card-iron">
                   <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_iron"></div>
                 </details>
-                <details class="opponent-card">
+                <details class="opponent-card focus-detail-card focus-detail-card-healer">
                   <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_healer"></div>
+                </details>
+              </div>
+              <div style="height:18px;"></div>
+              <div class="panel-title" style="margin:0 -18px 12px;">對手重點人物</div>
+              <div class="summary-grid" id="opponent_focus_cards"></div>
+              <div style="height:12px;"></div>
+              <div class="focus-detail-grid">
+                <details class="opponent-card focus-detail-card focus-detail-card-normal">
+                  <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div class="opponent-card-body" id="opponent_top_build"></div>
+                </details>
+                <details class="opponent-card focus-detail-card focus-detail-card-normal">
+                  <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div class="opponent-card-body" id="opponent_top_pvp"></div>
+                </details>
+                <details class="opponent-card focus-detail-card focus-detail-card-normal">
+                  <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div class="opponent-card-body" id="opponent_top_kill"></div>
+                </details>
+                <details class="opponent-card focus-detail-card focus-detail-card-iron">
+                  <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div class="opponent-card-body" id="opponent_top_iron"></div>
+                </details>
+                <details class="opponent-card focus-detail-card focus-detail-card-healer">
+                  <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <div class="opponent-card-body" id="opponent_top_healer"></div>
                 </details>
               </div>
             </div>
@@ -1797,11 +1916,34 @@ let importedRoleRows = [];
 let selectedPlayer = '';
 let currentPlayerLookupContext = null;
 let currentPlayerLeadersContext = null;
+let batchExportRunState = null;
+
+function defaultBatchExportConfig() {
+  return {
+    review: 1,
+    matchup: 2,
+    player: 3,
+    leaders: 4,
+    profession: 5,
+    focus: 6,
+  };
+}
+
+function normalizeBatchExportConfig(config = {}) {
+  const defaults = defaultBatchExportConfig();
+  return Object.fromEntries(
+    Object.keys(defaults).map(key => {
+      const value = Number(config?.[key]);
+      const max = Object.keys(defaults).length;
+      return [key, Number.isFinite(value) && value >= 0 && value <= max ? value : defaults[key]];
+    })
+  );
+}
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {} };
+    if (!raw) return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 }, batchExportConfig: defaultBatchExportConfig() };
     const parsed = JSON.parse(raw);
     return {
       battles: Array.isArray(parsed.battles) ? parsed.battles : [],
@@ -1812,10 +1954,11 @@ function loadState() {
         weakPct: Number(parsed.settings?.weakPct || 30),
         deathPct: Number(parsed.settings?.deathPct || 30),
       },
+      batchExportConfig: normalizeBatchExportConfig(parsed.batchExportConfig),
     };
   } catch (err) {
     console.error(err);
-    return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 } };
+    return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 }, batchExportConfig: defaultBatchExportConfig() };
   }
 }
 
@@ -1845,6 +1988,7 @@ function collectUiState() {
     matchupKillSplit: document.getElementById('matchup_kill_split')?.value || '5',
     matchupWeakPct: document.getElementById('matchup_weak_pct')?.value || '10',
     matchupRosterBottomPct: document.getElementById('matchup_roster_bottom_pct')?.value || '20',
+    batchExportConfig: { ...(state.batchExportConfig || defaultBatchExportConfig()) },
   };
 }
 
@@ -1871,10 +2015,12 @@ function restoreUiState(uiState = {}) {
   if (document.getElementById('matchup_kill_split')) document.getElementById('matchup_kill_split').value = uiState.matchupKillSplit || '5';
   if (document.getElementById('matchup_weak_pct')) document.getElementById('matchup_weak_pct').value = uiState.matchupWeakPct || '10';
   if (document.getElementById('matchup_roster_bottom_pct')) document.getElementById('matchup_roster_bottom_pct').value = uiState.matchupRosterBottomPct || '20';
+  state.batchExportConfig = normalizeBatchExportConfig(uiState.batchExportConfig || state.batchExportConfig);
   restoreBattleCheckboxes('player_battle_select', uiState.playerBattleIds || []);
   restoreBattleCheckboxes('profession_battle_select', uiState.professionBattleIds || []);
   renderPlayerLookup();
   renderProfessionTable();
+  if (typeof renderRulesExplain === 'function') renderRulesExplain();
   switchTab(uiState.activeTab || 'assignment');
 }
 
@@ -1889,6 +2035,7 @@ function exportReviewSnapshot() {
       importDraft: state.importDraft || {},
       aliasMap: state.aliasMap || {},
       settings: state.settings || { weakPct: 30, deathPct: 30 },
+      batchExportConfig: normalizeBatchExportConfig(state.batchExportConfig),
     },
     ui_state: collectUiState(),
   };
@@ -1939,6 +2086,7 @@ async function importReviewSnapshot(file) {
       weakPct: Number(next.settings?.weakPct || 30),
       deathPct: Number(next.settings?.deathPct || 30),
     },
+    batchExportConfig: normalizeBatchExportConfig(next.batchExportConfig),
   };
   importedSections = [];
   importedRoleRows = [];
@@ -3995,28 +4143,32 @@ function focusDetailSectionsFromRows(rows) {
       metricKey: 'avgKill',
     },
     {
-      title: '鐵衣重點四人',
-      items: [
-        ...[...ironRows]
-          .sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))
-          .slice(0, 2),
-        ...[...ironRows]
-          .sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))
-          .slice(0, 2),
-      ].filter((row, index, arr) => arr.findIndex(item => item.name === row.name) === index).slice(0, 4),
+      title: '鐵衣承傷前二',
+      items: [...ironRows]
+        .sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 2),
       metricKey: 'avgTakenDamage',
     },
     {
-      title: '素問重點六人',
-      items: [
-        ...[...healerRows]
-          .sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))
-          .slice(0, 3),
-        ...[...healerRows]
-          .sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))
-          .slice(0, 3),
-      ].filter((row, index, arr) => arr.findIndex(item => item.name === row.name) === index).slice(0, 6),
+      title: '鐵衣承傷/重傷前二',
+      items: [...ironRows]
+        .sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 2),
+      metricKey: 'avgTakenPerDeath',
+    },
+    {
+      title: '素問化羽前三',
+      items: [...healerRows]
+        .sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 3),
       metricKey: 'avgSave',
+    },
+    {
+      title: '素問淨治療前三',
+      items: [...healerRows]
+        .sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))
+        .slice(0, 3),
+      metricKey: 'avgNetHeal',
     },
   ];
 }
@@ -4057,36 +4209,57 @@ function renderFocusExportSummaryCards(cards) {
   `;
 }
 
-function renderFocusExportDetailSections(sections, emptyText) {
-  const validSections = (sections || []).filter(section => Array.isArray(section.items) && section.items.length);
-  if (!validSections.length) return `<div class="empty">${escHtml(emptyText)}</div>`;
+function renderFocusExportHeroCards(title, cards, emptyText) {
+  const validCards = (cards || []).filter(card => card?.row);
   return `
-    <div class="grid-3">
-      ${validSections.map(section => `
-        <div class="panel" style="margin-bottom:0;">
-          <div class="panel-title">${escHtml(section.title)}</div>
-          <div class="panel-body">
-            ${section.items.map((row, index) => `
-              <div class="note-box" style="margin-bottom:8px;">
-                <b>${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
-                ${escHtml(buildOpponentMetricText(row, section.metricKey))}
-              </div>
-            `).join('')}
-          </div>
+    <div style="margin-bottom:8px;">
+      <div style="font-weight:800; color:var(--ok); margin-bottom:5px; font-size:13px; line-height:1.2;">${escHtml(title)}</div>
+      ${validCards.length ? `
+        <div class="summary-grid" style="grid-template-columns:repeat(7, minmax(0, 1fr)); gap:6px;">
+          ${validCards.map(card => `
+            <div class="summary-card" style="padding:8px 8px 7px; border-color:#cfe6dc; background:linear-gradient(180deg, #f9fdfb 0%, #f2faf6 100%); border-radius:12px;">
+              <div class="summary-label" style="color:var(--text); font-size:10px; margin-bottom:3px; line-height:1.25;">${escHtml(card.title)}</div>
+              <div class="summary-value" style="font-size:14px; color:#0f6b61; line-height:1.2; font-weight:900;">${escHtml(card.row.name)}</div>
+              <div class="subtle" style="margin-top:5px; line-height:1.35; font-size:11px;">${escHtml(card.valueText || '-')}</div>
+            </div>
+          `).join('')}
         </div>
-      `).join('')}
+      ` : `<div class="empty">${escHtml(emptyText)}</div>`}
     </div>
   `;
 }
 
-function renderFocusExportSide(title, cards, sections, emptyText) {
-  return `
-    <div class="panel" style="margin-bottom:16px;">
+function renderFocusExportCompareSection(section, opponentRows, teamRows) {
+  const isHealerCompact = section.metricKey === 'avgSave' || section.metricKey === 'avgNetHeal';
+  const sectionMarginBottom = isHealerCompact ? 9 : 12;
+  const sectionBodyPadding = isHealerCompact ? '9px 11px' : '10px 12px';
+  const columnGap = isHealerCompact ? 10 : 12;
+  const noteMarginBottom = isHealerCompact ? 5 : 6;
+  const notePadding = isHealerCompact ? '7px 9px' : '8px 10px';
+  const nameFontSize = isHealerCompact ? 14 : 14;
+  const valueFontSize = isHealerCompact ? 13 : 13;
+  const valueLineHeight = isHealerCompact ? 1.48 : 1.52;
+  const renderColumn = (title, rows, metricKey, emptyText) => `
+    <div class="panel" style="margin-bottom:0;">
       <div class="panel-title">${escHtml(title)}</div>
       <div class="panel-body">
-        ${renderFocusExportSummaryCards(cards)}
-        <div style="height:12px;"></div>
-        ${renderFocusExportDetailSections(sections, emptyText)}
+        ${rows.length ? rows.map((row, index) => `
+          <div class="note-box" style="margin-bottom:${noteMarginBottom}px; padding:${notePadding};">
+            <b style="font-size:${nameFontSize}px; line-height:1.3;">${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
+            <span style="font-size:${valueFontSize}px; line-height:${valueLineHeight}; color:var(--text);">${escHtml(buildOpponentMetricText(row, metricKey))}</span>
+          </div>
+        `).join('') : `<div class="empty">${escHtml(emptyText)}</div>`}
+      </div>
+    </div>
+  `;
+  return `
+    <div class="panel" style="margin-bottom:${sectionMarginBottom}px; break-inside:avoid-page; page-break-inside:avoid;">
+      <div class="panel-title">${escHtml(section.title)}</div>
+      <div class="panel-body" style="padding:${sectionBodyPadding};">
+        <div class="grid-2" style="gap:${columnGap}px;">
+          ${renderColumn('我方', teamRows, section.metricKey, '目前沒有可用的己方資料。')}
+          ${renderColumn('對方', opponentRows, section.metricKey, '目前沒有可用的對手資料。')}
+        </div>
       </div>
     </div>
   `;
@@ -4095,38 +4268,47 @@ function renderFocusExportSide(title, cards, sections, emptyText) {
 function renderFocusExportSheet(context) {
   const battles = context.battles || [];
   const showBattleAppendix = battles.length > 5;
+  const compareSections = (context.opponentSections || []).map(opponentSection => ({
+    title: opponentSection.title,
+    metricKey: opponentSection.metricKey,
+    opponentItems: opponentSection.items || [],
+    teamItems: (context.teamSections || []).find(section => section.title === opponentSection.title)?.items || [],
+  }));
   return `
     <div class="player-export-sheet">
-      <div class="player-export-header">
+      <div class="player-export-header" style="padding:14px 16px 12px; margin-bottom:8px;">
         <div>
           <h1 class="player-export-title">幫戰覆盤 重點人物</h1>
           <div class="player-export-player">${escHtml(`${context.teamName || '未選己方'} vs ${context.opponentName || '未選對手'}`)}</div>
-          <div class="player-export-subtitle">依目前重點人物頁的己方、對手與勾選場次，整理雙方重點人物摘要與詳細名單。</div>
-          <div class="player-export-subtitle">本頁為依已選場次平均後整理的重點人物摘要。數據僅供覆盤輔助，仍需結合分工、對位與實際戰況判讀。</div>
+          <div class="player-export-subtitle" style="margin-top:4px; font-size:12px; line-height:1.35;">依目前重點人物頁的己方、對手與勾選場次，整理雙方重點人物摘要與詳細名單。</div>
+          <div class="player-export-subtitle" style="margin-top:2px; font-size:12px; line-height:1.35;">本頁為依已選場次平均後整理的重點人物摘要。數據僅供覆盤輔助，仍需結合分工、對位與實際戰況判讀。</div>
         </div>
-        <div class="player-export-meta">
-          <div class="player-export-meta-item">納入統計場數<b>${fmtNumber(battles.length)} 場</b></div>
-          <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
+        <div class="player-export-meta" style="min-width:220px; gap:5px;">
+          <div class="player-export-meta-item" style="padding:7px 9px;">納入統計場數<b style="font-size:14px;">${fmtNumber(battles.length)} 場</b></div>
+          <div class="player-export-meta-item" style="padding:7px 9px;">匯出時間<b style="font-size:14px;">${escHtml(buildExportTimestamp())}</b></div>
         </div>
       </div>
 
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-title">條件摘要</div>
-        <div class="panel-body">
-          <div class="mini-grid">
+      <div class="panel" style="margin-bottom:10px; break-inside:avoid-page; page-break-inside:avoid;">
+        <div class="panel-title">總覽</div>
+        <div class="panel-body" style="padding:12px 14px 10px;">
+          <div class="mini-grid" style="gap:6px;">
             <div class="mini-stat">己方<b>${escHtml(context.teamName || '未選取')}</b></div>
             <div class="mini-stat">對手<b>${escHtml(context.opponentName || '未選取')}</b></div>
             <div class="mini-stat">納入場次<b>${fmtNumber(battles.length)} 場</b></div>
             <div class="mini-stat">日期範圍<b>${escHtml(battleSummaryMeta(battles).dateRange)}</b></div>
             <div class="mini-stat">場次模式<b>${escHtml(context.selectionMode)}</b></div>
+            <div class="mini-stat">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
           </div>
+          <div style="height:8px;"></div>
+          ${renderFocusExportHeroCards('我方重點人物七人', context.teamSummaryCards, '目前沒有可用的己方資料。')}
+          ${renderFocusExportHeroCards('對方重點人物七人', context.opponentSummaryCards, '目前沒有可用的對手原始名單資料。')}
         </div>
       </div>
 
-      ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
-
-      ${renderFocusExportSide('對手重點人物', context.opponentSummaryCards, context.opponentSections, '目前沒有可用的對手原始名單資料。')}
-      ${renderFocusExportSide('己方重點人物', context.teamSummaryCards, context.teamSections, '目前沒有可用的己方資料。')}
+      <div class="review-export-list-page">
+        ${compareSections.map(section => renderFocusExportCompareSection(section, section.opponentItems, section.teamItems)).join('')}
+      </div>
 
       ${showBattleAppendix ? renderExportBattleAppendix(battles) : ''}
     </div>
@@ -4268,45 +4450,61 @@ async function preparePlayerExportStage(context) {
   return stage.firstElementChild;
 }
 
-async function exportCurrentPlayerPdf() {
-  if (!currentPlayerLookupContext?.player) {
-    window.alert('請先查詢玩家。');
-    return;
-  }
-  try {
-    const exportNode = await preparePlayerExportStage(currentPlayerLookupContext);
-    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
-    const titleText = `${currentPlayerLookupContext.player.name}_玩家查詢報表`;
-    const printWindow = window.open('', '_blank', 'width=1440,height=960');
-    if (!printWindow) throw new Error('無法開啟列印視窗。');
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
+function buildPrintWindowDocument({ titleText, styleText, exportHtml, pageCss = '', extraHead = '' }) {
+  return `<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <title>${escHtml(titleText)}</title>
   <style>${styleText}</style>
-  <style>@page { size: A4 landscape; }</style>
+  ${pageCss ? `<style>${pageCss}</style>` : ''}
+  ${extraHead}
 </head>
 <body class="print-export">
-  <div class="print-host">${exportNode.outerHTML}</div>
+  <div class="print-host">${exportHtml}</div>
   <script>
     window.addEventListener('load', () => {
       setTimeout(() => window.print(), 120);
     });
   <\/script>
 </body>
-</html>`);
-    printWindow.document.close();
+</html>`;
+}
+
+function openPrintExportWindow({ titleText, exportNode, width, height, pageCss = '', extraHead = '' }) {
+  const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
+  const printWindow = window.open('', '_blank', `width=${width},height=${height}`);
+  if (!printWindow) throw new Error('無法開啟列印視窗。');
+  printWindow.document.open();
+  printWindow.document.write(buildPrintWindowDocument({
+    titleText,
+    styleText,
+    exportHtml: exportNode.outerHTML,
+    pageCss,
+    extraHead,
+  }));
+  printWindow.document.close();
+}
+
+async function exportCurrentPlayerPdf(options = {}) {
+  if (!currentPlayerLookupContext?.player) {
+    if (!options.silent) window.alert('請先查詢玩家。');
+    return;
+  }
+  try {
+    const exportNode = await preparePlayerExportStage(currentPlayerLookupContext);
+    const titleText = applyBatchExportPrefix(options.prefix || '', `${currentPlayerLookupContext.player.name}_玩家查詢報表`);
+    openPrintExportWindow({ titleText, exportNode, width: 1440, height: 960, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    throw err;
   }
 }
 
-async function exportCurrentPlayerLeadersPdf() {
+async function exportCurrentPlayerLeadersPdf(options = {}) {
   if (!currentPlayerLeadersContext?.groups?.length) {
-    window.alert('目前沒有可匯出的建議覆盤名單。');
+    if (!options.silent) window.alert('目前沒有可匯出的建議覆盤名單。');
     return;
   }
   try {
@@ -4322,38 +4520,22 @@ async function exportCurrentPlayerLeadersPdf() {
     }
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const exportNode = stage.firstElementChild;
-    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
-    const titleText = `建議覆盤場次統計_${exportDateStamp()}`;
-    const printWindow = window.open('', '_blank', 'width=1440,height=960');
-    if (!printWindow) throw new Error('無法開啟列印視窗。');
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>${escHtml(titleText)}</title>
-  <style>${styleText}</style>
-  <style>@page { size: A4 portrait; }</style>
-</head>
-<body class="print-export">
-  <div class="print-host">${exportNode.outerHTML}</div>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => window.print(), 120);
-    });
-  <\/script>
-</body>
-</html>`);
-    printWindow.document.close();
+    const titleText = applyBatchExportPrefix(options.prefix || '', `建議覆盤場次統計_${exportDateStamp()}`);
+    openPrintExportWindow({ titleText, exportNode, width: 1440, height: 960, pageCss: '@page { size: A4 portrait; }' });
   } catch (err) {
     console.error(err);
-    window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    throw err;
   }
 }
 
-async function exportProfessionPdf() {
+async function exportProfessionPdf(options = {}) {
   try {
     const context = currentProfessionExportContext();
+    if (!context.rows.length) {
+      if (!options.silent) window.alert('目前沒有符合條件的職業資料。');
+      return;
+    }
     const stage = document.getElementById('player_export_stage');
     if (!stage) throw new Error('找不到匯出容器。');
     stage.innerHTML = renderProfessionExportSheet(context);
@@ -4366,48 +4548,28 @@ async function exportProfessionPdf() {
     }
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const exportNode = stage.firstElementChild;
-    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
     const jobLabel = context.job === 'all' ? '全部職業' : context.job === 'non_suwen' ? '素問外所有職業' : context.job;
-    const titleText = `職業表現_${jobLabel}_${exportDateStamp()}`;
-    const printWindow = window.open('', '_blank', 'width=1600,height=1000');
-    if (!printWindow) throw new Error('無法開啟列印視窗。');
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>${escHtml(titleText)}</title>
-  <style>${styleText}</style>
-  <style>@page { size: A4 landscape; }</style>
-</head>
-<body class="print-export">
-  <div class="print-host">${exportNode.outerHTML}</div>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => window.print(), 120);
-    });
-  <\/script>
-</body>
-</html>`);
-    printWindow.document.close();
+    const titleText = applyBatchExportPrefix(options.prefix || '', `職業表現_${jobLabel}_${exportDateStamp()}`);
+    openPrintExportWindow({ titleText, exportNode, width: 1600, height: 1000, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    throw err;
   }
 }
 
-async function exportFocusPdf() {
+async function exportFocusPdf(options = {}) {
   const context = currentFocusExportContext();
   if (!context.teamName || !context.opponentName) {
-    window.alert('請先選擇己方與對手。');
+    if (!options.silent) window.alert('請先選擇己方與對手。');
     return;
   }
   if (!context.battles.length) {
-    window.alert('目前沒有符合條件的場次可匯出。');
+    if (!options.silent) window.alert('目前沒有符合條件的場次可匯出。');
     return;
   }
   if (!context.opponentData.battleCount && !context.teamData.battleCount) {
-    window.alert('目前沒有可匯出的重點人物資料。');
+    if (!options.silent) window.alert('目前沒有可匯出的重點人物資料。');
     return;
   }
   try {
@@ -4423,32 +4585,12 @@ async function exportFocusPdf() {
     }
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const exportNode = stage.firstElementChild;
-    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
-    const titleText = `重點人物_${context.teamName}_vs_${context.opponentName}_${exportDateStamp()}`;
-    const printWindow = window.open('', '_blank', 'width=1440,height=960');
-    if (!printWindow) throw new Error('無法開啟列印視窗。');
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>${escHtml(titleText)}</title>
-  <style>${styleText}</style>
-  <style>@page { size: A4 portrait; }</style>
-</head>
-<body class="print-export">
-  <div class="print-host">${exportNode.outerHTML}</div>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => window.print(), 120);
-    });
-  <\/script>
-</body>
-</html>`);
-    printWindow.document.close();
+    const titleText = applyBatchExportPrefix(options.prefix || '', `重點人物_${context.teamName}_vs_${context.opponentName}_${exportDateStamp()}`);
+    openPrintExportWindow({ titleText, exportNode, width: 1600, height: 960, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    throw err;
   }
 }
 
@@ -4737,12 +4879,14 @@ function matchupNeedsWeakMark(key, mode, myList, foeList, options = {}) {
   if (!myList.length || !foeList.length) return false;
   const scope = options.scope || 'group';
   const isDpsJob = !!options.isDpsJob;
+  const allowSimpleAverageKillBuild = !!options.allowSimpleAverageKillBuild;
   const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const weakPct = Math.max(1, Number(options.weakPct || 10));
   const tracked =
     (mode === 'average' && ['burnCount', 'saveCount', 'death'].includes(key)) ||
     (mode === 'total' && ['burnCount', 'saveCount'].includes(key)) ||
+    (mode === 'average' && allowSimpleAverageKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'overall' && allowOverallTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'group' && allowGroupTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'average' && isDpsJob && ['buildDamage', 'kill'].includes(key));
@@ -4761,12 +4905,14 @@ function matchupNeedsStrongMark(key, mode, myList, foeList, options = {}) {
   if (!myList.length || !foeList.length) return false;
   const scope = options.scope || 'group';
   const isDpsJob = !!options.isDpsJob;
+  const allowSimpleAverageKillBuild = !!options.allowSimpleAverageKillBuild;
   const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const strongPct = Math.max(1, Number(options.strongPct || 10));
   const tracked =
     (mode === 'average' && ['burnCount', 'saveCount', 'death'].includes(key)) ||
     (mode === 'total' && ['burnCount', 'saveCount'].includes(key)) ||
+    (mode === 'average' && allowSimpleAverageKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'overall' && allowOverallTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'group' && allowGroupTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'average' && isDpsJob && ['buildDamage', 'kill'].includes(key));
@@ -4956,6 +5102,7 @@ function renderDpsBundleCard(title, myList, foeList, threshold, options = {}) {
 
 function renderSimpleJobCard(title, myList, foeList, options = {}) {
   const metricRows = options.metricRows || matchupMetricRows(title);
+  const allowSimpleAverageKillBuild = title === '鐵衣';
   return `
     <details class="matchup-card">
       <summary>
@@ -4963,7 +5110,7 @@ function renderSimpleJobCard(title, myList, foeList, options = {}) {
         <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
       </summary>
       <div class="matchup-body" data-matchup-scope="overall">
-        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct })}
+        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct, allowSimpleAverageKillBuild })}
         <div class="matchup-roster-scroll">
           <div class="matchup-rosters">
             ${renderMatchupRoster(`己方 ${title}`, myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'overall', weakPct: options.weakPct } })}
@@ -5072,12 +5219,13 @@ function renderMatchupExportDpsCard(title, myList, foeList, threshold, options =
 function renderMatchupExportSimpleCard(title, myList, foeList, options = {}) {
   const metricRows = options.metricRows || matchupMetricRows(title);
   const titleClass = matchupExportTitleClass(title);
+  const allowSimpleAverageKillBuild = title === '鐵衣';
   return `
     <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
       <div class="matchup-body">
         <div class="matchup-title ${titleClass}">${escHtml(title)}</div>
         <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
-        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct })}
+        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct, allowSimpleAverageKillBuild })}
         <div class="matchup-roster-scroll">
           <div class="matchup-rosters">
             ${renderMatchupRoster(`己方 ${title}`, myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'overall', weakPct: options.weakPct } })}
@@ -5258,14 +5406,14 @@ function renderBattleReviewExportSheet(context) {
   `;
 }
 
-async function exportBattleReviewPdf() {
+async function exportBattleReviewPdf(options = {}) {
   const context = currentBattleReviewExportContext();
   if (!activeBattle()) {
-    window.alert('請先選取場次。');
+    if (!options.silent) window.alert('請先選取場次。');
     return;
   }
   if (!context) {
-    window.alert('若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。');
+    if (!options.silent) window.alert('若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。');
     return;
   }
   try {
@@ -5281,43 +5429,23 @@ async function exportBattleReviewPdf() {
     }
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const exportNode = stage.firstElementChild;
-    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
-    const titleText = `單場覆盤_${context.battle?.date || '未填日期'}_${context.battle?.teamName || '未命名'}_vs_${context.battle?.opponent || '未填對手'}`;
-    const printWindow = window.open('', '_blank', 'width=1280,height=1000');
-    if (!printWindow) throw new Error('無法開啟列印視窗。');
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>${escHtml(titleText)}</title>
-  <style>${styleText}</style>
-  <style>@page { size: A4 landscape; }</style>
-</head>
-<body class="print-export">
-  <div class="print-host">${exportNode.outerHTML}</div>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => window.print(), 120);
-    });
-  <\/script>
-</body>
-</html>`);
-    printWindow.document.close();
+    const titleText = applyBatchExportPrefix(options.prefix || '', `單場覆盤_${context.battle?.date || '未填日期'}_${context.battle?.teamName || '未命名'}_vs_${context.battle?.opponent || '未填對手'}`);
+    openPrintExportWindow({ titleText, exportNode, width: 1280, height: 1000, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    throw err;
   }
 }
 
-async function exportMatchupPdf() {
+async function exportMatchupPdf(options = {}) {
   const context = currentMatchupExportContext();
   if (!context?.battle) {
-    window.alert('請先選取場次。');
+    if (!options.silent) window.alert('請先選取場次。');
     return;
   }
   if (!context.foePlayers.length) {
-    window.alert('目前這場沒有對手原始名單資料，無法匯出單場對位比較。');
+    if (!options.silent) window.alert('目前這場沒有對手原始名單資料，無法匯出單場對位比較。');
     return;
   }
   try {
@@ -5333,33 +5461,19 @@ async function exportMatchupPdf() {
     }
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const exportNode = stage.firstElementChild;
-    const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
-    const titleText = `單場對位比較_${context.battle?.date || '未填日期'}_${context.battle?.teamName || '未命名'}_vs_${context.battle?.opponent || '未填對手'}`;
-    const printWindow = window.open('', '_blank', 'width=1600,height=1000');
-    if (!printWindow) throw new Error('無法開啟列印視窗。');
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>${escHtml(titleText)}</title>
-  <style>${styleText}</style>
-  <style>@page { size: A4 landscape; }</style>
-  <style>@media print { .matchup-export-job-break { break-before: page; page-break-before: always; } }</style>
-</head>
-<body class="print-export">
-  <div class="print-host">${exportNode.outerHTML}</div>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => window.print(), 120);
+    const titleText = applyBatchExportPrefix(options.prefix || '', `單場對位比較_${context.battle?.date || '未填日期'}_${context.battle?.teamName || '未命名'}_vs_${context.battle?.opponent || '未填對手'}`);
+    openPrintExportWindow({
+      titleText,
+      exportNode,
+      width: 1600,
+      height: 1000,
+      pageCss: '@page { size: A4 landscape; }',
+      extraHead: '<style>@media print { .matchup-export-job-break { break-before: page; page-break-before: always; } }</style>',
     });
-  <\/script>
-</body>
-</html>`);
-    printWindow.document.close();
   } catch (err) {
     console.error(err);
-    window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    throw err;
   }
 }
 
@@ -5462,13 +5576,32 @@ function renderSingleBattleMatchup() {
 
 function buildOpponentMetricText(row, metricKey) {
   const parts = [];
-  if (metricKey === 'avgTakenDamage' || metricKey === 'avgTakenPerDeath') {
+  if (metricKey === 'avgBuildDamage') {
+    parts.push(`塔傷 ${fmtLarge(row.avgBuildDamage)}`);
+    parts.push(`擊殺 ${fmtAvg(row.avgKill)}`);
+    parts.push(`人傷 ${fmtLarge(row.avgPvpDamage)}`);
+    parts.push(`重傷 ${fmtAvg(row.avgDeath)}`);
+  } else if (metricKey === 'avgPvpDamage') {
+    parts.push(`人傷 ${fmtLarge(row.avgPvpDamage)}`);
+    parts.push(`擊殺 ${fmtAvg(row.avgKill)}`);
+    parts.push(`塔傷 ${fmtLarge(row.avgBuildDamage)}`);
+    parts.push(`重傷 ${fmtAvg(row.avgDeath)}`);
+  } else if (metricKey === 'avgKill') {
+    parts.push(`擊殺 ${fmtAvg(row.avgKill)}`);
+    parts.push(`人傷 ${fmtLarge(row.avgPvpDamage)}`);
+    parts.push(`塔傷 ${fmtLarge(row.avgBuildDamage)}`);
+    parts.push(`重傷 ${fmtAvg(row.avgDeath)}`);
+  } else if (metricKey === 'avgTakenDamage' || metricKey === 'avgTakenPerDeath') {
+    if (metricKey === 'avgTakenPerDeath') parts.push(`承傷/重傷 ${fmtLarge(row.avgTakenPerDeath)}`);
     parts.push(`承傷 ${fmtLarge(row.avgTakenDamage)}`);
-    parts.push(`承傷/重傷 ${fmtLarge(row.avgTakenPerDeath)}`);
+    if (metricKey !== 'avgTakenPerDeath') parts.push(`承傷/重傷 ${fmtLarge(row.avgTakenPerDeath)}`);
+    parts.push(`擊殺 ${fmtAvg(row.avgKill)}`);
     parts.push(`重傷 ${fmtAvg(row.avgDeath)}`);
   } else if (metricKey === 'avgSave' || metricKey === 'avgNetHeal') {
+    if (metricKey === 'avgNetHeal') parts.push(`淨治療 ${fmtLarge(row.avgNetHeal)}`);
     parts.push(`化羽 ${fmtAvg(row.avgSave)}`);
-    parts.push(`淨治療 ${fmtLarge(row.avgNetHeal)}`);
+    if (metricKey !== 'avgNetHeal') parts.push(`淨治療 ${fmtLarge(row.avgNetHeal)}`);
+    parts.push(`治療 ${fmtLarge(row.avgHeal)}`);
     parts.push(`承傷 ${fmtLarge(row.avgTakenDamage)}`);
     parts.push(`重傷 ${fmtAvg(row.avgDeath)}`);
   } else {
@@ -5508,9 +5641,9 @@ function renderOpponentSectionList(el, sections) {
   el.innerHTML = validSections.map(section => `
     <div style="font-weight:800; color:var(--accent); margin:0 0 8px;">${escHtml(section.title)}</div>
     ${section.rows.map((row, index) => `
-      <div class="note-box" style="margin-bottom:8px;">
+      <div class="note-box focus-detail-item">
         <b>${index + 1}. ${escHtml(row.name)}｜${escHtml(row.job)}</b><br>
-        ${escHtml(buildOpponentMetricText(row, section.metricKey))}
+        <span class="focus-detail-metric">${escHtml(buildOpponentMetricText(row, section.metricKey))}</span>
       </div>
     `).join('')}
   `).join('');
@@ -5729,7 +5862,259 @@ function renderRulesExplain() {
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">系統難以判定通常是資料有警訊，但還不足以直接進建議覆盤名單；優先找幹部覆盤通常是主指標偏弱又進高重傷，或同時命中多個主條件；歡迎找幹部覆盤則是主指標偏弱但還沒到最嚴重，或進攻側高重傷且主責沒有補回成本。</span></div>
     <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦度門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。塔傷門檻定為單場塔傷排名前 10 名，或塔傷/重傷 > 1700萬。達標以上任一門檻，即使其他數據不佳也不會進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。單一弱項通常不直接進名單，但若再疊加高重傷仍會進待查；若化羽或淨奶量是該分組第一，則直接排除，不進自動名單。需要時再由人工備註補充。</span></div>
+    ${renderBatchExportPanel()}
   `;
+}
+
+function batchExportItems() {
+  const activeBattleContext = currentBattleReviewExportContext();
+  const matchupContext = currentMatchupExportContext();
+  const professionContext = currentProfessionExportContext();
+  const focusContext = currentFocusExportContext();
+  const definitions = [
+    {
+      key: 'review',
+      label: '單場覆盤',
+      baseTitle: activeBattleContext?.battle ? `單場覆盤_${activeBattleContext.battle.date || '未填日期'}_${activeBattleContext.battle.teamName || '未命名'}_vs_${activeBattleContext.battle.opponent || '未填對手'}` : '單場覆盤',
+      summary: activeBattleContext?.battle
+        ? `${activeBattleContext.battle.date || '未填日期'}｜${activeBattleContext.battle.teamName || '未命名'} vs ${activeBattleContext.battle.opponent || '未填對手'}`
+        : '尚未選取場次',
+      valid: !!activeBattleContext,
+      reason: !activeBattle() ? '尚未選取場次' : (!activeBattleContext ? '目前場次沒有分工，無法匯出單場覆盤' : ''),
+      exportFn: exportBattleReviewPdf,
+    },
+    {
+      key: 'matchup',
+      label: '單場對位比較',
+      baseTitle: matchupContext?.battle ? `單場對位比較_${matchupContext.battle.date || '未填日期'}_${matchupContext.battle.teamName || '未命名'}_vs_${matchupContext.battle.opponent || '未填對手'}` : '單場對位比較',
+      summary: matchupContext?.battle
+        ? `${matchupContext.battle.date || '未填日期'}｜${matchupContext.battle.teamName || '未命名'} vs ${matchupContext.battle.opponent || '未填對手'}`
+        : '尚未選取場次',
+      valid: !!(matchupContext?.battle && matchupContext.foePlayers.length),
+      reason: !activeBattle() ? '尚未選取場次' : (!(matchupContext?.foePlayers || []).length ? '目前這場沒有對手原始名單' : ''),
+      exportFn: exportMatchupPdf,
+    },
+    {
+      key: 'player',
+      label: '玩家查詢',
+      baseTitle: currentPlayerLookupContext?.player ? `${currentPlayerLookupContext.player.name}_玩家查詢報表` : '玩家查詢',
+      summary: currentPlayerLookupContext?.player
+        ? `玩家：${currentPlayerLookupContext.player.name}｜同 cohort：${PLAYER_COHORT_LABELS[currentPlayerLookupContext.cohortMode] || currentPlayerLookupContext.cohortMode || '同職業'}`
+        : '尚未查詢玩家',
+      valid: !!currentPlayerLookupContext?.player,
+      reason: currentPlayerLookupContext?.player ? '' : '尚未查詢玩家',
+      exportFn: exportCurrentPlayerPdf,
+    },
+    {
+      key: 'leaders',
+      label: '建議覆盤場次統計',
+      baseTitle: `建議覆盤場次統計_${exportDateStamp()}`,
+      summary: currentPlayerLeadersContext?.groups?.length
+        ? `群組數：${fmtNumber(currentPlayerLeadersContext.groups.length)}｜場次：${fmtNumber(currentPlayerLeadersContext.battleIds?.length || 0)}`
+        : '目前沒有可匯出的建議覆盤名單',
+      valid: !!currentPlayerLeadersContext?.groups?.length,
+      reason: currentPlayerLeadersContext?.groups?.length ? '' : '目前沒有可匯出的建議覆盤名單',
+      exportFn: exportCurrentPlayerLeadersPdf,
+    },
+    {
+      key: 'profession',
+      label: '職業表現',
+      baseTitle: `職業表現_${professionContext.job === 'all' ? '全部職業' : professionContext.job === 'non_suwen' ? '素問外所有職業' : professionContext.job}_${exportDateStamp()}`,
+      summary: `職業：${professionContext.job === 'all' ? '全部職業' : professionContext.job === 'non_suwen' ? '素問外所有職業' : professionContext.job}｜團別：${GROUP_LABELS[professionContext.groupType] || (professionContext.groupType === 'all' ? '全部' : professionContext.groupType)}｜資料：${fmtNumber(professionContext.rows.length)} 人`,
+      valid: professionContext.rows.length > 0,
+      reason: professionContext.rows.length > 0 ? '' : '目前沒有符合條件的職業資料',
+      exportFn: exportProfessionPdf,
+    },
+    {
+      key: 'focus',
+      label: '重點人物',
+      baseTitle: `重點人物_${focusContext.teamName || '未選己方'}_vs_${focusContext.opponentName || '未選對手'}_${exportDateStamp()}`,
+      summary: `${focusContext.teamName || '未選己方'} vs ${focusContext.opponentName || '未選對手'}｜場次：${fmtNumber(focusContext.battles.length || 0)}｜模式：${focusContext.selectionMode}`,
+      valid: !!(focusContext.teamName && focusContext.opponentName && focusContext.battles.length && (focusContext.opponentData.battleCount || focusContext.teamData.battleCount)),
+      reason: !focusContext.teamName || !focusContext.opponentName
+        ? '尚未選擇己方與對手'
+        : (!focusContext.battles.length ? '目前沒有符合條件的場次' : (!(focusContext.opponentData.battleCount || focusContext.teamData.battleCount) ? '目前沒有可匯出的重點人物資料' : '')),
+      exportFn: exportFocusPdf,
+    },
+  ];
+  return definitions.map(item => ({
+    ...item,
+    order: Number(state.batchExportConfig?.[item.key] ?? 0),
+  }));
+}
+
+function batchExportSelectionIssues(items = batchExportItems()) {
+  const selected = items.filter(item => item.order > 0);
+  if (!selected.length) return ['至少要指定一個匯出項目的排序。'];
+  const used = new Map();
+  const issues = [];
+  selected.forEach(item => {
+    if (used.has(item.order)) {
+      issues.push(`排序 ${item.order} 重複：${used.get(item.order)}、${item.label}`);
+    } else {
+      used.set(item.order, item.label);
+    }
+    if (!item.valid) issues.push(`${item.label} 目前不可匯出：${item.reason}`);
+  });
+  return issues;
+}
+
+function orderedBatchExportQueue(items = batchExportItems()) {
+  return items
+    .filter(item => item.order > 0 && item.valid)
+    .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, 'zh-Hant'));
+}
+
+function batchExportPrefixedTitle(baseTitle, prefix = '') {
+  return prefix ? `${prefix}_${baseTitle}` : baseTitle;
+}
+
+function applyBatchExportPrefix(prefix, baseTitle) {
+  return batchExportPrefixedTitle(baseTitle, prefix);
+}
+
+function updateBatchExportOrder(key, value) {
+  if (!state.batchExportConfig) state.batchExportConfig = defaultBatchExportConfig();
+  const max = batchExportItems().length;
+  const next = Number(value);
+  state.batchExportConfig[key] = Number.isFinite(next) && next >= 0 && next <= max ? next : 0;
+  saveState();
+  renderRulesExplain();
+}
+
+function resetBatchExportOrders() {
+  state.batchExportConfig = defaultBatchExportConfig();
+  batchExportRunState = null;
+  saveState();
+  renderRulesExplain();
+}
+
+function renderBatchExportPanel() {
+  const items = batchExportItems();
+  const maxOrder = items.length;
+  const issues = batchExportSelectionIssues(items);
+  const queue = orderedBatchExportQueue(items);
+  return `
+    <div class="batch-export-panel">
+      <div class="batch-export-head">
+        <div>
+          <h3>批次匯出 PDF</h3>
+          <div class="batch-export-note">這裡會直接沿用你目前各頁面的篩選條件與匯出內容。排序填 <b>0</b> 代表不匯出；填 <b>1-${maxOrder}</b> 代表匯出順序。建議先按「檢查批次匯出」，確認哪些項目當前可匯。</div>
+        </div>
+        <div class="batch-export-actions">
+          <button class="btn-secondary" type="button" onclick="checkBatchExportReadiness()">檢查批次匯出</button>
+          <button class="btn-primary" type="button" onclick="startGuidedBatchExport()">逐份匯出（推薦）</button>
+          <button class="btn-ghost" type="button" onclick="resetBatchExportOrders()">重設順序</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="batch-export-table">
+          <thead>
+            <tr>
+              <th>匯出項目</th>
+              <th>順序</th>
+              <th>目前狀態</th>
+              <th>條件摘要</th>
+              <th>預設檔名</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(item => `
+              <tr>
+                <td><b>${escHtml(item.label)}</b></td>
+                <td>
+                  <select class="batch-export-order" onchange="updateBatchExportOrder('${item.key}', this.value)">
+                    ${Array.from({ length: maxOrder + 1 }, (_, index) => `<option value="${index}" ${item.order === index ? 'selected' : ''}>${index}</option>`).join('')}
+                  </select>
+                </td>
+                <td><div class="batch-export-status ${item.valid ? 'ok' : 'error'}">${item.valid ? '可匯出' : escHtml(item.reason || '目前不可匯出')}</div></td>
+                <td><div class="batch-export-summary">${escHtml(item.summary)}</div></td>
+                <td><div class="batch-export-preview">${escHtml(applyBatchExportPrefix(item.order > 0 ? String(item.order).padStart(2, '0') : '', item.baseTitle))}</div></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="batch-export-queue">
+        ${issues.length
+          ? `<div class="batch-export-warning">目前尚不能直接執行批次匯出：</div><div class="batch-export-note">${issues.map(text => `- ${escHtml(text)}`).join('<br>')}</div>`
+          : `<div><b>目前可匯出清單：</b> ${queue.length ? queue.map(item => `${String(item.order).padStart(2, '0')} ${escHtml(item.label)}`).join(' / ') : '尚未選擇任何匯出項目'}</div><div class="batch-export-note">逐份匯出模式會一次只開一份列印頁，請完成上一份列印或另存後，再回來開下一份。</div>`}
+        ${renderBatchExportRunState()}
+      </div>
+    </div>
+  `;
+}
+
+function renderBatchExportRunState() {
+  if (!batchExportRunState?.queue?.length) return '';
+  const total = batchExportRunState.queue.length;
+  const opened = Number(batchExportRunState.opened || 0);
+  const nextItem = batchExportRunState.queue[opened] || null;
+  const lastItem = opened > 0 ? batchExportRunState.queue[opened - 1] : null;
+  return `
+    <div style="margin-top:10px;">
+      <div><b>逐份匯出進度：</b> 已開啟 ${fmtNumber(opened)} / ${fmtNumber(total)} 份${lastItem ? `｜最近一次：${String(lastItem.order).padStart(2, '0')} ${escHtml(lastItem.label)}` : ''}</div>
+      <div class="batch-export-note">${nextItem ? `請完成上一份後，再按下一份。下一份將開啟：${String(nextItem.order).padStart(2, '0')} ${escHtml(nextItem.label)}` : '這一輪批次匯出已全部開啟完成。'}</div>
+      <div class="batch-export-queue-actions">
+        ${nextItem ? `<button class="btn-primary" type="button" onclick="openNextBatchExport()">開啟下一份</button>` : ''}
+        <button class="btn-ghost" type="button" onclick="clearBatchExportRunState()">清除這輪進度</button>
+      </div>
+    </div>
+  `;
+}
+
+function checkBatchExportReadiness() {
+  renderRulesExplain();
+  const issues = batchExportSelectionIssues();
+  if (issues.length) {
+    window.alert(`目前無法直接批次匯出：\n- ${issues.join('\n- ')}`);
+    return;
+  }
+  const queue = orderedBatchExportQueue();
+  window.alert(`目前可批次匯出 ${queue.length} 份 PDF：\n- ${queue.map(item => `${String(item.order).padStart(2, '0')} ${item.label}`).join('\n- ')}`);
+}
+
+async function runBatchExportItem(item) {
+  if (!item?.exportFn) return false;
+  await item.exportFn({ prefix: String(item.order).padStart(2, '0'), silent: true });
+  return true;
+}
+
+async function startGuidedBatchExport() {
+  const issues = batchExportSelectionIssues();
+  if (issues.length) {
+    renderRulesExplain();
+    window.alert(`目前無法直接批次匯出：\n- ${issues.join('\n- ')}`);
+    return;
+  }
+  batchExportRunState = {
+    queue: orderedBatchExportQueue(),
+    opened: 0,
+  };
+  renderRulesExplain();
+  await openNextBatchExport();
+}
+
+async function openNextBatchExport() {
+  if (!batchExportRunState?.queue?.length) return;
+  const nextItem = batchExportRunState.queue[batchExportRunState.opened];
+  if (!nextItem) {
+    renderRulesExplain();
+    return;
+  }
+  try {
+    await runBatchExportItem(nextItem);
+    batchExportRunState.opened += 1;
+  } catch (err) {
+    console.error(err);
+    window.alert(`開啟 ${nextItem.label} 失敗，請稍後再試。`);
+  }
+  renderRulesExplain();
+}
+
+function clearBatchExportRunState() {
+  batchExportRunState = null;
+  renderRulesExplain();
 }
 
 function renderBattleManualNote() {
