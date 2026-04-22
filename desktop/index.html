@@ -1674,6 +1674,7 @@
                       <th>團別</th>
                       <th>分隊</th>
                       <th>特殊職責</th>
+                      <th>操作</th>
                       <th>重傷</th>
                       <th>塔傷</th>
                       <th>人傷</th>
@@ -2079,6 +2080,7 @@ const PLAYER_COMPARE_METRICS = [
 let state = loadState();
 let importedSections = [];
 let importedRoleRows = [];
+let importedBattleFileLabel = '';
 let selectedPlayer = '';
 let currentPlayerLookupContext = null;
 let currentPlayerLeadersContext = null;
@@ -2306,6 +2308,23 @@ function fmtF(value, digits = 2) {
   });
 }
 
+function extractBattleFileLabel(fileName) {
+  const name = String(fileName || '').trim();
+  const match = name.match(/^(\d{8})_(\d{4,6})_/);
+  if (!match) return '';
+  return match[2];
+}
+
+function battleDisplayLabel(battle, { includePlayers = true, includeResult = false } = {}) {
+  const parts = [];
+  if (battle?.date) parts.push(battle.date);
+  if (battle?.sourceLabel) parts.push(battle.sourceLabel);
+  parts.push(`${battle?.teamName || '未命名場次'} vs ${battle?.opponent || '未填對手'}`);
+  if (includePlayers) parts.push(`${battle?.players?.length || 0}人`);
+  if (includeResult) parts.push(battle?.result === 'win' ? '勝' : battle?.result === 'loss' ? '敗' : '未填結果');
+  return parts.join('｜');
+}
+
 function fmtLarge(value) {
   const num = Number(value || 0);
   if (Math.abs(num) >= 100000000) return `${(num / 100000000).toFixed(2)} 億`;
@@ -2348,21 +2367,23 @@ function hasBattleAssignments(battle) {
 
 function parseCsvSections(text) {
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean);
+  const delimiter = detectBattleCsvDelimiter(lines);
   const sections = [];
   let i = 0;
   while (i < lines.length) {
-    const row = splitCsvLine(lines[i]);
-    if (row.length === 2 && /^\d+$/.test(row[1])) {
+    const row = splitCsvLine(lines[i], delimiter);
+    if (isBattleSectionHeader(row)) {
       const teamName = row[0];
       const count = Number(row[1]);
-      const header = splitCsvLine(lines[i + 1] || '');
+      const header = splitCsvLine(lines[i + 1] || '', delimiter);
       const players = [];
       let cursor = i + 2;
       while (cursor < lines.length) {
-        const next = splitCsvLine(lines[cursor]);
-        if (next.length === 2 && /^\d+$/.test(next[1])) break;
+        const next = splitCsvLine(lines[cursor], delimiter);
+        if (isBattleSectionHeader(next)) break;
         if (next.length >= 12 && next[0] !== '玩家名字') {
-          players.push(parsePlayerRow(next));
+          const player = parsePlayerRow(next);
+          if (player) players.push(player);
         }
         cursor += 1;
       }
@@ -2375,7 +2396,22 @@ function parseCsvSections(text) {
   return sections;
 }
 
-function splitCsvLine(line) {
+function detectBattleCsvDelimiter(lines) {
+  const sample = lines.slice(0, 8);
+  let commaScore = 0;
+  let tabScore = 0;
+  sample.forEach(line => {
+    commaScore += (line.match(/,/g) || []).length;
+    tabScore += (line.match(/\t/g) || []).length;
+  });
+  return tabScore > commaScore ? '\t' : ',';
+}
+
+function isBattleSectionHeader(row) {
+  return row.length >= 2 && row[0] && /^\d+$/.test(String(row[1] || '').trim());
+}
+
+function splitCsvLine(line, delimiter = ',') {
   const out = [];
   let current = '';
   let inQuotes = false;
@@ -2388,7 +2424,7 @@ function splitCsvLine(line) {
       } else {
         inQuotes = !inQuotes;
       }
-    } else if (ch === ',' && !inQuotes) {
+    } else if (ch === delimiter && !inQuotes) {
       out.push(current);
       current = '';
     } else {
@@ -2404,11 +2440,12 @@ function parsePlayerRow(row) {
   const player = {};
   keys.forEach((key, idx) => {
     if (idx < 2) {
-      player[key] = row[idx] || '';
+      player[key] = String(row[idx] || '').trim();
     } else {
       player[key] = Number(row[idx] || 0);
     }
   });
+  if (!player.name) return null;
   player.groupType = 'unknown';
   player.subgroup = '';
   player.specialRoles = [];
@@ -2416,7 +2453,7 @@ function parsePlayerRow(row) {
 }
 
 function parseRoleCsv(text) {
-  const rows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean).map(splitCsvLine);
+  const rows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean).map(line => splitCsvLine(line));
   if (!rows.length) return [];
   const headers = rows[0].map(h => String(h || '').trim());
   return rows.slice(1).map(row => {
@@ -2434,7 +2471,7 @@ function parseRoleCsv(text) {
       note: (obj.note || '').trim(),
       confidence: (obj.confidence || '').trim(),
     };
-  }).filter(row => row.name);
+  }).filter(row => row.name && row.name.trim());
 }
 
 function normalizeGroupType(value) {
@@ -3587,7 +3624,7 @@ function renderCurrentBattleSelect() {
     return;
   }
   select.innerHTML = state.battles.map(battle => {
-    const label = `${battle.date || '未填日期'}｜${battle.teamName || '未命名場次'} vs ${battle.opponent || '未填對手'}｜${battle.players.length}人`;
+    const label = battleDisplayLabel(battle);
     return `<option value="${escHtml(battle.id)}">${escHtml(label)}</option>`;
   }).join('');
   select.value = state.activeBattleId || state.battles[0].id;
@@ -3600,7 +3637,7 @@ function renderAssignmentTable() {
   const unknownBox = document.getElementById('assignment_unknown_box');
   const battle = activeBattle();
   if (!battle) {
-    tbody.innerHTML = '<tr><td colspan="12" class="empty">請先加入並選取一場戰報。</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="empty">請先加入並選取一場戰報。</td></tr>';
     if (stats) stats.innerHTML = '';
     if (commanderBox) commanderBox.textContent = '請先加入並選取一場戰報。';
     if (unknownBox) unknownBox.textContent = '請先加入並選取一場戰報。';
@@ -3648,6 +3685,7 @@ function renderAssignmentTable() {
       </td>
       <td><input type="text" value="${escHtml(player.subgroup || '')}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','subgroup',this.value)" placeholder="例如：進攻一隊"></td>
       <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','specialRoles',this.value)" placeholder="例如：commander,burner"></td>
+      <td><button class="btn-ghost" type="button" onclick="deleteBattlePlayer('${battle.id}','${escHtml(player.name)}')">刪除</button></td>
       <td>${fmtNumber(player.death)}</td>
       <td>${fmtLarge(player.buildDamage)}</td>
       <td>${fmtLarge(player.pvpDamage)}</td>
@@ -4931,7 +4969,7 @@ function renderFocusBattleOptions() {
     return;
   }
   box.innerHTML = battles.map(battle => {
-    const label = `${battle.date || '未填日期'}｜${battle.teamName || '未命名'} vs ${battle.opponent || '未填對手'}｜${battle.result === 'win' ? '勝' : battle.result === 'loss' ? '敗' : '未填結果'}`;
+    const label = battleDisplayLabel(battle, { includePlayers: false, includeResult: true });
     return `<label class="check-item">
       <input type="checkbox" value="${escHtml(battle.id)}" checked>
       <span>${escHtml(label)}</span>
@@ -6055,7 +6093,7 @@ function renderBattleFilterOptions(selectId) {
     return;
   }
   box.innerHTML = state.battles.map((battle, index) => {
-    const label = `${battle.date || '未填日期'}｜${battle.teamName || '未命名'} vs ${battle.opponent || '未填對手'}`;
+    const label = battleDisplayLabel(battle, { includePlayers: false });
     return `<label class="check-item">
       <input type="checkbox" value="${escHtml(battle.id)}" ${index === 0 ? '' : ''}>
       <span>${escHtml(label)}</span>
@@ -6474,6 +6512,16 @@ function updatePlayerAssignment(battleId, playerName, field, value) {
   refreshAll();
 }
 
+function deleteBattlePlayer(battleId, playerName) {
+  const battle = state.battles.find(item => item.id === battleId);
+  if (!battle) return;
+  const nextPlayers = battle.players.filter(player => player.name !== playerName);
+  if (nextPlayers.length === battle.players.length) return;
+  battle.players = nextPlayers;
+  saveState();
+  refreshAll();
+}
+
 function selectedAssignmentNames() {
   return [...document.querySelectorAll('.assign-check:checked')].map(input => input.value);
 }
@@ -6496,7 +6544,8 @@ async function handleParseCsv() {
     noteBox.textContent = '請先選擇戰報 CSV。';
     return;
   }
-  const text = await input.files[0].text();
+  importedBattleFileLabel = extractBattleFileLabel(input.files[0].name || '');
+  const text = await readBattleCsvFile(input.files[0]);
   importedSections = parseCsvSections(text);
   renderImportSections();
   if (!importedSections.length) {
@@ -6506,7 +6555,24 @@ async function handleParseCsv() {
   const first = importedSections[0];
   document.getElementById('import_section').value = '0';
   syncTeamOpponentFromSection();
-  noteBox.textContent = `已讀取 ${importedSections.length} 個戰報區段；目前預設 ${first.teamName}（${first.players.length} 人）。${importedRoleRows.length ? ` 已載入分工 ${importedRoleRows.length} 筆。` : ''}`;
+  noteBox.textContent = `已讀取 ${importedSections.length} 個戰報區段；目前預設 ${first.teamName}（${first.players.length} 人）${importedBattleFileLabel ? `；場次標記 ${importedBattleFileLabel}` : ''}。${importedRoleRows.length ? ` 已載入分工 ${importedRoleRows.length} 筆。` : ''}`;
+}
+
+async function readBattleCsvFile(file) {
+  const buffer = await file.arrayBuffer();
+  const utf8Text = new TextDecoder('utf-8').decode(buffer);
+  if (looksLikeBattleCsvText(utf8Text)) return utf8Text;
+  try {
+    const big5Text = new TextDecoder('big5').decode(buffer);
+    if (looksLikeBattleCsvText(big5Text)) return big5Text;
+  } catch (err) {
+    console.warn('Big5 decode fallback failed', err);
+  }
+  return utf8Text;
+}
+
+function looksLikeBattleCsvText(text) {
+  return text.includes('玩家名字') && parseCsvSections(text).length > 0;
 }
 
 async function handleParseRoleCsv() {
@@ -6556,6 +6622,7 @@ function handleAddBattle() {
   const battle = {
     id: makeBattleId(),
     date: document.getElementById('import_date').value || '',
+    sourceLabel: importedBattleFileLabel || '',
     opponent: opponentName,
     teamName: document.getElementById('import_team_name').value.trim() || section.teamName,
     note: document.getElementById('import_note').value.trim(),
@@ -6569,7 +6636,7 @@ function handleAddBattle() {
   state.activeBattleId = battle.id;
   saveState();
   refreshAll();
-  document.getElementById('import_note_box').textContent = `已加入場次：${battle.teamName}｜${battle.players.length} 人。${importedRoleRows.length ? ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。` : ' 目前尚未套入分工 CSV。'}`;
+  document.getElementById('import_note_box').textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${importedRoleRows.length ? ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。` : ' 目前尚未套入分工 CSV。'}`;
 }
 
 document.getElementById('btn_parse_csv').addEventListener('click', handleParseCsv);
