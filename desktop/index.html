@@ -501,16 +501,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: flex-end;
   }
   .current-battle-tools label {
     font-size: 12px;
     color: var(--muted);
     font-weight: 700;
+    white-space: nowrap;
   }
   .current-battle-tools select {
     min-width: 320px;
+    flex: 0 1 420px;
+  }
+  .current-battle-tools .btn-danger {
+    white-space: nowrap;
+  }
+  .field-tight {
+    align-self: start;
+  }
+  .field-tight label {
+    margin-bottom: 1px;
   }
   .tab-btn {
     background: #f4eadc;
@@ -859,14 +870,108 @@
   .top-scroll-inner {
     height: 8px;
   }
+  .floating-scroll-wrap {
+    position: fixed;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    width: min(1120px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid #ddd2c6;
+    border-radius: 14px;
+    background: rgba(255, 250, 244, 0.96);
+    box-shadow: 0 10px 30px rgba(60, 44, 20, 0.12);
+    height: 22px;
+    scrollbar-width: auto;
+    scrollbar-color: #b89d83 #f2e8da;
+    z-index: 40;
+    backdrop-filter: blur(4px);
+  }
+  .floating-scroll-wrap[hidden] {
+    display: none !important;
+  }
+  .floating-scroll-inner {
+    height: 8px;
+  }
+  .floating-header-wrap {
+    position: fixed;
+    top: 10px;
+    left: 0;
+    overflow: hidden;
+    border: 1px solid #ddd2c6;
+    border-radius: 14px;
+    background: rgba(250, 243, 231, 0.98);
+    box-shadow: 0 10px 30px rgba(60, 44, 20, 0.12);
+    z-index: 41;
+    backdrop-filter: blur(4px);
+  }
+  .floating-header-wrap[hidden] {
+    display: none !important;
+  }
+  .floating-header-scroll {
+    overflow: hidden;
+  }
+  .floating-header-table {
+    border-collapse: collapse;
+    min-width: max-content;
+  }
+  .floating-header-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #faf3e7;
+    color: var(--accent);
+    font-weight: 800;
+    white-space: nowrap;
+    padding: 10px 10px;
+    border-bottom: 1px solid #eee5da;
+    text-align: left;
+    font-size: 12px;
+    vertical-align: top;
+  }
+  .floating-header-table th:nth-child(1) {
+    position: sticky;
+    left: 0;
+    min-width: 42px;
+    width: 42px;
+    z-index: 4;
+    background: #faf3e7;
+  }
+  .floating-header-table th:nth-child(2) {
+    position: sticky;
+    left: 42px;
+    min-width: 7em;
+    z-index: 4;
+    background: #faf3e7;
+  }
+  .floating-header-table th:nth-child(3) {
+    position: sticky;
+    left: calc(42px + 7em);
+    min-width: 56px;
+    z-index: 4;
+    background: #faf3e7;
+  }
   .top-scroll-wrap::-webkit-scrollbar {
+    height: 14px;
+  }
+  .floating-scroll-wrap::-webkit-scrollbar {
     height: 14px;
   }
   .top-scroll-wrap::-webkit-scrollbar-track {
     background: #f2e8da;
     border-radius: 999px;
   }
+  .floating-scroll-wrap::-webkit-scrollbar-track {
+    background: #f2e8da;
+    border-radius: 999px;
+  }
   .top-scroll-wrap::-webkit-scrollbar-thumb {
+    background: #b89d83;
+    border-radius: 999px;
+  }
+  .floating-scroll-wrap::-webkit-scrollbar-thumb {
     background: #b89d83;
     border-radius: 999px;
   }
@@ -908,6 +1013,42 @@
   #profession_table td:nth-child(2),
   #profession_table th:nth-child(2) {
     min-width: 7em;
+  }
+  #profession_table th:nth-child(1),
+  #profession_table td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    min-width: 42px;
+    width: 42px;
+    z-index: 4;
+    background: #fffaf4;
+  }
+  #profession_table th:nth-child(2),
+  #profession_table td:nth-child(2) {
+    position: sticky;
+    left: 42px;
+    min-width: 7em;
+    z-index: 4;
+    background: #fffaf4;
+  }
+  #profession_table th:nth-child(3),
+  #profession_table td:nth-child(3) {
+    position: sticky;
+    left: calc(42px + 7em);
+    min-width: 56px;
+    z-index: 4;
+    background: #fffaf4;
+  }
+  #profession_table thead th:nth-child(1),
+  #profession_table thead th:nth-child(2),
+  #profession_table thead th:nth-child(3) {
+    background: #faf3e7;
+    z-index: 6;
+  }
+  #profession_table tbody tr:hover td:nth-child(1),
+  #profession_table tbody tr:hover td:nth-child(2),
+  #profession_table tbody tr:hover td:nth-child(3) {
+    background: #fff8ef;
   }
   tbody tr:hover { background: #fff8ef; }
   .clickable-row { cursor: pointer; }
@@ -1390,6 +1531,14 @@
     .hero h1 { font-size: 24px; }
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
     .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .current-battle-tools {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    .current-battle-tools select {
+      min-width: 0;
+      flex: 1 1 100%;
+    }
   }
 </style>
 </head>
@@ -1708,7 +1857,7 @@
                   <label>最低場次</label>
                   <input id="profession_min_battles" type="number" min="1" step="1" value="1">
                 </div>
-                <div class="field">
+                <div class="field field-tight">
                   <label>排序欄位</label>
                   <select id="profession_sort_field">
                     <option value="job">職業</option>
@@ -1733,7 +1882,7 @@
                     <option value="reviewSuggestCount">建議覆盤次數</option>
                   </select>
                 </div>
-                <div class="field">
+                <div class="field field-tight">
                   <label>排序方向</label>
                   <select id="profession_sort_order">
                     <option value="desc">由大到小</option>
@@ -1785,6 +1934,12 @@
                   </thead>
                   <tbody id="profession_body"></tbody>
                 </table>
+              </div>
+              <div class="floating-scroll-wrap" id="profession_floating_scroll" hidden><div class="floating-scroll-inner" id="profession_floating_scroll_inner"></div></div>
+              <div class="floating-header-wrap" id="profession_floating_header" hidden>
+                <div class="floating-header-scroll" id="profession_floating_header_scroll">
+                  <table class="floating-header-table" id="profession_floating_header_table"></table>
+                </div>
               </div>
             </div>
 
@@ -4654,14 +4809,83 @@ function renderProfessionTable() {
   syncProfessionScrollbars();
 }
 
+function syncProfessionFloatingHeader() {
+  const wrap = document.getElementById('profession_table_wrap');
+  const table = document.getElementById('profession_table');
+  const headerWrap = document.getElementById('profession_floating_header');
+  const headerScroll = document.getElementById('profession_floating_header_scroll');
+  const headerTable = document.getElementById('profession_floating_header_table');
+  const professionPanel = document.querySelector('[data-tab-panel="profession"]');
+  if (!wrap || !table || !headerWrap || !headerScroll || !headerTable || !professionPanel) return;
+  const thead = table.querySelector('thead');
+  const headerRow = thead?.rows?.[0];
+  if (!thead || !headerRow) {
+    headerWrap.hidden = true;
+    return;
+  }
+  if (headerTable.innerHTML !== thead.innerHTML) headerTable.innerHTML = thead.innerHTML;
+  const active = professionPanel.classList.contains('active');
+  const hasOverflow = table.scrollWidth > wrap.clientWidth + 1;
+  const wrapRect = typeof wrap.getBoundingClientRect === 'function'
+    ? wrap.getBoundingClientRect()
+    : { top: 0, bottom: 0, left: 0, width: 0 };
+  const headerRect = typeof headerRow.getBoundingClientRect === 'function'
+    ? headerRow.getBoundingClientRect()
+    : { top: 0, bottom: 0 };
+  const stillInView = wrapRect.bottom > 0 && wrapRect.top < window.innerHeight;
+  const needsFloatingHeader = active && hasOverflow && stillInView && headerRect.bottom <= 10;
+  headerWrap.hidden = !needsFloatingHeader;
+  if (headerWrap.hidden) return;
+  headerWrap.style.left = `${Math.max(16, wrapRect.left)}px`;
+  headerWrap.style.width = `${Math.max(0, wrap.clientWidth)}px`;
+  headerScroll.scrollLeft = wrap.scrollLeft;
+  headerTable.style.width = `${table.scrollWidth}px`;
+  const originalCells = [...headerRow.cells];
+  const floatingCells = [...headerTable.querySelectorAll('th')];
+  originalCells.forEach((cell, index) => {
+    const width = cell.getBoundingClientRect ? cell.getBoundingClientRect().width : cell.offsetWidth;
+    if (floatingCells[index]) {
+      floatingCells[index].style.width = `${width}px`;
+      floatingCells[index].style.minWidth = `${width}px`;
+      floatingCells[index].style.maxWidth = `${width}px`;
+      floatingCells[index].style.boxSizing = 'border-box';
+    }
+  });
+}
+
 function syncProfessionScrollbars() {
   const top = document.getElementById('profession_top_scroll');
   const inner = document.getElementById('profession_top_scroll_inner');
+  const floating = document.getElementById('profession_floating_scroll');
+  const floatingInner = document.getElementById('profession_floating_scroll_inner');
   const wrap = document.getElementById('profession_table_wrap');
   const table = document.getElementById('profession_table');
-  if (!top || !inner || !wrap || !table) return;
-  inner.style.width = `${table.scrollWidth}px`;
+  const professionPanel = document.querySelector('[data-tab-panel="profession"]');
+  if (!top || !inner || !wrap || !table || !floating || !floatingInner || !professionPanel) return;
+  const scrollWidth = table.scrollWidth;
+  inner.style.width = `${scrollWidth}px`;
+  floatingInner.style.width = `${scrollWidth}px`;
   top.scrollLeft = wrap.scrollLeft;
+  floating.scrollLeft = wrap.scrollLeft;
+  const active = professionPanel.classList.contains('active');
+  const hasOverflow = scrollWidth > wrap.clientWidth + 1;
+  const rect = typeof wrap.getBoundingClientRect === 'function'
+    ? wrap.getBoundingClientRect()
+    : { top: 0, bottom: 0 };
+  const inViewport = rect.bottom > 0 && rect.top < window.innerHeight;
+  floating.hidden = !(active && hasOverflow && inViewport);
+  syncProfessionFloatingHeader();
+}
+
+let professionScrollSyncLock = false;
+let professionFloatingScrollRaf = 0;
+
+function scheduleProfessionFloatingScrollbarSync() {
+  if (professionFloatingScrollRaf) return;
+  professionFloatingScrollRaf = requestAnimationFrame(() => {
+    professionFloatingScrollRaf = 0;
+    syncProfessionScrollbars();
+  });
 }
 
 function renderOpponentFocusOptions() {
@@ -6213,6 +6437,8 @@ function switchTab(tab) {
     requestAnimationFrame(() => {
       syncProfessionScrollbars();
     });
+  } else {
+    scheduleProfessionFloatingScrollbarSync();
   }
   if (tab === 'matchup') {
     requestAnimationFrame(syncMatchupTableWidthToRoster);
@@ -6416,14 +6642,52 @@ document.getElementById('btn_focus_uncheck_all').addEventListener('click', () =>
   renderTeamFocus();
 });
 document.getElementById('profession_top_scroll').addEventListener('scroll', event => {
+  if (professionScrollSyncLock) return;
   const wrap = document.getElementById('profession_table_wrap');
+  const floating = document.getElementById('profession_floating_scroll');
+  const headerScroll = document.getElementById('profession_floating_header_scroll');
+  professionScrollSyncLock = true;
   if (wrap && wrap.scrollLeft !== event.target.scrollLeft) wrap.scrollLeft = event.target.scrollLeft;
+  if (floating && floating.scrollLeft !== event.target.scrollLeft) floating.scrollLeft = event.target.scrollLeft;
+  if (headerScroll && headerScroll.scrollLeft !== event.target.scrollLeft) headerScroll.scrollLeft = event.target.scrollLeft;
+  professionScrollSyncLock = false;
 });
 document.getElementById('profession_table_wrap').addEventListener('scroll', event => {
+  if (professionScrollSyncLock) return;
   const top = document.getElementById('profession_top_scroll');
+  const floating = document.getElementById('profession_floating_scroll');
+  const headerScroll = document.getElementById('profession_floating_header_scroll');
+  professionScrollSyncLock = true;
   if (top && top.scrollLeft !== event.target.scrollLeft) top.scrollLeft = event.target.scrollLeft;
+  if (floating && floating.scrollLeft !== event.target.scrollLeft) floating.scrollLeft = event.target.scrollLeft;
+  if (headerScroll && headerScroll.scrollLeft !== event.target.scrollLeft) headerScroll.scrollLeft = event.target.scrollLeft;
+  professionScrollSyncLock = false;
+  scheduleProfessionFloatingScrollbarSync();
 });
-window.addEventListener('resize', syncProfessionScrollbars);
+document.getElementById('profession_floating_scroll').addEventListener('scroll', event => {
+  if (professionScrollSyncLock) return;
+  const wrap = document.getElementById('profession_table_wrap');
+  const top = document.getElementById('profession_top_scroll');
+  const headerScroll = document.getElementById('profession_floating_header_scroll');
+  professionScrollSyncLock = true;
+  if (wrap && wrap.scrollLeft !== event.target.scrollLeft) wrap.scrollLeft = event.target.scrollLeft;
+  if (top && top.scrollLeft !== event.target.scrollLeft) top.scrollLeft = event.target.scrollLeft;
+  if (headerScroll && headerScroll.scrollLeft !== event.target.scrollLeft) headerScroll.scrollLeft = event.target.scrollLeft;
+  professionScrollSyncLock = false;
+});
+document.getElementById('profession_floating_header_scroll').addEventListener('scroll', event => {
+  if (professionScrollSyncLock) return;
+  const wrap = document.getElementById('profession_table_wrap');
+  const top = document.getElementById('profession_top_scroll');
+  const floating = document.getElementById('profession_floating_scroll');
+  professionScrollSyncLock = true;
+  if (wrap && wrap.scrollLeft !== event.target.scrollLeft) wrap.scrollLeft = event.target.scrollLeft;
+  if (top && top.scrollLeft !== event.target.scrollLeft) top.scrollLeft = event.target.scrollLeft;
+  if (floating && floating.scrollLeft !== event.target.scrollLeft) floating.scrollLeft = event.target.scrollLeft;
+  professionScrollSyncLock = false;
+});
+window.addEventListener('resize', scheduleProfessionFloatingScrollbarSync);
+window.addEventListener('scroll', scheduleProfessionFloatingScrollbarSync, { passive: true });
 document.getElementById('btn_player_check_all').addEventListener('click', () => {
   setBattleCheckboxes('player_battle_select', true);
   renderPlayerLookup();
