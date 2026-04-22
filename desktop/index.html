@@ -1700,6 +1700,8 @@
                     <option value="attack">進攻</option>
                     <option value="defense">防守</option>
                     <option value="bodyguard">保鑣</option>
+                    <option value="defense_bodyguard">保鑣+防守</option>
+                    <option value="attack_bodyguard">保鑣+進攻</option>
                   </select>
                 </div>
                 <div class="field">
@@ -3310,7 +3312,9 @@ function professionRows() {
       return item.job === job;
     })
     .map(item => {
-      const history = groupType === 'all' ? item.history : item.history.filter(h => h.groupType === groupType);
+      const history = groupType === 'all'
+        ? item.history
+        : item.history.filter(h => historyMatchesPlayerGroupFilter(groupType, h.groupType));
       if (!history.length) return null;
       const sample = history.map(h => h.raw);
       const wins = history.filter(h => h.result === 'win').length;
