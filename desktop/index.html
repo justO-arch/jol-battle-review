@@ -3199,7 +3199,7 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
     <div>
       <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">能力圖對比</div>
       <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">相對位置（PR）</div>
-      <div style="margin-bottom:10px; color:var(--text);">排名越前面表現越好。你各項數據都排名接近第一，承傷高但保活也很好，就越接近滿滿的六邊形。</div>
+      <div style="margin-bottom:10px; color:var(--text);">排名越前面表現越好。假設你各項數據都排名接近第一，承傷高但保活也很好，就越接近滿滿的六邊形。</div>
       <div class="radar-grid">
         ${renderRadarCard('玩家能力圖', axes, playerScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
         ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianScores, '#0f6b61', '中位數 = 排名正中間那個人的對應數據；這張圖依母體中位數對應的 PR 畫出。')}
@@ -5592,7 +5592,7 @@ function renderSingleBattleMatchup() {
       <div class="note-box">若雙方人數差異大，結果僅供參考。</div>
     </div>
     <div class="matchup-grid">
-      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { hideOverallRoster: true, hideGroupRoster: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
+      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { hideOverallRoster: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
       ${dpsJobs.map(job => {
         const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
         const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
