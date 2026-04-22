@@ -720,9 +720,10 @@
     font-size: 13px;
   }
   .matchup-rosters {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-    align-items: stretch;
+    align-items: start;
     width: 100%;
     min-width: 0;
   }
@@ -733,6 +734,8 @@
     overflow-x: auto;
     overflow-y: visible;
     padding-bottom: 0;
+    break-inside: auto;
+    page-break-inside: auto;
   }
   .matchup-roster-box {
     border: 1px solid #e8ddd1;
@@ -745,6 +748,8 @@
     flex: 1 1 0;
     box-sizing: border-box;
     max-width: none;
+    break-inside: auto;
+    page-break-inside: auto;
   }
   .matchup-roster-content {
     display: contents;
@@ -753,16 +758,20 @@
     font-weight: 800;
     color: var(--text);
     margin-bottom: 8px;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
   .matchup-roster-item {
     display: block;
-    padding: 6px 0;
+    padding: 5px 0;
     border-bottom: 1px solid #f0e7dc;
     font-size: 12px;
-    line-height: 1.6;
+    line-height: 1.5;
     white-space: nowrap;
     overflow-wrap: normal;
     word-break: normal;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
   .matchup-roster-item:last-child { border-bottom: none; }
   .matchup-roster-weak {
@@ -3934,49 +3943,60 @@ function renderExportBattleAppendix(battles, title = '納入統計場次附錄')
 function renderPlayerExportSheet(context) {
   const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, focusComparisons, warningLines, battleIds } = context;
   const battles = filteredBattlesByIds(battleIds);
-  const showBattleAppendix = battles.length > 5;
+  const battleMeta = battleSummaryMeta(battles);
   return `
     <div class="player-export-sheet">
-      <div class="player-export-header">
+      <div class="player-export-header" style="padding:14px 16px 12px; margin-bottom:8px; gap:12px;">
         <div>
-          <h1 class="player-export-title">幫戰覆盤 玩家查詢</h1>
-          <div class="player-export-player">${escHtml(player.name)}｜${escHtml(player.job)}</div>
-          <div class="player-export-subtitle">依目前玩家查詢條件匯出個人報表，包含摘要、能力圖、重點對比與完整對比表。</div>
-          <div class="player-export-subtitle">本頁為幫戰覆盤輔助資料，不能單憑數據直接判定玩家表現。PR 反映相對位置，絕對數值反映實際表現強度，需搭配分工與場次脈絡一起判讀。</div>
+          <h1 class="player-export-title" style="font-size:24px; letter-spacing:0.3px;">幫戰覆盤 玩家查詢</h1>
+          <div class="player-export-player" style="margin-top:5px; font-size:20px;">${escHtml(player.name)}｜${escHtml(player.job)}</div>
+          <div class="player-export-subtitle" style="margin-top:4px; font-size:11px; line-height:1.28;">依目前玩家查詢條件匯出個人報表，包含摘要、能力圖、重點對比與完整對比表。</div>
+          <div class="player-export-subtitle" style="margin-top:2px; font-size:11px; line-height:1.28;">本頁為幫戰覆盤輔助資料，不能單憑數據直接判定玩家表現。PR 反映相對位置，絕對數值反映實際表現強度，需搭配分工與場次脈絡一起判讀。</div>
         </div>
-        <div class="player-export-meta">
-          <div class="player-export-meta-item">納入統計場數<b>${fmtNumber(player.battles)} 場</b></div>
-          <div class="player-export-meta-item">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
-          <div class="player-export-meta-item">比較母體<b>${escHtml(PLAYER_COHORT_LABELS[cohortFilter] || '同職業')}</b></div>
+        <div class="player-export-meta" style="min-width:220px; gap:4px;">
+          <div class="player-export-meta-item" style="padding:6px 8px; border-radius:12px;">納入統計場數<b style="font-size:13px; margin-top:2px;">${fmtNumber(player.battles)} 場</b></div>
+          <div class="player-export-meta-item" style="padding:6px 8px; border-radius:12px;">匯出時間<b style="font-size:13px; margin-top:2px;">${escHtml(buildExportTimestamp())}</b></div>
+          <div class="player-export-meta-item" style="padding:6px 8px; border-radius:12px;">比較母體<b style="font-size:13px; margin-top:2px;">${escHtml(PLAYER_COHORT_LABELS[cohortFilter] || '同職業')}</b></div>
         </div>
       </div>
 
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-title">條件摘要</div>
-        <div class="panel-body">
-          <div class="mini-grid">
-            <div class="mini-stat">己方篩選<b>${escHtml(OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部')}</b></div>
-            <div class="mini-stat">團別篩選<b>${escHtml(PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部')}</b></div>
-            <div class="mini-stat">比較母體<b>${escHtml(PLAYER_COHORT_LABELS[cohortFilter] || '同職業')}</b></div>
-            <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
+      <div class="panel" style="margin-bottom:8px;">
+        <div class="panel-title" style="font-size:15px; padding:10px 12px;">條件摘要</div>
+        <div class="panel-body" style="padding:8px 10px;">
+          <div class="mini-grid" style="grid-template-columns:repeat(4, minmax(0, 1fr)); gap:5px;">
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">己方篩選<b style="font-size:14px; margin-top:2px;">${escHtml(OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部')}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">團別篩選<b style="font-size:14px; margin-top:2px;">${escHtml(PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部')}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">比較母體<b style="font-size:14px; margin-top:2px;">${escHtml(PLAYER_COHORT_LABELS[cohortFilter] || '同職業')}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體玩家數<b style="font-size:14px; margin-top:2px;">${fmtNumber(cohortRows.length)}</b></div>
           </div>
-          ${(player.aliasNames || []).length > 1 ? `<div class="note-box">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
+          ${(player.aliasNames || []).length > 1 ? `<div class="note-box" style="margin-top:6px; padding:7px 9px; font-size:12px;">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
         </div>
       </div>
-      ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
 
-      <div class="panel" style="margin-bottom:16px;">
-        <div class="panel-title">玩家摘要</div>
-        <div class="panel-body">
-          <div class="mini-grid">
-            <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%（${fmtNumber(player.wins)}/${fmtNumber(player.battles)}）</b></div>
-            <div class="mini-stat">分工場次<b>${escHtml(buildGroupCountText(player))}</b></div>
-            <div class="mini-stat">母體比較條件<b>${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
-            <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
-            <div class="mini-stat">優先找幹部覆盤<b>${fmtNumber(player.priorityCount)}</b></div>
-            <div class="mini-stat">歡迎找幹部覆盤<b>${fmtNumber(player.secondaryCount)}</b></div>
+      <div class="panel" style="margin-bottom:8px;">
+        <div class="panel-title" style="font-size:15px; padding:10px 12px;">場次摘要</div>
+        <div class="panel-body" style="padding:8px 10px;">
+          <div class="mini-grid" style="grid-template-columns:repeat(4, minmax(0, 1fr)); gap:5px;">
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">納入場次<b style="font-size:14px; margin-top:2px;">${fmtNumber(battleMeta.count)} 場</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">日期範圍<b style="font-size:13px; margin-top:2px;">${escHtml(battleMeta.dateRange)}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">己方分布<b style="font-size:13px; margin-top:2px;">${escHtml(battleMeta.teamsText)}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">對手分布<b style="font-size:13px; margin-top:2px;">${escHtml(battleMeta.opponentsText)}</b></div>
           </div>
-          ${warningLines.length ? `<div class="note-box">${warningLines.map(line => escHtml(line)).join('<br>')}</div>` : ''}
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px;">
+        <div class="panel-title" style="font-size:15px; padding:10px 12px;">玩家摘要</div>
+        <div class="panel-body" style="padding:8px 10px;">
+          <div class="mini-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:5px;">
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">勝率<b style="font-size:14px; margin-top:2px;">${(player.winRate * 100).toFixed(0)}%（${fmtNumber(player.wins)}/${fmtNumber(player.battles)}）</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">分工場次<b style="font-size:13px; margin-top:2px;">${escHtml(buildGroupCountText(player))}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體比較條件<b style="font-size:13px; margin-top:2px;">${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體玩家數<b style="font-size:14px; margin-top:2px;">${fmtNumber(cohortRows.length)}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">優先找幹部覆盤<b style="font-size:14px; margin-top:2px;">${fmtNumber(player.priorityCount)}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">歡迎找幹部覆盤<b style="font-size:14px; margin-top:2px;">${fmtNumber(player.secondaryCount)}</b></div>
+          </div>
+          ${warningLines.length ? `<div class="note-box" style="margin-top:6px; padding:7px 9px; font-size:12px;">${warningLines.map(line => escHtml(line)).join('<br>')}</div>` : ''}
         </div>
       </div>
 
@@ -4000,7 +4020,7 @@ function renderPlayerExportSheet(context) {
           ${renderPlayerCompareTable(comparisons)}
         </div>
       </div>
-      ${showBattleAppendix ? renderExportBattleAppendix(battles) : ''}
+      ${renderExportBattleAppendix(battles)}
     </div>
   `;
 }
@@ -5182,58 +5202,80 @@ function matchupExportTitleClass(title) {
   return '';
 }
 
-function renderMatchupExportDpsCard(title, myList, foeList, threshold, options = {}) {
-  const metricRows = options.metricRows || matchupDpsGroupMetricsRows();
-  const isDpsJob = !!options.isDpsJob;
-  const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
-  const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
-  const myAttack = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'attack');
-  const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'defense');
-  const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'attack');
-  const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'defense');
-  const titleClass = matchupExportTitleClass(title);
+function renderMatchupExportPage(title, titleClass, metaText, sectionTitle, tableHtml, rosterHtml = '', options = {}) {
   return `
     <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
       <div class="matchup-body">
         <div class="matchup-title ${titleClass}">${escHtml(title)}</div>
-        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
-        ${renderMatchupExportSection(
-          '整體',
-          renderMatchupAggregateTable(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct })
-        )}
-        ${renderMatchupExportSection(
-          '進攻組',
-          renderMatchupAggregateTable(myAttack, foeAttack, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
-          `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(`己方 ${title}・進攻組`, myAttack, { highlightWeak: true, myList: myAttack, foeList: foeAttack, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(`對方 ${title}・進攻組`, foeAttack)}</div></div>`
-        )}
-        ${renderMatchupExportSection(
-          '防守+保鑣組',
-          renderMatchupAggregateTable(myDefense, foeDefense, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
-          `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(`己方 ${title}・防守+保鑣組`, myDefense, { highlightWeak: true, myList: myDefense, foeList: foeDefense, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(`對方 ${title}・防守+保鑣組`, foeDefense)}</div></div>`
-        )}
+        <div class="matchup-meta">${escHtml(metaText)}</div>
+        ${renderMatchupExportSection(sectionTitle, tableHtml, rosterHtml)}
       </div>
     </div>
   `;
 }
 
-function renderMatchupExportSimpleCard(title, myList, foeList, options = {}) {
+function matchupRosterTitleWithCount(title, rows) {
+  const count = Array.isArray(rows) ? rows.length : 0;
+  return `${title}（${fmtNumber(count)}人）`;
+}
+
+function renderMatchupExportJobBundle(title, myList, foeList, threshold, options = {}) {
+  const metricRows = options.metricRows || matchupDpsGroupMetricsRows();
+  const isDpsJob = !!options.isDpsJob;
+  const allowGroupTotalKillBuild = !!options.allowGroupTotalKillBuild;
+  const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
+  const titleClass = matchupExportTitleClass(title);
+  const metaText = `己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人`;
+  const myAttack = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'attack');
+  const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, threshold, 'self') === 'defense');
+  const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'attack');
+  const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, threshold, 'foe') === 'defense');
+  return `
+    ${renderMatchupExportPage(
+      title,
+      titleClass,
+      metaText,
+      '整體',
+      renderMatchupAggregateTable(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
+      '',
+      { pageBreakBefore: !!options.pageBreakBefore }
+    )}
+    ${renderMatchupExportPage(
+      title,
+      titleClass,
+      metaText,
+      '進攻組',
+      renderMatchupAggregateTable(myAttack, foeAttack, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
+      `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(matchupRosterTitleWithCount(`己方 ${title}・進攻組`, myAttack), myAttack, { highlightWeak: true, myList: myAttack, foeList: foeAttack, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(matchupRosterTitleWithCount(`對方 ${title}・進攻組`, foeAttack), foeAttack)}</div></div>`,
+      { pageBreakBefore: true }
+    )}
+    ${renderMatchupExportPage(
+      title,
+      titleClass,
+      metaText,
+      '防守+保鑣組',
+      renderMatchupAggregateTable(myDefense, foeDefense, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
+      `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(matchupRosterTitleWithCount(`己方 ${title}・防守+保鑣組`, myDefense), myDefense, { highlightWeak: true, myList: myDefense, foeList: foeDefense, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(matchupRosterTitleWithCount(`對方 ${title}・防守+保鑣組`, foeDefense), foeDefense)}</div></div>`,
+      { pageBreakBefore: true }
+    )}
+  `;
+}
+
+function renderMatchupExportSimpleCard(title, myList, foeList, threshold, options = {}) {
   const metricRows = options.metricRows || matchupMetricRows(title);
   const titleClass = matchupExportTitleClass(title);
   const allowSimpleAverageKillBuild = title === '鐵衣';
+  const metaText = `己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人`;
   return `
-    <div class="matchup-card ${options.pageBreakBefore ? 'matchup-export-job-break' : ''}">
-      <div class="matchup-body">
-        <div class="matchup-title ${titleClass}">${escHtml(title)}</div>
-        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
-        ${renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct, allowSimpleAverageKillBuild })}
-        <div class="matchup-roster-scroll">
-          <div class="matchup-rosters">
-            ${renderMatchupRoster(`己方 ${title}`, myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'overall', weakPct: options.weakPct } })}
-            ${renderMatchupRoster(`對方 ${title}`, foeList)}
-          </div>
-        </div>
-      </div>
-    </div>
+    ${renderMatchupExportPage(
+      title,
+      titleClass,
+      metaText,
+      '整體',
+      renderMatchupAggregateTable(myList, foeList, metricRows, { weakPct: options.weakPct, strongPct: options.strongPct, allowSimpleAverageKillBuild }),
+      `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(matchupRosterTitleWithCount(`己方 ${title}`, myList), myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'overall', weakPct: options.weakPct } })}${renderMatchupRoster(matchupRosterTitleWithCount(`對方 ${title}`, foeList), foeList)}</div></div>`,
+      { pageBreakBefore: !!options.pageBreakBefore }
+    )}
   `;
 }
 
@@ -5269,16 +5311,16 @@ function renderMatchupExportSheet(context) {
       </div>
 
       <div class="matchup-grid">
-        ${renderMatchupExportDpsCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
+        ${renderMatchupExportJobBundle('所有DPS（排除鐵衣、素問）', myDps, foeDps, threshold, { allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true })}
         ${dpsJobs.map(job => {
           const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
           const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-          return renderMatchupExportDpsCard(job, myList, foeList, threshold, { metricRows: matchupMetricRows(job), isDpsJob: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true });
+          return renderMatchupExportJobBundle(job, myList, foeList, threshold, { metricRows: matchupMetricRows(job), isDpsJob: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true });
         }).join('')}
         ${supportJobs.map(job => {
           const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
           const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-          return renderMatchupExportSimpleCard(job, myList, foeList, { metricRows: matchupMetricRows(job), weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true });
+          return renderMatchupExportSimpleCard(job, myList, foeList, threshold, { metricRows: matchupMetricRows(job), weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true });
         }).join('')}
       </div>
     </div>
