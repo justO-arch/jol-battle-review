@@ -1077,6 +1077,13 @@
     gap: 8px;
     flex-wrap: wrap;
   }
+  .auto-bodyguard-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+  }
   .assignment-stats {
     display: flex;
     flex-wrap: wrap;
@@ -1652,7 +1659,7 @@
           </div>
           <div class="panel-body">
             <div class="tab-panel active" data-tab-panel="assignment">
-              <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮）</span></div>
+              <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮；輸入 lag 則不列入自動覆盤觀察名單）</span></div>
               <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
               <div class="assignment-commander-box" id="assignment_unknown_box" style="margin-top:-2px;">目前沒有分工未知的玩家。</div>
               <div class="table-actions">
@@ -1661,6 +1668,14 @@
                   <button class="btn-secondary" id="btn_group_defense">將選取玩家設為防守</button>
                   <button class="btn-secondary" id="btn_group_bodyguard">將選取玩家設為保鑣</button>
                   <button class="btn-ghost" id="btn_group_unknown">將選取玩家設為未定</button>
+                  <div class="auto-bodyguard-row">
+                    <span class="subtle" style="align-self:center;">進攻擊殺 &gt;</span>
+                    <input id="auto_bodyguard_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+                    <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
+                    <input id="auto_bodyguard_build_threshold_yi" type="number" min="0" step="0.1" value="1" style="width:86px; padding:7px 9px;">
+                    <span class="subtle" style="align-self:center;">億</span>
+                    <button class="btn-secondary" id="btn_auto_attack_kill_bodyguard">自動轉保鑣</button>
+                  </div>
                 </div>
                 <div class="assignment-stats" id="assignment_stats"></div>
               </div>
@@ -1675,12 +1690,9 @@
                       <th>分隊</th>
                       <th>特殊職責</th>
                       <th>操作</th>
-                      <th>重傷</th>
                       <th>塔傷</th>
-                      <th>人傷</th>
-                      <th>治療</th>
-                      <th>化羽</th>
-                      <th>焚骨</th>
+                      <th>擊殺</th>
+                      <th>重傷</th>
                     </tr>
                   </thead>
                   <tbody id="assignment_body"></tbody>
@@ -1904,6 +1916,37 @@
               <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
                 <button class="btn-primary" type="button" id="btn_export_profession_pdf">匯出 PDF</button>
               </div>
+              <div class="summary-section-head">
+                <span>DPS 職業平均比較</span>
+                <span class="subtle">只統計非鐵衣、非素問職業的人次平均</span>
+              </div>
+              <div class="note-box" style="margin-bottom:10px;">
+                此區只呈現 DPS 職業在目前篩選場次與團別下的平均數據。職業差異可能受到玩家強度、分工位置與樣本數影響，僅供觀察趨勢。
+              </div>
+              <div class="table-wrap" style="margin-bottom:14px;">
+                <table id="profession_dps_average_table" class="metric-table">
+                  <thead>
+                    <tr>
+                      <th>職業</th>
+                      <th>人次</th>
+                      <th>場次</th>
+                      <th>玩家數</th>
+                      <th>平均擊敗</th>
+                      <th>平均助攻</th>
+                      <th>平均重傷</th>
+                      <th>擊殺/重傷</th>
+                      <th>平均人傷</th>
+                      <th>人傷/擊殺數</th>
+                      <th>平均塔傷</th>
+                      <th>平均塔傷/重傷</th>
+                      <th>平均承傷</th>
+                      <th>承傷/重傷</th>
+                      <th>平均焚骨</th>
+                    </tr>
+                  </thead>
+                  <tbody id="profession_dps_average_body"></tbody>
+                </table>
+              </div>
               <div class="top-scroll-wrap" id="profession_top_scroll"><div class="top-scroll-inner" id="profession_top_scroll_inner"></div></div>
               <div style="height:8px;"></div>
               <div class="table-wrap" id="profession_table_wrap">
@@ -2035,6 +2078,7 @@
 <script>
 const STORAGE_KEY = 'jol_battle_review_v1';
 const JOB_ORDER = ['碎夢', '血河', '龍吟', '九靈', '神相', '玄機', '鐵衣', '素問'];
+const DPS_COMPARE_JOBS = JOB_ORDER.filter(job => job !== '鐵衣' && job !== '素問');
 const GROUP_LABELS = {
   attack: '進攻',
   defense: '防守',
@@ -2700,8 +2744,13 @@ function isCommander(player) {
   return /commander|指揮/.test(roles);
 }
 
+function isLagExempt(player) {
+  const roles = Array.isArray(player.specialRoles) ? player.specialRoles.join(',') : '';
+  return /\blag\b/i.test(roles);
+}
+
 function isAutoReviewExcluded(player) {
-  return (player.groupType || 'unknown') === 'unknown' || isCommander(player);
+  return (player.groupType || 'unknown') === 'unknown' || isCommander(player) || isLagExempt(player);
 }
 
 function hasUniversalProtection(player, options = {}) {
@@ -3260,6 +3309,157 @@ function computeMetricComparison(player, cohortRows, metric) {
   };
 }
 
+function comparisonPrMap(comparisons) {
+  return new Map((comparisons || []).map(item => [item.metric?.key, item]));
+}
+
+function metricPr(prMap, key, fallback = 0) {
+  const item = prMap.get(key);
+  if (!item || item.na || item.percentile == null) return fallback;
+  return Number(item.percentile || 0);
+}
+
+function survivalPr(prMap) {
+  const item = prMap.get('avgDeath');
+  if (!item) return 0;
+  if (item.na && Number(item.playerValue || 0) === 0 && Number(item.average || 0) === 0) return 100;
+  return item.percentile == null ? 0 : Number(item.percentile || 0);
+}
+
+function weightedPrScore(parts) {
+  const totalWeight = parts.reduce((acc, part) => acc + Number(part.weight || 0), 0);
+  if (!totalWeight) return 0;
+  const total = parts.reduce((acc, part) => acc + (Number(part.value || 0) * Number(part.weight || 0)), 0);
+  return Math.round(total / totalWeight);
+}
+
+function computeRoleFitScores(player, comparisons) {
+  const pr = comparisonPrMap(comparisons);
+  const assist = metricPr(pr, 'avgAssist');
+  const survival = survivalPr(pr);
+  const dpsAttack = weightedPrScore([
+    { value: metricPr(pr, 'avgBuildDamage'), weight: 0.50 },
+    { value: metricPr(pr, 'avgKill'), weight: 0.15 },
+    { value: assist, weight: 0.10 },
+    { value: survival, weight: 0.25 },
+  ]);
+  const dpsDefenseBase = [
+    { value: metricPr(pr, 'avgKill'), weight: 0.40 },
+    { value: metricPr(pr, 'avgPvpDamage'), weight: 0.25 },
+    { value: assist, weight: 0.10 },
+    { value: survival, weight: 0.25 },
+  ];
+  const dpsDefense = weightedPrScore(player.job === '九靈'
+    ? [...dpsDefenseBase, { value: metricPr(pr, 'avgBurn'), weight: 0.30 }]
+    : dpsDefenseBase);
+  if (player.job === '素問') {
+    const healerScore = weightedPrScore([
+      { value: metricPr(pr, 'avgNetHeal'), weight: 0.30 },
+      { value: metricPr(pr, 'avgSave'), weight: 0.30 },
+      { value: assist, weight: 0.10 },
+      { value: survival, weight: 0.30 },
+    ]);
+    return {
+      primary: { attack: healerScore, defense: healerScore, bodyguard: healerScore },
+      secondary: null,
+    };
+  }
+  if (player.job === '鐵衣') {
+    const ironScore = weightedPrScore([
+      { value: metricPr(pr, 'avgTakenDamage'), weight: 0.30 },
+      { value: metricPr(pr, 'avgTakenPerDeath'), weight: 0.30 },
+      { value: assist, weight: 0.10 },
+      { value: survival, weight: 0.30 },
+    ]);
+    return {
+      primary: { attack: ironScore, defense: ironScore, bodyguard: ironScore },
+      secondary: { label: '破鐵 DPS 試算', attack: dpsAttack, defense: dpsDefense, bodyguard: dpsDefense },
+    };
+  }
+  return {
+    primary: { attack: dpsAttack, defense: dpsDefense, bodyguard: dpsDefense },
+    secondary: null,
+  };
+}
+
+function roleScoreValue(score) {
+  return score == null ? 'NA' : `PR${fmtNumber(score)}`;
+}
+
+function computeRoleScoreFromRow(row, comparisonRows, roleKey) {
+  if (!row?.battles) return null;
+  const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, comparisonRows, metric));
+  return computeRoleFitScores(row, comparisons).primary?.[roleKey] ?? null;
+}
+
+function computeIronDpsScoreFromRow(row, comparisonRows, roleKey) {
+  if (!row?.battles || row.job !== '鐵衣') return null;
+  const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, comparisonRows, metric));
+  return computeRoleFitScores({ ...row, job: '破鐵' }, comparisons).primary?.[roleKey] ?? null;
+}
+
+function buildRoleFitScoresByGroup(player, roleRows, cohortFilter = 'same_job') {
+  const byGroup = new Map(['attack', 'defense', 'bodyguard'].map(groupKey => {
+    const rows = (roleRows || []).filter(row => row.groupFilter === groupKey);
+    return [groupKey, rows];
+  }));
+  const rowFor = groupKey => (byGroup.get(groupKey) || []).find(row => row.name === player.name) || null;
+  const cohortFor = (groupKey, row) => {
+    if (!row) return [];
+    return filterPlayerCohortRows(byGroup.get(groupKey) || [], row, cohortFilter);
+  };
+  const attackRow = rowFor('attack');
+  const defenseRow = rowFor('defense');
+  const bodyguardRow = rowFor('bodyguard');
+  const attackCohort = cohortFor('attack', attackRow);
+  const defenseCohort = cohortFor('defense', defenseRow);
+  const bodyguardCohort = cohortFor('bodyguard', bodyguardRow);
+  const primary = {
+    attack: computeRoleScoreFromRow(attackRow, attackCohort.length ? attackCohort : (attackRow ? [attackRow] : []), 'attack'),
+    defense: computeRoleScoreFromRow(defenseRow, defenseCohort.length ? defenseCohort : (defenseRow ? [defenseRow] : []), 'defense'),
+    bodyguard: computeRoleScoreFromRow(bodyguardRow, bodyguardCohort.length ? bodyguardCohort : (bodyguardRow ? [bodyguardRow] : []), 'bodyguard'),
+  };
+  const battleCounts = {
+    attack: attackRow?.battles || 0,
+    defense: defenseRow?.battles || 0,
+    bodyguard: bodyguardRow?.battles || 0,
+  };
+  const secondary = player.job === '鐵衣'
+    ? {
+      label: '破鐵 DPS 試算',
+      attack: computeIronDpsScoreFromRow(attackRow, attackCohort.length ? attackCohort : (attackRow ? [attackRow] : []), 'attack'),
+      defense: computeIronDpsScoreFromRow(defenseRow, defenseCohort.length ? defenseCohort : (defenseRow ? [defenseRow] : []), 'defense'),
+      bodyguard: computeIronDpsScoreFromRow(bodyguardRow, bodyguardCohort.length ? bodyguardCohort : (bodyguardRow ? [bodyguardRow] : []), 'bodyguard'),
+    }
+    : null;
+  return { primary, secondary, battleCounts };
+}
+
+function renderRoleFitScoreCard(scores, options = {}) {
+  if (!scores?.primary) return '';
+  const compact = !!options.compact;
+  const style = compact ? ' style="padding:6px 7px; border-radius:10px;"' : '';
+  const valueStyle = compact ? ' style="font-size:18px; margin-top:2px;"' : '';
+  const title = options.title || '分工分數';
+  return `
+    <div class="panel" style="margin-bottom:${compact ? '8px' : '12px'};">
+      <div class="panel-title" style="${compact ? 'font-size:15px; padding:10px 12px;' : ''}">${escHtml(title)}</div>
+      <div class="panel-body" style="${compact ? 'padding:8px 10px;' : ''}">
+        <div class="mini-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:${compact ? '5px' : '10px'};">
+          <div class="mini-stat"${style}>進攻分<b${valueStyle}>${roleScoreValue(scores.primary.attack)}</b><span class="subtle">${fmtNumber(scores.battleCounts?.attack || 0)} 場</span></div>
+          <div class="mini-stat"${style}>防守分<b${valueStyle}>${roleScoreValue(scores.primary.defense)}</b><span class="subtle">${fmtNumber(scores.battleCounts?.defense || 0)} 場</span></div>
+          <div class="mini-stat"${style}>保鑣分<b${valueStyle}>${roleScoreValue(scores.primary.bodyguard)}</b><span class="subtle">${fmtNumber(scores.battleCounts?.bodyguard || 0)} 場</span></div>
+        </div>
+        ${scores.secondary ? `
+          <div class="note-box" style="margin-top:${compact ? '6px' : '10px'}; ${compact ? 'padding:7px 9px; font-size:12px;' : ''}">
+            ${escHtml(scores.secondary.label)}：進攻 ${roleScoreValue(scores.secondary.attack)} / 防守 ${roleScoreValue(scores.secondary.defense)} / 保鑣 ${roleScoreValue(scores.secondary.bodyguard)}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
 function playerRadarAxes(player) {
   if (player.job === '素問') {
     return [
@@ -3551,6 +3751,76 @@ function professionRows() {
     });
 }
 
+function dpsProfessionAverageRows() {
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
+  const groupType = document.getElementById('profession_group_filter').value || 'all';
+  const sortField = document.getElementById('profession_sort_field').value || 'avgBuildDamage';
+  const sortOrder = document.getElementById('profession_sort_order').value || 'desc';
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
+  const battles = filteredBattlesByIds(battleIds);
+  const buckets = new Map(DPS_COMPARE_JOBS.map(job => [job, {
+    job,
+    entries: 0,
+    battleIds: new Set(),
+    players: new Set(),
+    kill: 0,
+    assist: 0,
+    pvpDamage: 0,
+    buildDamage: 0,
+    death: 0,
+    burnCount: 0,
+    takenDamage: 0,
+  }]));
+  battles.forEach(battle => {
+    (battle.players || []).map(derivePlayer).forEach(player => {
+      if (!DPS_COMPARE_JOBS.includes(player.job)) return;
+      if (!historyMatchesPlayerGroupFilter(groupType, player.groupType || 'unknown')) return;
+      const bucket = buckets.get(player.job);
+      if (!bucket) return;
+      bucket.entries += 1;
+      bucket.battleIds.add(battle.id);
+      bucket.players.add(canonicalPlayerName(player.name));
+      bucket.kill += Number(player.kill || 0);
+      bucket.assist += Number(player.assist || 0);
+      bucket.pvpDamage += Number(player.pvpDamage || 0);
+      bucket.buildDamage += Number(player.buildDamage || 0);
+      bucket.death += Number(player.death || 0);
+      bucket.burnCount += Number(player.burnCount || 0);
+      bucket.takenDamage += Number(player.takenDamage || 0);
+    });
+  });
+  return [...buckets.values()]
+    .filter(row => row.entries > 0)
+    .map(row => ({
+      job: row.job,
+      entries: row.entries,
+      battles: row.battleIds.size,
+      playerCount: row.players.size,
+      avgKill: row.kill / row.entries,
+      avgAssist: row.assist / row.entries,
+      avgDeath: row.death / row.entries,
+      avgKillPerDeath: row.kill / Math.max(row.death, 1),
+      avgPvpDamage: row.pvpDamage / row.entries,
+      avgPvpPerKill: row.kill > 0 ? row.pvpDamage / row.kill : Infinity,
+      avgBuildDamage: row.buildDamage / row.entries,
+      avgBuildPerDeath: row.buildDamage / Math.max(row.death, 1),
+      avgBurn: row.burnCount / row.entries,
+      avgTakenDamage: row.takenDamage / row.entries,
+      avgTakenPerDeath: row.takenDamage / Math.max(row.death, 1),
+    }))
+    .sort((a, b) => {
+      if (sortField === 'job') {
+        const diff = jobSortValue(a.job) - jobSortValue(b.job);
+        return sortOrder === 'asc' ? diff : -diff;
+      }
+      const sortKey = Object.prototype.hasOwnProperty.call(a, sortField) ? sortField : 'avgBuildDamage';
+      const av = Number(a[sortKey] || 0);
+      const bv = Number(b[sortKey] || 0);
+      if (av !== bv) return sortOrder === 'asc' ? av - bv : bv - av;
+      return jobSortValue(a.job) - jobSortValue(b.job);
+    });
+}
+
 function professionNameWithBreaks(name) {
   const chars = Array.from(String(name || ''));
   const parts = [];
@@ -3637,7 +3907,7 @@ function renderAssignmentTable() {
   const unknownBox = document.getElementById('assignment_unknown_box');
   const battle = activeBattle();
   if (!battle) {
-    tbody.innerHTML = '<tr><td colspan="13" class="empty">請先加入並選取一場戰報。</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty">請先加入並選取一場戰報。</td></tr>';
     if (stats) stats.innerHTML = '';
     if (commanderBox) commanderBox.textContent = '請先加入並選取一場戰報。';
     if (unknownBox) unknownBox.textContent = '請先加入並選取一場戰報。';
@@ -3684,14 +3954,11 @@ function renderAssignmentTable() {
         </select>
       </td>
       <td><input type="text" value="${escHtml(player.subgroup || '')}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','subgroup',this.value)" placeholder="例如：進攻一隊"></td>
-      <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','specialRoles',this.value)" placeholder="例如：commander,burner"></td>
+      <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','specialRoles',this.value)" placeholder="例如：commander,lag"></td>
       <td><button class="btn-ghost" type="button" onclick="deleteBattlePlayer('${battle.id}','${escHtml(player.name)}')">刪除</button></td>
-      <td>${fmtNumber(player.death)}</td>
       <td>${fmtLarge(player.buildDamage)}</td>
-      <td>${fmtLarge(player.pvpDamage)}</td>
-      <td>${fmtLarge(player.heal)}</td>
-      <td>${fmtNumber(player.saveCount)}</td>
-      <td>${fmtNumber(player.burnCount)}</td>
+      <td>${fmtNumber(player.kill)}</td>
+      <td>${fmtNumber(player.death)}</td>
     </tr>
   `).join('');
   tbody.innerHTML = rows;
@@ -3865,6 +4132,7 @@ function renderPlayerLookup() {
   const groupFilter = document.getElementById('player_group_filter')?.value || 'all';
   const cohortFilter = document.getElementById('player_cohort_filter')?.value || 'same_job';
   const lookupRows = lookupPlayerRows(battleIds, groupFilter);
+  const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => lookupPlayerRows(battleIds, key));
   renderPlayerLeaders(battleIds, { groupFilter, ownTeamFilter });
   currentPlayerLookupContext = null;
   if (!search) {
@@ -3879,7 +4147,7 @@ function renderPlayerLookup() {
     return;
   }
   const exact = rows.find(item => item.name === search) || rows[0];
-  const context = buildPlayerDetailContext(exact, { ownTeamFilter, groupFilter, cohortFilter, allRows: lookupRows, battleIds });
+  const context = buildPlayerDetailContext(exact, { ownTeamFilter, groupFilter, cohortFilter, allRows: lookupRows, roleRows, battleIds });
   currentPlayerLookupContext = context;
   renderPlayerDetailFromContext(context);
 }
@@ -3968,9 +4236,11 @@ function buildPlayerDetailContext(player, options = {}) {
   const cohortFilter = options.cohortFilter || 'same_job';
   const allRows = Array.isArray(options.allRows) ? options.allRows : [];
   const battleIds = Array.isArray(options.battleIds) ? options.battleIds : [];
+  const roleRows = Array.isArray(options.roleRows) ? options.roleRows : ['attack', 'defense', 'bodyguard'].flatMap(key => lookupPlayerRows(battleIds, key));
   const cohortRows = filterPlayerCohortRows(allRows, player, cohortFilter);
   const comparisonRows = cohortRows.length ? cohortRows : [player];
   const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(player, comparisonRows, metric));
+  const roleFitScores = buildRoleFitScoresByGroup(player, roleRows, cohortFilter);
   const focusSet = new Set(playerFocusMetrics(player));
   const focusComparisons = comparisons.filter(item => focusSet.has(item.metric.key));
   const warningLines = [];
@@ -3984,10 +4254,12 @@ function buildPlayerDetailContext(player, options = {}) {
     groupFilter,
     cohortFilter,
     allRows,
+    roleRows,
     battleIds,
     cohortRows,
     comparisonRows,
     comparisons,
+    roleFitScores,
     focusComparisons,
     warningLines,
   };
@@ -3999,7 +4271,7 @@ function renderPlayerDetailFromContext(context) {
     box.innerHTML = '<div class="empty">輸入玩家名稱後，這裡會顯示該玩家在指定場次內的個人數據。</div>';
     return;
   }
-  const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, focusComparisons, warningLines, battleIds } = context;
+  const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, roleFitScores, focusComparisons, warningLines, battleIds } = context;
   const battles = filteredBattlesByIds(battleIds);
   const battleMeta = battleSummaryMeta(battles);
   selectedPlayer = player.name;
@@ -4027,6 +4299,7 @@ function renderPlayerDetailFromContext(context) {
     </div>
     ${renderBattleSummaryDetails(battles)}
     ${warningLines.length ? `<div class="note-box">${warningLines.map(line => escHtml(line)).join('<br>')}</div>` : ''}
+    ${renderRoleFitScoreCard(roleFitScores)}
     ${renderPlayerRadarSection(player, comparisons, comparisonRows)}
     <div>
       <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">重點對比</div>
@@ -4138,9 +4411,15 @@ function renderExportBattleAppendix(battles, title = '納入統計場次附錄')
 }
 
 function renderPlayerExportSheet(context) {
-  const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, focusComparisons, warningLines, battleIds } = context;
+  const { player, ownTeamFilter, groupFilter, cohortFilter, cohortRows, comparisonRows, comparisons, roleFitScores, focusComparisons, warningLines, battleIds } = context;
   const battles = filteredBattlesByIds(battleIds);
   const battleMeta = battleSummaryMeta(battles);
+  const rolePrText = roleFitScores?.primary
+    ? `分工PR：進攻 ${roleScoreValue(roleFitScores.primary.attack)} / 防守 ${roleScoreValue(roleFitScores.primary.defense)} / 保鑣 ${roleScoreValue(roleFitScores.primary.bodyguard)}`
+    : '';
+  const ironDpsPrText = roleFitScores?.secondary
+    ? `｜${roleFitScores.secondary.label}：進攻 ${roleScoreValue(roleFitScores.secondary.attack)} / 防守 ${roleScoreValue(roleFitScores.secondary.defense)} / 保鑣 ${roleScoreValue(roleFitScores.secondary.bodyguard)}`
+    : '';
   return `
     <div class="player-export-sheet">
       <div class="player-export-header" style="padding:14px 16px 12px; margin-bottom:8px; gap:12px;">
@@ -4149,6 +4428,7 @@ function renderPlayerExportSheet(context) {
           <div class="player-export-player" style="margin-top:5px; font-size:20px;">${escHtml(player.name)}｜${escHtml(player.job)}</div>
           <div class="player-export-subtitle" style="margin-top:4px; font-size:11px; line-height:1.28;">依目前玩家查詢條件匯出個人報表，包含摘要、能力圖、重點對比與完整對比表。</div>
           <div class="player-export-subtitle" style="margin-top:2px; font-size:11px; line-height:1.28;">本頁為幫戰覆盤輔助資料，不能單憑數據直接判定玩家表現。PR 反映相對位置，絕對數值反映實際表現強度，需搭配分工與場次脈絡一起判讀。</div>
+          ${rolePrText ? `<div style="margin-top:8px; padding:8px 10px; border:1px solid #cde4e0; border-radius:12px; background:#f6fbfa; color:var(--accent-2); font-size:14px; line-height:1.35; font-weight:900;">${escHtml(rolePrText)}${escHtml(ironDpsPrText)}</div>` : ''}
         </div>
         <div class="player-export-meta" style="min-width:220px; gap:4px;">
           <div class="player-export-meta-item" style="padding:6px 8px; border-radius:12px;">納入統計場數<b style="font-size:13px; margin-top:2px;">${fmtNumber(player.battles)} 場</b></div>
@@ -4813,6 +5093,7 @@ async function exportFocusPdf(options = {}) {
 
 function renderProfessionTable() {
   const body = document.getElementById('profession_body');
+  renderDpsProfessionAverageTable();
   const rows = professionRows();
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="20" class="empty">目前沒有符合條件的職業資料。</td></tr>';
@@ -4845,6 +5126,35 @@ function renderProfessionTable() {
     </tr>
   `).join('');
   syncProfessionScrollbars();
+}
+
+function renderDpsProfessionAverageTable() {
+  const body = document.getElementById('profession_dps_average_body');
+  if (!body) return;
+  const rows = dpsProfessionAverageRows();
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="15" class="empty">目前沒有符合條件的 DPS 職業平均資料。</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(row => `
+    <tr>
+      <td><b>${escHtml(row.job)}</b></td>
+      <td><span class="nowrap">${fmtNumber(row.entries)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.playerCount)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgKill)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgAssist)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgDeath)}</span></td>
+      <td><span class="nowrap">${fmtF(row.avgKillPerDeath, 2)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgPvpDamage)}</span></td>
+      <td><span class="nowrap">${fmtPvpPerKill(row.avgPvpPerKill)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgBuildDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgBuildPerDeath)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenPerDeath)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgBurn)}</span></td>
+    </tr>
+  `).join('');
 }
 
 function syncProfessionFloatingHeader() {
@@ -6166,6 +6476,7 @@ function renderRulesExplain() {
   el.innerHTML = `
     <div class="explain-item"><b style="color:var(--warn); font-weight:900; font-size:20px; line-height:1.4;">這個系統不能直接判定誰打得差</b><span class="subtle">這裡先用門檻抓「值得複查」的人，再結合分工、特殊職責與指揮資訊做人工判讀。</span></div>
     <div class="explain-item"><b>第一輪主指標</b><span class="subtle">進攻團 DPS 看塔傷；防守 / 保鑣 DPS 看擊殺與人傷；素問主看化羽與淨奶量。後段篩選的切點由個人或幫會幹部自行定義。</span></div>
+    <div class="explain-item"><b>玩家查詢分工 PR 算法</b><span class="subtle">玩家查詢的進攻分、防守分、保鑣分使用目前選取場次的平均數據：先把玩家各場同分工資料平均，再和目前選取的比較母體計算各指標 PR，最後用 PR 加權。DPS 進攻分 = 塔傷 PR 50% + 擊敗 PR 15% + 助攻 PR 10% + 生存 PR 25%。DPS 防守分 / 保鑣分 = 擊敗 PR 40% + 人傷 PR 25% + 助攻 PR 10% + 生存 PR 25%。九靈防守 / 保鑣會額外加入焚骨 PR 30%，再依總權重換算。素問分 = 淨治療 PR 30% + 化羽 PR 30% + 助攻 PR 10% + 生存 PR 30%。鐵衣分 = 承傷 PR 30% + 承傷/重傷 PR 30% + 助攻 PR 10% + 生存 PR 30%，並另外顯示破鐵 DPS 試算。</span></div>
     <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把重傷成本補回來。</span></div>
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">系統難以判定通常是資料有警訊，但還不足以直接進建議覆盤名單；優先找幹部覆盤通常是主指標偏弱又進高重傷，或同時命中多個主條件；歡迎找幹部覆盤則是主指標偏弱但還沒到最嚴重，或進攻側高重傷且主責沒有補回成本。</span></div>
     <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；鐵衣補看承傷與承傷/重傷。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦度門檻目前定為：承傷 > 3500萬 且 承傷/重傷 > 400萬，或承傷 > 2500萬 且 承傷/重傷 > 600萬。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。塔傷門檻定為單場塔傷排名前 10 名，或塔傷/重傷 > 1700萬。達標以上任一門檻，即使其他數據不佳也不會進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
@@ -6537,6 +6848,29 @@ function bulkSetGroup(groupType) {
   refreshAll();
 }
 
+function autoSetAttackKillersToBodyguard() {
+  const battle = activeBattle();
+  if (!battle) return;
+  const killThreshold = Number(document.getElementById('auto_bodyguard_kill_threshold')?.value || 0);
+  const buildThresholdYi = Number(document.getElementById('auto_bodyguard_build_threshold_yi')?.value || 0);
+  const buildThreshold = buildThresholdYi * 100000000;
+  const changed = [];
+  (battle.players || []).forEach(player => {
+    if (player.groupType !== 'attack') return;
+    if (Number(player.kill || 0) <= killThreshold) return;
+    if (Number(player.buildDamage || 0) >= buildThreshold) return;
+    player.groupType = 'bodyguard';
+    changed.push(player);
+  });
+  if (!changed.length) {
+    window.alert(`目前場次沒有進攻組玩家同時符合：擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億。`);
+    return;
+  }
+  saveState();
+  refreshAll();
+  window.alert(`已將 ${fmtNumber(changed.length)} 位進攻組玩家改為保鑣（擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億）：${changed.map(player => player.name).join('、')}`);
+}
+
 async function handleParseCsv() {
   const input = document.getElementById('csv_file');
   const noteBox = document.getElementById('import_note_box');
@@ -6668,6 +7002,7 @@ document.getElementById('btn_group_attack').addEventListener('click', () => bulk
 document.getElementById('btn_group_defense').addEventListener('click', () => bulkSetGroup('defense'));
 document.getElementById('btn_group_bodyguard').addEventListener('click', () => bulkSetGroup('bodyguard'));
 document.getElementById('btn_group_unknown').addEventListener('click', () => bulkSetGroup('unknown'));
+document.getElementById('btn_auto_attack_kill_bodyguard').addEventListener('click', autoSetAttackKillersToBodyguard);
 document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
 document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
