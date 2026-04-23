@@ -1077,7 +1077,7 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  .auto-bodyguard-row {
+  .auto-role-row {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1668,13 +1668,21 @@
                   <button class="btn-secondary" id="btn_group_defense">將選取玩家設為防守</button>
                   <button class="btn-secondary" id="btn_group_bodyguard">將選取玩家設為保鑣</button>
                   <button class="btn-ghost" id="btn_group_unknown">將選取玩家設為未定</button>
-                  <div class="auto-bodyguard-row">
+                  <div class="auto-role-row">
                     <span class="subtle" style="align-self:center;">進攻擊殺 &gt;</span>
                     <input id="auto_bodyguard_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
                     <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
                     <input id="auto_bodyguard_build_threshold_yi" type="number" min="0" step="0.1" value="1" style="width:86px; padding:7px 9px;">
                     <span class="subtle" style="align-self:center;">億</span>
                     <button class="btn-secondary" id="btn_auto_attack_kill_bodyguard">自動轉保鑣</button>
+                  </div>
+                  <div class="auto-role-row">
+                    <span class="subtle" style="align-self:center;">未知擊殺 &gt;</span>
+                    <input id="auto_defense_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+                    <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
+                    <input id="auto_defense_build_threshold_yi" type="number" min="0" step="0.1" value="1" style="width:86px; padding:7px 9px;">
+                    <span class="subtle" style="align-self:center;">億</span>
+                    <button class="btn-secondary" id="btn_auto_unknown_kill_defense">自動轉防守</button>
                   </div>
                 </div>
                 <div class="assignment-stats" id="assignment_stats"></div>
@@ -6848,27 +6856,57 @@ function bulkSetGroup(groupType) {
   refreshAll();
 }
 
-function autoSetAttackKillersToBodyguard() {
+function autoSetPlayersByKillAndBuild(options) {
   const battle = activeBattle();
   if (!battle) return;
-  const killThreshold = Number(document.getElementById('auto_bodyguard_kill_threshold')?.value || 0);
-  const buildThresholdYi = Number(document.getElementById('auto_bodyguard_build_threshold_yi')?.value || 0);
+  const {
+    sourceGroup,
+    targetGroup,
+    killInputId,
+    buildInputId,
+    sourceLabel,
+    targetLabel,
+  } = options;
+  const killThreshold = Number(document.getElementById(killInputId)?.value || 0);
+  const buildThresholdYi = Number(document.getElementById(buildInputId)?.value || 0);
   const buildThreshold = buildThresholdYi * 100000000;
   const changed = [];
   (battle.players || []).forEach(player => {
-    if (player.groupType !== 'attack') return;
+    if ((player.groupType || 'unknown') !== sourceGroup) return;
     if (Number(player.kill || 0) <= killThreshold) return;
     if (Number(player.buildDamage || 0) >= buildThreshold) return;
-    player.groupType = 'bodyguard';
+    player.groupType = targetGroup;
     changed.push(player);
   });
   if (!changed.length) {
-    window.alert(`目前場次沒有進攻組玩家同時符合：擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億。`);
+    window.alert(`目前場次沒有${sourceLabel}玩家同時符合：擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億。`);
     return;
   }
   saveState();
   refreshAll();
-  window.alert(`已將 ${fmtNumber(changed.length)} 位進攻組玩家改為保鑣（擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億）：${changed.map(player => player.name).join('、')}`);
+  window.alert(`已將 ${fmtNumber(changed.length)} 位${sourceLabel}玩家改為${targetLabel}（擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億）：${changed.map(player => player.name).join('、')}`);
+}
+
+function autoSetAttackKillersToBodyguard() {
+  autoSetPlayersByKillAndBuild({
+    sourceGroup: 'attack',
+    targetGroup: 'bodyguard',
+    killInputId: 'auto_bodyguard_kill_threshold',
+    buildInputId: 'auto_bodyguard_build_threshold_yi',
+    sourceLabel: '進攻組',
+    targetLabel: '保鑣',
+  });
+}
+
+function autoSetUnknownKillersToDefense() {
+  autoSetPlayersByKillAndBuild({
+    sourceGroup: 'unknown',
+    targetGroup: 'defense',
+    killInputId: 'auto_defense_kill_threshold',
+    buildInputId: 'auto_defense_build_threshold_yi',
+    sourceLabel: '未知分工',
+    targetLabel: '防守',
+  });
 }
 
 async function handleParseCsv() {
@@ -7003,6 +7041,7 @@ document.getElementById('btn_group_defense').addEventListener('click', () => bul
 document.getElementById('btn_group_bodyguard').addEventListener('click', () => bulkSetGroup('bodyguard'));
 document.getElementById('btn_group_unknown').addEventListener('click', () => bulkSetGroup('unknown'));
 document.getElementById('btn_auto_attack_kill_bodyguard').addEventListener('click', autoSetAttackKillersToBodyguard);
+document.getElementById('btn_auto_unknown_kill_defense').addEventListener('click', autoSetUnknownKillersToDefense);
 document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
 document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
