@@ -994,6 +994,110 @@
     text-decoration: underline;
     text-underline-offset: 2px;
   }
+  .profession-job-btn {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 800;
+  }
+  .profession-job-btn:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .quadrant-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .quadrant-card {
+    border: 1px solid #e6dbcf;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fffdf8 0%, #faf4eb 100%);
+    padding: 12px;
+  }
+  .quadrant-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .quadrant-subhead {
+    position: relative;
+    min-height: 32px;
+    margin-top: 2px;
+    margin-bottom: 4px;
+  }
+  .quadrant-y-label-top {
+    position: absolute;
+    left: 0;
+    top: 16px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .quadrant-subtitle {
+    margin-left: 84px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .quadrant-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .quadrant-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .quadrant-axis-label {
+    font-size: 12px;
+    fill: var(--muted);
+    font-weight: 800;
+  }
+  .quadrant-tick-label {
+    font-size: 10px;
+    fill: #7c6956;
+  }
+  .quadrant-point-label {
+    font-size: 10px;
+    fill: #3a2b18;
+    font-weight: 700;
+  }
+  .quadrant-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .quadrant-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .quadrant-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  .quadrant-toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 10px;
+  }
   .floating-header-table th {
     position: sticky;
     top: 0;
@@ -2025,6 +2129,32 @@
                   <tbody id="profession_dps_average_body"></tbody>
                 </table>
               </div>
+              <div style="margin-bottom:14px;">
+                <div class="summary-section-head">
+                  <span>鐵衣平均比較</span>
+                  <span class="subtle">獨立統計鐵衣在目前篩選條件下的人次平均</span>
+                </div>
+                <div class="table-wrap" style="margin-bottom:12px;">
+                  <table id="profession_iron_average_table" class="metric-table">
+                    <thead>
+                      <tr id="profession_iron_average_header_row"></tr>
+                    </thead>
+                    <tbody id="profession_iron_average_body"></tbody>
+                  </table>
+                </div>
+                <div class="summary-section-head">
+                  <span>素問平均比較</span>
+                  <span class="subtle">獨立統計素問在目前篩選條件下的人次平均</span>
+                </div>
+                <div class="table-wrap">
+                  <table id="profession_healer_average_table" class="metric-table">
+                    <thead>
+                      <tr id="profession_healer_average_header_row"></tr>
+                    </thead>
+                    <tbody id="profession_healer_average_body"></tbody>
+                  </table>
+                </div>
+              </div>
               <div class="top-scroll-wrap" id="profession_top_scroll"><div class="top-scroll-inner" id="profession_top_scroll_inner"></div></div>
               <div style="height:8px;"></div>
               <div class="table-wrap" id="profession_table_wrap">
@@ -2139,6 +2269,15 @@
       <div id="profession_player_radar_modal_body"></div>
     </div>
   </div>
+  <div id="profession_job_quadrant_modal" class="radar-modal-overlay" hidden>
+    <div class="radar-modal">
+      <div class="radar-modal-head">
+        <div id="profession_job_quadrant_modal_title"></div>
+        <button type="button" class="btn-ghost radar-modal-close" id="btn_close_profession_job_quadrant_modal">關閉</button>
+      </div>
+      <div id="profession_job_quadrant_modal_body"></div>
+    </div>
+  </div>
 
 <script>
 const STORAGE_KEY = 'jol_battle_review_v1';
@@ -2150,6 +2289,13 @@ const GROUP_LABELS = {
   bodyguard: '保鑣',
   unknown: '未定',
 };
+const PROFESSION_QUADRANT_COLORS = {
+  attack: '#b4571f',
+  defense: '#0f6b61',
+  bodyguard: '#d6a21d',
+  unknown: '#6ec9f5',
+};
+let professionQuadrantMode = { job: '', metric: 'default' };
 const PLAYER_GROUP_FILTER_LABELS = {
   all: '全部',
   attack: '進攻',
@@ -2224,6 +2370,36 @@ const DPS_PROFESSION_TABLE_COLUMNS = [
   { label: '平均承傷', key: 'avgTakenDamage' },
   { label: '承傷/重傷', key: 'avgTakenPerDeath' },
   { label: '平均焚骨', key: 'avgBurn' },
+];
+const IRON_PROFESSION_TABLE_COLUMNS = [
+  { label: '職業', key: 'job' },
+  { label: '人次', key: 'entries' },
+  { label: '場次', key: 'battles' },
+  { label: '玩家數', key: 'playerCount' },
+  { label: '平均擊敗', key: 'avgKill' },
+  { label: '平均助攻', key: 'avgAssist' },
+  { label: '平均重傷', key: 'avgDeath' },
+  { label: '擊殺/重傷', key: 'avgKillPerDeath' },
+  { label: '平均人傷', key: 'avgPvpDamage' },
+  { label: '人傷/擊殺數', key: 'avgPvpPerKill' },
+  { label: '平均塔傷', key: 'avgBuildDamage' },
+  { label: '平均塔傷/重傷', key: 'avgBuildPerDeath' },
+  { label: '平均承傷', key: 'avgTakenDamage' },
+  { label: '承傷/重傷', key: 'avgTakenPerDeath' },
+];
+const HEALER_PROFESSION_TABLE_COLUMNS = [
+  { label: '職業', key: 'job' },
+  { label: '人次', key: 'entries' },
+  { label: '場次', key: 'battles' },
+  { label: '玩家數', key: 'playerCount' },
+  { label: '平均助攻', key: 'avgAssist' },
+  { label: '平均重傷', key: 'avgDeath' },
+  { label: '助攻/重傷', key: 'avgAssistPerDeath' },
+  { label: '平均治療', key: 'avgHeal' },
+  { label: '平均淨奶', key: 'avgNetHeal' },
+  { label: '平均化羽', key: 'avgSave' },
+  { label: '平均承傷', key: 'avgTakenDamage' },
+  { label: '承傷/重傷', key: 'avgTakenPerDeath' },
 ];
 
 let state = loadState();
@@ -3304,6 +3480,10 @@ function buildGroupCountText(row) {
   return `進攻 ${fmtNumber(row.attackCount)} 場 / 防守 ${fmtNumber(row.defenseCount)} 場 / 保鑣 ${fmtNumber(row.bodyguardCount)} 場`;
 }
 
+function buildGroupCountTitleText(row) {
+  return `防守${fmtNumber(row.defenseCount)}場，進攻${fmtNumber(row.attackCount)}場，保鑣${fmtNumber(row.bodyguardCount)}場`;
+}
+
 function filterPlayerCohortRows(rows, player, cohortFilter) {
   if (cohortFilter === 'all') return rows;
   if (cohortFilter === 'same_job') return rows.filter(row => row.job === player.job);
@@ -3619,7 +3799,11 @@ function fmtRadarAbsoluteValue(key, value) {
 }
 
 function showRadarAbsoluteBestValue(key) {
-  return ['avgKill', 'avgAssist', 'avgBurn', 'avgBuildDamage', 'avgSave', 'avgDeath'].includes(key);
+  return ['avgKill', 'avgAssist', 'avgBurn', 'avgBuildDamage', 'avgSave', 'avgDeath', 'avgHeal', 'avgNetHeal', 'avgTakenDamage', 'avgPvpDamage'].includes(key);
+}
+
+function useThreeLineRadarAbsoluteLabel(key) {
+  return ['avgHeal', 'avgNetHeal', 'avgTakenDamage', 'avgPvpDamage'].includes(key);
 }
 
 function deathRadarBase(item) {
@@ -3662,7 +3846,11 @@ function formatRadarAxisAbsoluteText(axis, comparisons) {
   const bestText = fmtRadarAbsoluteValue(axis.key, item.extreme);
   return normalizeRadarAxisLabel({
     ...axis,
-    labelLines: [axis.label, showRadarAbsoluteBestValue(axis.key) ? `${valueText}/${bestText}` : valueText],
+    labelLines: showRadarAbsoluteBestValue(axis.key)
+      ? (useThreeLineRadarAbsoluteLabel(axis.key)
+        ? [axis.label, valueText, `/${bestText}`]
+        : [axis.label, `${valueText}/${bestText}`])
+      : [axis.label, valueText],
   });
 }
 
@@ -3730,7 +3918,7 @@ function renderRadarCard(title, axes, scores, color, note) {
     const x = centerX + Math.cos(angle) * (radius + 26);
     const y = centerY + Math.sin(angle) * (radius + 26);
     const lines = axis.labelLines || [axis.label];
-    const dyStart = lines.length > 1 ? -7 : 0;
+    const dyStart = lines.length >= 3 ? -14 : lines.length === 2 ? -7 : 0;
     return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" class="radar-axis-label">${lines.map((line, lineIndex) => `<tspan x="${x.toFixed(1)}" dy="${lineIndex === 0 ? dyStart : 14}">${escHtml(line)}</tspan>`).join('')}</text>`;
   }).join('');
   return `
@@ -3747,6 +3935,133 @@ function renderRadarCard(title, axes, scores, color, note) {
         ${labels}
       </svg>
       <div class="radar-note">${escHtml(note)}</div>
+    </div>
+  `;
+}
+
+function quadrantScaleInfo(values, medianValue) {
+  const nums = (values || []).map(value => Number(value || 0));
+  if (!nums.length) {
+    return { min: 0, max: 1, median: Number(medianValue || 0), span: 1 };
+  }
+  const rawMin = Math.min(...nums);
+  const rawMax = Math.max(...nums);
+  const center = Number.isFinite(medianValue) ? Number(medianValue) : median(nums);
+  const pad = Math.max((rawMax - rawMin) * 0.12, Math.abs(center) * 0.08, 1);
+  let min = Math.min(rawMin, center) - pad;
+  let max = Math.max(rawMax, center) + pad;
+  if (min === max) {
+    min -= 1;
+    max += 1;
+  }
+  return { min, max, median: center, span: max - min };
+}
+
+function quadrantTickValues(scale) {
+  const start = scale.min;
+  const step = scale.span / 4;
+  return [0, 1, 2, 3, 4].map(index => start + (step * index));
+}
+
+function formatQuadrantAxisValue(axis, value) {
+  if (axis === 'x') return fmtRadarDecimal(value);
+  const abs = Math.abs(Number(value || 0));
+  if (abs >= 10000) return fmtRadarAbsoluteValue('avgBuildDamage', value);
+  return fmtRadarDecimal(value);
+}
+
+function renderQuadrantChartCard(title, chartData) {
+  const rows = chartData?.rows || [];
+  if (!rows.length) {
+    return `
+      <div class="quadrant-card">
+        <div class="quadrant-title">${escHtml(title)}</div>
+        <div class="empty">目前沒有可畫出的資料點。</div>
+      </div>
+    `;
+  }
+  const width = 540;
+  const height = 360;
+  const padding = { top: 26, right: 18, bottom: 46, left: 62 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const xScale = quadrantScaleInfo(rows.map(row => row.xValue), chartData.xMedian);
+  const yScale = quadrantScaleInfo(rows.map(row => row.yValue), chartData.yMedian);
+  const scaleX = value => padding.left + plotWidth - (((Number(value || 0) - xScale.min) / xScale.span) * plotWidth);
+  const scaleY = value => padding.top + plotHeight - (((Number(value || 0) - yScale.min) / yScale.span) * plotHeight);
+  const xMedianX = scaleX(xScale.median);
+  const yMedianY = scaleY(yScale.median);
+  const xTicks = quadrantTickValues(xScale);
+  const yTicks = quadrantTickValues(yScale);
+  const subtitle = chartData.chartKey === 'attack'
+    ? `橫軸：重傷（高 → 低）｜縱軸：${chartData.yLabel}`
+    : `橫軸：重傷（高 → 低）｜縱軸：${chartData.yLabel}`;
+  const pointLabels = rows.map((row, index) => {
+    const x = scaleX(row.xValue);
+    const y = scaleY(row.yValue);
+    const color = PROFESSION_QUADRANT_COLORS[row.groupType] || '#8b5fb0';
+    const dx = index % 2 === 0 ? 6 : -6;
+    const anchor = index % 2 === 0 ? 'start' : 'end';
+    const detail = `${row.name}｜${GROUP_LABELS[row.groupType] || row.groupType}｜重傷 ${fmtRadarDecimal(row.avgDeath)}｜${chartData.yLabel} ${formatQuadrantAxisValue('y', row.yValue)}｜${fmtNumber(row.battles)} 場`;
+    return `
+      <g>
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${color}" stroke="#fffaf4" stroke-width="1.4">
+          <title>${escHtml(detail)}</title>
+        </circle>
+        <text x="${(x + dx).toFixed(1)}" y="${(y - 6).toFixed(1)}" text-anchor="${anchor}" class="quadrant-point-label">${escHtml(row.name)}</text>
+      </g>
+    `;
+  }).join('');
+  return `
+    <div class="quadrant-card">
+      <div class="quadrant-title">${escHtml(title)}</div>
+      <div class="quadrant-subhead">
+        <div class="quadrant-y-label-top">${escHtml(chartData.yLabel)}</div>
+        <div class="quadrant-subtitle">${escHtml(subtitle)}</div>
+      </div>
+      <svg class="quadrant-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escHtml(title)}">
+        <rect x="${padding.left}" y="${padding.top}" width="${plotWidth}" height="${plotHeight}" fill="#fff" stroke="#eadfce" stroke-width="1" />
+        ${xTicks.map(value => {
+          const x = scaleX(value);
+          return `<g><line x1="${x.toFixed(1)}" y1="${padding.top}" x2="${x.toFixed(1)}" y2="${(padding.top + plotHeight).toFixed(1)}" stroke="#efe5d7" stroke-width="1" /><text x="${x.toFixed(1)}" y="${(height - 18).toFixed(1)}" text-anchor="middle" class="quadrant-tick-label">${escHtml(formatQuadrantAxisValue('x', value))}</text></g>`;
+        }).join('')}
+        ${yTicks.map(value => {
+          const y = scaleY(value);
+          return `<g><line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + plotWidth).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#efe5d7" stroke-width="1" /><text x="${(padding.left - 8).toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="end" class="quadrant-tick-label">${escHtml(formatQuadrantAxisValue('y', value))}</text></g>`;
+        }).join('')}
+        <line x1="${xMedianX.toFixed(1)}" y1="${padding.top}" x2="${xMedianX.toFixed(1)}" y2="${(padding.top + plotHeight).toFixed(1)}" stroke="#b4571f" stroke-width="1.4" stroke-dasharray="6 4" />
+        <line x1="${padding.left}" y1="${yMedianY.toFixed(1)}" x2="${(padding.left + plotWidth).toFixed(1)}" y2="${yMedianY.toFixed(1)}" stroke="#b4571f" stroke-width="1.4" stroke-dasharray="6 4" />
+        ${pointLabels}
+        <text x="${(padding.left + plotWidth / 2).toFixed(1)}" y="${(height - 2).toFixed(1)}" text-anchor="middle" class="quadrant-axis-label">平均重傷</text>
+      </svg>
+      <div class="quadrant-legend">
+        ${chartData.chartKey === 'attack' ? `
+          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.attack};"></span>進攻</span>
+          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
+        ` : `
+          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.defense};"></span>防守</span>
+          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.bodyguard};"></span>保鑣</span>
+          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
+        `}
+      </div>
+      <div class="quadrant-note">橫線與直線分別是目前樣本的主指標中位數與重傷中位數。未知分工會同時出現在兩張圖。</div>
+    </div>
+  `;
+}
+
+function renderProfessionQuadrantModalBody(job, metricMode = 'default') {
+  const attackData = professionQuadrantChartData(job, 'attack', metricMode);
+  const defenseData = professionQuadrantChartData(job, 'defense', metricMode);
+  const options = professionQuadrantMetricOptions(job);
+  return `
+    ${options.length ? `
+      <div class="quadrant-toggle-row">
+        ${options.map(option => `<button type="button" class="${option.key === metricMode ? 'btn-primary' : 'btn-ghost'}" data-profession-quadrant-metric="${escHtml(option.key)}">${escHtml(option.label)}</button>`).join('')}
+      </div>
+    ` : ''}
+    <div class="quadrant-grid">
+      ${renderQuadrantChartCard(`${job} 進攻象限圖`, attackData)}
+      ${renderQuadrantChartCard(`${job} 防守 / 保鑣象限圖`, defenseData)}
     </div>
   `;
 }
@@ -4049,6 +4364,166 @@ function dpsProfessionAverageRows(sortConfig = dpsProfessionTableSort) {
     });
 }
 
+function professionAverageSummaryRow(targetJob) {
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
+  const groupType = document.getElementById('profession_group_filter').value || 'all';
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
+  const battles = filteredBattlesByIds(battleIds);
+  const bucket = {
+    job: targetJob,
+    entries: 0,
+    battleIds: new Set(),
+    players: new Set(),
+    kill: 0,
+    assist: 0,
+    pvpDamage: 0,
+    buildDamage: 0,
+    death: 0,
+    burnCount: 0,
+    takenDamage: 0,
+    heal: 0,
+    netHeal: 0,
+    saveCount: 0,
+  };
+  battles.forEach(battle => {
+    (battle.players || []).map(derivePlayer).forEach(player => {
+      if (player.job !== targetJob) return;
+      if (!historyMatchesPlayerGroupFilter(groupType, player.groupType || 'unknown')) return;
+      bucket.entries += 1;
+      bucket.battleIds.add(battle.id);
+      bucket.players.add(canonicalPlayerName(player.name));
+      bucket.kill += Number(player.kill || 0);
+      bucket.assist += Number(player.assist || 0);
+      bucket.pvpDamage += Number(player.pvpDamage || 0);
+      bucket.buildDamage += Number(player.buildDamage || 0);
+      bucket.death += Number(player.death || 0);
+      bucket.burnCount += Number(player.burnCount || 0);
+      bucket.takenDamage += Number(player.takenDamage || 0);
+      bucket.heal += Number(player.heal || 0);
+      bucket.netHeal += Number(player.netHeal || 0);
+      bucket.saveCount += Number(player.saveCount || 0);
+    });
+  });
+  if (!bucket.entries) return null;
+  return {
+    job: bucket.job,
+    entries: bucket.entries,
+    battles: bucket.battleIds.size,
+    playerCount: bucket.players.size,
+    avgKill: bucket.kill / bucket.entries,
+    avgAssist: bucket.assist / bucket.entries,
+    avgDeath: bucket.death / bucket.entries,
+    avgKillPerDeath: bucket.kill / Math.max(bucket.death, 1),
+    avgAssistPerDeath: bucket.assist / Math.max(bucket.death, 1),
+    avgPvpDamage: bucket.pvpDamage / bucket.entries,
+    avgPvpPerKill: bucket.kill > 0 ? bucket.pvpDamage / bucket.kill : Infinity,
+    avgBuildDamage: bucket.buildDamage / bucket.entries,
+    avgBuildPerDeath: bucket.buildDamage / Math.max(bucket.death, 1),
+    avgBurn: bucket.burnCount / bucket.entries,
+    avgTakenDamage: bucket.takenDamage / bucket.entries,
+    avgTakenPerDeath: bucket.takenDamage / Math.max(bucket.death, 1),
+    avgHeal: bucket.heal / bucket.entries,
+    avgNetHeal: bucket.netHeal / bucket.entries,
+    avgSave: bucket.saveCount / bucket.entries,
+  };
+}
+
+function summarizeProfessionHistory(item, history, groupType) {
+  const sample = history.map(entry => entry.raw);
+  return {
+    name: item.name,
+    job: item.job,
+    groupType,
+    battles: history.length,
+    avgKill: sum(sample, 'kill') / history.length,
+    avgAssist: sum(sample, 'assist') / history.length,
+    avgDeath: sum(sample, 'death') / history.length,
+    avgPvpDamage: sum(sample, 'pvpDamage') / history.length,
+    avgBuildDamage: sum(sample, 'buildDamage') / history.length,
+    avgTakenDamage: sum(sample, 'takenDamage') / history.length,
+    avgNetHeal: sum(sample, 'netHeal') / history.length,
+    avgSave: sum(sample, 'saveCount') / history.length,
+    avgBurn: sum(sample, 'burnCount') / history.length,
+  };
+}
+
+function professionQuadrantMetricOptions(job) {
+  if (job === '九靈') {
+    return [
+      { key: 'default', label: '主責指標' },
+      { key: 'burn', label: '焚骨' },
+    ];
+  }
+  if (job === '素問') {
+    return [
+      { key: 'default', label: '淨治療' },
+      { key: 'save', label: '化羽' },
+    ];
+  }
+  return [];
+}
+
+function professionQuadrantYLabel(job, chartKey, metricMode = 'default') {
+  if (job === '素問') return metricMode === 'save' ? '化羽' : '淨治療';
+  if (job === '九靈' && metricMode === 'burn') return '焚骨';
+  if (job === '鐵衣') {
+    return chartKey === 'attack' ? '承傷 + 塔傷/10' : '承傷 + 擊殺×100w';
+  }
+  return chartKey === 'attack' ? '塔傷' : '擊敗';
+}
+
+function professionQuadrantMetricValue(job, chartKey, row, metricMode = 'default') {
+  if (job === '素問') return metricMode === 'save' ? Number(row.avgSave || 0) : Number(row.avgNetHeal || 0);
+  if (job === '九靈' && metricMode === 'burn') return Number(row.avgBurn || 0);
+  if (job === '鐵衣') {
+    if (chartKey === 'attack') return Number(row.avgTakenDamage || 0) + (Number(row.avgBuildDamage || 0) / 10);
+    return Number(row.avgTakenDamage || 0) + (Number(row.avgKill || 0) * 1000000);
+  }
+  return chartKey === 'attack' ? Number(row.avgBuildDamage || 0) : Number(row.avgKill || 0);
+}
+
+function professionQuadrantPointRows(job) {
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
+  const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
+  return aggregatePlayers(battleIds)
+    .filter(item => item.job === job)
+    .flatMap(item => {
+      const histories = {
+        attack: item.history.filter(entry => entry.groupType === 'attack'),
+        defense: item.history.filter(entry => entry.groupType === 'defense'),
+        bodyguard: item.history.filter(entry => entry.groupType === 'bodyguard'),
+        unknown: item.history.filter(entry => entry.groupType === 'unknown'),
+      };
+      return Object.entries(histories)
+        .filter(([, history]) => history.length >= minBattles)
+        .map(([groupType, history]) => summarizeProfessionHistory(item, history, groupType));
+    });
+}
+
+function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
+  const sourceRows = professionQuadrantPointRows(job);
+  const allowedGroups = chartKey === 'attack'
+    ? ['attack', 'unknown']
+    : ['defense', 'bodyguard', 'unknown'];
+  const rows = sourceRows
+    .filter(row => allowedGroups.includes(row.groupType))
+    .map(row => ({
+      ...row,
+      xValue: Number(row.avgDeath || 0),
+      yValue: professionQuadrantMetricValue(job, chartKey, row, metricMode),
+    }));
+  return {
+    job,
+    chartKey,
+    metricMode,
+    rows,
+    xMedian: median(rows.map(row => row.xValue)),
+    yMedian: median(rows.map(row => row.yValue)),
+    yLabel: professionQuadrantYLabel(job, chartKey, metricMode),
+  };
+}
+
 function professionNameWithBreaks(name) {
   const chars = Array.from(String(name || ''));
   const parts = [];
@@ -4097,6 +4572,12 @@ function renderDpsProfessionTableHeader() {
   row.querySelectorAll('[data-dps-prof-sort]').forEach(button => {
     button.addEventListener('click', () => setDpsProfessionSort(button.dataset.dpsProfSort));
   });
+}
+
+function renderStaticProfessionAverageHeader(rowId, columns) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  row.innerHTML = columns.map(column => `<th>${escHtml(column.label)}</th>`).join('');
 }
 
 function setProfessionSort(field) {
@@ -4730,6 +5211,14 @@ function closeProfessionPlayerRadarModal() {
   if (overlay) overlay.hidden = true;
 }
 
+function closeProfessionJobQuadrantModal() {
+  const overlay = document.getElementById('profession_job_quadrant_modal');
+  const body = document.getElementById('profession_job_quadrant_modal_body');
+  if (body) body.innerHTML = '';
+  if (overlay) overlay.hidden = true;
+  professionQuadrantMode = { job: '', metric: 'default' };
+}
+
 function openProfessionPlayerRadarModal(playerName) {
   const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
   const groupFilter = document.getElementById('profession_group_filter')?.value || 'all';
@@ -4751,11 +5240,44 @@ function openProfessionPlayerRadarModal(playerName) {
   const title = document.getElementById('profession_player_radar_modal_title');
   const body = document.getElementById('profession_player_radar_modal_body');
   if (!overlay || !title || !body) return;
+  const totalBattleCount = battleIds.length;
   title.innerHTML = `
-    <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(player.name)}｜${escHtml(player.job)}</div>
+    <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(player.name)}｜${escHtml(player.job)} <span class="subtle" style="font-size:16px; font-weight:700;">(${escHtml(buildGroupCountTitleText(player))}，對照樣本共${fmtNumber(totalBattleCount)}場)</span></div>
     <div class="subtle" style="margin-top:4px;">職業表現快速預覽：PR 六角圖 / 絕對數值六角圖</div>
   `;
   body.innerHTML = renderPlayerRadarModalCharts(player, context.comparisons, context.comparisonRows);
+  overlay.hidden = false;
+}
+
+function openProfessionJobQuadrantModal(job) {
+  if (!job) return;
+  const overlay = document.getElementById('profession_job_quadrant_modal');
+  const title = document.getElementById('profession_job_quadrant_modal_title');
+  const body = document.getElementById('profession_job_quadrant_modal_body');
+  if (!overlay || !title || !body) return;
+  const options = professionQuadrantMetricOptions(job);
+  if (professionQuadrantMode.job !== job) {
+    professionQuadrantMode = { job, metric: options[0]?.key || 'default' };
+  } else if (options.length && !options.some(option => option.key === professionQuadrantMode.metric)) {
+    professionQuadrantMode.metric = options[0].key;
+  }
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
+  title.innerHTML = `
+    <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(job)}｜職業象限圖</div>
+    <div class="subtle" style="margin-top:4px;">依目前職業表現頁的已選場次與己方篩選繪製。進攻圖看主責進攻指標，防守圖合併防守與保鑣，未知分工會同時出現在兩張圖。</div>
+    <div class="subtle" style="margin-top:4px;">對照樣本共 ${fmtNumber(battleIds.length)} 場。</div>
+  `;
+  body.innerHTML = renderProfessionQuadrantModalBody(job, professionQuadrantMode.metric);
+  body.querySelectorAll('[data-profession-quadrant-metric]').forEach(button => {
+    button.addEventListener('click', () => {
+      professionQuadrantMode = {
+        job,
+        metric: button.dataset.professionQuadrantMetric || 'default',
+      };
+      openProfessionJobQuadrantModal(job);
+    });
+  });
   overlay.hidden = false;
 }
 
@@ -5444,6 +5966,8 @@ function renderProfessionTable() {
   const body = document.getElementById('profession_body');
   renderProfessionTableHeader();
   renderDpsProfessionAverageTable();
+  renderIronProfessionAverageTable();
+  renderHealerProfessionAverageTable();
   const rows = professionRows();
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="20" class="empty">目前沒有符合條件的職業資料。</td></tr>';
@@ -5492,7 +6016,7 @@ function renderDpsProfessionAverageTable() {
   }
   body.innerHTML = rows.map(row => `
     <tr>
-      <td><b>${escHtml(row.job)}</b></td>
+      <td><button type="button" class="profession-job-btn" data-profession-job="${escHtml(row.job)}">${escHtml(row.job)}</button></td>
       <td><span class="nowrap">${fmtNumber(row.entries)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.playerCount)}</span></td>
@@ -5509,6 +6033,71 @@ function renderDpsProfessionAverageTable() {
       <td><span class="nowrap">${fmtAvg(row.avgBurn)}</span></td>
     </tr>
   `).join('');
+  body.querySelectorAll('[data-profession-job]').forEach(button => {
+    button.addEventListener('click', () => openProfessionJobQuadrantModal(button.dataset.professionJob || ''));
+  });
+}
+
+function renderIronProfessionAverageTable() {
+  const body = document.getElementById('profession_iron_average_body');
+  if (!body) return;
+  renderStaticProfessionAverageHeader('profession_iron_average_header_row', IRON_PROFESSION_TABLE_COLUMNS);
+  const row = professionAverageSummaryRow('鐵衣');
+  if (!row) {
+    body.innerHTML = `<tr><td colspan="${IRON_PROFESSION_TABLE_COLUMNS.length}" class="empty">目前沒有符合條件的鐵衣資料。</td></tr>`;
+    return;
+  }
+  body.innerHTML = `
+    <tr>
+      <td><button type="button" class="profession-job-btn" data-profession-job="${escHtml(row.job)}">${escHtml(row.job)}</button></td>
+      <td><span class="nowrap">${fmtNumber(row.entries)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.playerCount)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgKill)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgAssist)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgDeath)}</span></td>
+      <td><span class="nowrap">${fmtF(row.avgKillPerDeath, 2)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgPvpDamage)}</span></td>
+      <td><span class="nowrap">${fmtPvpPerKill(row.avgPvpPerKill)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgBuildDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgBuildPerDeath)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenPerDeath)}</span></td>
+    </tr>
+  `;
+  body.querySelectorAll('[data-profession-job]').forEach(button => {
+    button.addEventListener('click', () => openProfessionJobQuadrantModal(button.dataset.professionJob || ''));
+  });
+}
+
+function renderHealerProfessionAverageTable() {
+  const body = document.getElementById('profession_healer_average_body');
+  if (!body) return;
+  renderStaticProfessionAverageHeader('profession_healer_average_header_row', HEALER_PROFESSION_TABLE_COLUMNS);
+  const row = professionAverageSummaryRow('素問');
+  if (!row) {
+    body.innerHTML = `<tr><td colspan="${HEALER_PROFESSION_TABLE_COLUMNS.length}" class="empty">目前沒有符合條件的素問資料。</td></tr>`;
+    return;
+  }
+  body.innerHTML = `
+    <tr>
+      <td><button type="button" class="profession-job-btn" data-profession-job="${escHtml(row.job)}">${escHtml(row.job)}</button></td>
+      <td><span class="nowrap">${fmtNumber(row.entries)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
+      <td><span class="nowrap">${fmtNumber(row.playerCount)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgAssist)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgDeath)}</span></td>
+      <td><span class="nowrap">${fmtF(row.avgAssistPerDeath, 2)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgHeal)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgNetHeal)}</span></td>
+      <td><span class="nowrap">${fmtAvg(row.avgSave)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenDamage)}</span></td>
+      <td><span class="nowrap">${fmtLarge(row.avgTakenPerDeath)}</span></td>
+    </tr>
+  `;
+  body.querySelectorAll('[data-profession-job]').forEach(button => {
+    button.addEventListener('click', () => openProfessionJobQuadrantModal(button.dataset.professionJob || ''));
+  });
 }
 
 function syncProfessionFloatingHeader() {
@@ -7433,9 +8022,16 @@ document.getElementById('btn_close_profession_player_radar_modal').addEventListe
 document.getElementById('profession_player_radar_modal').addEventListener('click', event => {
   if (event.target.id === 'profession_player_radar_modal') closeProfessionPlayerRadarModal();
 });
+document.getElementById('btn_close_profession_job_quadrant_modal').addEventListener('click', closeProfessionJobQuadrantModal);
+document.getElementById('profession_job_quadrant_modal').addEventListener('click', event => {
+  if (event.target.id === 'profession_job_quadrant_modal') closeProfessionJobQuadrantModal();
+});
 if (typeof document.addEventListener === 'function') {
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeProfessionPlayerRadarModal();
+    if (event.key === 'Escape') {
+      closeProfessionPlayerRadarModal();
+      closeProfessionJobQuadrantModal();
+    }
   });
 }
 document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
