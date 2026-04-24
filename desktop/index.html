@@ -3467,6 +3467,19 @@ function median(values) {
   return nums.length % 2 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
 }
 
+function percentileValue(values, percentile) {
+  const nums = values.map(value => Number(value || 0)).filter(Number.isFinite).sort((a, b) => a - b);
+  if (!nums.length) return 0;
+  const clamped = Math.max(0, Math.min(100, Number(percentile || 0)));
+  if (nums.length === 1) return nums[0];
+  const rank = (clamped / 100) * (nums.length - 1);
+  const lower = Math.floor(rank);
+  const upper = Math.ceil(rank);
+  if (lower === upper) return nums[lower];
+  const weight = rank - lower;
+  return nums[lower] + ((nums[upper] - nums[lower]) * weight);
+}
+
 function dominantGroupType(row) {
   const counts = [
     { key: 'attack', count: Number(row.attackCount || 0) },
@@ -3939,14 +3952,14 @@ function renderRadarCard(title, axes, scores, color, note) {
   `;
 }
 
-function quadrantScaleInfo(values, medianValue) {
+function quadrantScaleInfo(values, centerValue) {
   const nums = (values || []).map(value => Number(value || 0));
   if (!nums.length) {
-    return { min: 0, max: 1, median: Number(medianValue || 0), span: 1 };
+    return { min: 0, max: 1, center: Number(centerValue || 0), span: 1 };
   }
   const rawMin = Math.min(...nums);
   const rawMax = Math.max(...nums);
-  const center = Number.isFinite(medianValue) ? Number(medianValue) : median(nums);
+  const center = Number.isFinite(centerValue) ? Number(centerValue) : median(nums);
   const pad = Math.max((rawMax - rawMin) * 0.12, Math.abs(center) * 0.08, 1);
   let min = Math.min(rawMin, center) - pad;
   let max = Math.max(rawMax, center) + pad;
@@ -3954,7 +3967,7 @@ function quadrantScaleInfo(values, medianValue) {
     min -= 1;
     max += 1;
   }
-  return { min, max, median: center, span: max - min };
+  return { min, max, center, span: max - min };
 }
 
 function quadrantTickValues(scale) {
@@ -3985,12 +3998,12 @@ function renderQuadrantChartCard(title, chartData) {
   const padding = { top: 26, right: 18, bottom: 46, left: 62 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
-  const xScale = quadrantScaleInfo(rows.map(row => row.xValue), chartData.xMedian);
-  const yScale = quadrantScaleInfo(rows.map(row => row.yValue), chartData.yMedian);
+  const xScale = quadrantScaleInfo(rows.map(row => row.xValue), chartData.xThreshold);
+  const yScale = quadrantScaleInfo(rows.map(row => row.yValue), chartData.yThreshold);
   const scaleX = value => padding.left + plotWidth - (((Number(value || 0) - xScale.min) / xScale.span) * plotWidth);
   const scaleY = value => padding.top + plotHeight - (((Number(value || 0) - yScale.min) / yScale.span) * plotHeight);
-  const xMedianX = scaleX(xScale.median);
-  const yMedianY = scaleY(yScale.median);
+  const xThresholdX = scaleX(xScale.center);
+  const yThresholdY = scaleY(yScale.center);
   const xTicks = quadrantTickValues(xScale);
   const yTicks = quadrantTickValues(yScale);
   const subtitle = chartData.chartKey === 'attack'
@@ -4029,8 +4042,8 @@ function renderQuadrantChartCard(title, chartData) {
           const y = scaleY(value);
           return `<g><line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + plotWidth).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#efe5d7" stroke-width="1" /><text x="${(padding.left - 8).toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="end" class="quadrant-tick-label">${escHtml(formatQuadrantAxisValue('y', value))}</text></g>`;
         }).join('')}
-        <line x1="${xMedianX.toFixed(1)}" y1="${padding.top}" x2="${xMedianX.toFixed(1)}" y2="${(padding.top + plotHeight).toFixed(1)}" stroke="#b4571f" stroke-width="1.4" stroke-dasharray="6 4" />
-        <line x1="${padding.left}" y1="${yMedianY.toFixed(1)}" x2="${(padding.left + plotWidth).toFixed(1)}" y2="${yMedianY.toFixed(1)}" stroke="#b4571f" stroke-width="1.4" stroke-dasharray="6 4" />
+        <line x1="${xThresholdX.toFixed(1)}" y1="${padding.top}" x2="${xThresholdX.toFixed(1)}" y2="${(padding.top + plotHeight).toFixed(1)}" stroke="#b4571f" stroke-width="1.4" stroke-dasharray="6 4" />
+        <line x1="${padding.left}" y1="${yThresholdY.toFixed(1)}" x2="${(padding.left + plotWidth).toFixed(1)}" y2="${yThresholdY.toFixed(1)}" stroke="#b4571f" stroke-width="1.4" stroke-dasharray="6 4" />
         ${pointLabels}
         <text x="${(padding.left + plotWidth / 2).toFixed(1)}" y="${(height - 2).toFixed(1)}" text-anchor="middle" class="quadrant-axis-label">平均重傷</text>
       </svg>
@@ -4044,7 +4057,7 @@ function renderQuadrantChartCard(title, chartData) {
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
         `}
       </div>
-      <div class="quadrant-note">橫線與直線分別是目前樣本的主指標中位數與重傷中位數。未知分工會同時出現在兩張圖。</div>
+      <div class="quadrant-note">橫線與直線分別使用目前職業樣本下的後段門檻與重傷門檻對應百分位。未知分工會同時出現在兩張圖。</div>
     </div>
   `;
 }
@@ -4503,6 +4516,8 @@ function professionQuadrantPointRows(job) {
 
 function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
   const sourceRows = professionQuadrantPointRows(job);
+  const deathPct = Math.max(1, Math.min(99, Number(currentSettings().deathPct || 30)));
+  const weakPct = Math.max(1, Math.min(99, Number(currentSettings().weakPct || 30)));
   const allowedGroups = chartKey === 'attack'
     ? ['attack', 'unknown']
     : ['defense', 'bodyguard', 'unknown'];
@@ -4518,8 +4533,8 @@ function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
     chartKey,
     metricMode,
     rows,
-    xMedian: median(rows.map(row => row.xValue)),
-    yMedian: median(rows.map(row => row.yValue)),
+    xThreshold: percentileValue(rows.map(row => row.xValue), 100 - deathPct),
+    yThreshold: percentileValue(rows.map(row => row.yValue), weakPct),
     yLabel: professionQuadrantYLabel(job, chartKey, metricMode),
   };
 }
