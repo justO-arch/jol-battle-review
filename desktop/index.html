@@ -3343,6 +3343,9 @@ function computeMetricComparison(player, cohortRows, metric) {
   const extreme = values.length
     ? (metric?.better === 'low' ? Math.min(...values) : Math.max(...values))
     : 0;
+  const worst = values.length
+    ? (metric?.better === 'low' ? Math.max(...values) : Math.min(...values))
+    : 0;
   if (typeof metric.applicable === 'function' && !metric.applicable(player)) {
     return {
       metric,
@@ -3350,6 +3353,7 @@ function computeMetricComparison(player, cohortRows, metric) {
       average,
       median: med,
       extreme,
+      worst,
       stddev,
       rank: null,
       count: cohortRows.length || 0,
@@ -3369,6 +3373,7 @@ function computeMetricComparison(player, cohortRows, metric) {
       average,
       median: med,
       extreme,
+      worst,
       stddev,
       rank: null,
       count: cohortRows.length || 0,
@@ -3404,6 +3409,7 @@ function computeMetricComparison(player, cohortRows, metric) {
     average,
     median: med,
     extreme,
+    worst,
     stddev,
     rank,
     count,
@@ -3574,7 +3580,7 @@ function playerRadarAxes(player) {
       { key: 'avgSave', label: '化羽' },
       { key: 'avgAssist', label: '助攻' },
       { key: 'avgTakenDamage', label: '承傷' },
-      { key: 'avgDeath', label: '生存' },
+      { key: 'avgDeath', label: '生存(重傷)' },
     ];
   }
   const base = [
@@ -3583,19 +3589,97 @@ function playerRadarAxes(player) {
     { key: 'avgPvpDamage', label: '人傷' },
     { key: 'avgBuildDamage', label: '塔傷' },
     { key: 'avgTakenDamage', label: '承傷' },
-    { key: 'avgDeath', label: '生存' },
+    { key: 'avgDeath', label: '生存(重傷)' },
   ];
   if (player.job === '九靈') base[4] = { key: 'avgBurn', label: '焚骨' };
   return base;
 }
 
+function playerCompareMetricByKey(key) {
+  return PLAYER_COMPARE_METRICS.find(metric => metric.key === key) || null;
+}
+
+function fmtRadarDecimal(value) {
+  return Number(value || 0).toLocaleString('zh-TW', { maximumFractionDigits: 2 });
+}
+
+function isLargeRadarMetric(key) {
+  return ['avgPvpDamage', 'avgBuildDamage', 'avgBuildPerDeath', 'avgTakenDamage', 'avgTakenPerDeath', 'avgHeal', 'avgNetHeal'].includes(key);
+}
+
+function fmtRadarAbsoluteValue(key, value) {
+  const num = Number(value || 0);
+  if (!Number.isFinite(num)) return '-';
+  if (!isLargeRadarMetric(key)) return fmtRadarDecimal(num);
+  const abs = Math.abs(num);
+  const sign = num < 0 ? '-' : '';
+  if (abs >= 100000000) return `${sign}${(abs / 100000000).toFixed(2)}e`;
+  if (abs >= 10000) return `${sign}${Math.trunc(abs / 10000)}w`;
+  return fmtRadarDecimal(num);
+}
+
+function showRadarAbsoluteBestValue(key) {
+  return ['avgKill', 'avgAssist', 'avgBurn', 'avgBuildDamage', 'avgSave', 'avgDeath'].includes(key);
+}
+
+function deathRadarBase(item) {
+  return Math.max(1, Number(item?.worst || 0) + 10);
+}
+
+function absoluteRadarMetricValue(axis, item, field = 'playerValue') {
+  const rawValue = Number(item?.[field] || 0);
+  if (axis.key !== 'avgDeath') return rawValue;
+  return Math.max(0, deathRadarBase(item) - rawValue);
+}
+
+function normalizeRadarAxisLabel(axis) {
+  const lines = Array.isArray(axis?.labelLines)
+    ? axis.labelLines
+    : [String(axis?.label || '')];
+  return {
+    ...axis,
+    labelLines: lines.filter(Boolean),
+  };
+}
+
+function formatRadarAxisRankText(axis, comparisons) {
+  const item = comparisons.find(entry => entry.metric.key === axis.key);
+  if (!item || item.na || !item.count || !item.rank) {
+    return normalizeRadarAxisLabel(axis);
+  }
+  return normalizeRadarAxisLabel({
+    ...axis,
+    labelLines: [axis.label, `${fmtRadarDecimal(item.rank)}/${fmtRadarDecimal(item.count)}`],
+  });
+}
+
+function formatRadarAxisAbsoluteText(axis, comparisons) {
+  const item = comparisons.find(entry => entry.metric.key === axis.key);
+  if (!item || item.na) {
+    return normalizeRadarAxisLabel(axis);
+  }
+  const valueText = fmtRadarAbsoluteValue(axis.key, item.playerValue);
+  const bestText = fmtRadarAbsoluteValue(axis.key, item.extreme);
+  return normalizeRadarAxisLabel({
+    ...axis,
+    labelLines: [axis.label, showRadarAbsoluteBestValue(axis.key) ? `${valueText}/${bestText}` : valueText],
+  });
+}
+
 function absoluteRadarUpperBound(axis, comparisons) {
   const item = comparisons.find(entry => entry.metric.key === axis.key);
   if (!item || item.na) return 1;
+  if (axis.key === 'avgDeath') {
+    const base = deathRadarBase(item);
+    const best = Math.max(0, base - Number(item.extreme || 0));
+    const average = Math.max(0, base - Number(item.average || 0));
+    const stddev = Number(item.stddev || 0);
+    return Math.max(1, best * 1.1, average + (stddev * 2));
+  }
   const extreme = Number(item.extreme || 0);
   const average = Number(item.average || 0);
   const stddev = Number(item.stddev || 0);
-  return Math.max(1, extreme * 1.15, average + (stddev * 2.5));
+  return Math.max(1, extreme * 1.1, average + (stddev * 2));
 }
 
 function absoluteRadarScore(value, upperBound, invert = false) {
@@ -3631,20 +3715,23 @@ function renderRadarCard(title, axes, scores, color, note) {
   const centerX = 120;
   const centerY = 120;
   const radius = 72;
-  const count = axes.length;
+  const normalizedAxes = axes.map(normalizeRadarAxisLabel);
+  const count = normalizedAxes.length;
   const polygon = radarPolygonPoints(scores, radius, centerX, centerY);
   const grid = [0.2, 0.4, 0.6, 0.8, 1];
-  const spokes = axes.map((axis, index) => {
+  const spokes = normalizedAxes.map((axis, index) => {
     const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
     const x = centerX + Math.cos(angle) * radius;
     const y = centerY + Math.sin(angle) * radius;
     return `<line x1="${centerX}" y1="${centerY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#d9cebf" stroke-width="1" />`;
   }).join('');
-  const labels = axes.map((axis, index) => {
+  const labels = normalizedAxes.map((axis, index) => {
     const angle = (-Math.PI / 2) + (Math.PI * 2 * index / count);
     const x = centerX + Math.cos(angle) * (radius + 26);
     const y = centerY + Math.sin(angle) * (radius + 26);
-    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" class="radar-axis-label">${escHtml(axis.label)}</text>`;
+    const lines = axis.labelLines || [axis.label];
+    const dyStart = lines.length > 1 ? -7 : 0;
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" class="radar-axis-label">${lines.map((line, lineIndex) => `<tspan x="${x.toFixed(1)}" dy="${lineIndex === 0 ? dyStart : 14}">${escHtml(line)}</tspan>`).join('')}</text>`;
   }).join('');
   return `
     <div class="radar-card">
@@ -3675,18 +3762,24 @@ function buildPlayerRadarCharts(player, comparisons) {
   const absoluteScores = axes.map(axis => {
     const item = map.get(axis.key);
     const upperBound = absoluteRadarUpperBound(axis, comparisons);
-    return item?.na ? 0 : absoluteRadarScore(item?.playerValue || 0, upperBound, axis.key === 'avgDeath');
+    return item?.na ? 0 : absoluteRadarScore(absoluteRadarMetricValue(axis, item, 'playerValue'), upperBound);
   });
-  return { axes, prScores, absoluteScores };
+  return {
+    axes,
+    prAxes: axes.map(axis => formatRadarAxisRankText(axis, comparisons)),
+    absoluteAxes: axes.map(axis => formatRadarAxisAbsoluteText(axis, comparisons)),
+    prScores,
+    absoluteScores,
+  };
 }
 
 function renderPlayerRadarModalCharts(player, comparisons, cohortRows) {
-  const { axes, prScores, absoluteScores } = buildPlayerRadarCharts(player, comparisons);
+  const { prAxes, absoluteAxes, prScores, absoluteScores } = buildPlayerRadarCharts(player, comparisons);
   return `
     <div class="subtle" style="margin-bottom:10px;">依職業表現目前篩選條件產生，母體固定為同職業，共 ${fmtNumber(cohortRows.length)} 人。</div>
     <div class="radar-modal-grid">
-      ${renderRadarCard('玩家能力圖（PR）', axes, prScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
-      ${renderRadarCard('玩家絕對數值圖', axes, absoluteScores, '#346a95', '依玩家目前平均數值換算。')}
+      ${renderRadarCard('玩家能力圖（排名/人數）', prAxes, prScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
+      ${renderRadarCard('玩家絕對數值圖（玩家數值/最佳數值）', absoluteAxes, absoluteScores, '#346a95', '依玩家目前平均數值換算。')}
     </div>
   `;
 }
@@ -3695,7 +3788,12 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
   const axes = playerRadarAxes(player);
   const map = new Map(comparisons.map(item => [item.metric.key, item]));
   const scalePr = value => Math.max(0, Math.min(95, Number(value || 0) * 0.95));
-  const { prScores: playerScores, absoluteScores: playerAbsoluteScores } = buildPlayerRadarCharts(player, comparisons);
+  const {
+    prAxes: playerPrAxes,
+    absoluteAxes: playerAbsoluteAxes,
+    prScores: playerScores,
+    absoluteScores: playerAbsoluteScores,
+  } = buildPlayerRadarCharts(player, comparisons);
   const medianScores = axes.map(axis => {
     const item = map.get(axis.key);
     return item?.na ? 0 : scalePr(item?.medianScore || 0);
@@ -3707,12 +3805,12 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
   const medianAbsoluteScores = axes.map(axis => {
     const item = map.get(axis.key);
     const upperBound = absoluteRadarUpperBound(axis, comparisons);
-    return item?.na ? 0 : absoluteRadarScore(item?.median || 0, upperBound, axis.key === 'avgDeath');
+    return item?.na ? 0 : absoluteRadarScore(absoluteRadarMetricValue(axis, item, 'median'), upperBound);
   });
   const averageAbsoluteScores = axes.map(axis => {
     const item = map.get(axis.key);
     const upperBound = absoluteRadarUpperBound(axis, comparisons);
-    return item?.na ? 0 : absoluteRadarScore(item?.average || 0, upperBound, axis.key === 'avgDeath');
+    return item?.na ? 0 : absoluteRadarScore(absoluteRadarMetricValue(axis, item, 'average'), upperBound);
   });
   return `
     <div>
@@ -3720,7 +3818,7 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
       <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">相對位置（PR）</div>
       <div style="margin-bottom:10px; color:var(--text);">排名越前面表現越好。假設你各項數據都排名接近第一，承傷高但保活也很好，就越接近滿滿的六邊形。</div>
       <div class="radar-grid">
-        ${renderRadarCard('玩家能力圖', axes, playerScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
+        ${renderRadarCard('玩家能力圖（排名/人數）', playerPrAxes, playerScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
         ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianScores, '#0f6b61', '中位數 = 排名正中間那個人的對應數據；這張圖依母體中位數對應的 PR 畫出。')}
         ${renderRadarCard(`母體平均數圖（${fmtNumber(cohortRows.length)}人）`, axes, averageScores, '#346a95', '依母體平均數對應的 PR 畫出。')}
       </div>
@@ -3728,7 +3826,7 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
       <div style="font-weight:800; color:var(--accent-2); margin-bottom:6px;">絕對數值</div>
       <div style="margin-bottom:10px; color:var(--text);">絕對數據越接近第一名越好。假設你是擊殺第二名，但你的擊殺數據只有第一名的一半，那這個圖上看起來也不會很厲害。</div>
       <div class="radar-grid">
-        ${renderRadarCard('玩家絕對數值圖', axes, playerAbsoluteScores, '#9b4d1d', '依玩家目前平均數值換算。')}
+        ${renderRadarCard('玩家絕對數值圖（玩家數值/最佳數值）', playerAbsoluteAxes, playerAbsoluteScores, '#9b4d1d', '依玩家目前平均數值換算。')}
         ${renderRadarCard(`母體中位數圖（${fmtNumber(cohortRows.length)}人）`, axes, medianAbsoluteScores, '#0f6b61', '中位數 = 排名正中間那個人的對應數據；這張圖依母體中位數換算。')}
         ${renderRadarCard(`母體平均數圖（${fmtNumber(cohortRows.length)}人）`, axes, averageAbsoluteScores, '#346a95', '依母體平均數換算。')}
       </div>
@@ -3977,8 +4075,12 @@ function renderProfessionTableHeader() {
     const marker = active ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : '';
     return `<th><button type="button" class="th-sort-btn${active ? ' active' : ''}" data-prof-sort="${escHtml(column.key)}">${escHtml(column.label)}${marker}</button></th>`;
   }).join('');
-  row.querySelectorAll('[data-prof-sort]').forEach(button => {
-    button.addEventListener('click', () => setProfessionSort(button.dataset.profSort));
+  bindProfessionSortButtons(row);
+}
+
+function bindProfessionSortButtons(root) {
+  root?.querySelectorAll?.('[data-prof-sort]')?.forEach(button => {
+    button.onclick = () => setProfessionSort(button.dataset.profSort);
   });
 }
 
@@ -5423,7 +5525,10 @@ function syncProfessionFloatingHeader() {
     headerWrap.hidden = true;
     return;
   }
-  if (headerTable.innerHTML !== thead.innerHTML) headerTable.innerHTML = thead.innerHTML;
+  if (headerTable.innerHTML !== thead.innerHTML) {
+    headerTable.innerHTML = thead.innerHTML;
+    bindProfessionSortButtons(headerTable);
+  }
   const active = professionPanel.classList.contains('active');
   const hasOverflow = table.scrollWidth > wrap.clientWidth + 1;
   const wrapRect = typeof wrap.getBoundingClientRect === 'function'
@@ -5465,6 +5570,12 @@ function syncProfessionScrollbars() {
   const scrollWidth = table.scrollWidth;
   inner.style.width = `${scrollWidth}px`;
   floatingInner.style.width = `${scrollWidth}px`;
+  const wrapRect = typeof wrap.getBoundingClientRect === 'function'
+    ? wrap.getBoundingClientRect()
+    : { left: 0 };
+  floating.style.left = `${Math.max(16, wrapRect.left)}px`;
+  floating.style.width = `${Math.max(0, wrap.clientWidth)}px`;
+  floating.style.transform = 'none';
   top.scrollLeft = wrap.scrollLeft;
   floating.scrollLeft = wrap.scrollLeft;
   const active = professionPanel.classList.contains('active');
