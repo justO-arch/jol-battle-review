@@ -192,6 +192,27 @@
     border-color: #d5cabd;
     color: var(--text);
   }
+  .th-sort-btn {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    white-space: inherit;
+    cursor: pointer;
+  }
+  .th-sort-btn:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .th-sort-btn.active {
+    color: var(--accent);
+  }
   .inline-actions {
     display: flex;
     flex-wrap: wrap;
@@ -916,6 +937,62 @@
   .floating-header-table {
     border-collapse: collapse;
     min-width: max-content;
+  }
+  .radar-modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(33, 25, 16, 0.42);
+    z-index: 70;
+    backdrop-filter: blur(4px);
+  }
+  .radar-modal-overlay[hidden] {
+    display: none !important;
+  }
+  .radar-modal {
+    width: min(1120px, calc(100vw - 32px));
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    border: 1px solid #ddd2c6;
+    border-radius: 18px;
+    background: #fffaf4;
+    box-shadow: 0 18px 44px rgba(60, 44, 20, 0.22);
+    padding: 16px;
+  }
+  .radar-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .radar-modal-close {
+    flex: 0 0 auto;
+    min-width: 44px;
+    padding: 7px 10px;
+  }
+  .radar-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .profession-player-btn {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+  .profession-player-btn:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
   .floating-header-table th {
     position: sticky;
@@ -1684,6 +1761,14 @@
                     <span class="subtle" style="align-self:center;">億</span>
                     <button class="btn-secondary" id="btn_auto_unknown_kill_defense">自動轉防守</button>
                   </div>
+                  <div class="auto-role-row">
+                    <span class="subtle" style="align-self:center;">未知擊殺 &lt;</span>
+                    <input id="auto_attack_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+                    <span class="subtle" style="align-self:center;">且塔傷 &gt;</span>
+                    <input id="auto_attack_build_threshold_yi" type="number" min="0" step="0.1" value="2" style="width:86px; padding:7px 9px;">
+                    <span class="subtle" style="align-self:center;">億</span>
+                    <button class="btn-secondary" id="btn_auto_unknown_lowkill_attack">自動轉進攻</button>
+                  </div>
                 </div>
                 <div class="assignment-stats" id="assignment_stats"></div>
               </div>
@@ -1829,6 +1914,7 @@
                   <label>勾選要納入統計的場次</label>
                   <div class="inline-actions" style="margin-top:0;">
                     <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
+                    <button class="btn-secondary" type="button" id="btn_player_check_attended">勾選出席場次</button>
                     <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
                     <button class="btn-danger" type="button" id="btn_player_delete_checked">刪除勾選場次</button>
                   </div>
@@ -1934,23 +2020,7 @@
               <div class="table-wrap" style="margin-bottom:14px;">
                 <table id="profession_dps_average_table" class="metric-table">
                   <thead>
-                    <tr>
-                      <th>職業</th>
-                      <th>人次</th>
-                      <th>場次</th>
-                      <th>玩家數</th>
-                      <th>平均擊敗</th>
-                      <th>平均助攻</th>
-                      <th>平均重傷</th>
-                      <th>擊殺/重傷</th>
-                      <th>平均人傷</th>
-                      <th>人傷/擊殺數</th>
-                      <th>平均塔傷</th>
-                      <th>平均塔傷/重傷</th>
-                      <th>平均承傷</th>
-                      <th>承傷/重傷</th>
-                      <th>平均焚骨</th>
-                    </tr>
+                    <tr id="profession_dps_average_header_row"></tr>
                   </thead>
                   <tbody id="profession_dps_average_body"></tbody>
                 </table>
@@ -1960,29 +2030,7 @@
               <div class="table-wrap" id="profession_table_wrap">
                 <table id="profession_table">
                   <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>玩家</th>
-                      <th>職業</th>
-                      <th>場數</th>
-                      <th>勝/敗</th>
-                      <th>勝率</th>
-                      <th>平均擊敗</th>
-                      <th>平均助攻</th>
-                      <th>平均重傷</th>
-                      <th>擊殺/重傷</th>
-                      <th>平均人傷</th>
-                      <th>人傷/擊殺數</th>
-                      <th>平均塔傷</th>
-                      <th>平均塔傷/重傷</th>
-                      <th>平均承傷</th>
-                      <th>承傷/重傷</th>
-                      <th>平均治療</th>
-                      <th>平均淨奶</th>
-                      <th>平均焚骨</th>
-                      <th>平均化羽</th>
-                      <th>建議覆盤次數</th>
-                    </tr>
+                    <tr id="profession_header_row"></tr>
                   </thead>
                   <tbody id="profession_body"></tbody>
                 </table>
@@ -2082,6 +2130,15 @@
     </div>
   </div>
   <div id="player_export_stage" class="export-stage" aria-hidden="true"></div>
+  <div id="profession_player_radar_modal" class="radar-modal-overlay" hidden>
+    <div class="radar-modal">
+      <div class="radar-modal-head">
+        <div id="profession_player_radar_modal_title"></div>
+        <button type="button" class="btn-ghost radar-modal-close" id="btn_close_profession_player_radar_modal">關閉</button>
+      </div>
+      <div id="profession_player_radar_modal_body"></div>
+    </div>
+  </div>
 
 <script>
 const STORAGE_KEY = 'jol_battle_review_v1';
@@ -2128,12 +2185,53 @@ const PLAYER_COMPARE_METRICS = [
   { key: 'avgSave', label: '平均化羽', better: 'high', format: value => fmtAvg(value), applicable: player => player.job === '素問' },
   { key: 'avgBurn', label: '平均焚骨', better: 'high', format: value => fmtAvg(value), applicable: player => player.job === '九靈' },
 ];
+const PROFESSION_TABLE_COLUMNS = [
+  { label: '#', key: null },
+  { label: '玩家', key: 'name', defaultOrder: 'asc' },
+  { label: '職業', key: 'job', defaultOrder: 'asc' },
+  { label: '場數', key: 'battles' },
+  { label: '勝/敗', key: 'wins' },
+  { label: '勝率', key: 'winRate' },
+  { label: '平均擊敗', key: 'avgKill' },
+  { label: '平均助攻', key: 'avgAssist' },
+  { label: '平均重傷', key: 'avgDeath' },
+  { label: '擊殺/重傷', key: 'avgKillPerDeath' },
+  { label: '平均人傷', key: 'avgPvpDamage' },
+  { label: '人傷/擊殺數', key: 'avgPvpPerKill' },
+  { label: '平均塔傷', key: 'avgBuildDamage' },
+  { label: '平均塔傷/重傷', key: 'avgBuildPerDeath' },
+  { label: '平均承傷', key: 'avgTakenDamage' },
+  { label: '承傷/重傷', key: 'avgTakenPerDeath' },
+  { label: '平均治療', key: 'avgHeal' },
+  { label: '平均淨奶', key: 'avgNetHeal' },
+  { label: '平均焚骨', key: 'avgBurn' },
+  { label: '平均化羽', key: 'avgSave' },
+  { label: '建議覆盤次數', key: 'reviewSuggestCount' },
+];
+const DPS_PROFESSION_TABLE_COLUMNS = [
+  { label: '職業', key: 'job', defaultOrder: 'asc' },
+  { label: '人次', key: 'entries' },
+  { label: '場次', key: 'battles' },
+  { label: '玩家數', key: 'playerCount' },
+  { label: '平均擊敗', key: 'avgKill' },
+  { label: '平均助攻', key: 'avgAssist' },
+  { label: '平均重傷', key: 'avgDeath' },
+  { label: '擊殺/重傷', key: 'avgKillPerDeath' },
+  { label: '平均人傷', key: 'avgPvpDamage' },
+  { label: '人傷/擊殺數', key: 'avgPvpPerKill' },
+  { label: '平均塔傷', key: 'avgBuildDamage' },
+  { label: '平均塔傷/重傷', key: 'avgBuildPerDeath' },
+  { label: '平均承傷', key: 'avgTakenDamage' },
+  { label: '承傷/重傷', key: 'avgTakenPerDeath' },
+  { label: '平均焚骨', key: 'avgBurn' },
+];
 
 let state = loadState();
 let importedSections = [];
 let importedRoleRows = [];
 let importedBattleFileLabel = '';
 let selectedPlayer = '';
+let dpsProfessionTableSort = { field: 'avgBuildDamage', order: 'desc' };
 let currentPlayerLookupContext = null;
 let currentPlayerLeadersContext = null;
 let batchExportRunState = null;
@@ -3566,14 +3664,38 @@ function renderRadarCard(title, axes, scores, color, note) {
   `;
 }
 
+function buildPlayerRadarCharts(player, comparisons) {
+  const axes = playerRadarAxes(player);
+  const map = new Map(comparisons.map(item => [item.metric.key, item]));
+  const scalePr = value => Math.max(0, Math.min(95, Number(value || 0) * 0.95));
+  const prScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    return item?.na ? 0 : scalePr(item?.percentile || 0);
+  });
+  const absoluteScores = axes.map(axis => {
+    const item = map.get(axis.key);
+    const upperBound = absoluteRadarUpperBound(axis, comparisons);
+    return item?.na ? 0 : absoluteRadarScore(item?.playerValue || 0, upperBound, axis.key === 'avgDeath');
+  });
+  return { axes, prScores, absoluteScores };
+}
+
+function renderPlayerRadarModalCharts(player, comparisons, cohortRows) {
+  const { axes, prScores, absoluteScores } = buildPlayerRadarCharts(player, comparisons);
+  return `
+    <div class="subtle" style="margin-bottom:10px;">依職業表現目前篩選條件產生，母體固定為同職業，共 ${fmtNumber(cohortRows.length)} 人。</div>
+    <div class="radar-modal-grid">
+      ${renderRadarCard('玩家能力圖（PR）', axes, prScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
+      ${renderRadarCard('玩家絕對數值圖', axes, absoluteScores, '#346a95', '依玩家目前平均數值換算。')}
+    </div>
+  `;
+}
+
 function renderPlayerRadarSection(player, comparisons, cohortRows) {
   const axes = playerRadarAxes(player);
   const map = new Map(comparisons.map(item => [item.metric.key, item]));
   const scalePr = value => Math.max(0, Math.min(95, Number(value || 0) * 0.95));
-  const playerScores = axes.map(axis => {
-    const item = map.get(axis.key);
-    return item?.na ? 0 : scalePr(item?.percentile || 0);
-  });
+  const { prScores: playerScores, absoluteScores: playerAbsoluteScores } = buildPlayerRadarCharts(player, comparisons);
   const medianScores = axes.map(axis => {
     const item = map.get(axis.key);
     return item?.na ? 0 : scalePr(item?.medianScore || 0);
@@ -3581,11 +3703,6 @@ function renderPlayerRadarSection(player, comparisons, cohortRows) {
   const averageScores = axes.map(axis => {
     const item = map.get(axis.key);
     return item?.na ? 0 : scalePr(item?.averageScore || 0);
-  });
-  const playerAbsoluteScores = axes.map(axis => {
-    const item = map.get(axis.key);
-    const upperBound = absoluteRadarUpperBound(axis, comparisons);
-    return item?.na ? 0 : absoluteRadarScore(item?.playerValue || 0, upperBound, axis.key === 'avgDeath');
   });
   const medianAbsoluteScores = axes.map(axis => {
     const item = map.get(axis.key);
@@ -3747,6 +3864,11 @@ function professionRows() {
     .filter(Boolean)
     .filter(item => item.battles >= minBattles)
     .sort((a, b) => {
+      if (sortField === 'name') {
+        const diff = a.name.localeCompare(b.name, 'zh-Hant');
+        if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
+        return jobSortValue(a.job) - jobSortValue(b.job);
+      }
       if (sortField === 'job') {
         const diff = jobSortValue(a.job) - jobSortValue(b.job);
         if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
@@ -3759,11 +3881,11 @@ function professionRows() {
     });
 }
 
-function dpsProfessionAverageRows() {
+function dpsProfessionAverageRows(sortConfig = dpsProfessionTableSort) {
   const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
   const groupType = document.getElementById('profession_group_filter').value || 'all';
-  const sortField = document.getElementById('profession_sort_field').value || 'avgBuildDamage';
-  const sortOrder = document.getElementById('profession_sort_order').value || 'desc';
+  const sortField = sortConfig?.field || 'avgBuildDamage';
+  const sortOrder = sortConfig?.order || 'desc';
   const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
   const battles = filteredBattlesByIds(battleIds);
   const buckets = new Map(DPS_COMPARE_JOBS.map(job => [job, {
@@ -3842,6 +3964,65 @@ function professionNameWithBreaks(name) {
     index += size;
   }
   return parts.join('<wbr>');
+}
+
+function renderProfessionTableHeader() {
+  const row = document.getElementById('profession_header_row');
+  if (!row) return;
+  const sortField = document.getElementById('profession_sort_field')?.value || 'reviewSuggestCount';
+  const sortOrder = document.getElementById('profession_sort_order')?.value || 'desc';
+  row.innerHTML = PROFESSION_TABLE_COLUMNS.map(column => {
+    if (!column.key) return `<th>${escHtml(column.label)}</th>`;
+    const active = column.key === sortField;
+    const marker = active ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<th><button type="button" class="th-sort-btn${active ? ' active' : ''}" data-prof-sort="${escHtml(column.key)}">${escHtml(column.label)}${marker}</button></th>`;
+  }).join('');
+  row.querySelectorAll('[data-prof-sort]').forEach(button => {
+    button.addEventListener('click', () => setProfessionSort(button.dataset.profSort));
+  });
+}
+
+function renderDpsProfessionTableHeader() {
+  const row = document.getElementById('profession_dps_average_header_row');
+  if (!row) return;
+  const sortField = dpsProfessionTableSort?.field || 'avgBuildDamage';
+  const sortOrder = dpsProfessionTableSort?.order || 'desc';
+  row.innerHTML = DPS_PROFESSION_TABLE_COLUMNS.map(column => {
+    const active = column.key === sortField;
+    const marker = active ? (sortOrder === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<th><button type="button" class="th-sort-btn${active ? ' active' : ''}" data-dps-prof-sort="${escHtml(column.key)}">${escHtml(column.label)}${marker}</button></th>`;
+  }).join('');
+  row.querySelectorAll('[data-dps-prof-sort]').forEach(button => {
+    button.addEventListener('click', () => setDpsProfessionSort(button.dataset.dpsProfSort));
+  });
+}
+
+function setProfessionSort(field) {
+  if (!field) return;
+  const fieldEl = document.getElementById('profession_sort_field');
+  const orderEl = document.getElementById('profession_sort_order');
+  if (!fieldEl || !orderEl) return;
+  const column = PROFESSION_TABLE_COLUMNS.find(item => item.key === field);
+  const defaultOrder = column?.defaultOrder || 'desc';
+  if (fieldEl.value === field) {
+    orderEl.value = orderEl.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    fieldEl.value = field;
+    orderEl.value = defaultOrder;
+  }
+  renderProfessionTable();
+}
+
+function setDpsProfessionSort(field) {
+  if (!field) return;
+  const column = DPS_PROFESSION_TABLE_COLUMNS.find(item => item.key === field);
+  const defaultOrder = column?.defaultOrder || 'desc';
+  if (dpsProfessionTableSort.field === field) {
+    dpsProfessionTableSort.order = dpsProfessionTableSort.order === 'asc' ? 'desc' : 'asc';
+  } else {
+    dpsProfessionTableSort = { field, order: defaultOrder };
+  }
+  renderDpsProfessionAverageTable();
 }
 
 function renderImportSections() {
@@ -4160,6 +4341,28 @@ function renderPlayerLookup() {
   renderPlayerDetailFromContext(context);
 }
 
+function selectPlayerAttendedBattles() {
+  const search = document.getElementById('player_search')?.value.trim() || '';
+  const ownTeamFilter = document.getElementById('player_own_team_filter')?.value || 'all';
+  if (!search) {
+    window.alert('請先輸入玩家名稱。');
+    return;
+  }
+  const allBattleIds = filterBattleIdsByOwnTeam(state.battles.map(battle => battle.id), ownTeamFilter);
+  const rows = lookupPlayerRows(allBattleIds, 'all');
+  const matched = rows.filter(item =>
+    item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search))
+  );
+  if (!matched.length) {
+    window.alert('找不到符合條件的玩家，無法勾選出席場次。');
+    return;
+  }
+  const exact = matched.find(item => item.name === search) || matched[0];
+  const attendedIds = [...new Set((exact.history || []).map(entry => entry.battleId).filter(Boolean))];
+  setBattleCheckboxesByIds('player_battle_select', attendedIds);
+  renderPlayerLookup();
+}
+
 function topPlayersWithTies(rows, key, limit = 5) {
   const sorted = [...rows]
     .filter(row => Number(row[key] || 0) > 0)
@@ -4416,6 +4619,42 @@ function renderExportBattleAppendix(battles, title = '納入統計場次附錄')
       </div>
     </div>
   `;
+}
+
+function closeProfessionPlayerRadarModal() {
+  const overlay = document.getElementById('profession_player_radar_modal');
+  const body = document.getElementById('profession_player_radar_modal_body');
+  if (body) body.innerHTML = '';
+  if (overlay) overlay.hidden = true;
+}
+
+function openProfessionPlayerRadarModal(playerName) {
+  const ownTeamFilter = document.getElementById('profession_own_team_filter')?.value || 'all';
+  const groupFilter = document.getElementById('profession_group_filter')?.value || 'all';
+  const battleIds = filterBattleIdsByOwnTeam(selectedBattleIds('profession_battle_select'), ownTeamFilter);
+  const rows = lookupPlayerRows(battleIds, groupFilter);
+  const player = rows.find(item => item.name === playerName);
+  if (!player) {
+    window.alert('找不到該玩家目前可用的統計資料。');
+    return;
+  }
+  const context = buildPlayerDetailContext(player, {
+    ownTeamFilter,
+    groupFilter,
+    cohortFilter: 'same_job',
+    allRows: rows,
+    battleIds,
+  });
+  const overlay = document.getElementById('profession_player_radar_modal');
+  const title = document.getElementById('profession_player_radar_modal_title');
+  const body = document.getElementById('profession_player_radar_modal_body');
+  if (!overlay || !title || !body) return;
+  title.innerHTML = `
+    <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(player.name)}｜${escHtml(player.job)}</div>
+    <div class="subtle" style="margin-top:4px;">職業表現快速預覽：PR 六角圖 / 絕對數值六角圖</div>
+  `;
+  body.innerHTML = renderPlayerRadarModalCharts(player, context.comparisons, context.comparisonRows);
+  overlay.hidden = false;
 }
 
 function renderPlayerExportSheet(context) {
@@ -5101,6 +5340,7 @@ async function exportFocusPdf(options = {}) {
 
 function renderProfessionTable() {
   const body = document.getElementById('profession_body');
+  renderProfessionTableHeader();
   renderDpsProfessionAverageTable();
   const rows = professionRows();
   if (!rows.length) {
@@ -5111,7 +5351,7 @@ function renderProfessionTable() {
   body.innerHTML = rows.map((row, index) => `
     <tr>
       <td><span class="nowrap">${index + 1}</span></td>
-      <td class="profession-name-cell">${professionNameWithBreaks(row.name)}</td>
+      <td class="profession-name-cell"><button type="button" class="profession-player-btn" data-player-name="${escHtml(row.name)}">${professionNameWithBreaks(row.name)}</button></td>
       <td><span class="nowrap">${escHtml(row.job)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.wins)}/${fmtNumber(row.losses)}</span></td>
@@ -5133,13 +5373,17 @@ function renderProfessionTable() {
       <td><span class="nowrap">${fmtNumber(row.reviewSuggestCount)}</span></td>
     </tr>
   `).join('');
+  body.querySelectorAll('.profession-player-btn[data-player-name]').forEach(button => {
+    button.addEventListener('click', () => openProfessionPlayerRadarModal(button.dataset.playerName || ''));
+  });
   syncProfessionScrollbars();
 }
 
 function renderDpsProfessionAverageTable() {
   const body = document.getElementById('profession_dps_average_body');
   if (!body) return;
-  const rows = dpsProfessionAverageRows();
+  renderDpsProfessionTableHeader();
+  const rows = dpsProfessionAverageRows(dpsProfessionTableSort);
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="15" class="empty">目前沒有符合條件的 DPS 職業平均資料。</td></tr>';
     return;
@@ -6425,6 +6669,13 @@ function setBattleCheckboxes(selectId, checked) {
   });
 }
 
+function setBattleCheckboxesByIds(selectId, ids) {
+  const idSet = new Set(ids || []);
+  document.querySelectorAll(`#${selectId} input[type="checkbox"]`).forEach(input => {
+    input.checked = idSet.has(input.value);
+  });
+}
+
 function deleteCheckedBattles(selectId) {
   const ids = [...document.querySelectorAll(`#${selectId} input[type="checkbox"]:checked`)]
     .map(input => input.value)
@@ -6866,25 +7117,35 @@ function autoSetPlayersByKillAndBuild(options) {
     buildInputId,
     sourceLabel,
     targetLabel,
+    killComparator = 'gt',
+    buildComparator = 'lt',
   } = options;
   const killThreshold = Number(document.getElementById(killInputId)?.value || 0);
   const buildThresholdYi = Number(document.getElementById(buildInputId)?.value || 0);
   const buildThreshold = buildThresholdYi * 100000000;
+  const killPassText = killComparator === 'lt' ? '<' : '>';
+  const buildPassText = buildComparator === 'gt' ? '>' : '<';
   const changed = [];
   (battle.players || []).forEach(player => {
     if ((player.groupType || 'unknown') !== sourceGroup) return;
-    if (Number(player.kill || 0) <= killThreshold) return;
-    if (Number(player.buildDamage || 0) >= buildThreshold) return;
+    const killValue = Number(player.kill || 0);
+    const buildValue = Number(player.buildDamage || 0);
+    if (killComparator === 'lt') {
+      if (killValue >= killThreshold) return;
+    } else if (killValue <= killThreshold) return;
+    if (buildComparator === 'gt') {
+      if (buildValue <= buildThreshold) return;
+    } else if (buildValue >= buildThreshold) return;
     player.groupType = targetGroup;
     changed.push(player);
   });
   if (!changed.length) {
-    window.alert(`目前場次沒有${sourceLabel}玩家同時符合：擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億。`);
+    window.alert(`目前場次沒有${sourceLabel}玩家同時符合：擊殺 ${killPassText} ${fmtNumber(killThreshold)} 且塔傷 ${buildPassText} ${fmtF(buildThresholdYi, 1)} 億。`);
     return;
   }
   saveState();
   refreshAll();
-  window.alert(`已將 ${fmtNumber(changed.length)} 位${sourceLabel}玩家改為${targetLabel}（擊殺 > ${fmtNumber(killThreshold)} 且塔傷 < ${fmtF(buildThresholdYi, 1)} 億）：${changed.map(player => player.name).join('、')}`);
+  window.alert(`已將 ${fmtNumber(changed.length)} 位${sourceLabel}玩家改為${targetLabel}（擊殺 ${killPassText} ${fmtNumber(killThreshold)} 且塔傷 ${buildPassText} ${fmtF(buildThresholdYi, 1)} 億）：${changed.map(player => player.name).join('、')}`);
 }
 
 function autoSetAttackKillersToBodyguard() {
@@ -6906,6 +7167,19 @@ function autoSetUnknownKillersToDefense() {
     buildInputId: 'auto_defense_build_threshold_yi',
     sourceLabel: '未知分工',
     targetLabel: '防守',
+  });
+}
+
+function autoSetUnknownLowKillToAttack() {
+  autoSetPlayersByKillAndBuild({
+    sourceGroup: 'unknown',
+    targetGroup: 'attack',
+    killInputId: 'auto_attack_kill_threshold',
+    buildInputId: 'auto_attack_build_threshold_yi',
+    sourceLabel: '未知分工',
+    targetLabel: '進攻',
+    killComparator: 'lt',
+    buildComparator: 'gt',
   });
 }
 
@@ -7042,7 +7316,17 @@ document.getElementById('btn_group_bodyguard').addEventListener('click', () => b
 document.getElementById('btn_group_unknown').addEventListener('click', () => bulkSetGroup('unknown'));
 document.getElementById('btn_auto_attack_kill_bodyguard').addEventListener('click', autoSetAttackKillersToBodyguard);
 document.getElementById('btn_auto_unknown_kill_defense').addEventListener('click', autoSetUnknownKillersToDefense);
+document.getElementById('btn_auto_unknown_lowkill_attack').addEventListener('click', autoSetUnknownLowKillToAttack);
 document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
+document.getElementById('btn_close_profession_player_radar_modal').addEventListener('click', closeProfessionPlayerRadarModal);
+document.getElementById('profession_player_radar_modal').addEventListener('click', event => {
+  if (event.target.id === 'profession_player_radar_modal') closeProfessionPlayerRadarModal();
+});
+if (typeof document.addEventListener === 'function') {
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeProfessionPlayerRadarModal();
+  });
+}
 document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_own_team_filter').addEventListener('change', renderPlayerLookup);
@@ -7133,6 +7417,7 @@ document.getElementById('btn_player_check_all').addEventListener('click', () => 
   setBattleCheckboxes('player_battle_select', true);
   renderPlayerLookup();
 });
+document.getElementById('btn_player_check_attended').addEventListener('click', selectPlayerAttendedBattles);
 document.getElementById('btn_player_uncheck_all').addEventListener('click', () => {
   setBattleCheckboxes('player_battle_select', false);
   renderPlayerLookup();
