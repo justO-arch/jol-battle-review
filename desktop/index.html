@@ -2072,6 +2072,7 @@
                   <label>排序欄位</label>
                   <select id="profession_sort_field">
                     <option value="job">職業</option>
+                    <option value="dominantGroupType">分工</option>
                     <option value="battles">場數</option>
                     <option value="wins">勝場</option>
                     <option value="losses">敗場</option>
@@ -2335,6 +2336,7 @@ const PROFESSION_TABLE_COLUMNS = [
   { label: '#', key: null },
   { label: '玩家', key: 'name', defaultOrder: 'asc' },
   { label: '職業', key: 'job', defaultOrder: 'asc' },
+  { label: '分工', key: 'dominantGroupType', defaultOrder: 'asc' },
   { label: '場數', key: 'battles' },
   { label: '勝/敗', key: 'wins' },
   { label: '勝率', key: 'winRate' },
@@ -2678,6 +2680,10 @@ function groupTag(type) {
 function jobSortValue(job) {
   const idx = JOB_ORDER.indexOf(job);
   return idx >= 0 ? idx : 999;
+}
+
+function groupTypeSortValue(groupType) {
+  return ({ attack: 1, defense: 2, bodyguard: 3, unknown: 9 })[groupType] ?? 9;
 }
 
 function comparePlayers(a, b) {
@@ -4262,9 +4268,16 @@ function professionRows() {
       const sample = history.map(h => h.raw);
       const wins = history.filter(h => h.result === 'win').length;
       const losses = history.filter(h => h.result === 'loss').length;
+      const attackCount = history.filter(h => h.groupType === 'attack').length;
+      const defenseCount = history.filter(h => h.groupType === 'defense').length;
+      const bodyguardCount = history.filter(h => h.groupType === 'bodyguard').length;
       const row = {
         name: item.name,
         job: item.job,
+        attackCount,
+        defenseCount,
+        bodyguardCount,
+        dominantGroupType: dominantGroupType({ attackCount, defenseCount, bodyguardCount }),
         battles: history.length,
         wins,
         losses,
@@ -4297,6 +4310,11 @@ function professionRows() {
       }
       if (sortField === 'job') {
         const diff = jobSortValue(a.job) - jobSortValue(b.job);
+        if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
+        return a.name.localeCompare(b.name, 'zh-Hant');
+      }
+      if (sortField === 'dominantGroupType') {
+        const diff = groupTypeSortValue(a.dominantGroupType) - groupTypeSortValue(b.dominantGroupType);
         if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
         return a.name.localeCompare(b.name, 'zh-Hant');
       }
@@ -5702,6 +5720,7 @@ function professionExportColumns(jobFilter = 'all') {
   const common = [
     { key: 'name', label: '玩家', render: row => escHtml(row.name) },
     { key: 'job', label: '職業', render: row => escHtml(row.job) },
+    { key: 'dominantGroupType', label: '分工', render: row => escHtml(GROUP_LABELS[row.dominantGroupType] || GROUP_LABELS.unknown) },
     { key: 'battles', label: '場數', render: row => fmtNumber(row.battles) },
     { key: 'winRate', label: '勝率', render: row => `${(row.winRate * 100).toFixed(0)}%` },
   ];
@@ -5985,7 +6004,7 @@ function renderProfessionTable() {
   renderHealerProfessionAverageTable();
   const rows = professionRows();
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="20" class="empty">目前沒有符合條件的職業資料。</td></tr>';
+    body.innerHTML = `<tr><td colspan="${PROFESSION_TABLE_COLUMNS.length}" class="empty">目前沒有符合條件的職業資料。</td></tr>`;
     syncProfessionScrollbars();
     return;
   }
@@ -5994,6 +6013,7 @@ function renderProfessionTable() {
       <td><span class="nowrap">${index + 1}</span></td>
       <td class="profession-name-cell"><button type="button" class="profession-player-btn" data-player-name="${escHtml(row.name)}">${professionNameWithBreaks(row.name)}</button></td>
       <td><span class="nowrap">${escHtml(row.job)}</span></td>
+      <td>${groupTag(row.dominantGroupType)}</td>
       <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.wins)}/${fmtNumber(row.losses)}</span></td>
       <td><span class="nowrap">${(row.winRate * 100).toFixed(0)}%</span></td>
