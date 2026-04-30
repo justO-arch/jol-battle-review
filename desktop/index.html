@@ -2020,7 +2020,6 @@
                     <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
                     <button class="btn-secondary" type="button" id="btn_player_check_attended">勾選出席場次</button>
                     <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
-                    <button class="btn-danger" type="button" id="btn_player_delete_checked">刪除勾選場次</button>
                   </div>
                   <div id="player_battle_select" class="checklist-box"></div>
                 </div>
@@ -2323,6 +2322,7 @@ const PLAYER_COMPARE_METRICS = [
   { key: 'avgDeath', label: '平均重傷', better: 'low', format: value => fmtAvg(value) },
   { key: 'avgKillPerDeath', label: '擊殺/重傷', better: 'high', format: value => fmtF(value || 0, 2), applicable: player => player.job !== '素問' },
   { key: 'avgPvpDamage', label: '平均人傷', better: 'high', format: value => fmtLarge(value), applicable: player => player.job !== '素問' },
+  { key: 'avgPvpPerKill', label: '人傷/擊殺數', better: 'low', format: value => fmtPvpPerKill(value), applicable: player => player.job !== '素問' },
   { key: 'avgBuildDamage', label: '平均塔傷', better: 'high', format: value => fmtLarge(value), applicable: player => player.job !== '素問' },
   { key: 'avgBuildPerDeath', label: '平均塔傷/重傷', better: 'high', format: value => fmtLarge(value), applicable: player => player.job !== '素問' },
   { key: 'avgTakenDamage', label: '平均承傷', better: 'high', format: value => fmtLarge(value) },
@@ -3440,6 +3440,7 @@ function summarizeLookupHistory(item, history, groupFilter) {
     avgDeath: sum(sample, 'death') / history.length,
     avgKillPerDeath: sum(sample, 'kill') / Math.max(sum(sample, 'death'), 1),
     avgPvpDamage: sum(sample, 'pvpDamage') / history.length,
+    avgPvpPerKill: sum(sample, 'kill') > 0 ? sum(sample, 'pvpDamage') / sum(sample, 'kill') : Infinity,
     avgBuildDamage: sum(sample, 'buildDamage') / history.length,
     avgBuildPerDeath: sum(sample, 'buildDamage') / Math.max(sum(sample, 'death'), 1),
     avgHeal: sum(sample, 'heal') / history.length,
@@ -8164,7 +8165,7 @@ document.getElementById('btn_player_uncheck_all').addEventListener('click', () =
   setBattleCheckboxes('player_battle_select', false);
   renderPlayerLookup();
 });
-document.getElementById('btn_player_delete_checked').addEventListener('click', () => deleteCheckedBattles('player_battle_select'));
+document.getElementById('btn_player_delete_checked')?.addEventListener('click', () => deleteCheckedBattles('player_battle_select'));
 document.getElementById('btn_prof_check_all').addEventListener('click', () => {
   setBattleCheckboxes('profession_battle_select', true);
   renderProfessionTable();
