@@ -4961,12 +4961,13 @@ function renderPlayerLookup() {
 function selectPlayerAttendedBattles() {
   const search = document.getElementById('player_search')?.value.trim() || '';
   const ownTeamFilter = document.getElementById('player_own_team_filter')?.value || 'all';
+  const groupFilter = document.getElementById('player_group_filter')?.value || 'all';
   if (!search) {
     window.alert('請先輸入玩家名稱。');
     return;
   }
   const allBattleIds = filterBattleIdsByOwnTeam(state.battles.map(battle => battle.id), ownTeamFilter);
-  const rows = lookupPlayerRows(allBattleIds, 'all');
+  const rows = lookupPlayerRows(allBattleIds, groupFilter);
   const matched = rows.filter(item =>
     item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search))
   );
