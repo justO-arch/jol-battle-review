@@ -4057,6 +4057,7 @@ function renderQuadrantChartCard(title, chartData) {
       <div class="quadrant-legend">
         ${chartData.chartKey === 'attack' ? `
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.attack};"></span>進攻</span>
+          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.bodyguard};"></span>保鑣</span>
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
         ` : `
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.defense};"></span>防守</span>
@@ -4064,7 +4065,7 @@ function renderQuadrantChartCard(title, chartData) {
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
         `}
       </div>
-      <div class="quadrant-note">橫線與直線分別使用目前職業樣本下的後段門檻與重傷門檻對應百分位。未知分工會同時出現在兩張圖。</div>
+      <div class="quadrant-note">橫線與直線分別使用目前職業樣本下的後段門檻與重傷門檻對應百分位。未知與保鑣分工會同時出現在兩張圖。</div>
     </div>
   `;
 }
@@ -4538,7 +4539,7 @@ function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
   const deathPct = Math.max(1, Math.min(99, Number(currentSettings().deathPct || 30)));
   const weakPct = Math.max(1, Math.min(99, Number(currentSettings().weakPct || 30)));
   const allowedGroups = chartKey === 'attack'
-    ? ['attack', 'unknown']
+    ? ['attack', 'bodyguard', 'unknown']
     : ['defense', 'bodyguard', 'unknown'];
   const rows = sourceRows
     .filter(row => allowedGroups.includes(row.groupType))
