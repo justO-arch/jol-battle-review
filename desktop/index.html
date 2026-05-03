@@ -2105,7 +2105,6 @@
                   <div class="inline-actions" style="margin-top:0;">
                     <button class="btn-secondary" type="button" id="btn_prof_check_all">全勾</button>
                     <button class="btn-ghost" type="button" id="btn_prof_uncheck_all">全不勾</button>
-                    <button class="btn-danger" type="button" id="btn_prof_delete_checked">刪除勾選場次</button>
                   </div>
                   <div id="profession_battle_select" class="checklist-box"></div>
                 </div>
@@ -8176,7 +8175,7 @@ document.getElementById('btn_prof_uncheck_all').addEventListener('click', () => 
   setBattleCheckboxes('profession_battle_select', false);
   renderProfessionTable();
 });
-document.getElementById('btn_prof_delete_checked').addEventListener('click', () => deleteCheckedBattles('profession_battle_select'));
+document.getElementById('btn_prof_delete_checked')?.addEventListener('click', () => deleteCheckedBattles('profession_battle_select'));
 document.getElementById('weak_pct').addEventListener('input', event => {
   state.settings.weakPct = Number(event.target.value || 30);
   saveState();
