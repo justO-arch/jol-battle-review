@@ -4536,7 +4536,7 @@ function refreshDBDropdowns() {
   const opts = type => '<option value="">— 載入 —</option>' +
     sortEntriesForDisplay(type, DB[type]).map(e => `<option value="${escAttr(e.name || '')}">${escHtml(e.name || '')}</option>`).join('');
   const ngOpts = '<option value="">— 載入 —</option>' +
-    getNgDBEntries().slice().sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hant')).map(e => `<option value="${escAttr(e.name || '')}">${escHtml(e.name || '')}</option>`).join('');
+    getSortedNgDBEntries().map(e => `<option value="${escAttr(e.name || '')}">${escHtml(e.name || '')}</option>`).join('');
   document.querySelectorAll('.db-sel-set').forEach(sel => { const v=sel.value; sel.innerHTML=opts('set'); if(DB.set.find(e=>e.name===v))sel.value=v; });
   document.querySelectorAll('.db-sel-ng').forEach(sel => { const v=sel.value; sel.innerHTML=ngOpts; if(findNgDBEntry(v))sel.value=v; });
 }
