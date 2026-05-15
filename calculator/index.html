@@ -1192,6 +1192,7 @@
   <button class="tab-btn" onclick="switchTab('pvp')">PVP 攻防計算</button>
   <button class="tab-btn" onclick="switchTab('compare')">PVE 裝備比較</button>
   <button class="tab-btn" onclick="switchTab('pvpcmp')">PVP 裝備比較</button>
+  <button class="tab-btn" onclick="switchTab('suw')">素問治療比較</button>
   <button class="tab-btn" onclick="switchTab('convert')">特效換算</button>
   <button class="tab-btn" onclick="switchTab('neigong')">內功/裝備比較</button>
   <button class="tab-btn" onclick="switchTab('database')">📦 資料庫</button>
@@ -1707,6 +1708,137 @@
     </div>
     <div class="section-body" style="overflow-x:auto;">
       <table id="pvpcmp_results_table" class="pvpcmp-results-table" style="width:100%;border-collapse:collapse;min-width:600px;"></table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== TAB: 素問治療比較 ==================== -->
+<div id="tab-suw" class="tab-pane">
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+    <button onclick="saveTabInputs('suw')" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">儲存此頁</button>
+    <button onclick="resetTabInputs('suw',calcSuWenCompare)" style="background:#ffffff;border:1px solid #d93025;color:#d93025;padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">恢復預設</button>
+    <span id="suw_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
+  </div>
+
+  <div class="pvp-columns">
+    <div>
+      <div class="pvp-col-title" style="background:#f5f5f5; border:1px solid #1a7c2a; color:#1a7c2a;">素問 A</div>
+      <div class="section">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+          <span>A · 治療與防禦面板</span>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+            <button onclick="dbSaveHealer('a')" class="db-btn">存入資料庫</button>
+            <select class="db-sel-healer db-sel" id="db_sel_healer_sw_a"></select>
+            <button onclick="dbLoadHealer('a','db_sel_healer_sw_a')" class="db-btn">← 載入</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="pvpcmp-subtitle">— 治療 —</div>
+          <div class="form-grid">
+            <div class="field"><label>攻擊</label><input type="number" id="sw_a_atk" value="12000" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>療強</label><input type="number" id="sw_a_healPower" value="1500" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>會心</label><input type="number" id="sw_a_crit" value="3000" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>會傷 (倍率)</label><input type="number" id="sw_a_critDmg" value="1.8" step="0.001" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技能增強數值</label><input type="number" id="sw_a_skillFlat" value="0" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技能增強百分比</label><input type="number" id="sw_a_skillPct" value="0" step="0.001" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>額外會心率</label><input type="number" id="sw_a_extraCritRate" value="0.03" step="0.001" oninput="calcSuWenCompare()"></div>
+          </div>
+          <div class="divider"></div>
+          <div class="pvpcmp-subtitle">— 防禦 —</div>
+          <div class="form-grid">
+            <div class="field"><label>防禦力</label><input type="number" id="sw_a_def" value="12030" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>格檔</label><input type="number" id="sw_a_block" value="2556" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>會心抗性</label><input type="number" id="sw_a_critRes" value="2325" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>氣盾</label><input type="number" id="sw_a_qiShield" value="500" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>元素抗性</label><input type="number" id="sw_a_elemRes" value="2500" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>流派抵禦</label><input type="number" id="sw_a_styleRes" value="7406" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>抗會傷 (倍率)</label><input type="number" id="sw_a_antiCrit" value="0.1" step="0.01" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技巧克制 (守)</label><input type="number" id="sw_a_techOver" value="0" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>流派抵禦 (%)</label><input type="number" id="sw_a_styleResPct" value="0" step="0.1" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>氣血上限</label><input type="number" id="sw_a_hp" value="150000" oninput="calcSuWenCompare()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="pvp-col-title" style="background:#f5f5f5; border:1px solid #996600; color:#996600;">素問 B</div>
+      <div class="section">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+          <span>B · 治療與防禦面板</span>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+            <button onclick="dbSaveHealer('b')" class="db-btn">存入資料庫</button>
+            <select class="db-sel-healer db-sel" id="db_sel_healer_sw_b"></select>
+            <button onclick="dbLoadHealer('b','db_sel_healer_sw_b')" class="db-btn">← 載入</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="pvpcmp-subtitle">— 治療 —</div>
+          <div class="form-grid">
+            <div class="field"><label>攻擊</label><input type="number" id="sw_b_atk" value="12000" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>療強</label><input type="number" id="sw_b_healPower" value="1500" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>會心</label><input type="number" id="sw_b_crit" value="3000" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>會傷 (倍率)</label><input type="number" id="sw_b_critDmg" value="1.8" step="0.001" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技能增強數值</label><input type="number" id="sw_b_skillFlat" value="0" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技能增強百分比</label><input type="number" id="sw_b_skillPct" value="0" step="0.001" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>額外會心率</label><input type="number" id="sw_b_extraCritRate" value="0.03" step="0.001" oninput="calcSuWenCompare()"></div>
+          </div>
+          <div class="divider"></div>
+          <div class="pvpcmp-subtitle">— 防禦 —</div>
+          <div class="form-grid">
+            <div class="field"><label>防禦力</label><input type="number" id="sw_b_def" value="12030" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>格檔</label><input type="number" id="sw_b_block" value="2556" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>會心抗性</label><input type="number" id="sw_b_critRes" value="2325" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>氣盾</label><input type="number" id="sw_b_qiShield" value="500" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>元素抗性</label><input type="number" id="sw_b_elemRes" value="2500" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>流派抵禦</label><input type="number" id="sw_b_styleRes" value="7406" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>抗會傷 (倍率)</label><input type="number" id="sw_b_antiCrit" value="0.1" step="0.01" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技巧克制 (守)</label><input type="number" id="sw_b_techOver" value="0" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>流派抵禦 (%)</label><input type="number" id="sw_b_styleResPct" value="0" step="0.1" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>氣血上限</label><input type="number" id="sw_b_hp" value="150000" oninput="calcSuWenCompare()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+      <span>共用對手</span>
+      <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+        <button onclick="loadSuWOpponentFromPVP('atk')" class="db-btn">← 從PVP攻方帶入</button>
+        <button onclick="dbSaveSet('sw_opp')" class="db-btn">存入資料庫</button>
+        <select class="db-sel-set db-sel" id="db_sel_set_sw_opp"></select>
+        <button onclick="dbLoadSet('sw_opp','db_sel_set_sw_opp')" class="db-btn">← 載入</button>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>攻擊</label><input type="number" id="sw_opp_atk" value="10697" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>命中</label><input type="number" id="sw_opp_hit" value="2911" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>會心</label><input type="number" id="sw_opp_crit" value="4361" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="sw_opp_critdmg" value="1.693" step="0.001" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>破盾</label><input type="number" id="sw_opp_breakshield" value="389" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>元素攻擊</label><input type="number" id="sw_opp_elemAtk" value="6187" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>元素傷害加成</label><input type="number" id="sw_opp_elemBonus" value="0" step="0.001" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>流派克制</label><input type="number" id="sw_opp_styleOver" value="6610" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>忽視元素抗性</label><input type="number" id="sw_opp_ignoreElem" value="2922" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>破防</label><input type="number" id="sw_opp_breakDef" value="5540" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>技巧克制</label><input type="number" id="sw_opp_techOver" value="0" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>乘區1 (%)</label><input type="number" id="sw_opp_lei" value="0" step="0.1" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>乘區2 (%)</label><input type="number" id="sw_opp_xinsui" value="0" step="0.1" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>流派克制 (%)</label><input type="number" id="sw_opp_stylePct" value="-8.2" step="0.1" oninput="calcSuWenCompare()"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">比較結果</div>
+    <div class="section-body" style="overflow-x:auto;">
+      <table id="suw_results_table" class="pvpcmp-results-table" style="width:100%;border-collapse:collapse;min-width:760px;"></table>
+      <div class="formula-note" id="suw_breakdown" style="margin-top:10px;"></div>
     </div>
   </div>
 
@@ -2841,7 +2973,7 @@
     <div class="section-body" style="color:#666666;font-size:13px;line-height:1.8;">
       在各頁面的屬性欄位旁點「<span style="color:#0066cc;">存入資料庫</span>」即可儲存當前數值。<br>
       點「<span style="color:#0066cc;">← 載入</span>」按鈕時先從下拉選單選擇名稱再點按鈕。<br>
-      三種類型（套裝 / 裝備配置 / 內功配置）彼此獨立；其中套裝最多 60 筆，裝備配置與內功配置各自上限 100 筆。
+      四種類型（套裝 / 素問套裝 / 裝備配置 / 內功配置）彼此獨立；其中套裝與素問套裝最多 60 筆，裝備配置與內功配置各自上限 100 筆。
     </div>
   </div>
 
@@ -2856,6 +2988,18 @@
       <div class="section-body">
         <div id="db_list_set" style="border:1px solid #d0d0d0;border-radius:4px;min-height:60px;"></div>
         <div style="color:#666666;font-size:12px;margin-top:8px;">儲存欄位：完整攻防面板（23 欄）</div>
+      </div>
+    </div>
+
+    <!-- 素問套裝 -->
+    <div class="section">
+      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>素問套裝</span>
+        <span id="db_count_healer" style="color:#666666;font-size:12px;">0/60</span>
+      </div>
+      <div class="section-body">
+        <div id="db_list_healer" style="border:1px solid #d0d0d0;border-radius:4px;min-height:60px;"></div>
+        <div style="color:#666666;font-size:12px;margin-top:8px;">儲存欄位：治療面板 + 防禦面板</div>
       </div>
     </div>
 
@@ -3038,6 +3182,41 @@ function calcPVPSideExpected(attParams, defParams) {
   const elemPct = base > 0 ? elemDmg / base : 0;
   const elemPen = C.aElem / (Math.max(0, bElemRes - ignoreElem) + C.aElem);
   return { qiRem, pen, critRate, hitRate, elemDmg, breachDmg, base, elemPct, elemPen, expected };
+}
+
+const SUWEN_HEAL_CRIT_NUM_A = 101.00;
+const SUWEN_HEAL_CRIT_NUM_B = 1641.38;
+const SUWEN_HEAL_CRIT_DEN_C = 5606;
+
+function calcSuWenHealCritRate(crit, extraCritRate=0) {
+  const fitted = ((SUWEN_HEAL_CRIT_NUM_A * crit + SUWEN_HEAL_CRIT_NUM_B) / (crit + SUWEN_HEAL_CRIT_DEN_C)) * 0.01;
+  return Math.min(1, Math.max(0, fitted + extraCritRate));
+}
+
+function calcSuWenHealExpected(params) {
+  const {atk, healPower, crit, critDmg, skillFlat=0, skillPct=0, extraCritRate=0} = params;
+  const healCritRate = calcSuWenHealCritRate(crit, extraCritRate);
+  const baseHeal = ((atk + skillFlat) * 0.6) + healPower + BREACH_BASE;
+  const critMultiplier = 1 + ((critDmg - 1) / 2) * healCritRate;
+  const expected = baseHeal * critMultiplier * (1 + skillPct);
+  return { healCritRate, baseHeal, critMultiplier, expected };
+}
+
+function calcSuWenAgainstOpponent(healer, opponent) {
+  const heal = calcSuWenHealExpected(healer);
+  const incoming = calcPVPSideExpected(opponent, {
+    bDef: healer.def,
+    bBlock: healer.block,
+    bCritRes: healer.critRes,
+    bQiShield: healer.qiShield,
+    bElemRes: healer.elemRes,
+    bStyleRes: healer.styleRes,
+    antiCrit: healer.antiCrit,
+    oppTechOver: healer.techOver,
+    bStyleResPct: healer.styleResPct,
+  });
+  const hitsCanTake = incoming.expected > 0 && healer.hp > 0 ? healer.hp / incoming.expected : Infinity;
+  return { heal, incoming, hitsCanTake };
 }
 
 function breakdownText(r, mode) {
@@ -3611,6 +3790,129 @@ function calcPVPCmp() {
   document.getElementById('pvpcmp_results_table').innerHTML = `<thead>${ths}</thead><tbody>${trs}</tbody>`;
 }
 
+// ===================== TAB: 素問治療比較 =====================
+function readSuWenHealer(side) {
+  return {
+    atk: n(`sw_${side}_atk`),
+    healPower: n(`sw_${side}_healPower`),
+    crit: n(`sw_${side}_crit`),
+    critDmg: n(`sw_${side}_critDmg`),
+    skillFlat: n(`sw_${side}_skillFlat`),
+    skillPct: n(`sw_${side}_skillPct`),
+    extraCritRate: n(`sw_${side}_extraCritRate`),
+    def: n(`sw_${side}_def`),
+    block: n(`sw_${side}_block`),
+    critRes: n(`sw_${side}_critRes`),
+    qiShield: n(`sw_${side}_qiShield`),
+    elemRes: n(`sw_${side}_elemRes`),
+    styleRes: n(`sw_${side}_styleRes`),
+    antiCrit: n(`sw_${side}_antiCrit`),
+    techOver: n(`sw_${side}_techOver`),
+    styleResPct: n(`sw_${side}_styleResPct`),
+    hp: n(`sw_${side}_hp`),
+  };
+}
+
+function readSuWenOpponent() {
+  return {
+    atk: n('sw_opp_atk'),
+    hit: n('sw_opp_hit'),
+    crit: n('sw_opp_crit'),
+    critDmg: n('sw_opp_critdmg'),
+    breakShield: n('sw_opp_breakshield'),
+    elemAtk: n('sw_opp_elemAtk'),
+    elemBonus: n('sw_opp_elemBonus'),
+    styleOver: n('sw_opp_styleOver'),
+    ignoreElem: n('sw_opp_ignoreElem'),
+    breakDef: n('sw_opp_breakDef'),
+    techOver: n('sw_opp_techOver'),
+    lei: n('sw_opp_lei'),
+    xinsui: n('sw_opp_xinsui'),
+    stylePct: n('sw_opp_stylePct'),
+  };
+}
+
+function loadSuWOpponentFromPVP(side) {
+  const p = side;
+  const map = {
+    sw_opp_atk: p+'_atk',
+    sw_opp_hit: p+'_hit',
+    sw_opp_crit: p+'_crit',
+    sw_opp_critdmg: p+'_critdmg',
+    sw_opp_breakshield: p+'_breakshield',
+    sw_opp_elemAtk: p+'_elemAtk',
+    sw_opp_elemBonus: p+'_elemBonus',
+    sw_opp_styleOver: p+'_styleOver',
+    sw_opp_ignoreElem: p+'_ignoreElem',
+    sw_opp_breakDef: p+'_breakDef',
+    sw_opp_techOver: p+'_techOver',
+    sw_opp_lei: p+'_lei',
+    sw_opp_xinsui: p+'_xinsui',
+    sw_opp_stylePct: p+'_stylePct',
+  };
+  Object.entries(map).forEach(([dst, src]) => {
+    const s = document.getElementById(src), d = document.getElementById(dst);
+    if (s && d) d.value = s.value;
+  });
+  calcSuWenCompare();
+}
+
+function calcSuWenCompare() {
+  const opponent = readSuWenOpponent();
+  const rows = [
+    { name: '素問 A', result: calcSuWenAgainstOpponent(readSuWenHealer('a'), opponent) },
+    { name: '素問 B', result: calcSuWenAgainstOpponent(readSuWenHealer('b'), opponent) },
+  ];
+  const base = rows[0].result;
+  const fmtHits = v => isFinite(v) ? v.toFixed(1) : '∞';
+  const fmtHigher = (val, ref) => {
+    if (!isFinite(val) || !isFinite(ref) || ref === 0) return '—';
+    const diff = (val - ref) / ref * 100;
+    return diff > 0 ? `<span class="positive">+${diff.toFixed(2)}%</span>`
+      : diff < 0 ? `<span class="negative">${diff.toFixed(2)}%</span>`
+      : `<span class="neutral">+0.00%</span>`;
+  };
+  const fmtLower = (val, ref) => {
+    if (!isFinite(val) || !isFinite(ref) || ref === 0) return '—';
+    const diff = (ref - val) / ref * 100;
+    return diff > 0 ? `<span class="positive">+${diff.toFixed(2)}%</span>`
+      : diff < 0 ? `<span class="negative">${diff.toFixed(2)}%</span>`
+      : `<span class="neutral">+0.00%</span>`;
+  };
+  const ths = `<tr>
+    <th>名稱</th>
+    <th>治療會心率</th>
+    <th>單次預期奶量</th>
+    <th>承傷期望</th>
+    <th>可承受次數</th>
+    <th>對手命中 / 會心</th>
+    <th>穿透 / 元素穿透</th>
+    <th>vs 素問 A</th>
+  </tr>`;
+  const trs = rows.map((row, idx) => {
+    const r = row.result;
+    const vs = idx === 0 ? '<span class="muted">—</span>'
+      : `奶量 ${fmtHigher(r.heal.expected, base.heal.expected)}<br>承傷 ${fmtLower(r.incoming.expected, base.incoming.expected)}<br>可承受 ${fmtHigher(r.hitsCanTake, base.hitsCanTake)}`;
+    return `<tr>
+      <td>${row.name}</td>
+      <td>${pct(r.heal.healCritRate * 100)}</td>
+      <td style="font-weight:bold;color:#1a7c2a;">${fmt(r.heal.expected)}</td>
+      <td style="font-weight:bold;color:#d93025;">${fmt(r.incoming.expected)}</td>
+      <td class="take-hits">${fmtHits(r.hitsCanTake)}</td>
+      <td>${pct(r.incoming.hitRate * 100)} / ${pct(r.incoming.critRate * 100)}</td>
+      <td>${pct(r.incoming.pen * 100)} / ${pct(r.incoming.elemPen * 100)}</td>
+      <td style="line-height:1.8;">${vs}</td>
+    </tr>`;
+  }).join('');
+  const table = document.getElementById('suw_results_table');
+  if (table) table.innerHTML = `<thead>${ths}</thead><tbody>${trs}</tbody>`;
+  const note = document.getElementById('suw_breakdown');
+  if (note) {
+    note.innerHTML = `治療公式：((攻擊 + 技能增強數值) × 0.6 + 療強 + 2868) × [1 + ((會傷 - 1) ÷ 2) × 治療會心率] × (1 + 技能增強百分比)<br>` +
+      `治療會心率使用風搖箏 Excel 治療表近似式，並加計額外會心率。承傷沿用目前 PVP 攻方打防方期望公式。`;
+  }
+}
+
 // ===================== TAB 5: 特效換算 =====================
 function calcXuanJi() {
   const raw = parseFloat(document.getElementById('xj_excess').value) || 0;
@@ -4100,6 +4402,12 @@ const TAB_INPUT_IDS = {
            'pvpcmp_oelemAtk','pvpcmp_oelemBonus','pvpcmp_ostyleOver','pvpcmp_oignoreElem','pvpcmp_obreakDef',
            'pvpcmp_otechOver','pvpcmp_olei','pvpcmp_oxinsui','pvpcmp_ostylePct','pvpcmp_ohp',
            'pvpcmp_opponent_note'],
+  suw: ['sw_a_atk','sw_a_healPower','sw_a_crit','sw_a_critDmg','sw_a_skillFlat','sw_a_skillPct','sw_a_extraCritRate',
+        'sw_a_def','sw_a_block','sw_a_critRes','sw_a_qiShield','sw_a_elemRes','sw_a_styleRes','sw_a_antiCrit','sw_a_techOver','sw_a_styleResPct','sw_a_hp',
+        'sw_b_atk','sw_b_healPower','sw_b_crit','sw_b_critDmg','sw_b_skillFlat','sw_b_skillPct','sw_b_extraCritRate',
+        'sw_b_def','sw_b_block','sw_b_critRes','sw_b_qiShield','sw_b_elemRes','sw_b_styleRes','sw_b_antiCrit','sw_b_techOver','sw_b_styleResPct','sw_b_hp',
+        'sw_opp_atk','sw_opp_hit','sw_opp_crit','sw_opp_critdmg','sw_opp_breakshield','sw_opp_elemAtk','sw_opp_elemBonus',
+        'sw_opp_styleOver','sw_opp_ignoreElem','sw_opp_breakDef','sw_opp_techOver','sw_opp_lei','sw_opp_xinsui','sw_opp_stylePct'],
   convert: ['xj_excess','xj_ratio_elem','xj_ratio_atk','xj_ratio_bdef',
             'mgn_mode',
             'mgn_atk','mgn_hit','mgn_crit','mgn_critdmg','mgn_elementatk','mgn_elemBonus',
@@ -4261,7 +4569,7 @@ function resetTabInputs(tab, recalcFn) {
 function calcConvert() { calcXuanJi(); calcMarginal(); }
 
 function loadAllTabInputs() {
-  const recalcs = { pve: calcPVE, pvp: calcPVP, cmp: calcCompare, pvpcmp: calcPVPCmp, convert: calcConvert, neigong: calcNeigong };
+  const recalcs = { pve: calcPVE, pvp: calcPVP, cmp: calcCompare, pvpcmp: calcPVPCmp, suw: calcSuWenCompare, convert: calcConvert, neigong: calcNeigong };
   // PVP裝備比較：先恢復攻方陣列（在靜態欄位恢復之前）
   try {
     const saved = localStorage.getItem(`${STORAGE_KEY}_tab_pvpcmp_attackers`);
@@ -4289,15 +4597,17 @@ function loadAllTabInputs() {
 
 // ===================== 資料庫 =====================
 
-const DB = { set: [], gear: [], ng: [] };
-const DB_LIMITS = { set: 60, gear: 100, ng: 100 };
+const DB = { set: [], healer: [], gear: [], ng: [] };
+const DB_LIMITS = { set: 60, healer: 60, gear: 100, ng: 100 };
 
 const DB_SET_KEYS = ['atk','hit','crit','critDmg','breakShield','elemAtk','elemBonus','styleOver','ignoreElem','breakDef','techOver','lei','xinsui','stylePct','bDef','bBlock','bCritRes','bQiShield','bElemRes','bStyleRes','antiCrit','techOver2','styleResPct','hp'];
+const DB_HEALER_KEYS = ['atk','healPower','crit','critDmg','skillFlat','skillPct','extraCritRate','def','block','critRes','qiShield','elemRes','styleRes','antiCrit','techOver','styleResPct','hp'];
 
 const DB_SET_SUBSET_ID_MAPS = {
   pve:   { atk:'pve_atk', hit:'pve_hit', crit:'pve_crit', critDmg:'pve_critdmg', breakShield:'pve_breakshield', elemAtk:'pve_elemAtk', elemBonus:'pve_elemBonus', styleOver:'pve_bossOver', ignoreElem:'pve_ignoreElem', breakDef:'pve_breakDef', techOver:'pve_techOver' },
   cmp_a: { atk:'cmp_a_atk', hit:'cmp_a_hit', crit:'cmp_a_crit', critDmg:'cmp_a_critdmg', breakShield:'cmp_a_breakshield', elemAtk:'cmp_a_elemAtk', elemBonus:'cmp_a_elemBonus', styleOver:'cmp_a_bossOver', ignoreElem:'cmp_a_ignoreElem', breakDef:'cmp_a_breakDef', techOver:'cmp_a_techOver' },
   cmp_b: { atk:'cmp_b_atk', hit:'cmp_b_hit', crit:'cmp_b_crit', critDmg:'cmp_b_critdmg', breakShield:'cmp_b_breakshield', elemAtk:'cmp_b_elemAtk', elemBonus:'cmp_b_elemBonus', styleOver:'cmp_b_bossOver', ignoreElem:'cmp_b_ignoreElem', breakDef:'cmp_b_breakDef', techOver:'cmp_b_techOver' },
+  sw_opp: { atk:'sw_opp_atk', hit:'sw_opp_hit', crit:'sw_opp_crit', critDmg:'sw_opp_critdmg', breakShield:'sw_opp_breakshield', elemAtk:'sw_opp_elemAtk', elemBonus:'sw_opp_elemBonus', styleOver:'sw_opp_styleOver', ignoreElem:'sw_opp_ignoreElem', breakDef:'sw_opp_breakDef', techOver:'sw_opp_techOver', lei:'sw_opp_lei', xinsui:'sw_opp_xinsui', stylePct:'sw_opp_stylePct' },
   ng_my:  { atk:'ng_atk', hit:'ng_hit', crit:'ng_crit', critDmg:'ng_critdmg', breakShield:'ng_breakshield', elemAtk:'ng_elementatk', elemBonus:'ng_elemBonus', styleOver:'ng_bossover', ignoreElem:'ng_ignoreelem', breakDef:'ng_breakdef', techOver:'ng_techover', stylePct:'ng_stylePct' },
   ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_ebossover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct' },
   mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_bossover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef' },
@@ -4311,6 +4621,10 @@ const DB_SET_FULL_ID_MAPS = {
   ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_ebossover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct', bDef:'ng_bdef', bBlock:'ng_bblock', bCritRes:'ng_bcritres', bQiShield:'ng_bqishield', bElemRes:'ng_belemres', bStyleRes:'ng_bbossres', antiCrit:'ng_banticrit', styleResPct:'ng_bStyleResPct', hp:'ng_bhp' },
   mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_bossover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef', techOver:'mgn_techover', bDef:'mgn_mydef', bBlock:'mgn_myblock', bCritRes:'mgn_mycritres', bQiShield:'mgn_myqishield', bElemRes:'mgn_myelemres', bStyleRes:'mgn_mybossres', antiCrit:'mgn_myanticrit', techOver2:'mgn_mytechover', hp:'mgn_myhp' },
   mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_ebossover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef', techOver:'mgn_etechover', bDef:'mgn_bdef', bBlock:'mgn_bblock', bCritRes:'mgn_bcritres', bQiShield:'mgn_bqishield', bElemRes:'mgn_belemres', bStyleRes:'mgn_bbossres', antiCrit:'mgn_banticrit', techOver2:'mgn_btechover', hp:'mgn_bhp' },
+};
+const DB_HEALER_ID_MAPS = {
+  a: { atk:'sw_a_atk', healPower:'sw_a_healPower', crit:'sw_a_crit', critDmg:'sw_a_critDmg', skillFlat:'sw_a_skillFlat', skillPct:'sw_a_skillPct', extraCritRate:'sw_a_extraCritRate', def:'sw_a_def', block:'sw_a_block', critRes:'sw_a_critRes', qiShield:'sw_a_qiShield', elemRes:'sw_a_elemRes', styleRes:'sw_a_styleRes', antiCrit:'sw_a_antiCrit', techOver:'sw_a_techOver', styleResPct:'sw_a_styleResPct', hp:'sw_a_hp' },
+  b: { atk:'sw_b_atk', healPower:'sw_b_healPower', crit:'sw_b_crit', critDmg:'sw_b_critDmg', skillFlat:'sw_b_skillFlat', skillPct:'sw_b_skillPct', extraCritRate:'sw_b_extraCritRate', def:'sw_b_def', block:'sw_b_block', critRes:'sw_b_critRes', qiShield:'sw_b_qiShield', elemRes:'sw_b_elemRes', styleRes:'sw_b_styleRes', antiCrit:'sw_b_antiCrit', techOver:'sw_b_techOver', styleResPct:'sw_b_styleResPct', hp:'sw_b_hp' },
 };
 
 const _dbBtn = 'background:#1c2128;border:1px solid #30363d;color:#8b949e;padding:3px 8px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;white-space:nowrap;';
@@ -4338,6 +4652,13 @@ function normalizeSetData(data) {
   if (out.breakShield === undefined) out.breakShield = 0;
   if (out.styleOver === 0 && src.bossOver !== undefined) out.styleOver = src.bossOver;
   if (out.bStyleRes === 0 && src.bBossRes !== undefined) out.bStyleRes = src.bBossRes;
+  return out;
+}
+
+function normalizeHealerData(data) {
+  const src = data && typeof data === 'object' ? data : {};
+  const out = {};
+  DB_HEALER_KEYS.forEach(key => { out[key] = src[key] !== undefined ? src[key] : 0; });
   return out;
 }
 
@@ -4388,7 +4709,7 @@ function findNgDBEntry(name) {
 }
 
 function dbLoad() {
-  ['set','gear','ng'].forEach(t => {
+  ['set','healer','gear','ng'].forEach(t => {
     let parsed = [];
     try { parsed = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_db_${t}`)) || []; } catch(e) { parsed = []; }
     const normalized = normalizeDBList(parsed);
@@ -4421,6 +4742,12 @@ function dbLoad() {
   if (legacySetMigrated) {
     localStorage.removeItem(`${STORAGE_KEY}_db_pve`);
     localStorage.removeItem(`${STORAGE_KEY}_db_pvp`);
+  }
+
+  const normalizedHealer = Array.isArray(DB.healer) ? DB.healer.map(entry => ({ ...entry, data: normalizeHealerData(entry.data) })) : [];
+  if (JSON.stringify(normalizedHealer) !== JSON.stringify(DB.healer)) {
+    DB.healer = normalizedHealer;
+    dbPersist('healer');
   }
 
   const migratedGear = Array.isArray(DB.gear) ? DB.gear.slice() : [];
@@ -4508,10 +4835,26 @@ function dbLoadSet(ctx, selId) {
   const fullMap = DB_SET_FULL_ID_MAPS[ctx];
   const subsetMap = DB_SET_SUBSET_ID_MAPS[ctx];
   const fn = ctx === 'pvpcmp_opp' ? calcPVPCmp
+    : ctx === 'sw_opp' ? calcSuWenCompare
     : (ctx === 'ng_my' || ctx === 'ng_opp') ? calcNeigong
     : (ctx === 'mgn_my' || ctx === 'mgn_opp') ? calcMarginal
     : (ctx === 'pve' ? calcPVE : ctx === 'cmp_a' || ctx === 'cmp_b' ? calcCompare : calcPVP);
   _dbWriteDOM(fullMap || subsetMap, normalizeSetData(entry.data), fn);
+}
+
+function dbSaveHealer(side) {
+  const map = DB_HEALER_ID_MAPS[side];
+  if (!map) return;
+  _dbPromptSave('healer', normalizeHealerData(_dbReadDOM(map)));
+}
+
+function dbLoadHealer(side, selId) {
+  const name = document.getElementById(selId)?.value;
+  if (!name) return;
+  const entry = DB.healer.find(e => e.name === name);
+  const map = DB_HEALER_ID_MAPS[side];
+  if (!entry || !map) return;
+  _dbWriteDOM(map, normalizeHealerData(entry.data), calcSuWenCompare);
 }
 
 // PVP裝備比較 攻方 (JS物件)
@@ -4574,11 +4917,12 @@ function refreshDBDropdowns() {
   const ngOpts = '<option value="">— 載入 —</option>' +
     getSortedNgDBEntries().map(e => `<option value="${escAttr(e.name || '')}">${escHtml(e.name || '')}</option>`).join('');
   document.querySelectorAll('.db-sel-set').forEach(sel => { const v=sel.value; sel.innerHTML=opts('set'); if(DB.set.find(e=>e.name===v))sel.value=v; });
+  document.querySelectorAll('.db-sel-healer').forEach(sel => { const v=sel.value; sel.innerHTML=opts('healer'); if(DB.healer.find(e=>e.name===v))sel.value=v; });
   document.querySelectorAll('.db-sel-ng').forEach(sel => { const v=sel.value; sel.innerHTML=ngOpts; if(findNgDBEntry(v))sel.value=v; });
 }
 
 function renderDB() {
-  ['set','gear','ng'].forEach(type => {
+  ['set','healer','gear','ng'].forEach(type => {
     const el = document.getElementById(`db_list_${type}`); if (!el) return;
     const cnt = document.getElementById(`db_count_${type}`); if (cnt) cnt.textContent = `${DB[type].length}/${DB_LIMITS[type] || 60}`;
     if (DB[type].length === 0) { el.innerHTML = '<div style="color:#999;font-size:12px;padding:8px 0;">尚無資料</div>'; return; }
@@ -7463,7 +7807,7 @@ function importData() {
         }
         let count = 0;
         importEntries.forEach(([key, val]) => {
-          const dbMatch = key.match(new RegExp(`^${STORAGE_KEY}_db_(set|pve|pvp|gear|ng)$`));
+          const dbMatch = key.match(new RegExp(`^${STORAGE_KEY}_db_(set|healer|pve|pvp|gear|ng)$`));
           if (dbMatch) {
             let currentArr = [];
             let importArr = [];
@@ -7537,6 +7881,7 @@ window.onload = function() {
   calcPVP();
   calcCompare();
   renderPVPCmpAttackers();
+  calcSuWenCompare();
   calcXuanJi();
   calcMarginal();
   calcBaseAttr();
