@@ -1256,19 +1256,19 @@
         <div class="section-title">BOSS 屬性</div>
         <div class="section-body">
           <div class="preset-group">
-            <button class="preset-btn active" id="pve_preset_0" onclick="setPVEBoss(0)">九光寒林</button>
+            <button class="preset-btn active" id="pve_preset_0" onclick="setPVEBoss(0)">九光英雄外</button>
             <button class="preset-btn" id="pve_preset_1" onclick="setPVEBoss(1)">天機迷城</button>
             <button class="preset-btn" id="pve_preset_2" onclick="setPVEBoss(2)">天機英雄</button>
             <button class="preset-btn" id="pve_preset_3" onclick="setPVEBoss(3)">幫會外塔</button>
             <button class="preset-btn" id="pve_preset_custom" onclick="setPVEBoss(-1)">自訂</button>
           </div>
           <div class="form-grid">
-            <div class="field"><label>防禦力</label><input type="number" id="pve_bdef" value="19935" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>格檔</label><input type="number" id="pve_bblock" value="3869" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>會心抗性</label><input type="number" id="pve_bcritres" value="3848" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>防禦力</label><input type="number" id="pve_bdef" value="21410" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>格檔</label><input type="number" id="pve_bblock" value="4163" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>會心抗性</label><input type="number" id="pve_bcritres" value="4163" oninput="setPVEBoss(-1); calcPVE()"></div>
             <div class="field"><label>氣盾</label><input type="number" id="pve_bqishield" value="0" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>元素抗性</label><input type="number" id="pve_belemres" value="3868" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>首領抵禦</label><input type="number" id="pve_bbossdef" value="15400" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>元素抗性</label><input type="number" id="pve_belemres" value="4163" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>首領抵禦</label><input type="number" id="pve_bbossdef" value="21000" oninput="setPVEBoss(-1); calcPVE()"></div>
           </div>
         </div>
       </div>
@@ -1580,19 +1580,19 @@
     <div class="section-title">BOSS 屬性 (共用)</div>
     <div class="section-body">
       <div class="preset-group">
-        <button class="preset-btn active" id="cmp_preset_0" onclick="setCmpBoss(0)">九光寒林</button>
+        <button class="preset-btn active" id="cmp_preset_0" onclick="setCmpBoss(0)">九光英雄外</button>
         <button class="preset-btn" id="cmp_preset_1" onclick="setCmpBoss(1)">天機迷城</button>
         <button class="preset-btn" id="cmp_preset_2" onclick="setCmpBoss(2)">天機英雄</button>
         <button class="preset-btn" id="cmp_preset_3" onclick="setCmpBoss(3)">幫會外塔</button>
         <button class="preset-btn" id="cmp_preset_custom" onclick="setCmpBoss(-1)">自訂</button>
       </div>
       <div class="form-grid">
-        <div class="field"><label>防禦力</label><input type="number" id="cmp_bdef" value="19935" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>格檔</label><input type="number" id="cmp_bblock" value="3869" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>會心抗性</label><input type="number" id="cmp_bcritres" value="3848" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>防禦力</label><input type="number" id="cmp_bdef" value="21410" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>格檔</label><input type="number" id="cmp_bblock" value="4163" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>會心抗性</label><input type="number" id="cmp_bcritres" value="4163" oninput="setCmpBoss(-1); calcCompare()"></div>
         <div class="field"><label>氣盾</label><input type="number" id="cmp_bqishield" value="0" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>元素抗性</label><input type="number" id="cmp_belemres" value="3868" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>首領抵禦</label><input type="number" id="cmp_bbossdef" value="15400" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>元素抗性</label><input type="number" id="cmp_belemres" value="4163" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>首領抵禦</label><input type="number" id="cmp_bbossdef" value="21000" oninput="setCmpBoss(-1); calcCompare()"></div>
       </div>
     </div>
   </div>
@@ -2702,16 +2702,16 @@
       <div class="section-title">PVE 計算係數</div>
       <div class="section-body">
         <div class="form-grid">
-          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pve_aPen" value="15390" step="1"></div>
-          <div class="field"><label>B_防　穿透修正</label><input type="number" id="set_pve_bPen" value="0" step="0.01"></div>
-          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pve_aElem" value="2850" step="1"></div>
+          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pve_aPen" value="19030" step="1"></div>
+          <div class="field"><label>B_防　穿透修正</label><input type="number" id="set_pve_bPen" value="0.1" step="0.01"></div>
+          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pve_aElem" value="4760" step="1"></div>
           <div class="field"><label>A_會　會心斜率</label><input type="number" id="set_pve_aCrit" value="115" step="1"></div>
-          <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pve_bCrit" value="-5454" step="1"></div>
-          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pve_cCrit" value="2100" step="1"></div>
-          <div class="field"><label>基礎會心率 ★</label><input type="number" id="set_pve_baseCrit" value="0" step="0.01"></div>
+          <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pve_bCrit" value="165" step="1"></div>
+          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pve_cCrit" value="2739" step="1"></div>
+          <div class="field"><label>基礎會心率 ★</label><input type="number" id="set_pve_baseCrit" value="0.05" step="0.01"></div>
           <div class="field"><label>A_命　命中基底</label><input type="number" id="set_pve_aHit" value="0.95" step="0.01"></div>
-          <div class="field"><label>B_命　命中斜率</label><input type="number" id="set_pve_bHit" value="2.75" step="0.01"></div>
-          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pve_cHit" value="16150" step="1"></div>
+          <div class="field"><label>B_命　命中斜率</label><input type="number" id="set_pve_bHit" value="1.43" step="0.01"></div>
+          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pve_cHit" value="10718" step="1"></div>
           <div class="field"><label>攻克基礎 k₁</label><input type="number" id="set_pve_k1" value="0" step="1"></div>
           <div class="field"><label>攻克係數 k₂</label><input type="number" id="set_pve_k2" value="1" step="0.01"></div>
           <div class="field"><label>元素傷害係數 k₃</label><input type="number" id="set_pve_k3" value="1" step="0.01"></div>
@@ -2725,16 +2725,16 @@
       <div class="section-title">PVP 計算係數</div>
       <div class="section-body">
         <div class="form-grid">
-          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pvp_aPen" value="15390" step="1"></div>
-          <div class="field"><label>B_防　穿透修正</label><input type="number" id="set_pvp_bPen" value="0" step="0.01"></div>
-          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pvp_aElem" value="2850" step="1"></div>
+          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pvp_aPen" value="19030" step="1"></div>
+          <div class="field"><label>B_防　穿透修正</label><input type="number" id="set_pvp_bPen" value="0.1" step="0.01"></div>
+          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pvp_aElem" value="4760" step="1"></div>
           <div class="field"><label>A_會　會心斜率</label><input type="number" id="set_pvp_aCrit" value="115" step="1"></div>
-          <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pvp_bCrit" value="-5454" step="1"></div>
-          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pvp_cCrit" value="2100" step="1"></div>
-          <div class="field"><label>基礎會心率 ★</label><input type="number" id="set_pvp_baseCrit" value="0" step="0.01"></div>
+          <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pvp_bCrit" value="165" step="1"></div>
+          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pvp_cCrit" value="2739" step="1"></div>
+          <div class="field"><label>基礎會心率 ★</label><input type="number" id="set_pvp_baseCrit" value="0.05" step="0.01"></div>
           <div class="field"><label>A_命　命中基底</label><input type="number" id="set_pvp_aHit" value="0.95" step="0.01"></div>
-          <div class="field"><label>B_命　命中斜率</label><input type="number" id="set_pvp_bHit" value="2.75" step="0.01"></div>
-          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pvp_cHit" value="16150" step="1"></div>
+          <div class="field"><label>B_命　命中斜率</label><input type="number" id="set_pvp_bHit" value="1.43" step="0.01"></div>
+          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pvp_cHit" value="10718" step="1"></div>
           <div class="field"><label>攻克基礎 k₁</label><input type="number" id="set_pvp_k1" value="0" step="1"></div>
           <div class="field"><label>攻克係數 k₂</label><input type="number" id="set_pvp_k2" value="1" step="0.01"></div>
           <div class="field"><label>元素傷害係數 k₃</label><input type="number" id="set_pvp_k3" value="1" step="0.01"></div>
@@ -2764,13 +2764,13 @@
           </thead>
           <tbody>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_0_name" value="九光寒林" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_def" value="19935" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_block" value="3869" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_critRes" value="3848" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_0_name" value="九光英雄外" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_def" value="21410" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_block" value="4163" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_critRes" value="4163" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_qiShield" value="0" style="width:60px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_elemRes" value="3868" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_bossRes" value="0" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_elemRes" value="4163" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_bossRes" value="21000" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
               <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_1_name" value="天機迷城" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
@@ -2822,7 +2822,9 @@
         <span style="color:#666666;">── 傷害 ────────────────────────────────────────</span><br>
         <b style="color:#0066cc;">氣盾衰減</b>　　= 若 氣盾 ≥ 3×破盾：剩 氣盾−2×破盾；否則：剩 0.5×(氣盾−破盾)；下限 0<br>
         <b style="color:#0066cc;">元素傷害</b>　　= k₃ × 元素攻擊 × 元素穿透率<br>
-        <b style="color:#0066cc;">攻克傷害</b>　　= k₁ + k₂ × (攻擊 − 剩餘氣盾 + 克制 − 抵禦) × 防禦穿透率<br>
+        <b style="color:#0066cc;">PVE 攻克基底</b>　= max(2868 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制 − 首領抵禦, (2868 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制) × 15%)<br>
+        <b style="color:#0066cc;">PVE 攻克傷害</b>　= k₁ + k₂ × PVE 攻克基底 × 防禦穿透率<br>
+        <b style="color:#0066cc;">PVP 攻克傷害</b>　= k₁ + k₂ × max(2868 + 攻擊 − 剩餘氣盾 + 流派克制 − 流派抵禦 + 技巧差, 0) × 防禦穿透率<br>
         <b style="color:#0066cc;">PVE 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×會心倍率 + (1−會心率)) + 0.5×(1−命中率) ] × 獨立乘區<br>
         <b style="color:#0066cc;">PVP 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×(會心倍率−抗會傷) + (1−會心率)) + 0.5×(1−命中率) ] × 獨立乘區
       </div>
@@ -2894,32 +2896,32 @@ const STORAGE_KEY = 'jol'; // 複本改成 'jol2', 'jol3' 等，避免存檔互�
 
 // ===================== CONSTANTS =====================
 const PVE_CONST = {
-  aPen: 17732,   // A_防 防禦係數
+  aPen: 19030,   // A_防 防禦係數
   bPen: 0.1,     // B_防 穿透修正（公式為 - B_防）
-  aElem: 4420,   // A_元 元素抗性係數
+  aElem: 4760,   // A_元 元素抗性係數
   aCrit: 115,    // A_會 會心斜率
-  bCrit: -2435,  // B_會 會心截距
-  cCrit: 2520,   // C_會 會心分母
-  baseCrit: 0,   // 基礎會心率
+  bCrit: 165,    // B_會 會心截距
+  cCrit: 2739,   // C_會 會心分母
+  baseCrit: 0.05,// 基礎會心率
   aHit: 0.95,    // A_命 命中基底
   bHit: 1.43,    // B_命 命中斜率
-  cHit: 9990,    // C_命 命中分母
+  cHit: 10718,   // C_命 命中分母
   k1: 0,
   k2: 1,
   k3: 1          // k₃ 元素傷害係數
 };
 
 const PVP_CONST = {
-  aPen: 17732,
+  aPen: 19030,
   bPen: 0.1,
-  aElem: 4420,
+  aElem: 4760,
   aCrit: 115,
-  bCrit: -2435,
-  cCrit: 2520,
-  baseCrit: 0,
+  bCrit: 165,
+  cCrit: 2739,
+  baseCrit: 0.05,
   aHit: 0.95,
   bHit: 1.43,
-  cHit: 9990,
+  cHit: 10718,
   k1: 0,
   k2: 1,
   k3: 1
@@ -2927,11 +2929,14 @@ const PVP_CONST = {
 
 // Boss presets
 const PVE_BOSSES = [
-  { name: '九光寒林',   def: 19935, block: 3869, critRes: 3848, qiShield: 0, elemRes: 3868, bossRes: 15400 },
+  { name: '九光英雄外', def: 21410, block: 4163, critRes: 4163, qiShield: 0, elemRes: 4163, bossRes: 21000 },
   { name: '天機迷城',   def: 12017, block: 2560, critRes: 2325, qiShield: 0, elemRes: 2672, bossRes: 9000 },
   { name: '天機英雄',   def: 17182, block: 3568, critRes: 3280, qiShield: 0, elemRes: 3310, bossRes: 14040 },
   { name: '幫會外塔',   def: 1100,  block: 300,  critRes: 150,  qiShield: 0, elemRes: 0,    bossRes: 0 }
 ];
+
+const BREACH_BASE = 2868;
+const PVE_BREACH_FLOOR_RATE = 0.15;
 
 
 // ===================== HELPERS =====================
@@ -2973,13 +2978,14 @@ function calcElemDmg(elemAtk, bElemRes, ignoreElem, C) {
 
 // PVE 攻克傷害
 function calcBreachDmgPVE(atk, qiShieldRem, bossOver, techOver, bossRes, penetration, C) {
-  const totalOver = Math.max(atk - qiShieldRem + bossOver + techOver - bossRes, 0);
+  const preResist = BREACH_BASE + atk - qiShieldRem + bossOver + techOver;
+  const totalOver = Math.max(preResist - bossRes, preResist * PVE_BREACH_FLOOR_RATE);
   return C.k1 + C.k2 * totalOver * penetration;
 }
 
 // PVP 攻克傷害 (攻方 vs 守方)
 function calcBreachDmgPVP(atk, qiShieldRem, styleOver, styleRes, techDiff, penetration, C) {
-  const totalOver = Math.max(atk - qiShieldRem + styleOver - styleRes + techDiff, 0);
+  const totalOver = Math.max(BREACH_BASE + atk - qiShieldRem + styleOver - styleRes + techDiff, 0);
   return C.k1 + C.k2 * totalOver * penetration;
 }
 
@@ -4022,6 +4028,35 @@ function updatePresetButtonLabels() {
   });
 }
 
+function isLegacyJiuGuangConst(c) {
+  if (!c) return false;
+  const oldCalc = c.aPen === 17732 && c.aElem === 4420 &&
+    c.bCrit === -2435 && c.cCrit === 2520 && c.cHit === 9990;
+  const fittedCalc = c.aPen === 19088 && c.aElem === 4850 &&
+    c.bCrit === -12574 && c.cCrit === 2624 && c.cHit === 10705;
+  return c.bPen === 0.1 && c.aCrit === 115 &&
+    (c.baseCrit === 0 || c.baseCrit === 0.05) &&
+    c.aHit === 0.95 && c.bHit === 1.43 &&
+    c.k1 === 0 && c.k2 === 1 && c.k3 === 1 &&
+    (oldCalc || fittedCalc);
+}
+
+function isLegacyJiuGuangBoss(b) {
+  if (!b) return false;
+  const oldBoss = b.def === 19935 && b.block === 3869 &&
+    b.critRes === 3848 && b.elemRes === 3868 &&
+    (b.bossRes === 0 || b.bossRes === 15400);
+  const fittedBoss = b.def === 21441 && b.block === 4163 &&
+    b.critRes === 4054 && b.elemRes === 4196 && b.bossRes === 20850;
+  return (b.name === '九光寒林' || b.name === '九光英雄外') && b.qiShield === 0 && (oldBoss || fittedBoss);
+}
+
+function migrateLegacyJiuGuangSettings() {
+  if (isLegacyJiuGuangConst(PVE_CONST)) Object.assign(PVE_CONST, DEFAULT_PVE_CONST);
+  if (isLegacyJiuGuangConst(PVP_CONST)) Object.assign(PVP_CONST, DEFAULT_PVP_CONST);
+  if (isLegacyJiuGuangBoss(PVE_BOSSES[0])) Object.assign(PVE_BOSSES[0], DEFAULT_PVE_BOSSES[0]);
+}
+
 function loadSavedSettings() {
   const saved = localStorage.getItem(`${STORAGE_KEY}_calc_settings`);
   if (!saved) return;
@@ -4030,6 +4065,7 @@ function loadSavedSettings() {
     if (d.pve) Object.assign(PVE_CONST, d.pve);
     if (d.pvp) Object.assign(PVP_CONST, d.pvp);
     if (d.pveBosses) d.pveBosses.forEach((b,i) => { if (PVE_BOSSES[i]) Object.assign(PVE_BOSSES[i], b); });
+    migrateLegacyJiuGuangSettings();
   } catch(e) {}
   renderSettingsFields();
   updatePresetButtonLabels();
