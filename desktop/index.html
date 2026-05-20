@@ -1850,6 +1850,10 @@
                   <button class="btn-secondary" id="btn_group_bodyguard">將選取玩家設為保鑣</button>
                   <button class="btn-ghost" id="btn_group_unknown">將選取玩家設為未定</button>
                   <div class="auto-role-row">
+                    <button class="btn-secondary" id="btn_auto_infer_assignments">一鍵自動分進攻防守</button>
+                    <button class="btn-danger" id="btn_reset_all_assignments">重置所有分工</button>
+                  </div>
+                  <div class="auto-role-row">
                     <span class="subtle" style="align-self:center;">進攻擊殺 &gt;</span>
                     <input id="auto_bodyguard_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
                     <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
@@ -1865,17 +1869,17 @@
                     <span class="subtle" style="align-self:center;">億</span>
                     <button class="btn-secondary" id="btn_auto_unknown_kill_defense">自動轉防守</button>
                   </div>
-                  <div class="auto-role-row">
-                    <span class="subtle" style="align-self:center;">未知擊殺 &lt;</span>
-                    <input id="auto_attack_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
-                    <span class="subtle" style="align-self:center;">且塔傷 &gt;</span>
-                    <input id="auto_attack_build_threshold_yi" type="number" min="0" step="0.1" value="2" style="width:86px; padding:7px 9px;">
-                    <span class="subtle" style="align-self:center;">億</span>
-                    <button class="btn-secondary" id="btn_auto_unknown_lowkill_attack">自動轉進攻</button>
-                  </div>
-                </div>
-                <div class="assignment-stats" id="assignment_stats"></div>
-              </div>
+	                  <div class="auto-role-row">
+	                    <span class="subtle" style="align-self:center;">未知擊殺 &lt;</span>
+	                    <input id="auto_attack_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+	                    <span class="subtle" style="align-self:center;">且塔傷 &gt;</span>
+	                    <input id="auto_attack_build_threshold_yi" type="number" min="0" step="0.1" value="2" style="width:86px; padding:7px 9px;">
+	                    <span class="subtle" style="align-self:center;">億</span>
+	                    <button class="btn-secondary" id="btn_auto_unknown_lowkill_attack">自動轉進攻</button>
+	                  </div>
+	                </div>
+	                <div class="assignment-stats" id="assignment_stats"></div>
+	              </div>
               <div class="table-wrap">
                 <table id="assignment_table">
                   <thead>
@@ -3116,6 +3120,26 @@ function percentile(players, metric, targetName, higherBetter = true) {
   const betterCount = players.filter(p => higherBetter ? (p[metric] || 0) > targetValue : (p[metric] || 0) < targetValue).length;
   const rank = 1 + betterCount;
   return Math.round(((players.length - rank) / (players.length - 1)) * 100);
+}
+
+const AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD = 10000;
+
+function inferAssignmentConfidenceByBuildDamage(buildDamage) {
+  if (buildDamage === 0 || buildDamage >= 1000000) return 'high';
+  if (Math.abs(buildDamage - AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD) >= AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD) return 'medium';
+  return 'low';
+}
+
+function inferPlayerAssignment(player) {
+  const buildDamage = Number(player.buildDamage || 0);
+  const groupType = buildDamage < AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD ? 'defense' : 'attack';
+  const confidence = inferAssignmentConfidenceByBuildDamage(buildDamage);
+  const comparator = groupType === 'defense' ? '<' : '>=';
+  return {
+    groupType,
+    confidence,
+    note: `自動推論：${GROUP_LABELS[groupType]}，${confidence}；塔傷 ${fmtNumber(buildDamage)} ${comparator} ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)}`,
+  };
 }
 
 function computeBattleReview(battle) {
@@ -7987,6 +8011,21 @@ function bulkSetGroup(groupType) {
   refreshAll();
 }
 
+function resetAllAssignments() {
+  const battle = activeBattle();
+  if (!battle) return;
+  if (!window.confirm('確定要將目前場次所有玩家分工重置為未定？')) return;
+  (battle.players || []).forEach(player => {
+    player.groupType = 'unknown';
+    player.subgroup = '';
+    player.assignmentNote = '';
+    player.assignmentConfidence = '';
+  });
+  saveState();
+  refreshAll();
+  window.alert(`已重置 ${fmtNumber((battle.players || []).length)} 位玩家分工為未定。`);
+}
+
 function autoSetPlayersByKillAndBuild(options) {
   const battle = activeBattle();
   if (!battle) return;
@@ -8061,6 +8100,39 @@ function autoSetUnknownLowKillToAttack() {
     killComparator: 'lt',
     buildComparator: 'gt',
   });
+}
+
+function autoInferUnknownAssignments() {
+  const battle = activeBattle();
+  if (!battle) return;
+  const inferredPlayers = (battle.players || []).map((player, index) => ({
+    ...derivePlayer(player),
+    autoIndex: index,
+  }));
+  const targets = inferredPlayers.filter(player => (player.groupType || 'unknown') === 'unknown');
+  if (!targets.length) {
+    window.alert('目前場次沒有未定玩家。若要重新推論，請先把要重跑的人設為未定。');
+    return;
+  }
+  const changed = [];
+  targets.forEach(player => {
+    const result = inferPlayerAssignment(player, inferredPlayers);
+    const target = battle.players[player.autoIndex];
+    if (!target) return;
+    target.groupType = result.groupType;
+    target.assignmentConfidence = result.confidence;
+    target.assignmentNote = result.note;
+    if (!target.subgroup) {
+      const confidenceLabel = { high: '高信心', medium: '中信心', low: '低信心' }[result.confidence] || '低信心';
+      target.subgroup = `自動推論-${confidenceLabel}`;
+    }
+    changed.push({ ...target, inferredGroupType: result.groupType, confidence: result.confidence });
+  });
+  if (!changed.length) return;
+  saveState();
+  refreshAll();
+  const countBy = (key, value) => changed.filter(player => player[key] === value).length;
+  window.alert(`已依塔傷門檻 ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 自動分工 ${fmtNumber(changed.length)} 位未定玩家：進攻 ${fmtNumber(countBy('inferredGroupType', 'attack'))}、防守 ${fmtNumber(countBy('inferredGroupType', 'defense'))}。信心：高 ${fmtNumber(countBy('confidence', 'high'))}、中 ${fmtNumber(countBy('confidence', 'medium'))}、低 ${fmtNumber(countBy('confidence', 'low'))}。低信心請人工複查。`);
 }
 
 async function handleParseCsv() {
@@ -8194,9 +8266,11 @@ document.getElementById('btn_group_attack').addEventListener('click', () => bulk
 document.getElementById('btn_group_defense').addEventListener('click', () => bulkSetGroup('defense'));
 document.getElementById('btn_group_bodyguard').addEventListener('click', () => bulkSetGroup('bodyguard'));
 document.getElementById('btn_group_unknown').addEventListener('click', () => bulkSetGroup('unknown'));
+document.getElementById('btn_reset_all_assignments').addEventListener('click', resetAllAssignments);
 document.getElementById('btn_auto_attack_kill_bodyguard').addEventListener('click', autoSetAttackKillersToBodyguard);
 document.getElementById('btn_auto_unknown_kill_defense').addEventListener('click', autoSetUnknownKillersToDefense);
 document.getElementById('btn_auto_unknown_lowkill_attack').addEventListener('click', autoSetUnknownLowKillToAttack);
+document.getElementById('btn_auto_infer_assignments').addEventListener('click', autoInferUnknownAssignments);
 document.getElementById('btn_alias_add').addEventListener('click', addAliasMapping);
 document.getElementById('btn_close_profession_player_radar_modal').addEventListener('click', closeProfessionPlayerRadarModal);
 document.getElementById('profession_player_radar_modal').addEventListener('click', event => {
