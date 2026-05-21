@@ -2155,6 +2155,74 @@
     margin-bottom: 2px;
     font-size: 12px;
   }
+  body.public-landscape [data-tab-panel="opponents"],
+  body.public-landscape .focus-detail-grid,
+  body.public-landscape .focus-detail-card,
+  body.public-landscape .opponent-card,
+  body.public-landscape .opponent-card-body {
+    min-width: 0;
+    max-width: 100%;
+  }
+  body.public-landscape .focus-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  body.public-landscape .focus-detail-card {
+    flex: none;
+  }
+  body.public-landscape .opponent-card summary {
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  body.public-landscape .opponent-card-body {
+    padding: 8px 10px 10px;
+  }
+  body.public-landscape .focus-detail-item {
+    margin-bottom: 6px;
+    padding: 8px;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  body.public-landscape .focus-detail-item b {
+    display: block;
+    margin-bottom: 2px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  body.public-landscape .focus-detail-metric {
+    display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  body.public-landscape #opponent_focus_cards.summary-grid,
+  body.public-landscape #team_focus_cards.summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  body.public-landscape #opponent_focus_cards .stat,
+  body.public-landscape #team_focus_cards .stat {
+    min-width: 0;
+    padding: 7px;
+  }
+  body.public-landscape #opponent_focus_cards .stat-value,
+  body.public-landscape #team_focus_cards .stat-value {
+    font-size: 13px !important;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  body.public-landscape #opponent_focus_cards .subtle,
+  body.public-landscape #team_focus_cards .subtle {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
   body.public-landscape [data-tab-panel="players"],
   body.public-landscape #player_detail_box,
   body.public-landscape #player_leaderboard_box {
