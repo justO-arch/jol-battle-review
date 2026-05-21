@@ -271,7 +271,7 @@
     min-width: 0;
   }
   .player-search-hint {
-    display: none;
+    display: block;
     margin-top: 4px;
   }
   .subtle {
@@ -2259,9 +2259,6 @@
     max-width: 100%;
     overflow: hidden;
   }
-  body.public-landscape .player-search-hint {
-    display: block;
-  }
   body.public-landscape #player_detail_box .mini-grid {
     display: flex;
     gap: 8px;
@@ -2674,7 +2671,7 @@
                     <input id="player_search" type="text" placeholder="輸入玩家名稱">
                     <button class="btn-primary" id="btn_player_search_submit" type="button">搜尋</button>
                   </div>
-                  <div class="subtle player-search-hint">手機橫版模式不會邊打字邊搜尋；輸入完成後按搜尋或 Enter。</div>
+                  <div class="subtle player-search-hint">輸入名字並調整條件後，按搜尋或 Enter 才會更新結果。</div>
                 </div>
                 <div class="field">
                   <label>己方</label>
@@ -6279,13 +6276,19 @@ function selectedProfessionBattleIds() {
   return selectedReviewBattleIds('profession_battle_select', currentProfessionReviewFilters());
 }
 
-function shouldDeferPlayerSearchInput() {
-  return isPublicLandscapeMode();
+function markPlayerSearchPending(message = '') {
+  currentPlayerLookupContext = null;
+  currentPlayerLeadersContext = null;
+  const search = document.getElementById('player_search')?.value.trim() || '';
+  renderPlayerDetail(null, message || (search ? '玩家查詢條件已變更，請按「搜尋」更新結果。' : '請輸入玩家名稱後按「搜尋」。'));
+  const box = document.getElementById('player_leaderboard_box');
+  if (box) {
+    box.innerHTML = '<div class="empty">按「搜尋」後，這裡會依目前條件更新建議覆盤場次統計。</div>';
+  }
 }
 
 function handlePlayerSearchInput() {
-  if (shouldDeferPlayerSearchInput()) return;
-  renderPlayerLookup();
+  markPlayerSearchPending();
 }
 
 function submitPlayerSearch() {
@@ -6300,6 +6303,14 @@ function handlePlayerSearchKeydown(event) {
 
 function renderPlayerLookup() {
   const search = document.getElementById('player_search').value.trim();
+  if (!search) {
+    currentPlayerLookupContext = null;
+    currentPlayerLeadersContext = null;
+    renderPlayerDetail(null, '請先輸入玩家名稱。');
+    const box = document.getElementById('player_leaderboard_box');
+    if (box) box.innerHTML = '<div class="empty">輸入玩家名稱並按「搜尋」後，這裡會顯示建議覆盤場次統計。</div>';
+    return;
+  }
   const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = currentPlayerReviewFilters();
   const battleIds = selectedPlayerBattleIds();
   const groupFilter = document.getElementById('player_group_filter')?.value || 'all';
@@ -6308,10 +6319,6 @@ function renderPlayerLookup() {
   const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => lookupPlayerRows(battleIds, key));
   renderPlayerLeaders(battleIds, { groupFilter, ownTeamFilter, opponentFilter, dateFrom, dateTo });
   currentPlayerLookupContext = null;
-  if (!search) {
-    renderPlayerDetail(null, '請先輸入玩家名稱。');
-    return;
-  }
   const rows = lookupRows.filter(item =>
     item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search))
   );
@@ -6345,7 +6352,7 @@ function selectPlayerAttendedBattles() {
   const exact = matched.find(item => item.name === search) || matched[0];
   const attendedIds = [...new Set((exact.history || []).map(entry => entry.battleId).filter(Boolean))];
   setBattleCheckboxesByIds('player_battle_select', attendedIds);
-  renderPlayerLookup();
+  markPlayerSearchPending('已勾選該玩家出席場次，請按「搜尋」更新結果。');
 }
 
 function topPlayersWithTies(rows, key, limit = 5) {
@@ -9124,7 +9131,7 @@ function refreshAll() {
   renderBattleFilterOptions('player_battle_select');
   renderBattleFilterOptions('profession_battle_select');
   renderAliasList();
-  renderPlayerLookup();
+  markPlayerSearchPending('請按「搜尋」更新玩家查詢結果。');
   renderProfessionTable();
   renderOpponentFocusOptions();
   renderTeamFocusOptions();
@@ -9581,7 +9588,7 @@ if (typeof document.addEventListener === 'function') {
 }
 function handlePlayerBattleScopeChange() {
   renderBattleFilterOptions('player_battle_select');
-  renderPlayerLookup();
+  markPlayerSearchPending();
 }
 
 function handleProfessionBattleScopeChange() {
@@ -9597,13 +9604,13 @@ function handleProfessionAnalyzeOpponentChange() {
 document.getElementById('player_search').addEventListener('input', handlePlayerSearchInput);
 document.getElementById('player_search').addEventListener('keydown', handlePlayerSearchKeydown);
 document.getElementById('btn_player_search_submit').addEventListener('click', submitPlayerSearch);
-document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
+document.getElementById('player_battle_select').addEventListener('change', () => markPlayerSearchPending());
 document.getElementById('player_own_team_filter').addEventListener('change', handlePlayerBattleScopeChange);
 document.getElementById('player_opponent_filter').addEventListener('change', handlePlayerBattleScopeChange);
 document.getElementById('player_date_from_filter').addEventListener('change', handlePlayerBattleScopeChange);
 document.getElementById('player_date_to_filter').addEventListener('change', handlePlayerBattleScopeChange);
-document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
-document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
+document.getElementById('player_group_filter').addEventListener('change', () => markPlayerSearchPending());
+document.getElementById('player_cohort_filter').addEventListener('change', () => markPlayerSearchPending());
 document.getElementById('profession_own_team_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_opponent_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_date_from_filter').addEventListener('change', handleProfessionBattleScopeChange);
@@ -9689,12 +9696,12 @@ window.addEventListener('resize', scheduleProfessionFloatingScrollbarSync);
 window.addEventListener('scroll', scheduleProfessionFloatingScrollbarSync, { passive: true });
 document.getElementById('btn_player_check_all').addEventListener('click', () => {
   setBattleCheckboxes('player_battle_select', true);
-  renderPlayerLookup();
+  markPlayerSearchPending();
 });
 document.getElementById('btn_player_check_attended').addEventListener('click', selectPlayerAttendedBattles);
 document.getElementById('btn_player_uncheck_all').addEventListener('click', () => {
   setBattleCheckboxes('player_battle_select', false);
-  renderPlayerLookup();
+  markPlayerSearchPending();
 });
 document.getElementById('btn_player_delete_checked')?.addEventListener('click', () => deleteCheckedBattles('player_battle_select'));
 document.getElementById('btn_prof_check_all').addEventListener('click', () => {
