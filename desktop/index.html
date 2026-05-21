@@ -3064,11 +3064,11 @@ function publicLatestUrl() {
   try {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.set('public', 'latest');
-    url.searchParams.set('v', String(Date.now()));
+    url.searchParams.delete('v');
     url.searchParams.delete('view');
     return `${url.pathname}${url.search}${url.hash}`;
   } catch (err) {
-    return `?public=latest&v=${Date.now()}`;
+    return '?public=latest';
   }
 }
 
@@ -3076,11 +3076,11 @@ function publicStandardViewUrl() {
   try {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.set('public', publicShareKey());
-    url.searchParams.set('v', String(Date.now()));
+    url.searchParams.delete('v');
     url.searchParams.delete('view');
     return `${url.pathname}${url.search}${url.hash}`;
   } catch (err) {
-    return `?public=${encodeURIComponent(publicShareKey())}&v=${Date.now()}`;
+    return `?public=${encodeURIComponent(publicShareKey())}`;
   }
 }
 
@@ -3089,10 +3089,10 @@ function publicLandscapeViewUrl() {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.set('public', publicShareKey());
     url.searchParams.set('view', 'landscape');
-    url.searchParams.set('v', String(Date.now()));
+    url.searchParams.delete('v');
     return `${url.pathname}${url.search}${url.hash}`;
   } catch (err) {
-    return `?public=${encodeURIComponent(publicShareKey())}&view=landscape&v=${Date.now()}`;
+    return `?public=${encodeURIComponent(publicShareKey())}&view=landscape`;
   }
 }
 
