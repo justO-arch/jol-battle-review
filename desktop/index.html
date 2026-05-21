@@ -210,13 +210,15 @@
     border-color: #e2c8b3;
   }
   .btn-secondary:hover { background: #efd9c6; }
-  #btn_view_public_mode {
+  #btn_view_public_mode,
+  #btn_back_to_personal_tool {
     background: #1d4ed8;
     color: #fff;
     border-color: #1d4ed8;
     box-shadow: 0 8px 18px rgba(29, 78, 216, 0.24);
   }
-  #btn_view_public_mode:hover {
+  #btn_view_public_mode:hover,
+  #btn_back_to_personal_tool:hover {
     background: #1e40af;
     border-color: #1e40af;
   }
@@ -9243,7 +9245,10 @@ async function bootstrapBattleReviewApp() {
     }
   }
   refreshAll();
-  if (isPublicReadOnlyMode() && publicShareUiState) {
+  if (isPublicReadOnlyMode()) {
+    // Public data should open in a predictable state instead of replaying the publisher's private filters.
+    switchTab('assignment');
+  } else if (publicShareUiState) {
     restoreUiState(publicShareUiState);
   } else {
     switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
