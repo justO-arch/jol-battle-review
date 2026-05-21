@@ -2068,10 +2068,92 @@
     padding: 6px 7px;
   }
   body.public-landscape .matchup-rosters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
   body.public-landscape .matchup-card {
     break-inside: avoid;
+  }
+  body.public-landscape [data-tab-panel="matchup"],
+  body.public-landscape #single_battle_matchup_box,
+  body.public-landscape .matchup-grid,
+  body.public-landscape .matchup-card,
+  body.public-landscape .matchup-body,
+  body.public-landscape .matchup-subsection,
+  body.public-landscape .matchup-nested-body {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  body.public-landscape .matchup-card summary {
+    padding: 8px 10px;
+  }
+  body.public-landscape .matchup-title {
+    font-size: 15px;
+    padding: 6px 8px;
+    line-height: 1.25;
+  }
+  body.public-landscape .matchup-body {
+    padding: 8px;
+    gap: 8px;
+  }
+  body.public-landscape .matchup-compare-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.public-landscape .matchup-compare-table {
+    width: 560px;
+    min-width: 560px;
+    table-layout: fixed;
+    font-size: 11px;
+  }
+  body.public-landscape .matchup-compare-table th,
+  body.public-landscape .matchup-compare-table td {
+    padding: 5px 6px;
+    white-space: nowrap;
+  }
+  body.public-landscape .matchup-compare-table col:nth-child(1) { width: 72px !important; }
+  body.public-landscape .matchup-compare-table col:nth-child(2),
+  body.public-landscape .matchup-compare-table col:nth-child(3),
+  body.public-landscape .matchup-compare-table col:nth-child(4),
+  body.public-landscape .matchup-compare-table col:nth-child(5) { width: 122px !important; }
+  body.public-landscape .matchup-roster-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.public-landscape .matchup-rosters {
+    width: 100% !important;
+    min-width: 0;
+  }
+  body.public-landscape .matchup-roster-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    flex: 1 1 auto !important;
+    padding: 8px;
+  }
+  body.public-landscape .matchup-roster-title {
+    font-size: 12px;
+    line-height: 1.35;
+    margin-bottom: 6px;
+    overflow-wrap: anywhere;
+  }
+  body.public-landscape .matchup-roster-item {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-size: 11px;
+    line-height: 1.55;
+    padding: 6px 0;
+  }
+  body.public-landscape .matchup-roster-item b {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12px;
   }
   body.public-landscape [data-tab-panel="players"],
   body.public-landscape #player_detail_box,
@@ -7716,6 +7798,7 @@ function matchupNeedsStrongMark(key, mode, myList, foeList, options = {}) {
 }
 
 function syncMatchupTableWidthToRoster() {
+  if (isPublicLandscapeMode()) return;
   const visualLeftScale = 1.1;
   document.querySelectorAll('[data-matchup-scope]').forEach(section => {
     const parentDetails = section.closest('details');
