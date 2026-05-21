@@ -109,7 +109,7 @@ function loadBattleReviewFullContext() {
   }
 
   const requiredIds = [
-    'matchup_kill_split', 'matchup_weak_pct', 'matchup_strong_pct', 'matchup_roster_bottom_pct',
+    'matchup_weak_pct', 'matchup_strong_pct', 'matchup_roster_bottom_pct',
     'single_battle_matchup_box', 'current_battle_select', 'battle_summary', 'screening_grid',
     'commander_list', 'unknown_group_list', 'priority_list', 'secondary_list', 'observation_list',
     'priority_meta', 'secondary_meta', 'observation_meta', 'battle_manual_note',
@@ -133,7 +133,6 @@ function loadBattleReviewFullContext() {
     'role_import_controls',
   ];
   requiredIds.forEach((id) => elements.set(id, makeEl(id)));
-  elements.get('matchup_kill_split').value = '5';
   elements.get('matchup_weak_pct').value = '10';
   elements.get('matchup_strong_pct').value = '10';
   elements.get('matchup_roster_bottom_pct').value = '20';
@@ -775,6 +774,42 @@ queueCase('單場對位 fallback 測試：缺少對手原始名單時顯示保�
     htmlOut.includes('目前這場沒有對手原始名單資料'),
     '缺少對手原始名單時，單場對位應顯示保護提示'
   );
+});
+
+queueCase('單場對位分組會共用對手推測分工並套用到鐵衣素問', () => {
+  const { context, elements } = loadBattleReviewFullContext();
+  const battle = {
+    id: 'matchup_group_battle',
+    date: '2026-05-21',
+    teamName: '己方',
+    opponent: '敵方',
+    result: 'win',
+    players: [
+      basePlayer({ name: '己方進攻鐵衣', job: '鐵衣', groupType: 'attack', buildDamage: 20000000, takenDamage: 30000000 }),
+      basePlayer({ name: '己方防守奶', job: '素問', groupType: 'defense', buildDamage: 0, heal: 50000000, saveCount: 10 }),
+      basePlayer({ name: '己方保鑣碎夢', job: '碎夢', groupType: 'bodyguard', buildDamage: 10000000, kill: 12 }),
+    ],
+    opponentPlayers: [
+      basePlayer({ name: '敵進攻鐵衣', job: '鐵衣', buildDamage: 20000, kill: 0, takenDamage: 32000000 }),
+      basePlayer({ name: '敵防守奶', job: '素問', buildDamage: 0, kill: 1, heal: 45000000, saveCount: 8 }),
+      basePlayer({ name: '敵保鑣碎夢', job: '碎夢', buildDamage: 20000000, kill: 6 }),
+      basePlayer({ name: '敵防守低擊殺', job: '血河', buildDamage: 0, kill: 1 }),
+    ],
+  };
+  context.__battle = battle;
+  vm.runInContext('state.battles = [__battle]; state.activeBattleId = __battle.id;', context);
+
+  assert.strictEqual(context.matchupPlayerGroupForSide(context.derivePlayer(battle.opponentPlayers[0]), 'foe'), 'attack');
+  assert.strictEqual(context.matchupPlayerGroupForSide(context.derivePlayer(battle.opponentPlayers[1]), 'foe'), 'defense');
+  assert.strictEqual(context.matchupPlayerGroupForSide(context.derivePlayer(battle.opponentPlayers[2]), 'foe'), 'defense');
+  assert.strictEqual(context.matchupPlayerGroupForSide(context.derivePlayer(battle.opponentPlayers[3]), 'foe'), 'defense');
+
+  context.renderSingleBattleMatchup();
+  const htmlOut = elements.get('single_battle_matchup_box').innerHTML;
+  assert(!htmlOut.includes('對手 DPS 分組門檻'), '單場對位不應再顯示舊的對手 DPS 分組門檻');
+  assert(htmlOut.includes('對手分工採假設性規則'), '單場對位應說明新的對手分工推測規則');
+  assert(htmlOut.includes('己方 鐵衣・進攻組'), '鐵衣應顯示進攻組分段');
+  assert(htmlOut.includes('己方 素問・防守+保鑣組'), '素問應顯示防守+保鑣組分段');
 });
 
 queueCase('CSV 解析測試：戰報分段可正確切出隊伍與玩家', () => {
