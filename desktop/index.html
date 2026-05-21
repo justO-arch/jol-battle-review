@@ -170,6 +170,13 @@
     transition: 0.18s ease;
     font-weight: 700;
   }
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
   .btn-primary {
     background: var(--accent);
     color: white;
@@ -246,16 +253,66 @@
     display: grid;
     gap: 10px;
   }
+  .import-panel {
+    border-color: #c67733;
+    box-shadow: 0 0 0 2px rgba(198,119,51,0.08), 0 18px 36px rgba(122,73,33,0.08);
+  }
+  .import-panel .panel-title {
+    background: linear-gradient(90deg, #fff4e8 0%, #fffaf4 100%);
+    align-items: flex-start;
+    color: #7f3512;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1.25;
+    padding: 18px 20px;
+  }
+  .import-panel .panel-title small {
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 6px;
+  }
+  .import-flow-box {
+    border: 2px solid #d78a43;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fffaf2 0%, #fffdf9 100%);
+    padding: 12px;
+  }
   .step {
     border: 1px solid #e0d4c6;
     border-radius: 12px;
     background: #fff9f1;
     padding: 10px 12px;
   }
+  .import-step {
+    display: grid;
+    gap: 9px;
+  }
   .step b {
     color: var(--accent);
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+  }
+  .import-step .field {
+    margin-top: 0;
+  }
+  .import-step-actions {
+    margin-top: 0;
+  }
+  .inline-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+  }
+  .inline-check input[type="checkbox"] {
+    width: auto;
+    margin-top: 3px;
+  }
+  .role-import-controls.disabled {
+    opacity: 0.55;
   }
   .checklist-box {
     border: 1px solid #ddd2c6;
@@ -537,6 +594,28 @@
   }
   .current-battle-tools .btn-danger {
     white-space: nowrap;
+  }
+  .battle-meta-editor {
+    margin: 12px 18px 0;
+    padding: 12px;
+    border: 1px solid #eadfce;
+    border-radius: 12px;
+    background: #fffaf3;
+  }
+  .battle-meta-editor[hidden] {
+    display: none;
+  }
+  .battle-meta-editor textarea {
+    min-height: 68px;
+  }
+  .alias-list-details {
+    margin-top: 10px;
+  }
+  .alias-list-details summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 800;
+    font-size: 13px;
   }
   .field-tight {
     align-self: start;
@@ -1752,67 +1831,100 @@
 
     <div class="layout">
       <div class="stack">
-        <section class="panel">
-          <div class="panel-title">場次匯入 <small>先匯入戰報，再加入場次庫</small></div>
+        <section class="panel import-panel">
+          <div class="panel-title">從這裡開始新增場次 <small>依序選檔、讀取、確認、加入</small></div>
           <div class="panel-body">
-            <div class="steps" style="margin-bottom:12px;">
-              <div class="step"><b>步驟 1：匯入戰報 CSV</b><span class="subtle">先讀取單場戰報，確認己方區段、日期、對手與結果。</span></div>
-              <div class="step"><b>步驟 2：匯入分工 CSV</b><span class="subtle">分工 CSV 決定進攻 / 防守 / 保鑣與特殊職責；沒套分工前，覆盤結果不可靠。</span></div>
-              <div class="step"><b>步驟 3：加入場次</b><span class="subtle">正常流程只要按這個。加入場次時，系統會自動把目前已讀取的分工 CSV 套進新場次。</span></div>
-              <div class="step"><b>補救流程：重新套用分工</b><span class="subtle">平常不用按。只有你先前已加入戰報、但後來才補讀分工 CSV，或想用新版分工表重套目前場次時才需要。</span></div>
-              <div class="step"><b>步驟 4：切到右側分頁看結果</b><span class="subtle">右側分成分工、單場覆盤、玩家查詢、職業表現、判讀說明五個分頁。</span></div>
-            </div>
-            <div class="field">
-              <label>戰報 CSV</label>
-              <input id="csv_file" type="file" accept=".csv,text/csv">
-            </div>
-            <div class="field" style="margin-top:12px;">
-              <label>分工 CSV</label>
-              <input id="role_csv_file" type="file" accept=".csv,text/csv">
-            </div>
-            <div class="grid-2" style="margin-top:12px;">
-              <div class="field">
-                <label>戰報區段</label>
-                <select id="import_section"></select>
+            <div class="import-flow-box">
+              <div class="steps">
+                <div class="step import-step">
+                  <div>
+                    <b>步驟 1：匯入戰報 CSV</b>
+                    <span class="subtle">先選擇單場戰報檔案。</span>
+                  </div>
+                  <div class="field">
+                    <label>戰報 CSV</label>
+                    <input id="csv_file" type="file" accept=".csv,text/csv">
+                  </div>
+                </div>
+
+                <div class="step import-step">
+                  <div>
+                    <b>步驟 2：匯入分工 CSV</b>
+                    <span class="subtle">有分工表就讀取分工；沒有分工表就勾選自動推測。</span>
+                  </div>
+                  <label class="inline-check">
+                    <input id="import_auto_assign_without_roles" type="checkbox">
+                    若無分工表請打勾，加入場次時自動推測分工
+                  </label>
+                  <div id="role_import_controls" class="role-import-controls">
+                    <div class="field">
+                      <label>分工 CSV</label>
+                      <input id="role_csv_file" type="file" accept=".csv,text/csv">
+                    </div>
+                    <div class="inline-actions import-step-actions">
+                      <button class="btn-primary" id="btn_parse_role_csv">讀取分工</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step import-step">
+                  <div>
+                    <b>步驟 3：讀取戰報並確認資料</b>
+                    <span class="subtle">讀取後可修正區段、日期、對手、己方名稱、勝敗與備註。</span>
+                  </div>
+                  <div class="inline-actions import-step-actions">
+                    <button class="btn-primary" id="btn_parse_csv">讀取戰報</button>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field">
+                      <label>戰報區段</label>
+                      <select id="import_section"></select>
+                    </div>
+                    <div class="field">
+                      <label>結果</label>
+                      <select id="import_result">
+                        <option value="unknown">未標記</option>
+                        <option value="win">勝</option>
+                        <option value="loss">敗</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field">
+                      <label>日期</label>
+                      <input id="import_date" type="date">
+                    </div>
+                    <div class="field">
+                      <label>對手</label>
+                      <select id="import_opponent">
+                        <option value="">請先讀取戰報</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>己方名稱</label>
+                    <select id="import_team_name">
+                      <option value="">請先讀取戰報</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>備註</label>
+                    <textarea id="import_note" placeholder="例如：0418 幫戰、分工按圖片手動指定"></textarea>
+                  </div>
+                </div>
+
+                <div class="step import-step">
+                  <div>
+                    <b>步驟 4：加入場次</b>
+                    <span class="subtle">加入後可到右側分頁查看分工、單場覆盤、玩家查詢與職業表現。</span>
+                  </div>
+                  <div class="inline-actions import-step-actions">
+                    <button class="btn-primary" id="btn_add_battle">加入場次</button>
+                  </div>
+                </div>
               </div>
-              <div class="field">
-                <label>結果</label>
-                <select id="import_result">
-                  <option value="unknown">未標記</option>
-                  <option value="win">勝</option>
-                  <option value="loss">敗</option>
-                </select>
-              </div>
+              <div class="note-box" id="import_note_box">尚未讀取戰報 CSV。</div>
             </div>
-            <div class="grid-2" style="margin-top:12px;">
-              <div class="field">
-                <label>日期</label>
-                <input id="import_date" type="date">
-              </div>
-              <div class="field">
-                <label>對手</label>
-                <select id="import_opponent">
-                  <option value="">請先讀取戰報</option>
-                </select>
-              </div>
-            </div>
-            <div class="field" style="margin-top:12px;">
-              <label>己方名稱</label>
-              <select id="import_team_name">
-                <option value="">請先讀取戰報</option>
-              </select>
-            </div>
-            <div class="field" style="margin-top:12px;">
-              <label>備註</label>
-              <textarea id="import_note" placeholder="例如：0418 幫戰、分工按圖片手動指定"></textarea>
-            </div>
-            <div class="inline-actions">
-              <button class="btn-primary" id="btn_parse_csv">讀取戰報</button>
-              <button class="btn-secondary" id="btn_parse_role_csv">讀取分工</button>
-              <button class="btn-secondary" id="btn_add_battle">加入場次</button>
-              <button class="btn-ghost" id="btn_apply_roles">重新套用分工（平常不用按，事後才補分工表才要按）</button>
-            </div>
-            <div class="note-box" id="import_note_box">尚未讀取戰報 CSV。</div>
           </div>
         </section>
 
@@ -1835,9 +1947,11 @@
               <select id="current_battle_select">
                 <option value="">尚未加入場次</option>
               </select>
+              <button class="btn-secondary" id="btn_toggle_battle_meta_editor" type="button">編輯場次資訊</button>
               <button class="btn-danger" id="btn_delete_current_battle">刪除目前場次</button>
             </div>
           </div>
+          <div id="battle_meta_editor" class="battle-meta-editor" hidden></div>
           <div class="panel-body">
             <div class="tab-panel active" data-tab-panel="assignment">
               <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮；輸入 lag 則不列入自動覆盤觀察名單）</span></div>
@@ -1982,7 +2096,10 @@
                   </div>
                 </div>
                 <div style="height:10px;"></div>
-                <div id="alias_list" class="note-box">尚未設定別名合併。</div>
+                <details class="alias-list-details">
+                  <summary>已設定別名合併 <span id="alias_list_count">0 筆</span></summary>
+                  <div id="alias_list" class="note-box">尚未設定別名合併。</div>
+                </details>
               </div>
               <div class="grid-4">
                 <div class="field">
@@ -2078,6 +2195,13 @@
                 <div class="field">
                   <label>日期迄</label>
                   <input id="profession_date_to_filter" type="date">
+                </div>
+                <div class="field">
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;color:var(--accent);">
+                    <input id="profession_analyze_opponent" type="checkbox" style="width:auto;">
+                    分析對手
+                  </label>
+                  <div style="margin-top:4px;color:var(--danger);font-size:12px;font-weight:800;line-height:1.5;">對手的分工是用塔傷和擊殺做推測可能非真實分工</div>
                 </div>
                 <div class="field">
                   <label>職業</label>
@@ -2415,6 +2539,7 @@ let dpsProfessionTableSort = { field: 'avgBuildDamage', order: 'desc' };
 let currentPlayerLookupContext = null;
 let currentPlayerLeadersContext = null;
 let batchExportRunState = null;
+let battleMetaEditorOpen = false;
 
 function defaultBatchExportConfig() {
   return {
@@ -2483,6 +2608,7 @@ function collectUiState() {
     professionOpponentFilter: document.getElementById('profession_opponent_filter')?.value || 'all',
     professionDateFromFilter: document.getElementById('profession_date_from_filter')?.value || '',
     professionDateToFilter: document.getElementById('profession_date_to_filter')?.value || '',
+    professionAnalyzeOpponent: !!document.getElementById('profession_analyze_opponent')?.checked,
     professionJob: document.getElementById('profession_job_filter')?.value || 'all',
     professionGroup: document.getElementById('profession_group_filter')?.value || 'all',
     professionMinBattles: document.getElementById('profession_min_battles')?.value || '1',
@@ -2517,6 +2643,7 @@ function restoreUiState(uiState = {}) {
   if (document.getElementById('profession_opponent_filter')) document.getElementById('profession_opponent_filter').value = uiState.professionOpponentFilter || 'all';
   if (document.getElementById('profession_date_from_filter')) document.getElementById('profession_date_from_filter').value = uiState.professionDateFromFilter || '';
   if (document.getElementById('profession_date_to_filter')) document.getElementById('profession_date_to_filter').value = uiState.professionDateToFilter || '';
+  if (document.getElementById('profession_analyze_opponent')) document.getElementById('profession_analyze_opponent').checked = !!uiState.professionAnalyzeOpponent;
   if (document.getElementById('profession_job_filter')) document.getElementById('profession_job_filter').value = uiState.professionJob || 'all';
   if (document.getElementById('profession_group_filter')) document.getElementById('profession_group_filter').value = uiState.professionGroup || 'all';
   if (document.getElementById('profession_min_battles')) document.getElementById('profession_min_battles').value = uiState.professionMinBattles || '1';
@@ -2865,6 +2992,16 @@ function applyRoleRowsToBattle(battle, roleRows) {
     unmatchedRoles: roleRows.filter(row => !battle.players.some(player => player.name === row.name)).length,
     battleOnly: battle.players.filter(player => !roleMap.has(player.name)).length,
   };
+}
+
+function applyInferredProfessionAssignmentsToBattle(battle) {
+  const counts = { attack: 0, defense: 0, bodyguard: 0 };
+  (battle?.players || []).forEach(player => {
+    const groupType = inferAutoProfessionGroupType(player);
+    player.groupType = groupType;
+    counts[groupType] = (counts[groupType] || 0) + 1;
+  });
+  return counts;
 }
 
 function activeBattle() {
@@ -3448,7 +3585,143 @@ function aggregatePlayers(battleIds = null) {
     avgBurn: item.burnCount / item.battles,
     avgSave: item.saveCount / item.battles,
     winRate: item.battles ? item.wins / item.battles : 0,
+	  })).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+}
+
+function isProfessionOpponentMode() {
+  return !!document.getElementById('profession_analyze_opponent')?.checked;
+}
+
+function inferAutoProfessionGroupType(player) {
+  const buildDamage = Number(player?.buildDamage || 0);
+  const kill = Number(player?.kill || 0);
+  const initialGroup = buildDamage >= AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD ? 'attack' : 'defense';
+  if (initialGroup === 'attack' && buildDamage < 50000000 && kill > 5) return 'bodyguard';
+  return initialGroup;
+}
+
+function inferOpponentProfessionGroupType(player) {
+  return inferAutoProfessionGroupType(player);
+}
+
+function opponentPerspectiveResult(result) {
+  if (result === 'win') return 'loss';
+  if (result === 'loss') return 'win';
+  return result || 'unknown';
+}
+
+function deriveOpponentProfessionPlayer(player) {
+  return derivePlayer({
+    ...player,
+    groupType: inferOpponentProfessionGroupType(player),
+    subgroup: player.subgroup || '',
+    specialRoles: Array.isArray(player.specialRoles) ? player.specialRoles : [],
+  });
+}
+
+function professionSourcePlayersForBattle(battle) {
+  if (!isProfessionOpponentMode()) return (battle?.players || []).map(derivePlayer);
+  return (battle?.opponentPlayers || []).map(deriveOpponentProfessionPlayer);
+}
+
+function aggregateOpponentProfessionPlayers(battleIds = null) {
+  const bucket = new Map();
+  const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
+  battles.forEach(battle => {
+    (battle.opponentPlayers || []).map(deriveOpponentProfessionPlayer).forEach(player => {
+      const key = player.name;
+      if (!bucket.has(key)) {
+        bucket.set(key, {
+          name: key,
+          job: player.job,
+          aliasNames: new Set(),
+          battles: 0,
+          wins: 0,
+          losses: 0,
+          attackCount: 0,
+          defenseCount: 0,
+          bodyguardCount: 0,
+          kill: 0,
+          assist: 0,
+          death: 0,
+          pvpDamage: 0,
+          buildDamage: 0,
+          heal: 0,
+          takenDamage: 0,
+          takenPerDeathSum: 0,
+          saveCount: 0,
+          burnCount: 0,
+          netHeal: 0,
+          hitCount: 0,
+          highDeathCount: 0,
+          intersectionCount: 0,
+          priorityCount: 0,
+          secondaryCount: 0,
+          observationCount: 0,
+          history: [],
+        });
+      }
+      const item = bucket.get(key);
+      item.aliasNames.add(player.name);
+      if (!item.job && player.job) item.job = player.job;
+      item.battles += 1;
+      const result = opponentPerspectiveResult(battle.result);
+      if (result === 'win') item.wins += 1;
+      if (result === 'loss') item.losses += 1;
+      if (player.groupType === 'attack') item.attackCount += 1;
+      if (player.groupType === 'defense') item.defenseCount += 1;
+      if (player.groupType === 'bodyguard') item.bodyguardCount += 1;
+      ['kill', 'assist', 'death', 'pvpDamage', 'buildDamage', 'heal', 'takenDamage', 'saveCount', 'burnCount', 'netHeal'].forEach(key2 => {
+        item[key2] += Number(player[key2] || 0);
+      });
+      item.takenPerDeathSum += Number(player.takenPerDeath || 0);
+      item.history.push({
+        battleId: battle.id,
+        date: battle.date,
+        opponent: battle.teamName,
+        result,
+        rawName: player.name,
+        groupType: player.groupType,
+        subgroup: player.subgroup,
+        hits: [],
+        summary: '',
+        raw: { ...player, level: '', hits: [] },
+      });
+    });
+  });
+  return [...bucket.values()].map(item => ({
+    ...item,
+    aliasNames: [...item.aliasNames].sort((a, b) => a.localeCompare(b, 'zh-Hant')),
+    avgKill: item.kill / item.battles,
+    avgAssist: item.assist / item.battles,
+    avgDeath: item.death / item.battles,
+    avgKillPerDeath: item.kill / Math.max(item.death, 1),
+    avgPvpDamage: item.pvpDamage / item.battles,
+    avgPvpPerKill: item.kill > 0 ? item.pvpDamage / item.kill : Infinity,
+    avgBuildDamage: item.buildDamage / item.battles,
+    avgHeal: item.heal / item.battles,
+    avgTakenDamage: item.takenDamage / item.battles,
+    avgTakenPerDeath: item.takenDamage / Math.max(item.death, 1),
+    avgNetHeal: item.netHeal / item.battles,
+    avgBurn: item.burnCount / item.battles,
+    avgSave: item.saveCount / item.battles,
+    winRate: item.battles ? item.wins / item.battles : 0,
   })).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+}
+
+function aggregateProfessionPlayers(battleIds = null) {
+  return isProfessionOpponentMode() ? aggregateOpponentProfessionPlayers(battleIds) : aggregatePlayers(battleIds);
+}
+
+function professionLookupRows(battleIds, groupFilter = 'all') {
+  return aggregateProfessionPlayers(battleIds)
+    .map(item => {
+      const history = item.history.filter(entry => historyMatchesPlayerGroupFilter(groupFilter, entry.groupType));
+      if (!history.length) return null;
+      return summarizeLookupHistory(item, history, groupFilter);
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 }
 
 function historyMatchesPlayerGroupFilter(filterKey, groupType) {
@@ -4298,7 +4571,7 @@ function professionRows() {
   const sortField = professionTableSort.field || 'reviewSuggestCount';
   const sortOrder = professionTableSort.order || 'desc';
   const battleIds = selectedProfessionBattleIds();
-  return aggregatePlayers(battleIds)
+  return aggregateProfessionPlayers(battleIds)
     .filter(item => {
       if (!job || job === 'all') return true;
       if (job === 'non_suwen') return item.job !== '素問';
@@ -4389,7 +4662,7 @@ function dpsProfessionAverageRows(sortConfig = dpsProfessionTableSort) {
     takenDamage: 0,
   }]));
   battles.forEach(battle => {
-    (battle.players || []).map(derivePlayer).forEach(player => {
+    professionSourcePlayersForBattle(battle).forEach(player => {
       if (!DPS_COMPARE_JOBS.includes(player.job)) return;
       if (!historyMatchesPlayerGroupFilter(groupType, player.groupType || 'unknown')) return;
       const bucket = buckets.get(player.job);
@@ -4459,7 +4732,7 @@ function professionAverageSummaryRow(targetJob) {
     saveCount: 0,
   };
   battles.forEach(battle => {
-    (battle.players || []).map(derivePlayer).forEach(player => {
+    professionSourcePlayersForBattle(battle).forEach(player => {
       if (player.job !== targetJob) return;
       if (!historyMatchesPlayerGroupFilter(groupType, player.groupType || 'unknown')) return;
       bucket.entries += 1;
@@ -4558,7 +4831,7 @@ function professionQuadrantMetricValue(job, chartKey, row, metricMode = 'default
 function professionQuadrantPointRows(job) {
   const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
   const battleIds = selectedProfessionBattleIds();
-  return aggregatePlayers(battleIds)
+  return aggregateProfessionPlayers(battleIds)
     .filter(item => item.job === job)
     .flatMap(item => {
       const histories = {
@@ -4741,6 +5014,78 @@ function renderCurrentBattleSelect() {
     return `<option value="${escHtml(battle.id)}">${escHtml(label)}</option>`;
   }).join('');
   select.value = state.activeBattleId || state.battles[0].id;
+}
+
+function renderBattleMetaEditor() {
+  const box = document.getElementById('battle_meta_editor');
+  const button = document.getElementById('btn_toggle_battle_meta_editor');
+  if (!box) return;
+  const battle = activeBattle();
+  if (button) {
+    button.disabled = !battle;
+    button.textContent = battleMetaEditorOpen ? '收合場次資訊' : '編輯場次資訊';
+  }
+  const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment';
+  const showWithCurrentBattleTools = ['assignment', 'review', 'matchup'].includes(activeTab);
+  if (!battle || !battleMetaEditorOpen || !showWithCurrentBattleTools) {
+    box.hidden = true;
+    box.innerHTML = '';
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML = `
+    <div class="grid-3">
+      <div class="field">
+        <label>日期</label>
+        <input type="date" value="${escHtml(battle.date || '')}" onchange="updateBattleMetadata('date', this.value)">
+      </div>
+      <div class="field">
+        <label>場次標記</label>
+        <input type="text" value="${escHtml(battle.sourceLabel || '')}" onchange="updateBattleMetadata('sourceLabel', this.value)" placeholder="例如：20260418 第一場">
+      </div>
+      <div class="field">
+        <label>勝敗</label>
+        <select onchange="updateBattleMetadata('result', this.value)">
+          <option value="unknown" ${(battle.result || 'unknown') === 'unknown' ? 'selected' : ''}>未標記</option>
+          <option value="win" ${battle.result === 'win' ? 'selected' : ''}>勝</option>
+          <option value="loss" ${battle.result === 'loss' ? 'selected' : ''}>敗</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field">
+        <label>己方名稱</label>
+        <input type="text" value="${escHtml(battle.teamName || '')}" onchange="updateBattleMetadata('teamName', this.value)">
+      </div>
+      <div class="field">
+        <label>對手名稱</label>
+        <input type="text" value="${escHtml(battle.opponent || '')}" onchange="updateBattleMetadata('opponent', this.value)">
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px;">
+      <label>備註</label>
+      <textarea onchange="updateBattleMetadata('note', this.value)" placeholder="例如：0418 幫戰、分工按圖片手動指定">${escHtml(battle.note || '')}</textarea>
+    </div>
+  `;
+}
+
+function toggleBattleMetaEditor() {
+  battleMetaEditorOpen = !battleMetaEditorOpen;
+  renderBattleMetaEditor();
+}
+
+function updateBattleMetadata(field, value) {
+  const battle = activeBattle();
+  if (!battle) return;
+  const allowed = new Set(['date', 'sourceLabel', 'teamName', 'opponent', 'result', 'note']);
+  if (!allowed.has(field)) return;
+  if (field === 'result') {
+    battle.result = ['unknown', 'win', 'loss'].includes(value) ? value : 'unknown';
+  } else {
+    battle[field] = String(value || '').trim();
+  }
+  saveState();
+  refreshAll();
 }
 
 function renderAssignmentTable() {
@@ -5030,6 +5375,7 @@ function currentProfessionReviewFilters() {
     opponentFilter: document.getElementById('profession_opponent_filter')?.value || 'all',
     dateFrom: document.getElementById('profession_date_from_filter')?.value || '',
     dateTo: document.getElementById('profession_date_to_filter')?.value || '',
+    analyzeOpponent: isProfessionOpponentMode(),
   };
 }
 
@@ -5397,7 +5743,8 @@ function openProfessionPlayerRadarModal(playerName) {
   const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = currentProfessionReviewFilters();
   const groupFilter = document.getElementById('profession_group_filter')?.value || 'all';
   const battleIds = selectedProfessionBattleIds();
-  const rows = lookupPlayerRows(battleIds, groupFilter);
+  const rows = professionLookupRows(battleIds, groupFilter);
+  const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => professionLookupRows(battleIds, key));
   const player = rows.find(item => item.name === playerName);
   if (!player) {
     window.alert('找不到該玩家目前可用的統計資料。');
@@ -5411,6 +5758,7 @@ function openProfessionPlayerRadarModal(playerName) {
     groupFilter,
     cohortFilter: 'same_job',
     allRows: rows,
+    roleRows,
     battleIds,
   });
   const overlay = document.getElementById('profession_player_radar_modal');
@@ -5604,7 +5952,7 @@ function exportDateStamp() {
 }
 
 function currentProfessionExportContext() {
-  const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = currentProfessionReviewFilters();
+  const { ownTeamFilter, opponentFilter, dateFrom, dateTo, analyzeOpponent } = currentProfessionReviewFilters();
   const job = document.getElementById('profession_job_filter')?.value || 'all';
   const groupType = document.getElementById('profession_group_filter')?.value || 'all';
   const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
@@ -5616,6 +5964,7 @@ function currentProfessionExportContext() {
     opponentFilter,
     dateFrom,
     dateTo,
+    analyzeOpponent,
     job,
     groupType,
     minBattles,
@@ -5955,6 +6304,7 @@ function renderProfessionExportSheet(context) {
           <div class="mini-grid">
             <div class="mini-stat">己方<b>${escHtml(OWN_TEAM_FILTER_LABELS[context.ownTeamFilter] || '全部')}</b></div>
             <div class="mini-stat">對手<b>${escHtml(opponentFilterLabel(context.opponentFilter))}</b></div>
+            <div class="mini-stat">分析對象<b>${context.analyzeOpponent ? '對手' : '己方'}</b></div>
             <div class="mini-stat">日期<b>${escHtml(dateRangeFilterLabel(context.dateFrom, context.dateTo))}</b></div>
             <div class="mini-stat">職業<b>${escHtml(jobLabel)}</b></div>
             <div class="mini-stat">團別<b>${escHtml(groupLabel)}</b></div>
@@ -7515,7 +7865,7 @@ function renderTeamFocus() {
 }
 
 function refreshJobFilterOptions() {
-  const jobs = [...new Set(aggregatePlayers().map(item => item.job))].sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
+  const jobs = [...new Set(aggregateProfessionPlayers().map(item => item.job))].sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
   const select = document.getElementById('profession_job_filter');
   const currentValue = select.value || 'all';
   select.innerHTML = '<option value="all">全部職業</option><option value="non_suwen">素問外所有職業</option>' + jobs.map(job => `<option value="${escHtml(job)}">${escHtml(job)}</option>`).join('');
@@ -7595,8 +7945,10 @@ function deleteCheckedBattles(selectId) {
 
 function renderAliasList() {
   const box = document.getElementById('alias_list');
+  const countEl = document.getElementById('alias_list_count');
   if (!box) return;
   const entries = Object.entries(state.aliasMap || {}).sort((a, b) => a[0].localeCompare(b[0], 'zh-Hant'));
+  if (countEl) countEl.textContent = `${fmtNumber(entries.length)} 筆`;
   if (!entries.length) {
     box.innerHTML = '尚未設定別名合併。';
     return;
@@ -7908,6 +8260,7 @@ function renderBattleManualNote() {
 function refreshAll() {
   renderImportSections();
   renderCurrentBattleSelect();
+  renderBattleMetaEditor();
   renderAssignmentTable();
   const review = computeBattleReview(activeBattle());
   renderBattleSummary(review);
@@ -7945,6 +8298,7 @@ function switchTab(tab) {
     tools.hidden = !show;
     tools.style.display = show ? 'flex' : 'none';
   }
+  renderBattleMetaEditor();
   if (tab === 'profession') {
     requestAnimationFrame(() => {
       syncProfessionScrollbars();
@@ -8135,11 +8489,17 @@ function autoInferUnknownAssignments() {
   window.alert(`已依塔傷門檻 ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 自動分工 ${fmtNumber(changed.length)} 位未定玩家：進攻 ${fmtNumber(countBy('inferredGroupType', 'attack'))}、防守 ${fmtNumber(countBy('inferredGroupType', 'defense'))}。信心：高 ${fmtNumber(countBy('confidence', 'high'))}、中 ${fmtNumber(countBy('confidence', 'medium'))}、低 ${fmtNumber(countBy('confidence', 'low'))}。低信心請人工複查。`);
 }
 
+function showImportBlockingMessage(message) {
+  const noteBox = document.getElementById('import_note_box');
+  if (noteBox) noteBox.textContent = message;
+  window.alert(message);
+}
+
 async function handleParseCsv() {
   const input = document.getElementById('csv_file');
   const noteBox = document.getElementById('import_note_box');
   if (!input.files?.length) {
-    noteBox.textContent = '請先選擇戰報 CSV。';
+    showImportBlockingMessage('請先選擇戰報 CSV。');
     return;
   }
   importedBattleFileLabel = extractBattleFileLabel(input.files[0].name || '');
@@ -8147,13 +8507,16 @@ async function handleParseCsv() {
   importedSections = parseCsvSections(text);
   renderImportSections();
   if (!importedSections.length) {
-    noteBox.textContent = '讀不到有效戰報區段。';
+    showImportBlockingMessage('讀不到有效戰報區段。');
     return;
   }
   const first = importedSections[0];
   document.getElementById('import_section').value = '0';
   syncTeamOpponentFromSection();
-  noteBox.textContent = `已讀取 ${importedSections.length} 個戰報區段；目前預設 ${first.teamName}（${first.players.length} 人）${importedBattleFileLabel ? `；場次標記 ${importedBattleFileLabel}` : ''}。${importedRoleRows.length ? ` 已載入分工 ${importedRoleRows.length} 筆。` : ''}`;
+  const roleStatus = useInferredImportAssignments()
+    ? ' 已設定為無分工表，加入場次時會自動推測分工。'
+    : (importedRoleRows.length ? ` 已載入分工 ${importedRoleRows.length} 筆。` : '');
+  noteBox.textContent = `已讀取 ${importedSections.length} 個戰報區段；目前預設 ${first.teamName}（${first.players.length} 人）${importedBattleFileLabel ? `；場次標記 ${importedBattleFileLabel}` : ''}。${roleStatus}`;
 }
 
 async function readBattleCsvFile(file) {
@@ -8173,17 +8536,45 @@ function looksLikeBattleCsvText(text) {
   return text.includes('玩家名字') && parseCsvSections(text).length > 0;
 }
 
+function useInferredImportAssignments() {
+  return !!document.getElementById('import_auto_assign_without_roles')?.checked;
+}
+
+function updateRoleImportControls() {
+  const disabled = useInferredImportAssignments();
+  const roleInput = document.getElementById('role_csv_file');
+  const roleButton = document.getElementById('btn_parse_role_csv');
+  const controls = document.getElementById('role_import_controls');
+  if (roleInput) roleInput.disabled = disabled;
+  if (roleButton) roleButton.disabled = disabled;
+  controls?.classList.toggle('disabled', disabled);
+}
+
+function handleImportAutoAssignToggle() {
+  if (useInferredImportAssignments()) {
+    importedRoleRows = [];
+    const roleInput = document.getElementById('role_csv_file');
+    if (roleInput) roleInput.value = '';
+    document.getElementById('import_note_box').textContent = '已設定為無分工表，加入場次時會自動推測分工。';
+  }
+  updateRoleImportControls();
+}
+
 async function handleParseRoleCsv() {
   const input = document.getElementById('role_csv_file');
   const noteBox = document.getElementById('import_note_box');
+  if (useInferredImportAssignments()) {
+    showImportBlockingMessage('已勾選無分工表，分工 CSV 不會使用。');
+    return;
+  }
   if (!input.files?.length) {
-    noteBox.textContent = '請先選擇分工 CSV。';
+    showImportBlockingMessage('請先選擇分工 CSV。');
     return;
   }
   const text = await input.files[0].text();
   importedRoleRows = parseRoleCsv(text);
   if (!importedRoleRows.length) {
-    noteBox.textContent = '讀不到有效分工資料。';
+    showImportBlockingMessage('讀不到有效分工資料。');
     return;
   }
   const unknownCount = importedRoleRows.filter(row => row.groupType === 'unknown').length;
@@ -8194,11 +8585,11 @@ function handleApplyRolesToActiveBattle() {
   const battle = activeBattle();
   const noteBox = document.getElementById('import_note_box');
   if (!battle) {
-    noteBox.textContent = '請先選取場次。';
+    showImportBlockingMessage('請先選取場次。');
     return;
   }
   if (!importedRoleRows.length) {
-    noteBox.textContent = '請先讀取分工 CSV。';
+    showImportBlockingMessage('請先讀取分工 CSV。');
     return;
   }
   const result = applyRoleRowsToBattle(battle, importedRoleRows);
@@ -8208,8 +8599,14 @@ function handleApplyRolesToActiveBattle() {
 }
 
 function handleAddBattle() {
+  const noteBox = document.getElementById('import_note_box');
   if (!importedSections.length) {
-    document.getElementById('import_note_box').textContent = '請先讀取 CSV。';
+    showImportBlockingMessage('請先讀取 CSV。');
+    return;
+  }
+  const useInferredAssignments = useInferredImportAssignments();
+  if (!useInferredAssignments && !importedRoleRows.length) {
+    showImportBlockingMessage('請先讀取分工 CSV，或勾選「若無分工表請打勾」。');
     return;
   }
   const sectionIndex = Number(document.getElementById('import_section').value || 0);
@@ -8229,18 +8626,26 @@ function handleAddBattle() {
     opponentPlayers: opponentSection ? opponentSection.players.map(player => ({ ...player })) : [],
     opponentSummary: opponentSection ? summarizePlayers(opponentSection.players) : null,
   };
-  const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
+  let resultText = '';
+  if (useInferredAssignments) {
+    const counts = applyInferredProfessionAssignmentsToBattle(battle);
+    resultText = ` 已自動推測分工：進攻 ${fmtNumber(counts.attack || 0)} 人，防守 ${fmtNumber(counts.defense || 0)} 人，保鑣 ${fmtNumber(counts.bodyguard || 0)} 人。`;
+  } else {
+    const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
+    resultText = ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。`;
+  }
   state.battles.unshift(battle);
   state.activeBattleId = battle.id;
   saveState();
   refreshAll();
-  document.getElementById('import_note_box').textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${importedRoleRows.length ? ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。` : ' 目前尚未套入分工 CSV。'}`;
+  noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText}`;
 }
 
 document.getElementById('btn_parse_csv').addEventListener('click', handleParseCsv);
 document.getElementById('btn_parse_role_csv').addEventListener('click', handleParseRoleCsv);
 document.getElementById('btn_add_battle').addEventListener('click', handleAddBattle);
-document.getElementById('btn_apply_roles').addEventListener('click', handleApplyRolesToActiveBattle);
+document.getElementById('import_auto_assign_without_roles').addEventListener('change', handleImportAutoAssignToggle);
+document.getElementById('btn_apply_roles')?.addEventListener('click', handleApplyRolesToActiveBattle);
 document.getElementById('btn_export_snapshot').addEventListener('click', exportReviewSnapshot);
 document.getElementById('btn_import_snapshot').addEventListener('click', () => {
   document.getElementById('snapshot_file').click();
@@ -8298,6 +8703,11 @@ function handleProfessionBattleScopeChange() {
   renderProfessionTable();
 }
 
+function handleProfessionAnalyzeOpponentChange() {
+  refreshJobFilterOptions();
+  renderProfessionTable();
+}
+
 document.getElementById('player_search').addEventListener('input', renderPlayerLookup);
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_own_team_filter').addEventListener('change', handlePlayerBattleScopeChange);
@@ -8310,6 +8720,7 @@ document.getElementById('profession_own_team_filter').addEventListener('change',
 document.getElementById('profession_opponent_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_date_from_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_date_to_filter').addEventListener('change', handleProfessionBattleScopeChange);
+document.getElementById('profession_analyze_opponent').addEventListener('change', handleProfessionAnalyzeOpponentChange);
 document.getElementById('profession_job_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_group_filter').addEventListener('change', renderProfessionTable);
 document.getElementById('profession_min_battles').addEventListener('input', renderProfessionTable);
@@ -8420,6 +8831,7 @@ document.getElementById('death_pct').addEventListener('input', event => {
 document.getElementById('import_section').addEventListener('change', syncTeamOpponentFromSection);
 document.getElementById('import_team_name').addEventListener('change', syncSectionFromTeam);
 document.getElementById('current_battle_select').addEventListener('change', event => setActiveBattle(event.target.value));
+document.getElementById('btn_toggle_battle_meta_editor').addEventListener('click', toggleBattleMetaEditor);
 document.getElementById('btn_delete_current_battle').addEventListener('click', () => {
   const battle = activeBattle();
   if (battle) deleteBattle(battle.id);
@@ -8435,6 +8847,7 @@ document.getElementById('battle_manual_note').addEventListener('input', event =>
   saveState();
 });
 
+updateRoleImportControls();
 refreshAll();
 switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
 </script>
