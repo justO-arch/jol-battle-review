@@ -80,6 +80,7 @@ function loadBattleReviewFullContext() {
       textContent: '',
       value: '',
       checked: false,
+      disabled: false,
       style: {},
       dataset: {},
       className: '',
@@ -116,25 +117,35 @@ function loadBattleReviewFullContext() {
     'opponent_focus_cards', 'team_focus_cards', 'opponent_top_build', 'opponent_top_pvp',
     'opponent_top_kill', 'opponent_top_iron', 'opponent_top_healer', 'team_top_build',
     'team_top_pvp', 'team_top_kill', 'team_top_iron', 'team_top_healer',
-    'profession_sort_field', 'profession_sort_order', 'profession_min_battles',
+    'profession_min_battles',
     'btn_export_profession_pdf', 'btn_export_focus_pdf', 'btn_group_defense', 'btn_group_bodyguard',
+    'btn_auto_infer_assignments', 'btn_reset_all_assignments',
     'btn_select_all_players', 'btn_clear_all_players', 'btn_apply_roles_to_current',
     'btn_add_battle', 'btn_import_snapshot', 'btn_export_snapshot', 'profession_group_filter',
     'player_group_filter', 'btn_player_select_all', 'btn_player_select_none',
     'btn_player_delete_checked', 'btn_prof_select_all', 'btn_prof_select_none',
     'btn_prof_delete_checked', 'btn_delete_current_battle', 'import_section', 'import_result',
+    'player_opponent_filter', 'profession_opponent_filter',
+    'player_date_from_filter', 'player_date_to_filter',
+    'profession_date_from_filter', 'profession_date_to_filter',
     'import_date', 'import_opponent', 'import_team_name', 'import_note', 'import_note_box',
+    'csv_file', 'role_csv_file', 'btn_parse_csv', 'btn_parse_role_csv', 'import_auto_assign_without_roles',
+    'role_import_controls',
   ];
   requiredIds.forEach((id) => elements.set(id, makeEl(id)));
   elements.get('matchup_kill_split').value = '5';
   elements.get('matchup_weak_pct').value = '10';
   elements.get('matchup_strong_pct').value = '10';
   elements.get('matchup_roster_bottom_pct').value = '20';
-  elements.get('profession_sort_field').value = 'avgBuild';
-  elements.get('profession_sort_order').value = 'desc';
   elements.get('profession_min_battles').value = '3';
   elements.get('profession_group_filter').value = 'all';
   elements.get('player_group_filter').value = 'all';
+  elements.get('player_opponent_filter').value = 'all';
+  elements.get('profession_opponent_filter').value = 'all';
+  elements.get('player_date_from_filter').value = '';
+  elements.get('player_date_to_filter').value = '';
+  elements.get('profession_date_from_filter').value = '';
+  elements.get('profession_date_to_filter').value = '';
 
   const document = {
     getElementById(id) {
@@ -161,7 +172,18 @@ function loadBattleReviewFullContext() {
     open() { return null; },
     addEventListener() {},
     removeEventListener() {},
+    location: {
+      href: 'https://example.test/desktop/',
+      pathname: '/desktop/',
+      search: '',
+      hash: '',
+    },
   };
+  function URLShim(input, base) {
+    return new URL(input, base);
+  }
+  URLShim.createObjectURL = function createObjectURL() { return 'blob:mock'; };
+  URLShim.revokeObjectURL = function revokeObjectURL() {};
 
   const context = {
     console,
@@ -184,10 +206,7 @@ function loadBattleReviewFullContext() {
     document,
     window: windowObj,
     Blob: function Blob() {},
-    URL: {
-      createObjectURL() { return 'blob:mock'; },
-      revokeObjectURL() {},
-    },
+    URL: URLShim,
     setTimeout() { return 0; },
     clearTimeout() {},
     requestAnimationFrame() { return 0; },
@@ -393,6 +412,17 @@ queueCase('未定分工不進自動名單', () => {
   ]);
   const review = computeBattleReview(battle);
   assert.strictEqual(findSummary(review, '未定玩家').level, '');
+});
+
+queueCase('特殊職責 lag 不進自動名單', () => {
+  const battle = buildBattle([
+    basePlayer({ name: '延遲玩家', specialRoles: ['lag'], buildDamage: 100000, death: 9 }),
+    basePlayer({ name: '打手A', buildDamage: 5000000, death: 1 }),
+    basePlayer({ name: '打手B', buildDamage: 4800000, death: 2 }),
+    basePlayer({ name: '打手C', buildDamage: 4200000, death: 2 }),
+  ]);
+  const review = computeBattleReview(battle);
+  assert.strictEqual(findSummary(review, '延遲玩家').level, '');
 });
 
 queueCase('一般DPS單弱加高重傷仍會進名單', () => {
@@ -762,6 +792,34 @@ queueCase('CSV 解析測試：戰報分段可正確切出隊伍與玩家', () =>
   assert.strictEqual(sections[0].players[1].saveCount, 8);
 });
 
+queueCase('CSV 解析測試：Tab 戰報與首列額外空欄也可正確切出隊伍與玩家', () => {
+  const csv = [
+    '花舞\t2\t\t\t\t\t\t\t\t\t\t',
+    '玩家名字\t職業\t擊敗\t助攻\t資源\t對玩家傷害\t對建築傷害\t治療值\t承受傷害\t重傷\t化羽/清泉\t焚骨',
+    '婗沫\t素問\t0\t65\t0\t14485\t0\t24199369\t11286829\t3\t16\t0',
+    '宵然\t血河\t35\t159\t780\t61011115\t0\t1568483\t25767849\t8\t0\t0',
+  ].join('\n');
+  const sections = rules.parseCsvSections(csv);
+  assert.strictEqual(sections.length, 1);
+  assert.strictEqual(sections[0].teamName, '花舞');
+  assert.strictEqual(sections[0].players.length, 2);
+  assert.strictEqual(sections[0].players[0].name, '婗沫');
+  assert.strictEqual(sections[0].players[1].name, '宵然');
+});
+
+queueCase('CSV 解析測試：戰報空白姓名列會自動略過', () => {
+  const csv = [
+    '花舞,2',
+    '玩家名字,職業,擊敗,助攻,資源,對玩家傷害,對建築傷害,治療值,承受傷害,重傷,化羽/清泉,焚骨',
+    '  ,碎夢,1,2,3,4,5,6,7,8,9,10',
+    '宵然,神相,11,12,13,14,15,16,17,18,19,20',
+  ].join('\n');
+  const sections = rules.parseCsvSections(csv);
+  assert.strictEqual(sections.length, 1);
+  assert.strictEqual(sections[0].players.length, 1);
+  assert.strictEqual(sections[0].players[0].name, '宵然');
+});
+
 queueCase('CSV 解析測試：分工 CSV 可正確轉成 group 與 specialRoles', () => {
   const roleCsv = [
     'name,job,group_type,subgroup,special_roles,note,confidence',
@@ -774,6 +832,31 @@ queueCase('CSV 解析測試：分工 CSV 可正確轉成 group 與 specialRoles'
   assert.deepStrictEqual(Array.from(rows[0].specialRoles), ['commander']);
   assert.strictEqual(rows[1].groupType, 'bodyguard');
   assert.deepStrictEqual(Array.from(rows[1].specialRoles), ['healer']);
+});
+
+queueCase('CSV 解析測試：分工 CSV 空白姓名列會自動略過', () => {
+  const roleCsv = [
+    'name,job,group_type,subgroup,special_roles,note,confidence',
+    '  ,神相,attack,進攻一隊,commander,空白列,low',
+    '宵然,神相,attack,進攻一隊,commander,正常列,high',
+  ].join('\n');
+  const rows = rules.parseRoleCsv(roleCsv);
+  assert.strictEqual(rows.length, 1);
+  assert.strictEqual(rows[0].name, '宵然');
+});
+
+queueCase('場次標籤測試：可從戰報檔名抽出時間碼並組成顯示標籤', () => {
+  assert.strictEqual(rules.extractBattleFileLabel('20260422_2213_花舞_臥龍.csv'), '2213');
+  assert.strictEqual(rules.extractBattleFileLabel('20260422_223558_花舞_臥龍.csv'), '223558');
+  assert.strictEqual(rules.extractBattleFileLabel('battle.csv'), '');
+  const label = rules.battleDisplayLabel({
+    date: '2026-04-22',
+    sourceLabel: '2213',
+    teamName: '花舞',
+    opponent: '臥龍',
+    players: [{}, {}],
+  });
+  assert.strictEqual(label, '2026-04-22｜2213｜花舞 vs 臥龍｜2人');
 });
 
 queueCase('分工套用測試：applyRoleRowsToBattle 會把分組與特職套進玩家', () => {
@@ -797,6 +880,74 @@ queueCase('分工套用測試：applyRoleRowsToBattle 會把分組與特職套�
   assert.strictEqual(battle.players[2].groupType, 'unknown');
 });
 
+queueCase('自動分工推論測試：塔傷門檻可分開進攻與防守', () => {
+  const players = [
+    basePlayer({ name: '塔傷玄機', job: '玄機', groupType: 'unknown', kill: 1, assist: 24, resource: 0, pvpDamage: 8000000, buildDamage: 520000000, death: 15 }),
+    basePlayer({ name: '守點玄機', job: '玄機', groupType: 'unknown', kill: 21, assist: 130, resource: 520, pvpDamage: 56000000, buildDamage: 0, death: 5 }),
+    basePlayer({ name: '支援玄機', job: '玄機', groupType: 'unknown', kill: 17, assist: 95, resource: 260, pvpDamage: 43000000, buildDamage: 25000000, death: 12 }),
+    basePlayer({ name: '塔傷龍吟', job: '龍吟', groupType: 'unknown', kill: 1, assist: 28, resource: 0, pvpDamage: 9000000, buildDamage: 480000000, death: 13 }),
+  ].map(rules.derivePlayer);
+
+  assert.strictEqual(rules.inferPlayerAssignment(players[0], players).groupType, 'attack');
+  assert.strictEqual(rules.inferPlayerAssignment(players[1], players).groupType, 'defense');
+  assert.strictEqual(rules.inferPlayerAssignment(basePlayer({ name: '臨界進攻', buildDamage: 10000 })).groupType, 'attack');
+});
+
+queueCase('自動分工推論測試：一鍵只處理未定並以二分類寫入信心與備註', () => {
+  const { context } = loadBattleReviewFullContext();
+  const players = [
+    basePlayer({ name: '進攻奶', job: '素問', groupType: 'unknown', assist: 20, resource: 0, heal: 26000000, takenDamage: 12000000, buildDamage: 18000000, death: 5, saveCount: 12 }),
+    basePlayer({ name: '防守奶', job: '素問', groupType: 'unknown', assist: 190, resource: 520, heal: 62000000, takenDamage: 18000000, buildDamage: 0, death: 1, saveCount: 14 }),
+    basePlayer({ name: '保鑣奶', job: '素問', groupType: 'unknown', assist: 110, resource: 0, heal: 65000000, takenDamage: 36000000, buildDamage: 0, death: 7, saveCount: 17 }),
+    basePlayer({ name: '已指定', job: '玄機', groupType: 'defense', assist: 120, resource: 260, buildDamage: 0 }),
+  ];
+  vm.runInContext(`state = {
+    battles: [{ id: 'auto_battle', players: ${JSON.stringify(players)} }],
+    activeBattleId: 'auto_battle',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };`, context);
+
+  context.autoInferUnknownAssignments();
+  const battle = vm.runInContext('state.battles[0]', context);
+  assert.strictEqual(battle.players.find(player => player.name === '進攻奶').groupType, 'attack');
+  assert.strictEqual(battle.players.find(player => player.name === '防守奶').groupType, 'defense');
+  assert.strictEqual(battle.players.find(player => player.name === '保鑣奶').groupType, 'defense');
+  assert(battle.players.find(player => player.name === '保鑣奶').assignmentNote.includes('塔傷'));
+  assert.strictEqual(battle.players.find(player => player.name === '已指定').groupType, 'defense');
+  battle.players.slice(0, 3).forEach((player) => {
+    assert(['high', 'medium', 'low'].includes(player.assignmentConfidence));
+    assert(player.assignmentNote.includes('自動推論'));
+    assert(player.subgroup.startsWith('自動推論-'));
+  });
+});
+
+queueCase('分工重置測試：重置所有分工只清空分工欄位並保留特殊職責', () => {
+  const { context } = loadBattleReviewFullContext();
+  const players = [
+    basePlayer({ name: '指揮', job: '鐵衣', groupType: 'attack', subgroup: '進攻一隊', specialRoles: ['commander'], assignmentNote: '人工分工', assignmentConfidence: 'high' }),
+    basePlayer({ name: '防守', job: '碎夢', groupType: 'defense', subgroup: '防守一隊', specialRoles: [], assignmentNote: '人工分工', assignmentConfidence: 'medium' }),
+  ];
+  vm.runInContext(`state = {
+    battles: [{ id: 'reset_battle', players: ${JSON.stringify(players)} }],
+    activeBattleId: 'reset_battle',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };`, context);
+
+  context.resetAllAssignments();
+  const battle = vm.runInContext('state.battles[0]', context);
+  battle.players.forEach((player) => {
+    assert.strictEqual(player.groupType, 'unknown');
+    assert.strictEqual(player.subgroup, '');
+    assert.strictEqual(player.assignmentNote, '');
+    assert.strictEqual(player.assignmentConfidence, '');
+  });
+  assert.deepStrictEqual(Array.from(battle.players[0].specialRoles), ['commander']);
+});
+
 queueCase('別名解析測試：連鎖別名最終會收斂到最後名字', () => {
   vm.runInContext(`state.aliasMap = { '小王': '老王', '老王': '王總' };`, rules);
   assert.strictEqual(rules.canonicalPlayerName('小王'), '王總');
@@ -815,6 +966,8 @@ queueCase('最小 UI 冒煙測試：關鍵容器 ID 仍存在於 HTML', () => {
     'observation_list',
     'battle_manual_note',
     'rules_explain_box',
+    'btn_auto_infer_assignments',
+    'btn_reset_all_assignments',
   ];
   requiredIds.forEach((id) => {
     assert(
@@ -835,6 +988,9 @@ queueCase('最小 UI 冒煙測試：關鍵函式仍存在於腳本', () => {
     'applyRoleRowsToBattle',
     'importReviewSnapshot',
     'renderRulesExplain',
+    'inferPlayerAssignment',
+    'autoInferUnknownAssignments',
+    'resetAllAssignments',
   ];
   requiredFunctions.forEach((fnName) => {
     assert(
@@ -905,6 +1061,247 @@ queueCase('最小 UI 冒煙測試：桌面版覆盤與對位匯出入口仍存�
       `缺少匯出入口或綁定: ${snippet}`
     );
   });
+});
+
+queueCase('玩家查詢出席場次資料會吃團別篩選，不會把其他團別一起算進去', () => {
+  const { context } = loadBattleReviewFullContext();
+  const battleA = {
+    id: 'b1',
+    date: '2026-04-30',
+    opponent: '甲敵',
+    result: 'win',
+    ownTeam: '甲',
+    players: [basePlayer({ name: '測試玩家', groupType: 'defense' })],
+  };
+  const battleB = {
+    id: 'b2',
+    date: '2026-04-30',
+    opponent: '乙敵',
+    result: 'loss',
+    ownTeam: '甲',
+    players: [basePlayer({ name: '測試玩家', groupType: 'bodyguard' })],
+  };
+  const battleC = {
+    id: 'b3',
+    date: '2026-04-30',
+    opponent: '丙敵',
+    result: 'win',
+    ownTeam: '甲',
+    players: [basePlayer({ name: '測試玩家', groupType: 'defense' })],
+  };
+  vm.runInContext(`state = {
+    battles: ${JSON.stringify([battleA, battleB, battleC])},
+    activeBattleId: '',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };`, context);
+
+  const defenseRows = context.lookupPlayerRows(['b1', 'b2', 'b3'], 'defense');
+  const exact = defenseRows.find(item => item.name === '測試玩家');
+  const attendedIds = [...new Set((exact.history || []).map(entry => entry.battleId).filter(Boolean))];
+
+  assert.deepStrictEqual(attendedIds, ['b1', 'b3']);
+});
+
+queueCase('玩家查詢與職業表現場次清單會吃己方、對手與日期篩選', () => {
+  const { context, elements } = loadBattleReviewFullContext();
+  const battles = [
+    { id: 'b1', date: '2026-05-08', teamName: '劍照霜寒', opponent: '頂樓風很大', result: 'win', players: [basePlayer({ name: '玩家一' })] },
+    { id: 'b2', date: '2026-05-08', teamName: '劍照霜寒', opponent: '大汝牛', result: 'loss', players: [basePlayer({ name: '玩家二' })] },
+    { id: 'b3', date: '2026-05-08', teamName: '塵煙如夢', opponent: '頂樓風很大', result: 'win', players: [basePlayer({ name: '玩家三' })] },
+    { id: 'b4', date: '2026-05-09', teamName: '劍照霜寒', opponent: '頂樓風很大', result: 'win', players: [basePlayer({ name: '玩家四' })] },
+    { id: 'b5', date: '2026-05-12', teamName: '塵煙似夢', opponent: '夜盡天明', result: 'win', players: [basePlayer({ name: '玩家五' })] },
+  ];
+  vm.runInContext(`state = {
+    battles: ${JSON.stringify(battles)},
+    activeBattleId: 'b1',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };`, context);
+
+  elements.get('player_own_team_filter').value = 'jianzhao';
+  elements.get('player_opponent_filter').value = '頂樓風很大';
+  elements.get('player_date_from_filter').value = '2026-05-08';
+  elements.get('player_date_to_filter').value = '2026-05-08';
+  context.renderBattleFilterOptions('player_battle_select');
+
+  assert.deepStrictEqual(
+    Array.from(context.filterBattleIdsByReviewFilters(['b1', 'b2', 'b3', 'b4'], 'jianzhao', '頂樓風很大', '2026-05-08', '2026-05-08')),
+    ['b1']
+  );
+  assert(elements.get('player_battle_select').innerHTML.includes('value="b1"'), '玩家查詢場次清單應包含符合篩選的場次');
+  assert(!elements.get('player_battle_select').innerHTML.includes('value="b2"'), '玩家查詢場次清單不應包含其他對手');
+  assert(!elements.get('player_battle_select').innerHTML.includes('value="b3"'), '玩家查詢場次清單不應包含其他己方');
+  assert(!elements.get('player_battle_select').innerHTML.includes('value="b4"'), '玩家查詢場次清單不應包含日期範圍外場次');
+  assert(!elements.get('player_battle_select').innerHTML.includes('value="b5"'), '玩家查詢場次清單不應包含塵煙似夢場次');
+
+  elements.get('profession_own_team_filter').value = 'chensi';
+  elements.get('profession_opponent_filter').value = '夜盡天明';
+  elements.get('profession_date_from_filter').value = '2026-05-12';
+  elements.get('profession_date_to_filter').value = '2026-05-12';
+  context.renderBattleFilterOptions('profession_battle_select');
+  assert(elements.get('profession_battle_select').innerHTML.includes('value="b5"'), '職業表現場次清單應包含塵煙似夢場次');
+  assert(!elements.get('profession_battle_select').innerHTML.includes('value="b1"'), '職業表現場次清單不應包含其他己方');
+  assert(!elements.get('profession_battle_select').innerHTML.includes('value="b2"'), '職業表現場次清單不應包含其他對手');
+  assert(!elements.get('profession_battle_select').innerHTML.includes('value="b4"'), '職業表現場次清單不應包含日期範圍外場次');
+
+  assert.deepStrictEqual(
+    Array.from(context.filterBattleIdsByReviewFilters(['b1', 'b2', 'b3', 'b4', 'b5'], 'flower_other', 'all', '', '')),
+    [],
+    '花舞或其他不應再包含已獨立列出的己方'
+  );
+});
+
+queueCase('職業表現分析對手會改用對手名單並套推測分工', () => {
+  const { context, elements } = loadBattleReviewFullContext();
+  const battle = {
+    id: 'b1',
+    date: '2026-05-15',
+    teamName: '己方',
+    opponent: '敵方',
+    result: 'win',
+    players: [
+      basePlayer({ name: '己方玩家', job: '碎夢', buildDamage: 90000000, kill: 1, groupType: 'attack' }),
+    ],
+    opponentPlayers: [
+      basePlayer({ name: '敵進攻', job: '碎夢', buildDamage: 50000000, kill: 1, groupType: 'unknown' }),
+      basePlayer({ name: '敵防守', job: '碎夢', buildDamage: 9999, kill: 20, groupType: 'unknown' }),
+      basePlayer({ name: '敵保鑣', job: '碎夢', buildDamage: 20000000, kill: 6, groupType: 'unknown' }),
+    ],
+  };
+  vm.runInContext(`state = {
+    battles: ${JSON.stringify([battle])},
+    activeBattleId: 'b1',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };`, context);
+
+  elements.get('profession_analyze_opponent').checked = true;
+  elements.get('profession_min_battles').value = '1';
+
+  const rows = context.professionRows();
+  assert(!rows.some(row => row.name === '己方玩家'), '分析對手時不應使用己方玩家名單');
+  assert.strictEqual(rows.find(row => row.name === '敵進攻')?.dominantGroupType, 'attack');
+  assert.strictEqual(rows.find(row => row.name === '敵防守')?.dominantGroupType, 'defense');
+  assert.strictEqual(rows.find(row => row.name === '敵保鑣')?.dominantGroupType, 'bodyguard');
+  assert.strictEqual(rows.find(row => row.name === '敵進攻')?.winRate, 0, '對手視角應反轉己方勝敗');
+
+  const attackChart = context.professionQuadrantChartData('碎夢', 'attack');
+  const defenseChart = context.professionQuadrantChartData('碎夢', 'defense');
+  assert(attackChart.rows.some(row => row.name === '敵保鑣'), '保鑣應出現在進攻象限圖');
+  assert(defenseChart.rows.some(row => row.name === '敵保鑣'), '保鑣應出現在防守象限圖');
+});
+
+queueCase('加入場次若未讀分工且未勾選無分工表會擋下', () => {
+  const { context, elements } = loadBattleReviewFullContext();
+  vm.runInContext(`state = {
+    battles: [],
+    activeBattleId: '',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };
+  importedSections = [{
+    teamName: '己方',
+    players: ${JSON.stringify([basePlayer({ name: '未分工玩家', buildDamage: 1000000, kill: 1 })])}
+  }];
+  importedRoleRows = [];`, context);
+
+  elements.get('import_section').value = '0';
+  elements.get('import_team_name').value = '己方';
+  elements.get('import_opponent').value = '敵方';
+  elements.get('import_auto_assign_without_roles').checked = false;
+
+  context.handleAddBattle();
+
+  assert.strictEqual(vm.runInContext('state.battles.length', context), 0);
+  assert(elements.get('import_note_box').textContent.includes('請先讀取分工 CSV'));
+});
+
+queueCase('加入場次勾選無分工表會共用職業表現推測分工', () => {
+  const { context, elements } = loadBattleReviewFullContext();
+  const players = [
+    basePlayer({ name: '推測進攻', buildDamage: 50000000, kill: 1 }),
+    basePlayer({ name: '推測防守', buildDamage: 9999, kill: 20 }),
+    basePlayer({ name: '推測保鑣', buildDamage: 20000000, kill: 6 }),
+  ];
+  vm.runInContext(`state = {
+    battles: [],
+    activeBattleId: '',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 }
+  };
+  importedSections = [{
+    teamName: '己方',
+    players: ${JSON.stringify(players)}
+  }];
+  importedRoleRows = [];`, context);
+
+  elements.get('import_section').value = '0';
+  elements.get('import_team_name').value = '己方';
+  elements.get('import_opponent').value = '敵方';
+  elements.get('import_auto_assign_without_roles').checked = true;
+  context.updateRoleImportControls();
+  context.handleAddBattle();
+
+  const groups = vm.runInContext(`Object.fromEntries(state.battles[0].players.map(player => [player.name, player.groupType]))`, context);
+  assert.strictEqual(vm.runInContext('state.battles.length', context), 1);
+  assert.strictEqual(groups['推測進攻'], 'attack');
+  assert.strictEqual(groups['推測防守'], 'defense');
+  assert.strictEqual(groups['推測保鑣'], 'bodyguard');
+  assert.strictEqual(elements.get('role_csv_file').disabled, true);
+  assert.strictEqual(elements.get('btn_parse_role_csv').disabled, true);
+});
+
+queueCase('公開資料合併只補入不存在場次並保留本機設定', () => {
+  const { context } = loadBattleReviewFullContext();
+  const localState = {
+    battles: [
+      { id: 'same-id', date: '2026-05-01', sourceLabel: 'A', teamName: '本機幫', opponent: '對手甲', players: [] },
+      { id: 'same-key-local', date: '2026-05-02', sourceLabel: 'B', teamName: '本機幫', opponent: '對手乙', players: [] },
+    ],
+    activeBattleId: 'same-id',
+    importDraft: {},
+    aliasMap: { 小名: '正名' },
+    settings: { weakPct: 22, deathPct: 33 },
+    batchExportConfig: { review: 1, matchup: 0, player: 3, leaders: 4, profession: 5, focus: 6 },
+  };
+  const publicState = {
+    battles: [
+      { id: 'same-id', date: '2026-05-09', sourceLabel: 'X', teamName: '公開幫', opponent: '重複ID', players: [] },
+      { id: 'public-same-key', date: '2026-05-02', sourceLabel: 'B', teamName: '本機幫', opponent: '對手乙', players: [] },
+      { id: 'public-new', date: '2026-05-03', sourceLabel: 'C', teamName: '公開幫', opponent: '對手丙', players: [] },
+    ],
+  };
+
+  const result = context.mergePublicStateIntoLocal(publicState, localState);
+
+  assert.strictEqual(result.added, 1);
+  assert.strictEqual(result.skipped, 2);
+  assert.deepStrictEqual(Array.from(result.state.battles, battle => battle.id), ['public-new', 'same-id', 'same-key-local']);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(result.state.aliasMap)), localState.aliasMap);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(result.state.settings)), localState.settings);
+});
+
+queueCase('公開模式網址與個人工具網址會使用同一頁參數切換', () => {
+  const { context } = loadBattleReviewFullContext();
+  context.window.location.href = 'https://example.test/desktop/?foo=bar#tab';
+  context.window.location.search = '?foo=bar';
+  context.window.location.pathname = '/desktop/';
+  context.window.location.hash = '#tab';
+
+  assert.strictEqual(context.isPublicReadOnlyMode(), false);
+  assert.strictEqual(context.publicLatestUrl(), '/desktop/?foo=bar&public=latest#tab');
+
+  context.window.location.href = 'https://example.test/desktop/?foo=bar&public=latest#tab';
+  context.window.location.search = '?foo=bar&public=latest';
+  assert.strictEqual(context.isPublicReadOnlyMode(), true);
+  assert.strictEqual(context.publicShareDataUrl(), 'public-data/latest.json');
+  assert.strictEqual(context.personalToolUrl(), '/desktop/?foo=bar#tab');
 });
 
 Promise.all(asyncCases).then(() => {

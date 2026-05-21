@@ -75,6 +75,16 @@
     font-weight: 800;
     text-align: right;
   }
+  .mode-status {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 800;
+    text-align: right;
+    max-width: 360px;
+  }
+  .mode-status.public {
+    color: #b42318;
+  }
   .hero::after {
     content: "";
     position: absolute;
@@ -106,6 +116,18 @@
     grid-template-columns: 360px minmax(0, 1fr);
     gap: 18px;
     align-items: start;
+  }
+  body.public-readonly .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.public-readonly .layout > .stack {
+    display: none;
+  }
+  body.public-readonly .import-panel {
+    display: none;
+  }
+  body.public-readonly .assignment-alert-detail {
+    display: none;
   }
   .stack {
     display: grid;
@@ -607,6 +629,54 @@
   }
   .battle-meta-editor textarea {
     min-height: 68px;
+  }
+  .readonly-note {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid #f4c7c3;
+    border-radius: 12px;
+    background: #fff1f0;
+    color: #b42318;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .copy-modal-overlay[hidden] {
+    display: none;
+  }
+  .copy-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(32, 24, 18, 0.42);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+  }
+  .copy-modal {
+    width: min(520px, 100%);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fffaf4;
+    box-shadow: 0 18px 44px rgba(60, 44, 20, 0.22);
+    padding: 18px;
+  }
+  .copy-modal h3 {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: 20px;
+  }
+  .copy-modal p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .copy-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
   }
   .alias-list-details {
     margin-top: 10px;
@@ -1822,9 +1892,13 @@
           <div class="inline-actions">
             <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
             <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
+            <button class="btn-secondary" id="btn_view_public_mode" type="button">查看公開版</button>
+            <button class="btn-secondary" id="btn_back_to_personal_tool" type="button" hidden>回到我的本機工具</button>
+            <button class="btn-primary" id="btn_copy_public_to_local" type="button" hidden>從公開資料建立本機副本</button>
             <input id="snapshot_file" type="file" accept=".json,application/json" hidden>
           </div>
           <div class="hero-tools-note">提醒：匯入覆盤資料會覆蓋現有資料。</div>
+          <div class="mode-status" id="mode_status"></div>
         </div>
       </div>
     </section>
@@ -1954,6 +2028,7 @@
           <div id="battle_meta_editor" class="battle-meta-editor" hidden></div>
           <div class="panel-body">
             <div class="tab-panel active" data-tab-panel="assignment">
+              <div class="readonly-note" id="public_readonly_note" hidden>公開唯讀模式：可查看分工與報表，但不能修改分工、metadata、刪除場次或匯入 CSV。若要編輯，請先建立本機副本。</div>
               <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮；輸入 lag 則不列入自動覆盤觀察名單）</span></div>
               <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
               <div class="assignment-commander-box" id="assignment_unknown_box" style="margin-top:-2px;">目前沒有分工未知的玩家。</div>
@@ -2402,6 +2477,17 @@
       <div id="profession_job_quadrant_modal_body"></div>
     </div>
   </div>
+  <div id="public_copy_modal" class="copy-modal-overlay" hidden>
+    <div class="copy-modal">
+      <h3>建立本機副本</h3>
+      <p id="public_copy_modal_text">你的瀏覽器已有本機資料。請選擇要覆蓋，或把公開資料合併進本機資料。</p>
+      <div class="copy-modal-actions">
+        <button class="btn-danger" id="btn_public_copy_overwrite" type="button">覆蓋我的本機資料</button>
+        <button class="btn-primary" id="btn_public_copy_merge" type="button">合併到我的本機資料</button>
+        <button class="btn-ghost" id="btn_public_copy_cancel" type="button">取消</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 const STORAGE_KEY = 'jol_battle_review_v1';
@@ -2529,7 +2615,11 @@ const HEALER_PROFESSION_TABLE_COLUMNS = [
   { label: '承傷/重傷', key: 'avgTakenPerDeath' },
 ];
 
-let state = loadState();
+const PUBLIC_DATA_DIR = 'public-data';
+let publicSharePayload = null;
+let publicShareUiState = null;
+let publicShareLoadError = '';
+let state = isPublicReadOnlyMode() ? emptyState() : loadState();
 let importedSections = [];
 let importedRoleRows = [];
 let importedBattleFileLabel = '';
@@ -2563,30 +2653,275 @@ function normalizeBatchExportConfig(config = {}) {
   );
 }
 
-function loadState() {
+function emptyState() {
+  return {
+    battles: [],
+    activeBattleId: '',
+    importDraft: {},
+    aliasMap: {},
+    settings: { weakPct: 30, deathPct: 30 },
+    batchExportConfig: defaultBatchExportConfig(),
+  };
+}
+
+function normalizeStatePayload(next = {}) {
+  const battles = Array.isArray(next.battles) ? next.battles : [];
+  return {
+    battles,
+    activeBattleId: next.activeBattleId || battles[0]?.id || '',
+    importDraft: next.importDraft || {},
+    aliasMap: next.aliasMap || {},
+    settings: {
+      weakPct: Number(next.settings?.weakPct || 30),
+      deathPct: Number(next.settings?.deathPct || 30),
+    },
+    batchExportConfig: normalizeBatchExportConfig(next.batchExportConfig),
+  };
+}
+
+function currentLocationSearch() {
+  return String((typeof window !== 'undefined' && window.location?.search) || '');
+}
+
+function queryParamValue(name) {
+  const search = currentLocationSearch().replace(/^\?/, '');
+  if (!search) return null;
+  const encodedName = String(name || '');
+  for (const part of search.split('&')) {
+    if (!part) continue;
+    const [rawKey, ...valueParts] = part.split('=');
+    let key = rawKey || '';
+    let value = valueParts.join('=');
+    try {
+      key = decodeURIComponent(key.replace(/\+/g, ' '));
+      value = decodeURIComponent(value.replace(/\+/g, ' '));
+    } catch (err) {
+      // Invalid query encoding should not break app startup.
+    }
+    if (key === encodedName) return value;
+  }
+  return null;
+}
+
+function isPublicReadOnlyMode() {
+  return queryParamValue('public') !== null;
+}
+
+function normalizePublicShareKey(rawKey) {
+  const key = String(rawKey || 'latest').trim().replace(/\.json$/i, '') || 'latest';
+  return /^[A-Za-z0-9._-]+$/.test(key) ? key : 'latest';
+}
+
+function publicShareKey() {
+  return normalizePublicShareKey(queryParamValue('public') || 'latest');
+}
+
+function publicShareDataUrl() {
+  return `${PUBLIC_DATA_DIR}/${publicShareKey()}.json`;
+}
+
+function currentLocationHref() {
+  return String((typeof window !== 'undefined' && window.location?.href) || '');
+}
+
+function personalToolUrl() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 }, batchExportConfig: defaultBatchExportConfig() };
-    const parsed = JSON.parse(raw);
-    return {
-      battles: Array.isArray(parsed.battles) ? parsed.battles : [],
-      activeBattleId: parsed.activeBattleId || '',
-      importDraft: parsed.importDraft || {},
-      aliasMap: parsed.aliasMap || {},
-      settings: {
-        weakPct: Number(parsed.settings?.weakPct || 30),
-        deathPct: Number(parsed.settings?.deathPct || 30),
-      },
-      batchExportConfig: normalizeBatchExportConfig(parsed.batchExportConfig),
-    };
+    const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
+    url.searchParams.delete('public');
+    return `${url.pathname}${url.search}${url.hash}` || './';
   } catch (err) {
-    console.error(err);
-    return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 }, batchExportConfig: defaultBatchExportConfig() };
+    return './';
   }
 }
 
+function publicLatestUrl() {
+  try {
+    const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
+    url.searchParams.set('public', 'latest');
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (err) {
+    return '?public=latest';
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return emptyState();
+    const parsed = JSON.parse(raw);
+    return normalizeStatePayload(parsed);
+  } catch (err) {
+    console.error(err);
+    return emptyState();
+  }
+}
+
+function persistState(nextState) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+}
+
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (isPublicReadOnlyMode()) return;
+  persistState(state);
+}
+
+function preventPublicWrite(actionLabel = '這個操作') {
+  if (!isPublicReadOnlyMode()) return false;
+  window.alert(`公開唯讀模式不能使用「${actionLabel}」。若要修改資料，請先按「從公開資料建立本機副本」。`);
+  return true;
+}
+
+async function loadPublicShareSnapshot() {
+  if (!isPublicReadOnlyMode()) return;
+  publicShareLoadError = '';
+  const response = await fetch(publicShareDataUrl(), { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`公開資料讀取失敗（HTTP ${response.status}）。`);
+  }
+  const parsed = await response.json();
+  if (parsed?.app !== 'battle_review' || !parsed?.state) {
+    throw new Error('公開資料不是有效的覆盤 JSON。');
+  }
+  publicSharePayload = parsed;
+  publicShareUiState = parsed.ui_state || {};
+  state = normalizeStatePayload(parsed.state);
+}
+
+function localStateHasUserData(localState) {
+  return !!(
+    (Array.isArray(localState?.battles) && localState.battles.length) ||
+    Object.keys(localState?.aliasMap || {}).length ||
+    Object.keys(localState?.importDraft || {}).length
+  );
+}
+
+function battleMergeKey(battle) {
+  return [
+    battle?.date || '',
+    battle?.sourceLabel || '',
+    battle?.teamName || '',
+    battle?.opponent || '',
+  ].map(value => String(value || '').trim()).join('|');
+}
+
+function cloneStatePayload(sourceState) {
+  return normalizeStatePayload(JSON.parse(JSON.stringify(sourceState || emptyState())));
+}
+
+function mergePublicStateIntoLocal(publicState, localState) {
+  const local = cloneStatePayload(localState);
+  const incoming = cloneStatePayload(publicState);
+  const localIds = new Set(local.battles.map(battle => String(battle.id || '')).filter(Boolean));
+  const localKeys = new Set(local.battles.map(battleMergeKey).filter(key => key !== '|||'));
+  const additions = [];
+  incoming.battles.forEach(battle => {
+    const id = String(battle.id || '');
+    const key = battleMergeKey(battle);
+    if (id && localIds.has(id)) return;
+    if (key !== '|||' && localKeys.has(key)) return;
+    additions.push(battle);
+    if (id) localIds.add(id);
+    if (key !== '|||') localKeys.add(key);
+  });
+  return {
+    state: {
+      ...local,
+      battles: [...additions, ...local.battles],
+      activeBattleId: additions[0]?.id || local.activeBattleId || local.battles[0]?.id || '',
+    },
+    added: additions.length,
+    skipped: incoming.battles.length - additions.length,
+  };
+}
+
+function openPublicCopyModal() {
+  const modal = document.getElementById('public_copy_modal');
+  const text = document.getElementById('public_copy_modal_text');
+  if (text) {
+    text.textContent = `你的瀏覽器已有本機資料。公開資料共有 ${fmtNumber((publicSharePayload?.state?.battles || []).length)} 場。請選擇覆蓋，或只合併不存在的場次。`;
+  }
+  if (modal) modal.hidden = false;
+}
+
+function closePublicCopyModal() {
+  const modal = document.getElementById('public_copy_modal');
+  if (modal) modal.hidden = true;
+}
+
+function copyPublicShareToLocal(mode) {
+  if (!publicSharePayload?.state) {
+    window.alert(publicShareLoadError || '目前沒有可建立副本的公開資料。');
+    return;
+  }
+  const publicState = normalizeStatePayload(publicSharePayload.state);
+  if (mode === 'overwrite') {
+    persistState(publicState);
+    window.alert(`已覆蓋本機資料，寫入公開資料 ${fmtNumber(publicState.battles.length)} 場。接下來會回到你的本機工具。`);
+    window.location.href = personalToolUrl();
+    return;
+  }
+  if (mode === 'merge') {
+    const result = mergePublicStateIntoLocal(publicState, loadState());
+    persistState(result.state);
+    window.alert(`已合併公開資料：新增 ${fmtNumber(result.added)} 場，略過重複 ${fmtNumber(result.skipped)} 場。接下來會回到你的本機工具。`);
+    window.location.href = personalToolUrl();
+  }
+}
+
+function handleCopyPublicShareToLocal() {
+  if (!publicSharePayload?.state) {
+    window.alert(publicShareLoadError || '目前沒有可建立副本的公開資料。');
+    return;
+  }
+  if (!localStateHasUserData(loadState())) {
+    copyPublicShareToLocal('overwrite');
+    return;
+  }
+  openPublicCopyModal();
+}
+
+function toggleElement(id, hidden) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = hidden;
+}
+
+function setDisabled(id, disabled) {
+  const el = document.getElementById(id);
+  if (el) el.disabled = disabled;
+}
+
+function renderPublicModeUi() {
+  const publicMode = isPublicReadOnlyMode();
+  if (document.body?.classList) {
+    if (publicMode) {
+      document.body.classList.add('public-readonly');
+    } else {
+      document.body.classList.remove('public-readonly');
+    }
+  }
+  toggleElement('btn_export_snapshot', publicMode);
+  toggleElement('btn_import_snapshot', publicMode);
+  toggleElement('btn_view_public_mode', publicMode);
+  toggleElement('btn_back_to_personal_tool', !publicMode);
+  toggleElement('btn_copy_public_to_local', !publicMode);
+  toggleElement('public_readonly_note', !publicMode);
+  toggleElement('btn_toggle_battle_meta_editor', publicMode);
+  toggleElement('btn_delete_current_battle', publicMode);
+  const status = document.getElementById('mode_status');
+  if (status) {
+    status.classList?.toggle?.('public', publicMode);
+    status.textContent = publicMode
+      ? (publicShareLoadError
+        ? `公開唯讀模式：${publicShareLoadError}`
+        : `公開唯讀模式：資料來源 ${publicShareDataUrl()}，不會寫入你的瀏覽器。`)
+      : '個人工具模式：資料保存在你的瀏覽器，可自行匯入、編輯與匯出 JSON。';
+  }
+  [
+    'btn_group_attack', 'btn_group_defense', 'btn_group_bodyguard', 'btn_group_unknown',
+    'btn_auto_infer_assignments', 'btn_reset_all_assignments',
+    'btn_auto_attack_kill_bodyguard', 'btn_auto_unknown_kill_defense', 'btn_auto_unknown_lowkill_attack',
+    'btn_alias_add', 'battle_manual_note', 'alias_source', 'alias_target',
+  ].forEach(id => setDisabled(id, publicMode));
 }
 
 function activeTabName() {
@@ -2698,6 +3033,7 @@ function exportReviewSnapshot() {
 
 async function importReviewSnapshot(file) {
   if (!file) return;
+  if (preventPublicWrite('批量匯入目前所有資料')) return;
   const fileName = String(file.name || '');
   if (/Zone\.Identifier$/i.test(fileName)) {
     throw new Error('你選到的是 Windows 附帶資訊檔（Zone.Identifier），不是覆盤資料 JSON。請改選真正的 .json 檔。');
@@ -2722,18 +3058,7 @@ async function importReviewSnapshot(file) {
   if (parsed?.app !== 'battle_review' || !parsed?.state) {
     throw new Error('不是有效的覆盤資料 JSON。');
   }
-  const next = parsed.state || {};
-  state = {
-    battles: Array.isArray(next.battles) ? next.battles : [],
-    activeBattleId: next.activeBattleId || (Array.isArray(next.battles) && next.battles[0]?.id) || '',
-    importDraft: next.importDraft || {},
-    aliasMap: next.aliasMap || {},
-    settings: {
-      weakPct: Number(next.settings?.weakPct || 30),
-      deathPct: Number(next.settings?.deathPct || 30),
-    },
-    batchExportConfig: normalizeBatchExportConfig(next.batchExportConfig),
-  };
+  state = normalizeStatePayload(parsed.state || {});
   importedSections = [];
   importedRoleRows = [];
   saveState();
@@ -5021,7 +5346,15 @@ function renderBattleMetaEditor() {
   const button = document.getElementById('btn_toggle_battle_meta_editor');
   if (!box) return;
   const battle = activeBattle();
+  if (isPublicReadOnlyMode()) {
+    battleMetaEditorOpen = false;
+    if (button) button.hidden = true;
+    box.hidden = true;
+    box.innerHTML = '';
+    return;
+  }
   if (button) {
+    button.hidden = false;
     button.disabled = !battle;
     button.textContent = battleMetaEditorOpen ? '收合場次資訊' : '編輯場次資訊';
   }
@@ -5075,6 +5408,7 @@ function toggleBattleMetaEditor() {
 }
 
 function updateBattleMetadata(field, value) {
+  if (preventPublicWrite('編輯場次資訊')) return;
   const battle = activeBattle();
   if (!battle) return;
   const allowed = new Set(['date', 'sourceLabel', 'teamName', 'opponent', 'result', 'note']);
@@ -5131,19 +5465,20 @@ function renderAssignmentTable() {
       ? `<b>目前分工未知名單：</b> ${unknownPlayers.map(player => `${escHtml(player.name)}｜${escHtml(player.job)}`).join('、')}<br><span class="subtle">不會納入系統數據評估。</span>`
       : '目前沒有分工未知的玩家。';
   }
+  const readonlyAttr = isPublicReadOnlyMode() ? ' disabled' : '';
   const rows = [...battle.players].sort(comparePlayers).map(player => `
     <tr>
-      <td><input type="checkbox" class="assign-check" value="${escHtml(player.name)}"></td>
+      <td><input type="checkbox" class="assign-check" value="${escHtml(player.name)}"${readonlyAttr}></td>
       <td>${escHtml(player.name)}</td>
       <td>${escHtml(player.job)}</td>
       <td>
-        <select onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','groupType',this.value)">
+        <select onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','groupType',this.value)"${readonlyAttr}>
           ${renderGroupOptions(player.groupType)}
         </select>
       </td>
-      <td><input type="text" value="${escHtml(player.subgroup || '')}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','subgroup',this.value)" placeholder="例如：進攻一隊"></td>
-      <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','specialRoles',this.value)" placeholder="例如：commander,lag"></td>
-      <td><button class="btn-ghost" type="button" onclick="deleteBattlePlayer('${battle.id}','${escHtml(player.name)}')">刪除</button></td>
+      <td><input type="text" value="${escHtml(player.subgroup || '')}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','subgroup',this.value)" placeholder="例如：進攻一隊"${readonlyAttr}></td>
+      <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(player.name)}','specialRoles',this.value)" placeholder="例如：commander,lag"${readonlyAttr}></td>
+      <td>${isPublicReadOnlyMode() ? '<span class="subtle">唯讀</span>' : `<button class="btn-ghost" type="button" onclick="deleteBattlePlayer('${battle.id}','${escHtml(player.name)}')">刪除</button>`}</td>
       <td>${fmtLarge(player.buildDamage)}</td>
       <td>${fmtNumber(player.kill)}</td>
       <td>${fmtNumber(player.death)}</td>
@@ -7930,6 +8265,7 @@ function setBattleCheckboxesByIds(selectId, ids) {
 }
 
 function deleteCheckedBattles(selectId) {
+  if (preventPublicWrite('刪除場次')) return;
   const ids = [...document.querySelectorAll(`#${selectId} input[type="checkbox"]:checked`)]
     .map(input => input.value)
     .filter(Boolean);
@@ -7956,12 +8292,13 @@ function renderAliasList() {
   box.innerHTML = entries.map(([source, target]) => `
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:4px 0;border-bottom:1px solid #eadfce;">
       <div><b>${escHtml(source)}</b> → ${escHtml(resolveAliasName(target))}</div>
-      <button class="btn-ghost" type="button" onclick="removeAliasMapping(decodeURIComponent('${encodeURIComponent(source)}'))">刪除</button>
+      ${isPublicReadOnlyMode() ? '<span class="subtle">唯讀</span>' : `<button class="btn-ghost" type="button" onclick="removeAliasMapping(decodeURIComponent('${encodeURIComponent(source)}'))">刪除</button>`}
     </div>
   `).join('');
 }
 
 function addAliasMapping() {
+  if (preventPublicWrite('新增別名合併')) return;
   const sourceEl = document.getElementById('alias_source');
   const targetEl = document.getElementById('alias_target');
   const source = String(sourceEl?.value || '').trim();
@@ -7978,6 +8315,7 @@ function addAliasMapping() {
 }
 
 function removeAliasMapping(source) {
+  if (preventPublicWrite('刪除別名合併')) return;
   if (!state.aliasMap) return;
   delete state.aliasMap[source];
   saveState();
@@ -8283,6 +8621,7 @@ function refreshAll() {
   renderRulesExplain();
   document.getElementById('weak_pct').value = String(currentSettings().weakPct);
   document.getElementById('death_pct').value = String(currentSettings().deathPct);
+  renderPublicModeUi();
 }
 
 function switchTab(tab) {
@@ -8318,6 +8657,7 @@ function setActiveBattle(id) {
 }
 
 function deleteBattle(id) {
+  if (preventPublicWrite('刪除目前場次')) return;
   state.battles = state.battles.filter(battle => battle.id !== id);
   if (state.activeBattleId === id) {
     state.activeBattleId = state.battles[0]?.id || '';
@@ -8327,6 +8667,7 @@ function deleteBattle(id) {
 }
 
 function updatePlayerAssignment(battleId, playerName, field, value) {
+  if (preventPublicWrite('修改分工')) return;
   const battle = state.battles.find(item => item.id === battleId);
   if (!battle) return;
   const player = battle.players.find(item => item.name === playerName);
@@ -8341,6 +8682,7 @@ function updatePlayerAssignment(battleId, playerName, field, value) {
 }
 
 function deleteBattlePlayer(battleId, playerName) {
+  if (preventPublicWrite('刪除玩家')) return;
   const battle = state.battles.find(item => item.id === battleId);
   if (!battle) return;
   const nextPlayers = battle.players.filter(player => player.name !== playerName);
@@ -8355,6 +8697,7 @@ function selectedAssignmentNames() {
 }
 
 function bulkSetGroup(groupType) {
+  if (preventPublicWrite('批量修改分工')) return;
   const battle = activeBattle();
   if (!battle) return;
   const names = selectedAssignmentNames();
@@ -8366,6 +8709,7 @@ function bulkSetGroup(groupType) {
 }
 
 function resetAllAssignments() {
+  if (preventPublicWrite('重置所有分工')) return;
   const battle = activeBattle();
   if (!battle) return;
   if (!window.confirm('確定要將目前場次所有玩家分工重置為未定？')) return;
@@ -8381,6 +8725,7 @@ function resetAllAssignments() {
 }
 
 function autoSetPlayersByKillAndBuild(options) {
+  if (preventPublicWrite('自動修改分工')) return;
   const battle = activeBattle();
   if (!battle) return;
   const {
@@ -8457,6 +8802,7 @@ function autoSetUnknownLowKillToAttack() {
 }
 
 function autoInferUnknownAssignments() {
+  if (preventPublicWrite('一鍵自動分工')) return;
   const battle = activeBattle();
   if (!battle) return;
   const inferredPlayers = (battle.players || []).map((player, index) => ({
@@ -8496,6 +8842,7 @@ function showImportBlockingMessage(message) {
 }
 
 async function handleParseCsv() {
+  if (preventPublicWrite('匯入戰報 CSV')) return;
   const input = document.getElementById('csv_file');
   const noteBox = document.getElementById('import_note_box');
   if (!input.files?.length) {
@@ -8561,6 +8908,7 @@ function handleImportAutoAssignToggle() {
 }
 
 async function handleParseRoleCsv() {
+  if (preventPublicWrite('匯入分工 CSV')) return;
   const input = document.getElementById('role_csv_file');
   const noteBox = document.getElementById('import_note_box');
   if (useInferredImportAssignments()) {
@@ -8582,6 +8930,7 @@ async function handleParseRoleCsv() {
 }
 
 function handleApplyRolesToActiveBattle() {
+  if (preventPublicWrite('重新套用分工')) return;
   const battle = activeBattle();
   const noteBox = document.getElementById('import_note_box');
   if (!battle) {
@@ -8599,6 +8948,7 @@ function handleApplyRolesToActiveBattle() {
 }
 
 function handleAddBattle() {
+  if (preventPublicWrite('加入場次')) return;
   const noteBox = document.getElementById('import_note_box');
   if (!importedSections.length) {
     showImportBlockingMessage('請先讀取 CSV。');
@@ -8648,7 +8998,27 @@ document.getElementById('import_auto_assign_without_roles').addEventListener('ch
 document.getElementById('btn_apply_roles')?.addEventListener('click', handleApplyRolesToActiveBattle);
 document.getElementById('btn_export_snapshot').addEventListener('click', exportReviewSnapshot);
 document.getElementById('btn_import_snapshot').addEventListener('click', () => {
+  if (preventPublicWrite('批量匯入目前所有資料')) return;
   document.getElementById('snapshot_file').click();
+});
+document.getElementById('btn_view_public_mode').addEventListener('click', () => {
+  window.location.href = publicLatestUrl();
+});
+document.getElementById('btn_back_to_personal_tool').addEventListener('click', () => {
+  window.location.href = personalToolUrl();
+});
+document.getElementById('btn_copy_public_to_local').addEventListener('click', handleCopyPublicShareToLocal);
+document.getElementById('btn_public_copy_overwrite').addEventListener('click', () => {
+  closePublicCopyModal();
+  copyPublicShareToLocal('overwrite');
+});
+document.getElementById('btn_public_copy_merge').addEventListener('click', () => {
+  closePublicCopyModal();
+  copyPublicShareToLocal('merge');
+});
+document.getElementById('btn_public_copy_cancel').addEventListener('click', closePublicCopyModal);
+document.getElementById('public_copy_modal').addEventListener('click', event => {
+  if (event.target.id === 'public_copy_modal') closePublicCopyModal();
 });
 document.getElementById('snapshot_file').addEventListener('change', async event => {
   const file = event.target.files?.[0];
@@ -8841,15 +9211,37 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 document.getElementById('battle_manual_note').addEventListener('input', event => {
+  if (preventPublicWrite('人工觀察 / 備註')) {
+    renderBattleManualNote();
+    return;
+  }
   const battle = activeBattle();
   if (!battle) return;
   battle.manualReviewNote = event.target.value;
   saveState();
 });
 
-updateRoleImportControls();
-refreshAll();
-switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
+async function bootstrapBattleReviewApp() {
+  updateRoleImportControls();
+  if (isPublicReadOnlyMode()) {
+    try {
+      await loadPublicShareSnapshot();
+    } catch (err) {
+      console.error(err);
+      publicShareLoadError = err?.message || '公開資料讀取失敗。';
+      state = emptyState();
+    }
+  }
+  refreshAll();
+  if (isPublicReadOnlyMode() && publicShareUiState) {
+    restoreUiState(publicShareUiState);
+  } else {
+    switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
+  }
+  renderPublicModeUi();
+}
+
+bootstrapBattleReviewApp();
 </script>
 </body>
 </html>
