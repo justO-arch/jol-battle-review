@@ -2732,6 +2732,10 @@ function publicShareDataUrl() {
   return `${PUBLIC_DATA_DIR}/${publicShareKey()}.json`;
 }
 
+function publicShareFetchUrl() {
+  return `${publicShareDataUrl()}?v=${Date.now()}`;
+}
+
 function currentLocationHref() {
   return String((typeof window !== 'undefined' && window.location?.href) || '');
 }
@@ -2740,6 +2744,7 @@ function personalToolUrl() {
   try {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.delete('public');
+    url.searchParams.delete('v');
     return `${url.pathname}${url.search}${url.hash}` || './';
   } catch (err) {
     return './';
@@ -2750,9 +2755,10 @@ function publicLatestUrl() {
   try {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.set('public', 'latest');
+    url.searchParams.set('v', String(Date.now()));
     return `${url.pathname}${url.search}${url.hash}`;
   } catch (err) {
-    return '?public=latest';
+    return `?public=latest&v=${Date.now()}`;
   }
 }
 
@@ -2786,7 +2792,7 @@ function preventPublicWrite(actionLabel = '這個操作') {
 async function loadPublicShareSnapshot() {
   if (!isPublicReadOnlyMode()) return;
   publicShareLoadError = '';
-  const response = await fetch(publicShareDataUrl(), { cache: 'no-store' });
+  const response = await fetch(publicShareFetchUrl(), { cache: 'no-store' });
   if (!response.ok) {
     throw new Error(`公開資料讀取失敗（HTTP ${response.status}）。`);
   }

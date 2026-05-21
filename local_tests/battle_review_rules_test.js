@@ -1295,10 +1295,10 @@ queueCase('公開模式網址與個人工具網址會使用同一頁參數切換
   context.window.location.hash = '#tab';
 
   assert.strictEqual(context.isPublicReadOnlyMode(), false);
-  assert.strictEqual(context.publicLatestUrl(), '/desktop/?foo=bar&public=latest#tab');
+  assert(/^\/desktop\/\?foo=bar&public=latest&v=\d+#tab$/.test(context.publicLatestUrl()));
 
-  context.window.location.href = 'https://example.test/desktop/?foo=bar&public=latest#tab';
-  context.window.location.search = '?foo=bar&public=latest';
+  context.window.location.href = 'https://example.test/desktop/?foo=bar&public=latest&v=123#tab';
+  context.window.location.search = '?foo=bar&public=latest&v=123';
   assert.strictEqual(context.isPublicReadOnlyMode(), true);
   assert.strictEqual(context.publicShareDataUrl(), 'public-data/latest.json');
   assert.strictEqual(context.personalToolUrl(), '/desktop/?foo=bar#tab');
