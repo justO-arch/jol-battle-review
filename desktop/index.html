@@ -2084,7 +2084,40 @@
     display: block;
   }
   body.public-landscape #player_detail_box .mini-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  body.public-landscape #player_detail_box .mini-stat {
+    flex: 0 0 176px;
+    max-width: 176px;
+    min-width: 0;
+    padding: 8px;
+    font-size: 11px;
+    line-height: 1.35;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+  body.public-landscape #player_detail_box .mini-stat b {
+    min-width: 0;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-height: 5.4em;
+    overflow-y: auto;
+  }
+  body.public-landscape #player_detail_box .mini-stat:nth-child(2),
+  body.public-landscape #player_detail_box .mini-stat:nth-child(3),
+  body.public-landscape #player_detail_box .mini-stat:nth-child(4) {
+    flex-basis: 260px;
+    max-width: 260px;
   }
   body.public-landscape #player_detail_box .radar-grid {
     display: flex;
@@ -2112,18 +2145,43 @@
     overflow-y: visible;
   }
   body.public-landscape #player_detail_box .metric-table {
-    min-width: 980px;
-    width: 980px;
-    table-layout: auto;
+    min-width: 1080px;
+    width: 1080px;
+    table-layout: fixed;
   }
   body.public-landscape #player_detail_box .metric-table th,
   body.public-landscape #player_detail_box .metric-table td {
     white-space: nowrap;
   }
+  body.public-landscape #player_detail_box .metric-table th:nth-child(1),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(1) {
+    width: 110px;
+  }
+  body.public-landscape #player_detail_box .metric-table th:nth-child(2),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(2),
+  body.public-landscape #player_detail_box .metric-table th:nth-child(3),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(3),
+  body.public-landscape #player_detail_box .metric-table th:nth-child(4),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(4),
+  body.public-landscape #player_detail_box .metric-table th:nth-child(5),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(5),
+  body.public-landscape #player_detail_box .metric-table th:nth-child(6),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(6) {
+    width: 110px;
+  }
+  body.public-landscape #player_detail_box .metric-table th:nth-child(7),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(7) {
+    width: 84px;
+  }
+  body.public-landscape #player_detail_box .metric-table th:nth-child(8),
+  body.public-landscape #player_detail_box .metric-table td:nth-child(8) {
+    width: 86px;
+  }
   body.public-landscape #player_detail_box .metric-table th:last-child,
   body.public-landscape #player_detail_box .metric-table td:last-child {
-    min-width: 180px;
+    width: 260px;
     white-space: normal;
+    overflow-wrap: anywhere;
   }
   @media (orientation: portrait) {
     body.public-landscape::before {
