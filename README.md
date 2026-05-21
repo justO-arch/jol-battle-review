@@ -14,6 +14,8 @@
   - `https://justo-arch.github.io/jol-battle-review/`
 - 桌機網址：
   - `https://justo-arch.github.io/jol-battle-review/desktop/`
+- 桌機公開唯讀網址：
+  - `https://justo-arch.github.io/jol-battle-review/desktop/?public=latest`
 - 文件路徑：
   - `https://justo-arch.github.io/jol-battle-review/docs/`
 
@@ -25,6 +27,9 @@
 - `desktop/index.html`
   - 由 `battle_review.html` 複製而來
   - 作為桌機版入口
+- `desktop/public-data/latest.json`
+  - 公開唯讀模式的資料來源
+  - 直接沿用 `battle_review_export_*.json` 格式
 - `docs/`
   - 同步目前的相關 `.md`
   - 方便直接查看規格與版本紀錄
@@ -35,16 +40,19 @@
    - `github_pages_mobile/index.html`
 2. 將最新桌機版同步到：
    - `github_pages_mobile/desktop/index.html`
-3. 視需要同步文件到：
+3. 若要更新公開唯讀資料，將公開用的覆盤匯出 JSON 同步到：
+   - `github_pages_mobile/desktop/public-data/latest.json`
+4. 視需要同步文件到：
    - `github_pages_mobile/docs/`
-4. push 到：
+5. push 到：
    - `justO-arch/jol-battle-review`
-5. GitHub Pages 會自動更新
+6. GitHub Pages 會自動更新
 
 本機同步來源：
 
 - `/home/shen/JusticeOL/battle_review_mobile.html`
 - `/home/shen/JusticeOL/battle_review.html`
+- `/home/shen/JusticeOL/幫戰/battle_review_export_*.json`
 - `/home/shen/JusticeOL/幫戰覆盤新頁規格.md`
 - `/home/shen/JusticeOL/版本內容.md`
 
@@ -52,6 +60,7 @@
 
 - `/home/shen/JusticeOL/github_pages_mobile/index.html`
 - `/home/shen/JusticeOL/github_pages_mobile/desktop/index.html`
+- `/home/shen/JusticeOL/github_pages_mobile/desktop/public-data/latest.json`
 - `/home/shen/JusticeOL/github_pages_mobile/docs/`
 
 實際部署流程：
@@ -65,12 +74,14 @@
 3. 再同步覆蓋：
    - `/home/shen/JusticeOL/github_pages_mobile/index.html`
    - `/home/shen/JusticeOL/github_pages_mobile/desktop/index.html`
+   - `/home/shen/JusticeOL/github_pages_mobile/desktop/public-data/latest.json`
    - `/home/shen/JusticeOL/github_pages_mobile/docs/`
 4. 進入：
    - `/home/shen/JusticeOL/github_pages_mobile`
 5. 執行：
    - `git add index.html`
    - `git add desktop/index.html`
+   - `git add desktop/public-data/latest.json`
    - `git add docs/*.md`
    - `git commit -m "update mobile page"`
    - `git push`
@@ -86,9 +97,10 @@
 ## 注意
 
 - 這個頁面是前端工具
-- 網址公開不代表資料公開
-- 每個人仍需自行匯入 `json`
-- 頁面資料主要存在各自裝置的 `localStorage`
+- `/desktop/` 是個人工具模式，資料主要存在各自裝置的 `localStorage`
+- `/desktop/?public=latest` 是公開唯讀模式，會讀取 `desktop/public-data/latest.json`
+- 公開唯讀模式不會自動寫入訪客 `localStorage`
+- 訪客若要基於公開資料繼續編輯，需按 `從公開資料建立本機副本`
 - 匯入檔案必須使用：
   - `battle_review_export_*.json`
 - 不可直接使用：
