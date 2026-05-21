@@ -2171,6 +2171,10 @@
   body.public-landscape .focus-detail-card {
     flex: none;
   }
+  body.public-landscape .focus-detail-card-iron,
+  body.public-landscape .focus-detail-card-healer {
+    grid-column: 1 / -1;
+  }
   body.public-landscape .opponent-card summary {
     padding: 8px 10px;
     font-size: 12px;
@@ -2222,6 +2226,31 @@
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+  body.public-readonly .focus-detail-card,
+  body.public-readonly .focus-detail-card-iron,
+  body.public-readonly .focus-detail-card-healer,
+  body.public-readonly .focus-detail-item,
+  body.public-readonly .focus-detail-metric {
+    min-width: 0;
+    max-width: 100%;
+  }
+  body.public-readonly .focus-detail-item,
+  body.public-readonly .focus-detail-item b,
+  body.public-readonly .focus-detail-metric {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  @media (max-width: 900px) {
+    body.public-readonly .focus-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    body.public-readonly .focus-detail-card {
+      flex: none;
+    }
   }
   body.public-landscape [data-tab-panel="players"],
   body.public-landscape #player_detail_box,
