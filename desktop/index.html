@@ -211,14 +211,16 @@
   }
   .btn-secondary:hover { background: #efd9c6; }
   #btn_view_public_mode,
-  #btn_back_to_personal_tool {
+  #btn_back_to_personal_tool,
+  #btn_toggle_public_landscape {
     background: #1d4ed8;
     color: #fff;
     border-color: #1d4ed8;
     box-shadow: 0 8px 18px rgba(29, 78, 216, 0.24);
   }
   #btn_view_public_mode:hover,
-  #btn_back_to_personal_tool:hover {
+  #btn_back_to_personal_tool:hover,
+  #btn_toggle_public_landscape:hover {
     background: #1e40af;
     border-color: #1e40af;
   }
@@ -1889,6 +1891,181 @@
       flex: 1 1 100%;
     }
   }
+  body.public-landscape {
+    line-height: 1.35;
+  }
+  body.public-landscape::before {
+    content: "手機建議轉為橫向瀏覽";
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 7px 10px;
+    background: #1d4ed8;
+    color: #fff;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 900;
+  }
+  body.public-landscape .page {
+    max-width: none;
+    padding: 8px 8px 24px;
+  }
+  body.public-landscape .hero {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+  }
+  body.public-landscape .hero-top {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+  body.public-landscape .hero h1 {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+  body.public-landscape .hero p,
+  body.public-landscape .hero-note,
+  body.public-landscape .hero-tools-note {
+    display: none;
+  }
+  body.public-landscape .hero-tools {
+    width: auto;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  body.public-landscape .hero-tools .inline-actions {
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    margin-top: 0;
+  }
+  body.public-landscape .mode-status {
+    max-width: 260px;
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  body.public-landscape .panel {
+    border-radius: 14px;
+  }
+  body.public-landscape .panel-title {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  body.public-landscape .panel-body {
+    padding: 8px 10px 12px;
+  }
+  body.public-landscape .tab-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 7px 8px;
+    overflow-x: auto;
+    background: rgba(255, 253, 248, 0.96);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+    scrollbar-width: thin;
+  }
+  body.public-landscape button,
+  body.public-landscape input,
+  body.public-landscape select,
+  body.public-landscape textarea {
+    font-size: 12px;
+  }
+  body.public-landscape button {
+    padding: 7px 10px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  body.public-landscape .tab-btn {
+    flex: 0 0 auto;
+  }
+  body.public-landscape .tab-bar-spacer {
+    display: none;
+  }
+  body.public-landscape .current-battle-tools {
+    flex: 0 0 auto;
+    min-width: 280px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-left: auto;
+  }
+  body.public-landscape .current-battle-tools label {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  body.public-landscape .current-battle-tools select {
+    min-width: 180px;
+    max-width: 260px;
+    flex: 0 1 220px;
+  }
+  body.public-landscape .layout,
+  body.public-landscape .split,
+  body.public-landscape .review-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.public-landscape .grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.public-landscape .grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  body.public-landscape .grid-4,
+  body.public-landscape .summary-grid,
+  body.public-landscape .mini-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  body.public-landscape .radar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  body.public-landscape .radar-card {
+    padding: 10px;
+  }
+  body.public-landscape .radar-svg {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+  body.public-landscape .detail-box,
+  body.public-landscape .note-box,
+  body.public-landscape .alert-note {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+  body.public-landscape .table-wrap,
+  body.public-landscape .matchup-roster-scroll {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.public-landscape .table-wrap {
+    max-height: calc(100vh - 150px);
+  }
+  body.public-landscape table {
+    font-size: 12px;
+  }
+  body.public-landscape th,
+  body.public-landscape td {
+    padding: 6px 7px;
+  }
+  body.public-landscape .matchup-rosters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.public-landscape .matchup-card {
+    break-inside: avoid;
+  }
+  @media (orientation: portrait) {
+    body.public-landscape::before {
+      display: block;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1906,6 +2083,7 @@
             <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
             <button class="btn-secondary" id="btn_view_public_mode" type="button">查看公開版</button>
             <button class="btn-secondary" id="btn_back_to_personal_tool" type="button" hidden>回到我的本機工具</button>
+            <button class="btn-secondary" id="btn_toggle_public_landscape" type="button" hidden>手機橫版檢視</button>
             <button class="btn-primary" id="btn_copy_public_to_local" type="button" hidden>從公開資料建立本機副本</button>
             <input id="snapshot_file" type="file" accept=".json,application/json" hidden>
           </div>
@@ -2719,6 +2897,10 @@ function isPublicReadOnlyMode() {
   return queryParamValue('public') !== null;
 }
 
+function isPublicLandscapeMode() {
+  return isPublicReadOnlyMode() && String(queryParamValue('view') || '').toLowerCase() === 'landscape';
+}
+
 function normalizePublicShareKey(rawKey) {
   const key = String(rawKey || 'latest').trim().replace(/\.json$/i, '') || 'latest';
   return /^[A-Za-z0-9._-]+$/.test(key) ? key : 'latest';
@@ -2745,6 +2927,7 @@ function personalToolUrl() {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.delete('public');
     url.searchParams.delete('v');
+    url.searchParams.delete('view');
     return `${url.pathname}${url.search}${url.hash}` || './';
   } catch (err) {
     return './';
@@ -2756,9 +2939,34 @@ function publicLatestUrl() {
     const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
     url.searchParams.set('public', 'latest');
     url.searchParams.set('v', String(Date.now()));
+    url.searchParams.delete('view');
     return `${url.pathname}${url.search}${url.hash}`;
   } catch (err) {
     return `?public=latest&v=${Date.now()}`;
+  }
+}
+
+function publicStandardViewUrl() {
+  try {
+    const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
+    url.searchParams.set('public', publicShareKey());
+    url.searchParams.set('v', String(Date.now()));
+    url.searchParams.delete('view');
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (err) {
+    return `?public=${encodeURIComponent(publicShareKey())}&v=${Date.now()}`;
+  }
+}
+
+function publicLandscapeViewUrl() {
+  try {
+    const url = new URL(currentLocationHref() || 'https://example.test/desktop/');
+    url.searchParams.set('public', publicShareKey());
+    url.searchParams.set('view', 'landscape');
+    url.searchParams.set('v', String(Date.now()));
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (err) {
+    return `?public=${encodeURIComponent(publicShareKey())}&view=landscape&v=${Date.now()}`;
   }
 }
 
@@ -2910,28 +3118,39 @@ function setDisabled(id, disabled) {
 
 function renderPublicModeUi() {
   const publicMode = isPublicReadOnlyMode();
+  const landscapeMode = isPublicLandscapeMode();
   if (document.body?.classList) {
     if (publicMode) {
       document.body.classList.add('public-readonly');
     } else {
       document.body.classList.remove('public-readonly');
     }
+    if (landscapeMode) {
+      document.body.classList.add('public-landscape');
+    } else {
+      document.body.classList.remove('public-landscape');
+    }
   }
   toggleElement('btn_export_snapshot', publicMode);
   toggleElement('btn_import_snapshot', publicMode);
   toggleElement('btn_view_public_mode', publicMode);
   toggleElement('btn_back_to_personal_tool', !publicMode);
+  toggleElement('btn_toggle_public_landscape', !publicMode);
   toggleElement('btn_copy_public_to_local', !publicMode);
   toggleElement('public_readonly_note', !publicMode);
   toggleElement('btn_toggle_battle_meta_editor', publicMode);
   toggleElement('btn_delete_current_battle', publicMode);
+  const landscapeButton = document.getElementById('btn_toggle_public_landscape');
+  if (landscapeButton) {
+    landscapeButton.textContent = landscapeMode ? '標準公開版' : '手機橫版檢視';
+  }
   const status = document.getElementById('mode_status');
   if (status) {
     status.classList?.toggle?.('public', publicMode);
     status.textContent = publicMode
       ? (publicShareLoadError
         ? `公開唯讀模式：${publicShareLoadError}`
-        : `公開唯讀模式：資料來源 ${publicShareDataUrl()}，不會寫入你的瀏覽器。`)
+        : `公開唯讀模式${landscapeMode ? '（手機橫版檢視）' : ''}：資料來源 ${publicShareDataUrl()}，不會寫入你的瀏覽器。`)
       : '個人工具模式：資料保存在你的瀏覽器，可自行匯入、編輯與匯出 JSON。';
   }
   [
@@ -8976,6 +9195,9 @@ document.getElementById('btn_view_public_mode').addEventListener('click', () => 
 document.getElementById('btn_back_to_personal_tool').addEventListener('click', () => {
   window.location.href = personalToolUrl();
 });
+document.getElementById('btn_toggle_public_landscape').addEventListener('click', () => {
+  window.location.href = isPublicLandscapeMode() ? publicStandardViewUrl() : publicLandscapeViewUrl();
+});
 document.getElementById('btn_copy_public_to_local').addEventListener('click', handleCopyPublicShareToLocal);
 document.getElementById('btn_public_copy_overwrite').addEventListener('click', () => {
   closePublicCopyModal();
@@ -9192,6 +9414,7 @@ document.getElementById('battle_manual_note').addEventListener('input', event =>
 
 async function bootstrapBattleReviewApp() {
   updateRoleImportControls();
+  renderPublicModeUi();
   if (isPublicReadOnlyMode()) {
     try {
       await loadPublicShareSnapshot();
