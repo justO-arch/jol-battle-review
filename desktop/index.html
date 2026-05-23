@@ -2680,6 +2680,7 @@
                     <option value="chenyan">塵煙如夢</option>
                     <option value="chensi">塵煙似夢</option>
                     <option value="jianzhao">劍照霜寒</option>
+                    <option value="zouyu">驟雨初歇</option>
                     <option value="flower_other">花舞或其他</option>
                   </select>
                 </div>
@@ -2746,6 +2747,7 @@
                     <option value="chenyan">塵煙如夢</option>
                     <option value="chensi">塵煙似夢</option>
                     <option value="jianzhao">劍照霜寒</option>
+                    <option value="zouyu">驟雨初歇</option>
                     <option value="flower_other">花舞或其他</option>
                   </select>
                 </div>
@@ -3011,6 +3013,7 @@ const OWN_TEAM_FILTER_LABELS = {
   chenyan: '塵煙如夢',
   chensi: '塵煙似夢',
   jianzhao: '劍照霜寒',
+  zouyu: '驟雨初歇',
   flower_other: '花舞或其他',
 };
 const PLAYER_COHORT_LABELS = {
@@ -6175,7 +6178,8 @@ function ownTeamMatchesFilter(teamName, filterKey = 'all') {
   if (filterKey === 'chenyan') return value === '塵煙如夢';
   if (filterKey === 'chensi') return value === '塵煙似夢';
   if (filterKey === 'jianzhao') return value === '劍照霜寒';
-  if (filterKey === 'flower_other') return value !== '塵煙如夢' && value !== '塵煙似夢' && value !== '劍照霜寒';
+  if (filterKey === 'zouyu') return value === '驟雨初歇';
+  if (filterKey === 'flower_other') return value !== '塵煙如夢' && value !== '塵煙似夢' && value !== '劍照霜寒' && value !== '驟雨初歇';
   return true;
 }
 
