@@ -2798,7 +2798,10 @@
 
   <!-- 資料匯出/匯入 -->
   <div class="section" style="margin-bottom:16px;">
-    <div class="section-title">資料備份 / 還原（跨電腦移轉）</div>
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+      <span>資料備份 / 還原（跨電腦移轉）</span>
+      <button onclick="importDataReplace()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:7px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">取代式匯入</button>
+    </div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:12px;">
         將所有儲存的套裝、設定資料打包為 JSON 檔案，可帶到另一台電腦匯入還原。
@@ -8081,6 +8084,73 @@ function importData() {
         location.reload();
       } catch (err) {
         alert('匯入失敗：' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function createPreImportBackup() {
+  const currentSnapshot = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith(STORAGE_KEY)) currentSnapshot[key] = localStorage.getItem(key);
+  }
+  let backupWarning = '';
+  // Drop an older pre-import backup first so it doesn't keep consuming quota.
+  localStorage.removeItem(`${STORAGE_KEY}_pre_import_backup`);
+  try {
+    localStorage.setItem(`${STORAGE_KEY}_pre_import_backup`, JSON.stringify(currentSnapshot));
+  } catch (backupErr) {
+    backupWarning = ' 但匯入前備份未建立，原因可能是瀏覽器本地儲存空間已滿。';
+    console.warn('Failed to save pre-import backup:', backupErr);
+  }
+  return backupWarning;
+}
+
+function importDataReplace() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        const importEntries = Object.entries(data).filter(([key, val]) =>
+          key.startsWith(STORAGE_KEY) &&
+          key !== `${STORAGE_KEY}_pre_import_backup` &&
+          typeof val === 'string'
+        );
+        if (!importEntries.length) {
+          throw new Error('檔案中沒有可匯入的 jol_* 資料。');
+        }
+        const dbTypes = importEntries
+          .map(([key]) => key.match(new RegExp(`^${STORAGE_KEY}_db_(set|healer|pve|pvp|gear|ng)$`))?.[1])
+          .filter(Boolean)
+          .join('、') || '無';
+        const ok = confirm(
+          `取代式匯入會用檔案中的 ${importEntries.length} 個 jol_* 儲存區塊覆蓋本機同名 key。` +
+          `\n這不是 ${importEntries.length} 筆裝備或內功名稱；例如 jol_db_ng 會整包取代目前內功資料。` +
+          `\n\n會被取代的資料庫類型：${dbTypes}` +
+          `\n\n檔案沒有包含的本機資料不會刪除；匯入前會先建立救援備份。是否繼續？`
+        );
+        if (!ok) return;
+        const backupWarning = createPreImportBackup();
+        importEntries.forEach(([key, val]) => {
+          try {
+            localStorage.setItem(key, val);
+          } catch (storeErr) {
+            throw new Error(`寫入 ${key} 失敗，原因可能是瀏覽器本地儲存空間已滿`);
+          }
+        });
+        alert(`取代式匯入成功（共 ${importEntries.length} 筆）。${backupWarning || '已建立匯入前備份。'}頁面即將重新整理。`);
+        location.reload();
+      } catch (err) {
+        alert('取代式匯入失敗：' + err.message);
       }
     };
     reader.readAsText(file);
