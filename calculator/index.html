@@ -624,6 +624,45 @@
     box-shadow: var(--shadow-card);
     overflow: hidden;
   }
+  .optimize-jump-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid rgba(168, 122, 47, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 252, 247, 0.82);
+    box-shadow: 0 10px 24px rgba(24, 33, 43, 0.06);
+  }
+  .optimize-jump-nav-label {
+    color: #6f6049;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .optimize-jump-nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 6px 12px;
+    border: 1px solid rgba(168, 122, 47, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: #355d7c;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.16s ease;
+  }
+  .optimize-jump-nav a:hover {
+    border-color: rgba(168, 122, 47, 0.46);
+    background: rgba(255, 249, 239, 0.96);
+    color: #2f5e58;
+    transform: translateY(-1px);
+  }
   .opt-block .section-title {
     padding: 14px 18px;
     margin: -18px -18px 16px;
@@ -699,6 +738,18 @@
     background: #fff2e9;
     border: 1px solid #efccbb;
   }
+  .opt-block-final {
+    background: linear-gradient(180deg, #f0f7f6 0%, #fbfefd 100%);
+    border-color: #7faea7;
+  }
+  .opt-block-final .section-title {
+    background: linear-gradient(90deg, #d0e5e1 0%, #e3f0ee 100%);
+    color: #2f5e58;
+  }
+  .opt-block-final .formula-note {
+    background: #edf8f6;
+    border: 1px solid #bfddd8;
+  }
   .result-item .result-value.link-like {
     cursor: pointer;
     text-decoration: underline;
@@ -716,7 +767,8 @@
   .opt-block-lower .result-item.highlight,
   .opt-block-upper .result-item.highlight,
   .opt-block-joint .result-item.highlight,
-  .opt-block-ng .result-item.highlight {
+  .opt-block-ng .result-item.highlight,
+  .opt-block-final .result-item.highlight {
     box-shadow: 0 8px 18px rgba(0, 85, 170, 0.08);
   }
 
@@ -939,13 +991,15 @@
   #opt_candidate_note,
   #opt_upper_candidate_note,
   #opt_joint_candidate_note,
-  #opt_ng_candidate_note {
+  #opt_ng_candidate_note,
+  #opt_final_candidate_note {
     white-space: pre-line;
   }
   #opt_results > div,
   #opt_upper_results > div,
   #opt_joint_results > div,
-  #opt_ng_results > div {
+  #opt_ng_results > div,
+  #opt_final_results > div {
     box-shadow: 0 16px 32px rgba(23, 35, 45, 0.08);
     border-radius: 16px !important;
     border-color: rgba(168, 122, 47, 0.18) !important;
@@ -1129,7 +1183,8 @@
   #tab-optimize #opt_search_note,
   #tab-optimize #opt_upper_search_note,
   #tab-optimize #opt_joint_search_note,
-  #tab-optimize #opt_ng_search_note {
+  #tab-optimize #opt_ng_search_note,
+  #tab-optimize #opt_final_search_note {
     padding: 10px 12px;
     border-radius: 12px;
     background: rgba(255, 249, 239, 0.82);
@@ -1138,7 +1193,8 @@
   #tab-optimize #opt_lower_result_panel,
   #tab-optimize #opt_upper_result_panel,
   #tab-optimize #opt_joint_result_panel,
-  #tab-optimize #opt_ng_result_panel {
+  #tab-optimize #opt_ng_result_panel,
+  #tab-optimize #opt_final_result_panel {
     background: linear-gradient(180deg, rgba(255,252,247,0.72), rgba(245,237,224,0.46));
     border: 1px solid rgba(168, 122, 47, 0.12);
     border-radius: 16px;
@@ -1147,7 +1203,8 @@
   #tab-optimize #opt_result_empty,
   #tab-optimize #opt_upper_result_empty,
   #tab-optimize #opt_joint_result_empty,
-  #tab-optimize #opt_ng_result_empty {
+  #tab-optimize #opt_ng_result_empty,
+  #tab-optimize #opt_final_result_empty {
     padding: 8px 4px 2px;
   }
   #tab-optimize #opt_exclude_list,
@@ -2379,6 +2436,15 @@
     <span id="optimize_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
   </div>
 
+  <nav class="optimize-jump-nav" aria-label="最佳化區塊快速跳轉">
+    <span class="optimize-jump-nav-label">快速跳轉</span>
+    <a href="#opt-section-lower">下半</a>
+    <a href="#opt-section-upper">上半</a>
+    <a href="#opt-section-joint">上下</a>
+    <a href="#opt-section-ng">內功</a>
+    <a href="#opt-section-final">最終</a>
+  </nav>
+
   <div class="section opt-block opt-block-exclude" style="margin-bottom:16px;">
     <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
       <span>排除裝備</span>
@@ -2406,7 +2472,7 @@
     </div>
   </div>
 
-  <div class="section opt-block opt-block-lower" style="margin-bottom:16px;">
+  <div id="opt-section-lower" class="section opt-block opt-block-lower" style="margin-bottom:16px;">
     <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">下半裝備最佳化（第一版）</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
@@ -2472,7 +2538,7 @@
     </div>
   </div>
 
-  <div class="section opt-block opt-block-upper" style="margin-top:24px;margin-bottom:16px;">
+  <div id="opt-section-upper" class="section opt-block opt-block-upper" style="margin-top:24px;margin-bottom:16px;">
     <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">上半裝備最佳化（第一版）</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
@@ -2541,14 +2607,14 @@
     </div>
   </div>
 
-  <div class="section opt-block opt-block-joint" style="margin-top:24px;margin-bottom:16px;">
-    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">上下裝備聯合最佳化（第一版候選初篩）</div>
+  <div id="opt-section-joint" class="section opt-block opt-block-joint" style="margin-top:24px;margin-bottom:16px;">
+    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">上下裝備聯合最佳化（11 件全窮舉）</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        這一版不做 11 件完整全域窮舉，而是先取上半前 `200` 與下半前 `200` 候選，再做聯合重算。
+        直接窮舉目前候選池中的上半 6 件與下半 5 件所有合法組合，再做 11 件完整重算。
       </div>
       <div class="formula-note">
-        聯合結果會直接使用目前 `內功/裝備比較` 頁的欄位值作為基底，請先手動切成「全裸機體」後再執行。
+        不需要先跑上半或下半最佳化；排除清單與模式件數規則仍生效，並使用目前 `內功/裝備比較` 頁欄位值作為基底。
       </div>
     </div>
   </div>
@@ -2586,8 +2652,8 @@
         <div class="results-grid">
           <div class="result-item"><div class="result-label">上半合法組</div><div class="result-value" id="opt_joint_upper_legal_count">0</div></div>
           <div class="result-item"><div class="result-label">下半合法組</div><div class="result-value" id="opt_joint_lower_legal_count">0</div></div>
-          <div class="result-item"><div class="result-label">上半保留數</div><div class="result-value" id="opt_joint_upper_kept_count">0</div></div>
-          <div class="result-item"><div class="result-label">下半保留數</div><div class="result-value" id="opt_joint_lower_kept_count">0</div></div>
+          <div class="result-item"><div class="result-label">上半使用數</div><div class="result-value" id="opt_joint_upper_kept_count">0</div></div>
+          <div class="result-item"><div class="result-label">下半使用數</div><div class="result-value" id="opt_joint_lower_kept_count">0</div></div>
           <div class="result-item"><div class="result-label">聯合重算數</div><div class="result-value" id="opt_joint_combo_count">0</div></div>
         </div>
         <div id="opt_joint_candidate_note" class="formula-note" style="margin-top:10px;"></div>
@@ -2608,7 +2674,7 @@
     </div>
   </div>
 
-  <div class="section opt-block opt-block-ng" style="margin-top:24px;margin-bottom:16px;">
+  <div id="opt-section-ng" class="section opt-block opt-block-ng" style="margin-top:24px;margin-bottom:16px;">
     <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">內功最佳化（第一版）</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
@@ -2787,6 +2853,71 @@
       <div id="opt_ng_result_panel">
         <div id="opt_ng_result_empty" style="color:#666666;font-size:13px;">尚未執行最佳化。</div>
         <div id="opt_ng_results"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="opt-section-final" class="section opt-block opt-block-final" style="margin-top:24px;margin-bottom:16px;">
+    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">最終最佳化（聯合裝備 x 內功）</div>
+    <div class="section-body">
+      <div class="formula-note" style="margin-bottom:10px;">
+        先沿用已跑出的上下裝備聯合最佳化前 `200` 組，再沿用已跑出的內功最佳化前 `300` 組，交叉後重新套公式計算完整結果。
+      </div>
+      <div class="formula-note">
+        請先用各自正確基底跑完上下裝備聯合最佳化與內功最佳化；最終結果只沿用候選清單，不沿用子結果分數，並使用目前 `內功/裝備比較` 頁欄位值作為全裸基底。
+      </div>
+    </div>
+  </div>
+
+  <div class="section opt-block opt-block-final" style="margin-bottom:16px;">
+    <div class="section-title">搜尋條件</div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end;">
+        <div>
+          <div style="font-size:12px;color:#555555;margin-bottom:4px;">模式</div>
+          <select id="opt_final_mode" onchange="updateFinalOptimizeSearchControls()" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;">
+            <option value="pve">PVE</option>
+            <option value="pvp">PVP</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:12px;color:#555555;margin-bottom:4px;">排序目標</div>
+          <select id="opt_final_sort" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;"></select>
+        </div>
+        <div>
+          <button type="button" onclick="runFinalOptimize()" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始最終最佳化</button>
+        </div>
+      </div>
+      <div id="opt_final_search_note" style="margin-top:10px;font-size:12px;color:#666666;"></div>
+    </div>
+  </div>
+
+  <div class="section opt-block opt-block-final" style="margin-bottom:16px;">
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <span>候選概況</span>
+      <button type="button" id="opt_final_toggle_btn" onclick="toggleOptimizePanel('final')" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">收起結果</button>
+    </div>
+    <div class="section-body">
+      <div id="opt_final_panel">
+        <div class="results-grid">
+          <div class="result-item"><div class="result-label">聯合裝備保留</div><div class="result-value" id="opt_final_joint_kept_count">0</div></div>
+          <div class="result-item"><div class="result-label">內功保留</div><div class="result-value" id="opt_final_ng_kept_count">0</div></div>
+          <div class="result-item"><div class="result-label">最終重算數</div><div class="result-value" id="opt_final_combo_count">0</div></div>
+        </div>
+        <div id="opt_final_candidate_note" class="formula-note" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section opt-block opt-block-final">
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <span>結果（前 10 名）</span>
+      <button type="button" id="opt_final_clear_ignored_btn" onclick="clearOptimizeIgnoredResults('final')" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">取消本區忽略</button>
+    </div>
+    <div class="section-body">
+      <div id="opt_final_result_panel">
+        <div id="opt_final_result_empty" style="color:#666666;font-size:13px;">尚未執行最終最佳化。</div>
+        <div id="opt_final_results"></div>
       </div>
     </div>
   </div>
@@ -4447,7 +4578,7 @@ const TAB_INPUT_IDS = {
             'ng_belemres','ng_bbossres','ng_banticrit','ng_bhp','ng_bStyleResPct',
             'ng_cls_shenxiang','ng_cls_longyin','ng_cls_suimeng',
             'ng_cls_xuanji','ng_cls_jiuling','ng_cls_xuehe'],
-  optimize: ['opt_mode','opt_sort','opt_upper_mode','opt_upper_sort','opt_joint_mode','opt_joint_sort','opt_ng_mode','opt_ng_sort','opt_ng_req1_elem','opt_ng_req1_min','opt_ng_req2_elem','opt_ng_req2_min']
+  optimize: ['opt_mode','opt_sort','opt_upper_mode','opt_upper_sort','opt_joint_mode','opt_joint_sort','opt_ng_mode','opt_ng_sort','opt_ng_req1_elem','opt_ng_req1_min','opt_ng_req2_elem','opt_ng_req2_min','opt_final_mode','opt_final_sort']
 };
 
 function saveTabInputs(tab) {
@@ -4474,8 +4605,8 @@ function getOptimizeSnapshotStorageKey() {
   return `${STORAGE_KEY}_tab_optimize_snapshot`;
 }
 
-const OPTIMIZE_SNAPSHOT_VERSION = 2;
-const OPTIMIZE_SNAPSHOT_RESULT_LIMIT = 30;
+const OPTIMIZE_SNAPSHOT_VERSION = 3;
+const OPTIMIZE_SNAPSHOT_RESULT_LIMIT = 300;
 
 function compactOptimizeItemForSnapshot(item) {
   if (!item || typeof item !== 'object') return null;
@@ -4484,6 +4615,7 @@ function compactOptimizeItemForSnapshot(item) {
   };
   if (item.index !== undefined && item.index !== null) out.index = item.index;
   if (item.category) out.category = item.category;
+  if (item.slot) out.slot = item.slot;
   if (item.coreName) out.coreName = item.coreName;
   return out;
 }
@@ -4493,7 +4625,7 @@ function compactOptimizeResultForSnapshot(result) {
   const keys = [
     'modeCount','effect1','effect2','expected','expectedDeltaPct',
     'myExpected','oppExpected','damageRatio','enemyHits','myHits','hitGap',
-    'adjustedTraitAtk','adjustedTraitDef'
+    'adjustedTraitAtk','adjustedTraitDef','upperCount','lowerCount'
   ];
   const out = {};
   keys.forEach(key => {
@@ -4502,8 +4634,11 @@ function compactOptimizeResultForSnapshot(result) {
   if (Array.isArray(result.items)) out.items = result.items.map(compactOptimizeItemForSnapshot).filter(Boolean);
   if (Array.isArray(result.upperItems)) out.upperItems = result.upperItems.map(compactOptimizeItemForSnapshot).filter(Boolean);
   if (Array.isArray(result.lowerItems)) out.lowerItems = result.lowerItems.map(compactOptimizeItemForSnapshot).filter(Boolean);
+  if (Array.isArray(result.gearItems)) out.gearItems = result.gearItems.map(compactOptimizeItemForSnapshot).filter(Boolean);
+  if (Array.isArray(result.ngItems)) out.ngItems = result.ngItems.map(compactOptimizeItemForSnapshot).filter(Boolean);
   if (result.elementCounts && typeof result.elementCounts === 'object') out.elementCounts = { ...result.elementCounts };
   if (result.zhoutianCounts && typeof result.zhoutianCounts === 'object') out.zhoutianCounts = { ...result.zhoutianCounts };
+  if (result.appliedTotal && typeof result.appliedTotal === 'object') out.appliedTotal = { ...result.appliedTotal };
   return out;
 }
 
@@ -4519,7 +4654,8 @@ function collectOptimizeSnapshot() {
     'opt_search_note','opt_ring_count','opt_bracelet_count','opt_necklace_count','opt_combo_count','opt_candidate_note','opt_result_empty',
     'opt_upper_search_note','opt_upper_head_count','opt_upper_body_count','opt_upper_waist_count','opt_upper_hand_count','opt_upper_foot_count','opt_upper_wrist_count','opt_upper_combo_count','opt_upper_candidate_note','opt_upper_result_empty',
     'opt_joint_search_note','opt_joint_upper_legal_count','opt_joint_lower_legal_count','opt_joint_upper_kept_count','opt_joint_lower_kept_count','opt_joint_combo_count','opt_joint_candidate_note','opt_joint_result_empty',
-    'opt_ng_search_note','opt_ng_candidate_count','opt_ng_core_count','opt_ng_combo_count','opt_ng_candidate_note','opt_ng_result_empty'
+    'opt_ng_search_note','opt_ng_candidate_count','opt_ng_core_count','opt_ng_combo_count','opt_ng_candidate_note','opt_ng_result_empty',
+    'opt_final_search_note','opt_final_joint_kept_count','opt_final_ng_kept_count','opt_final_combo_count','opt_final_candidate_note','opt_final_result_empty'
   ];
   const textMap = {};
   textIds.forEach(id => {
@@ -4534,6 +4670,7 @@ function collectOptimizeSnapshot() {
       upper: compactOptimizeResultsForSnapshot(optimizeLastUpperResults),
       joint: compactOptimizeResultsForSnapshot(optimizeLastJointResults),
       ng: compactOptimizeResultsForSnapshot(optimizeLastNgResults),
+      final: compactOptimizeResultsForSnapshot(optimizeLastFinalResults),
     },
     panelState: { ...optimizePanelState }
   };
@@ -4545,10 +4682,11 @@ function hasOptimizeSnapshotResults(results) {
 
 function restoreOptimizeResultData(resultMap) {
   if (!resultMap || typeof resultMap !== 'object') return false;
-  optimizeLastLowerResults = Array.isArray(resultMap.lower) ? resultMap.lower : [];
-  optimizeLastUpperResults = Array.isArray(resultMap.upper) ? resultMap.upper : [];
-  optimizeLastJointResults = Array.isArray(resultMap.joint) ? resultMap.joint : [];
-  optimizeLastNgResults = Array.isArray(resultMap.ng) ? resultMap.ng : [];
+  optimizeLastLowerResults = hydrateOptimizeStoredResults('lower', resultMap.lower);
+  optimizeLastUpperResults = hydrateOptimizeStoredResults('upper', resultMap.upper);
+  optimizeLastJointResults = hydrateOptimizeStoredResults('joint', resultMap.joint);
+  optimizeLastNgResults = hydrateOptimizeStoredResults('ng', resultMap.ng);
+  optimizeLastFinalResults = hydrateOptimizeStoredResults('final', resultMap.final);
   let restored = false;
   if (hasOptimizeSnapshotResults(optimizeLastLowerResults)) {
     renderLowerOptimizeResults(document.getElementById('opt_mode')?.value || 'pve', optimizeLastLowerResults);
@@ -4566,6 +4704,10 @@ function restoreOptimizeResultData(resultMap) {
     renderNgOptimizeResults(document.getElementById('opt_ng_mode')?.value || 'pve', optimizeLastNgResults);
     restored = true;
   }
+  if (hasOptimizeSnapshotResults(optimizeLastFinalResults)) {
+    renderFinalOptimizeResults(document.getElementById('opt_final_mode')?.value || 'pve', optimizeLastFinalResults);
+    restored = true;
+  }
   return restored;
 }
 
@@ -4576,6 +4718,7 @@ function showLegacyOptimizeSnapshotNotice(snapshot) {
     ['opt_upper_results', 'opt_upper_result_empty'],
     ['opt_joint_results', 'opt_joint_result_empty'],
     ['opt_ng_results', 'opt_ng_result_empty'],
+    ['opt_final_results', 'opt_final_result_empty'],
   ];
   pairs.forEach(([resultId, emptyId]) => {
     if (!legacyMap[resultId]) return;
@@ -4630,6 +4773,7 @@ function restoreOptimizePage() {
   updateUpperOptimizeSearchControls();
   updateJointOptimizeSearchControls();
   updateNgOptimizeSearchControls();
+  updateFinalOptimizeSearchControls();
   try {
     const saved = localStorage.getItem(getOptimizeSnapshotStorageKey());
     if (saved) restoreOptimizeSnapshot(JSON.parse(saved));
@@ -4638,6 +4782,7 @@ function restoreOptimizePage() {
   applyOptimizePanelState('upper');
   applyOptimizePanelState('joint');
   applyOptimizePanelState('ng');
+  applyOptimizePanelState('final');
 }
 
 function resetTabInputs(tab, recalcFn) {
@@ -5464,9 +5609,10 @@ function saveOptimizeMeta(type, index) {
 
 const LOWER_OPT_SLOTS = ['ring', 'bracelet', 'necklace'];
 const UPPER_OPT_SLOTS = ['head', 'body', 'waist', 'hand', 'foot', 'wrist'];
-const JOINT_OPT_KEPT_LIMIT = 200;
+const FINAL_OPT_JOINT_LIMIT = 200;
+const FINAL_OPT_NG_LIMIT = 300;
 const GEAR_SLOT_SORT_ORDER = { head:1, body:2, waist:3, hand:4, foot:5, wrist:6, ring:7, bracelet:8, necklace:9 };
-const optimizePanelState = { lower: true, upper: true, joint: true, ng: true };
+const optimizePanelState = { lower: true, upper: true, joint: true, ng: true, final: true };
 const optimizeDoneSectionState = { upper: true, lower: true, set: true, ng: true };
 const optimizeMetaSectionState = { pending: false, done: false };
 let optimizeExcludePanelExpanded = false;
@@ -5482,11 +5628,13 @@ let optimizeLastLowerResults = [];
 let optimizeLastUpperResults = [];
 let optimizeLastJointResults = [];
 let optimizeLastNgResults = [];
+let optimizeLastFinalResults = [];
 const optimizeIgnoredResults = {
   lower: new Set(),
   upper: new Set(),
   joint: new Set(),
   ng: new Set(),
+  final: new Set(),
 };
 const NG_ELEMENT_KEYS = ['metal', 'wood', 'water', 'fire', 'earth'];
 const NG_ELEMENT_LABELS = { metal:'金', wood:'木', water:'水', fire:'火', earth:'土' };
@@ -5876,6 +6024,7 @@ function applyOptimizePanelState(kind) {
     upper: ['opt_upper_panel', 'opt_upper_result_panel', 'opt_upper_toggle_btn'],
     joint: ['opt_joint_panel', 'opt_joint_result_panel', 'opt_joint_toggle_btn'],
     ng: ['opt_ng_panel', 'opt_ng_result_panel', 'opt_ng_toggle_btn'],
+    final: ['opt_final_panel', 'opt_final_result_panel', 'opt_final_toggle_btn'],
   };
   const [summaryId, resultId, btnId] = panelIds[kind] || panelIds.lower;
   const summaryEl = document.getElementById(summaryId);
@@ -5986,7 +6135,26 @@ function updateJointOptimizeSearchControls() {
         ['expected', '輸出期望最高'],
       ];
   sortEl.innerHTML = options.map(([v, label]) => `<option value="${v}">${label}</option>`).join('');
-  noteEl.textContent = `第一版會先各取上半前 ${JOINT_OPT_KEPT_LIMIT} 與下半前 ${JOINT_OPT_KEPT_LIMIT} 候選，再以目前比較頁欄位值作為全裸基底做聯合重算。`;
+  noteEl.textContent = '直接窮舉目前候選池中的上半合法組與下半合法組，再以目前比較頁欄位值作為基底做 11 件完整重算。';
+}
+
+function updateFinalOptimizeSearchControls() {
+  const mode = document.getElementById('opt_final_mode')?.value || 'pve';
+  const sortEl = document.getElementById('opt_final_sort');
+  const noteEl = document.getElementById('opt_final_search_note');
+  if (!sortEl || !noteEl) return;
+  const options = mode === 'pvp'
+    ? [
+        ['damageRatio', '傷害比值最高'],
+        ['hitGap', '次數差距最大'],
+        ['myExpected', '我方期望傷害最高'],
+        ['oppExpected', '我方受到傷害最低'],
+      ]
+    : [
+        ['expected', '輸出期望最高'],
+      ];
+  sortEl.innerHTML = options.map(([v, label]) => `<option value="${v}">${label}</option>`).join('');
+  noteEl.textContent = `沿用已跑出的聯合裝備前 ${FINAL_OPT_JOINT_LIMIT} 組與內功前 ${FINAL_OPT_NG_LIMIT} 組，交叉後用目前基底重新計算完整裝備 + 內功結果。`;
 }
 
 function getOptimizeClassFlags() {
@@ -6184,6 +6352,201 @@ function getNgOptimizeCandidates() {
   }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 }
 
+function getOptimizeStoredItemIndex(item) {
+  const index = Number(item?.index);
+  return Number.isInteger(index) && index >= 0 ? index : null;
+}
+
+function findOptimizeStoredDBEntry(type, item) {
+  const list = DB[type] || [];
+  const index = getOptimizeStoredItemIndex(item);
+  const label = type === 'ng' ? '內功' : '裝備';
+  const wantedName = String(item?.name || '');
+  const wantedCategory = item?.category || '';
+  const wantedSlot = item?.slot || '';
+  const wantedCoreName = item?.coreName || '';
+  if (index !== null && index < list.length) {
+    const normalized = normalizeDBEntryMeta(list[index]);
+    const name = normalized.name || `${label}${index + 1}`;
+    if (!wantedName || name === wantedName) return { entry: normalized, index };
+  }
+  if (wantedName) {
+    const foundIndex = list.findIndex((entry, idx) => {
+      const normalized = normalizeDBEntryMeta(entry);
+      const meta = normalized.meta || {};
+      const name = normalized.name || `${label}${idx + 1}`;
+      if (name !== wantedName) return false;
+      if (type === 'gear') {
+        if (wantedCategory && meta.category !== wantedCategory) return false;
+        if (wantedSlot && meta.slot !== wantedSlot) return false;
+      } else if (wantedCoreName && getNgCoreName(name) !== wantedCoreName) {
+        return false;
+      }
+      return true;
+    });
+    if (foundIndex >= 0) return { entry: normalizeDBEntryMeta(list[foundIndex]), index: foundIndex };
+  }
+  if (index !== null && index < list.length) {
+    return { entry: normalizeDBEntryMeta(list[index]), index };
+  }
+  return null;
+}
+
+function hydrateOptimizeGearItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  const found = findOptimizeStoredDBEntry('gear', item);
+  const entry = found?.entry || (item.entry ? normalizeDBEntryMeta(item.entry) : null);
+  if (!entry) return null;
+  const meta = entry.meta || {};
+  if (!meta.category || !meta.slot) return null;
+  const index = found?.index ?? getOptimizeStoredItemIndex(item);
+  return {
+    ...item,
+    index,
+    entry,
+    name: entry.name || item.name || `裝備${(index ?? 0) + 1}`,
+    category: meta.category,
+    slot: meta.slot,
+    delta: getOptimizeGearDelta(entry),
+  };
+}
+
+function hydrateOptimizeGearItems(items, expectedLength = null) {
+  const source = Array.isArray(items) ? items : [];
+  if (expectedLength !== null && source.length !== expectedLength) return null;
+  const hydrated = source.map(hydrateOptimizeGearItem);
+  if (hydrated.some(item => !item)) return null;
+  if (expectedLength !== null && hydrated.length !== expectedLength) return null;
+  return hydrated;
+}
+
+function hydrateOptimizeGearStageResult(result, expectedLength) {
+  if (!result || typeof result !== 'object') return null;
+  const items = hydrateOptimizeGearItems(result.items, expectedLength);
+  if (!items) return null;
+  return { ...result, items };
+}
+
+function hydrateOptimizeJointResult(result) {
+  if (!result || typeof result !== 'object') return null;
+  const combinedItems = Array.isArray(result.items) ? result.items : [];
+  const upperSource = Array.isArray(result.upperItems) && result.upperItems.length
+    ? result.upperItems
+    : combinedItems.slice(0, 6);
+  const lowerSource = Array.isArray(result.lowerItems) && result.lowerItems.length
+    ? result.lowerItems
+    : combinedItems.slice(6, 11);
+  const upperItems = hydrateOptimizeGearItems(upperSource, 6);
+  const lowerItems = hydrateOptimizeGearItems(lowerSource, 5);
+  if (!upperItems || !lowerItems) return null;
+  const items = [...upperItems, ...lowerItems];
+  return {
+    ...result,
+    items,
+    gearItems: items,
+    upperItems,
+    lowerItems,
+  };
+}
+
+function hydrateOptimizeNgItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  const found = findOptimizeStoredDBEntry('ng', item);
+  const entry = found?.entry || (item.entry ? normalizeDBEntryMeta(item.entry) : null);
+  if (!entry) return null;
+  const meta = entry.meta || {};
+  if (meta.category !== 'inner_skill' || !Array.isArray(meta.tags) || meta.tags.length !== 5 || meta.tags.some(tag => !tag)) return null;
+  const index = found?.index ?? getOptimizeStoredItemIndex(item);
+  const name = entry.name || item.name || `內功${(index ?? 0) + 1}`;
+  const tags = meta.tags.slice();
+  return {
+    ...item,
+    index,
+    entry,
+    name,
+    coreName: getNgCoreName(name),
+    tags,
+    tagCounts: getNgTagCounts(tags),
+    applied: getNgAppliedValuesFromVals(getNgDBData(entry)),
+  };
+}
+
+function sumOptimizeNgElementCounts(items) {
+  const counts = { metal:0, wood:0, water:0, fire:0, earth:0 };
+  (Array.isArray(items) ? items : []).forEach(item => {
+    const tagCounts = item?.tagCounts || getNgTagCounts(item?.tags || []);
+    NG_ELEMENT_KEYS.forEach(key => { counts[key] += tagCounts[key] || 0; });
+  });
+  return counts;
+}
+
+function getOptimizeNgAppliedTotalFromItems(items) {
+  let total = getEmptyNgAppliedTotal();
+  (Array.isArray(items) ? items : []).forEach(item => {
+    total = addOptimizeNgAppliedTotals(total, item?.applied || getEmptyNgAppliedTotal());
+    total = addOptimizeNgAppliedTotals(total, getNgCoreAdjustment(item?.coreName));
+  });
+  return total;
+}
+
+function hydrateOptimizeNgResult(result) {
+  if (!result || typeof result !== 'object') return null;
+  const source = Array.isArray(result.items) && result.items.length
+    ? result.items
+    : result.ngItems;
+  const items = (Array.isArray(source) ? source : []).map(hydrateOptimizeNgItem);
+  if (items.length !== 6 || items.some(item => !item)) return null;
+  const elementCounts = result.elementCounts && typeof result.elementCounts === 'object'
+    ? { ...sumOptimizeNgElementCounts([]), ...result.elementCounts }
+    : sumOptimizeNgElementCounts(items);
+  const zhoutianCounts = result.zhoutianCounts && typeof result.zhoutianCounts === 'object'
+    ? { ...getNgZhoutianCounts(elementCounts), ...result.zhoutianCounts }
+    : getNgZhoutianCounts(elementCounts);
+  const appliedTotal = result.appliedTotal && typeof result.appliedTotal === 'object'
+    ? { ...getEmptyNgAppliedTotal(), ...result.appliedTotal }
+    : getOptimizeNgAppliedTotalFromItems(items);
+  return {
+    ...result,
+    items,
+    ngItems: items,
+    elementCounts,
+    zhoutianCounts,
+    appliedTotal,
+  };
+}
+
+function hydrateOptimizeFinalResult(result) {
+  if (!result || typeof result !== 'object') return null;
+  const jointResult = hydrateOptimizeJointResult(result);
+  const ngResult = hydrateOptimizeNgResult(result);
+  if (!jointResult || !ngResult) return null;
+  const items = [...jointResult.items, ...ngResult.items];
+  return {
+    ...result,
+    items,
+    gearItems: jointResult.items,
+    upperItems: jointResult.upperItems,
+    lowerItems: jointResult.lowerItems,
+    ngItems: ngResult.items,
+    elementCounts: ngResult.elementCounts,
+    zhoutianCounts: ngResult.zhoutianCounts,
+  };
+}
+
+function hydrateOptimizeStoredResults(kind, results, limit = null) {
+  const source = Array.isArray(results) ? results : [];
+  const limitedSource = Number.isInteger(limit) && limit >= 0 ? source.slice(0, limit) : source;
+  const hydrate = {
+    lower: result => hydrateOptimizeGearStageResult(result, 5),
+    upper: result => hydrateOptimizeGearStageResult(result, 6),
+    joint: hydrateOptimizeJointResult,
+    ng: hydrateOptimizeNgResult,
+    final: hydrateOptimizeFinalResult,
+  }[kind];
+  if (!hydrate) return [];
+  return limitedSource.map(hydrate).filter(Boolean);
+}
+
 function renderNgCandidateList(candidates) {
   const listEl = document.getElementById('opt_ng_candidate_list');
   const panelEl = document.getElementById('opt_ng_candidate_panel');
@@ -6328,7 +6691,7 @@ function evaluateLowerOptimizePVP(items, base) {
     damageRatio: oppExpected > 0 ? (myExpected / oppExpected) * 100 : Infinity,
     enemyHits,
     myHits,
-    hitGap: (isFinite(myHits) ? myHits : 0) - (isFinite(enemyHits) ? enemyHits : 0),
+    hitGap: calcOptimizeHitGap(myHits, enemyHits),
     modeCount: items.filter(item => item.category === 'pvp_gear').length,
   };
 }
@@ -6342,6 +6705,97 @@ function getOptimizeScore(mode, sort, result) {
     return result.damageRatio;
   }
   return result.expected;
+}
+
+function calcOptimizeHitGap(myHits, enemyHits) {
+  const myFinite = Number.isFinite(myHits);
+  const enemyFinite = Number.isFinite(enemyHits);
+  if (myFinite && enemyFinite) return myHits - enemyHits;
+  if (!myFinite && !enemyFinite) return 0;
+  return myFinite ? -Infinity : Infinity;
+}
+
+function getEmptyNgAppliedTotal() {
+  return {
+    atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
+    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, antiCrit:0, techOver2:0, hp:0, traitAtk:0, traitDef:0
+  };
+}
+
+function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTotal) {
+  const adjustedTraitAtk = appliedTotal.traitAtk || 0;
+  const adjustedTraitDef = appliedTotal.traitDef || 0;
+  if (mode === 'pvp') {
+    const pvpBase = bases.pvpBase;
+    const myAtk = {
+      ...pvpBase.myAtk,
+      atk: pvpBase.myAtk.atk + appliedTotal.atk,
+      hit: pvpBase.myAtk.hit + appliedTotal.hit,
+      crit: pvpBase.myAtk.crit + appliedTotal.crit,
+      critDmg: pvpBase.myAtk.critDmg + appliedTotal.critDmg,
+      breakShield: pvpBase.myAtk.breakShield + appliedTotal.breakShield,
+      elemAtk: pvpBase.myAtk.elemAtk + appliedTotal.elemAtk,
+      styleOver: pvpBase.myAtk.styleOver + appliedTotal.bossOver,
+      ignoreElem: pvpBase.myAtk.ignoreElem + appliedTotal.ignoreElem,
+      breakDef: pvpBase.myAtk.breakDef + appliedTotal.breakDef,
+      techOver: pvpBase.myAtk.techOver + appliedTotal.techOver,
+    };
+    const myDef = {
+      ...pvpBase.myDef,
+      bDef: pvpBase.myDef.bDef + appliedTotal.bDef,
+      bBlock: pvpBase.myDef.bBlock + appliedTotal.bBlock,
+      bCritRes: pvpBase.myDef.bCritRes + appliedTotal.bCritRes,
+      bQiShield: pvpBase.myDef.bQiShield + appliedTotal.bQiShield,
+      bElemRes: pvpBase.myDef.bElemRes + appliedTotal.bElemRes,
+      bStyleRes: pvpBase.myDef.bStyleRes + appliedTotal.bBossRes,
+      antiCrit: pvpBase.myDef.antiCrit + appliedTotal.antiCrit,
+      oppTechOver: pvpBase.myDef.oppTechOver + appliedTotal.techOver,
+    };
+    const myExpected = calcPVPSideExpected(myAtk, pvpBase.oppDef).expected * (1 + adjustedTraitAtk);
+    const oppExpected = calcPVPSideExpected(pvpBase.oppAtk, myDef).expected * (1 - adjustedTraitDef);
+    const enemyHits = myExpected > 0 && pvpBase.enemyHp > 0 ? pvpBase.enemyHp / myExpected : Infinity;
+    const myHits = oppExpected > 0 && (pvpBase.myHp + appliedTotal.hp) > 0 ? (pvpBase.myHp + appliedTotal.hp) / oppExpected : Infinity;
+    return {
+      items,
+      elementCounts,
+      zhoutianCounts: getNgZhoutianCounts(elementCounts),
+      appliedTotal: { ...appliedTotal },
+      adjustedTraitAtk,
+      adjustedTraitDef,
+      myExpected,
+      oppExpected,
+      damageRatio: oppExpected > 0 ? (myExpected / oppExpected) * 100 : Infinity,
+      enemyHits,
+      myHits,
+      hitGap: calcOptimizeHitGap(myHits, enemyHits),
+    };
+  }
+  const pveBase = bases.pveBase;
+  const params = {
+    ...pveBase,
+    atk: pveBase.atk + appliedTotal.atk,
+    hit: pveBase.hit + appliedTotal.hit,
+    crit: pveBase.crit + appliedTotal.crit,
+    critDmg: pveBase.critDmg + appliedTotal.critDmg,
+    breakShield: pveBase.breakShield + appliedTotal.breakShield,
+    elemAtk: pveBase.elemAtk + appliedTotal.elemAtk,
+    bossOver: pveBase.bossOver + appliedTotal.bossOver,
+    ignoreElem: pveBase.ignoreElem + appliedTotal.ignoreElem,
+    breakDef: pveBase.breakDef + appliedTotal.breakDef,
+    techOver: pveBase.techOver + appliedTotal.techOver,
+  };
+  const baseResult = calcPVEExpected(params);
+  const expected = baseResult.expected * (1 + adjustedTraitAtk);
+  return {
+    items,
+    elementCounts,
+    zhoutianCounts: getNgZhoutianCounts(elementCounts),
+    appliedTotal: { ...appliedTotal },
+    adjustedTraitAtk,
+    adjustedTraitDef,
+    expected,
+    expectedDeltaPct: pveBase._baseExpected > 0 ? (expected / pveBase._baseExpected - 1) * 100 : 0,
+  };
 }
 
 function getOptimizeItemResultKey(item) {
@@ -6371,6 +6825,7 @@ function updateOptimizeIgnoreClearButton(kind) {
     upper: 'opt_upper_clear_ignored_btn',
     joint: 'opt_joint_clear_ignored_btn',
     ng: 'opt_ng_clear_ignored_btn',
+    final: 'opt_final_clear_ignored_btn',
   };
   const btn = document.getElementById(idMap[kind]);
   if (!btn) return;
@@ -6403,6 +6858,8 @@ function rerenderOptimizeResults(kind) {
     renderJointOptimizeResults(document.getElementById('opt_joint_mode')?.value || 'pve', optimizeLastJointResults);
   } else if (kind === 'ng') {
     renderNgOptimizeResults(document.getElementById('opt_ng_mode')?.value || 'pve', optimizeLastNgResults);
+  } else if (kind === 'final') {
+    renderFinalOptimizeResults(document.getElementById('opt_final_mode')?.value || 'pve', optimizeLastFinalResults);
   }
 }
 
@@ -6423,6 +6880,7 @@ function clearOptimizeIgnoredResults(kind) {
     upper: optimizeLastUpperResults,
     joint: optimizeLastJointResults,
     ng: optimizeLastNgResults,
+    final: optimizeLastFinalResults,
   }[kind] || []).length) {
     rerenderOptimizeResults(kind);
   }
@@ -6685,6 +7143,113 @@ function runUpperOptimize() {
   renderUpperOptimizeResults(mode, built.results);
 }
 
+function getJointUpperLegalCandidates(candidates, modeCategory) {
+  const results = [];
+  candidates.head.forEach(head => {
+    candidates.body.forEach(body => {
+      candidates.waist.forEach(waist => {
+        candidates.hand.forEach(hand => {
+          candidates.foot.forEach(foot => {
+            candidates.wrist.forEach(wrist => {
+              const items = [head, body, waist, hand, foot, wrist];
+              const modeCount = items.filter(item => item.category === modeCategory).length;
+              if (modeCount < 2) return;
+              results.push({
+                items,
+                modeCount,
+                effect1: true,
+                effect2: modeCount >= 4,
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+  return results;
+}
+
+function getJointLowerLegalCandidates(candidates, modeCategory) {
+  const results = [];
+  const ringPairs = choosePairs(candidates.ring);
+  const braceletPairs = choosePairs(candidates.bracelet);
+  ringPairs.forEach(rings => {
+    braceletPairs.forEach(bracelets => {
+      candidates.necklace.forEach(necklace => {
+        const items = [rings[0], rings[1], bracelets[0], bracelets[1], necklace];
+        const modeCount = items.filter(item => item.category === modeCategory).length;
+        if (modeCount < 2) return;
+        results.push({ items, modeCount });
+      });
+    });
+  });
+  return results;
+}
+
+function buildJointOptimizeResults(mode, sort) {
+  const upperCandidates = getUpperOptimizeCandidates(mode);
+  const lowerCandidates = getLowerOptimizeCandidates(mode);
+  const missingSlots = UPPER_OPT_SLOTS.filter(slot => upperCandidates[slot].length < 1);
+  const lowerMissingRequired = lowerCandidates.ring.length < 2 || lowerCandidates.bracelet.length < 2 || lowerCandidates.necklace.length < 1;
+  if (missingSlots.length || lowerMissingRequired) {
+    const notes = [];
+    if (missingSlots.length) {
+      notes.push(`候選不足：上半搜尋每個部位至少需要 1 件候選，缺少 ${missingSlots.map(slot => ({head:'頭', body:'身', waist:'腰', hand:'手', foot:'鞋', wrist:'臂'})[slot]).join('、')}。`);
+    }
+    if (lowerMissingRequired) notes.push('候選不足：下半搜尋至少需要 2 戒、2 鐲、1 鍊。');
+    return {
+      upperBuilt: { legalCount: 0, results: [], candidates: upperCandidates, missingSlots },
+      lowerBuilt: { legalCount: 0, results: [], candidates: lowerCandidates, missingRequired: lowerMissingRequired },
+      upperTop: [],
+      lowerTop: [],
+      combinedCount: 0,
+      results: [],
+      error: true,
+      note: notes.join('　'),
+    };
+  }
+  const modeCategory = mode === 'pvp' ? 'pvp_gear' : 'pve_gear';
+  const upperTop = getJointUpperLegalCandidates(upperCandidates, modeCategory);
+  const lowerTop = getJointLowerLegalCandidates(lowerCandidates, modeCategory);
+  const combinedCount = upperTop.length * lowerTop.length;
+  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const results = [];
+  upperTop.forEach(upper => {
+    lowerTop.forEach(lower => {
+      const items = [...upper.items, ...lower.items];
+      const evaluated = mode === 'pvp'
+        ? evaluateLowerOptimizePVP(items, pvpBase)
+        : evaluateLowerOptimizePVE(items, pveBase);
+      results.push({
+        ...evaluated,
+        items,
+        upperItems: upper.items,
+        lowerItems: lower.items,
+        upperCount: upper.modeCount,
+        lowerCount: lower.modeCount,
+        effect1: !!upper.effect1,
+        effect2: !!upper.effect2,
+      });
+    });
+  });
+  results.sort((a, b) => {
+    if (a.effect2 !== b.effect2) return (b.effect2 ? 1 : 0) - (a.effect2 ? 1 : 0);
+    return getOptimizeScore(mode, sort, b) - getOptimizeScore(mode, sort, a);
+  });
+  return {
+    upperBuilt: { legalCount: upperTop.length, results: upperTop, candidates: upperCandidates, missingSlots: [] },
+    lowerBuilt: { legalCount: lowerTop.length, results: lowerTop, candidates: lowerCandidates, missingRequired: false },
+    upperTop,
+    lowerTop,
+    combinedCount,
+    results,
+    error: false,
+    note: `已直接窮舉上半合法 ${upperTop.length} 組、下半合法 ${lowerTop.length} 組，共重算 ${combinedCount} 組完整裝備。請確認目前比較頁欄位值為聯合最佳化基底。`,
+  };
+}
+
 function renderJointOptimizeResults(mode, results) {
   const emptyEl = document.getElementById('opt_joint_result_empty');
   const resultsEl = document.getElementById('opt_joint_results');
@@ -6753,61 +7318,183 @@ function runJointOptimize() {
   const noteEl = document.getElementById('opt_joint_candidate_note');
   const emptyEl = document.getElementById('opt_joint_result_empty');
   const resultsEl = document.getElementById('opt_joint_results');
-  const upperBuilt = buildUpperOptimizeResults(mode, sort);
-  const lowerBuilt = buildLowerOptimizeResults(mode, sort);
-  if (counts.upperLegal) counts.upperLegal.textContent = String(upperBuilt.legalCount || 0);
-  if (counts.lowerLegal) counts.lowerLegal.textContent = String(lowerBuilt.legalCount || 0);
+  const built = buildJointOptimizeResults(mode, sort);
+  if (counts.upperLegal) counts.upperLegal.textContent = String(built.upperBuilt.legalCount || 0);
+  if (counts.lowerLegal) counts.lowerLegal.textContent = String(built.lowerBuilt.legalCount || 0);
   if (counts.upperKept) counts.upperKept.textContent = '0';
   if (counts.lowerKept) counts.lowerKept.textContent = '0';
   if (counts.combo) counts.combo.textContent = '0';
-  if (upperBuilt.missingSlots.length || lowerBuilt.missingRequired) {
-    const notes = [];
-    if (upperBuilt.note) notes.push(upperBuilt.note);
-    if (lowerBuilt.note) notes.push(lowerBuilt.note);
-    if (noteEl) noteEl.textContent = notes.join('　');
+  if (built.error) {
+    if (noteEl) noteEl.textContent = built.note;
     if (emptyEl) emptyEl.textContent = '候選不足，無法執行聯合最佳化。';
     if (resultsEl) resultsEl.innerHTML = '';
     return;
   }
-  optimizeLastUpperResults = upperBuilt.results.slice();
-  optimizeLastLowerResults = lowerBuilt.results.slice();
-  const upperTop = upperBuilt.results.slice(0, JOINT_OPT_KEPT_LIMIT);
-  const lowerTop = lowerBuilt.results.slice(0, JOINT_OPT_KEPT_LIMIT);
-  if (counts.upperKept) counts.upperKept.textContent = String(upperTop.length);
-  if (counts.lowerKept) counts.lowerKept.textContent = String(lowerTop.length);
-  const combinedCount = upperTop.length * lowerTop.length;
-  if (counts.combo) counts.combo.textContent = String(combinedCount);
+  optimizeLastJointResults = built.results.slice();
+  if (counts.upperKept) counts.upperKept.textContent = String(built.upperTop.length);
+  if (counts.lowerKept) counts.lowerKept.textContent = String(built.lowerTop.length);
+  if (counts.combo) counts.combo.textContent = String(built.combinedCount);
+  if (noteEl) noteEl.textContent = built.note;
+  renderJointOptimizeResults(mode, built.results);
+}
+
+function buildNgOptimizeResults(mode, sort) {
+  const requirements = getNgOptimizeRequirements();
+  const requiredCores = new Set(Array.from(optimizeNgRequiredCores).filter(v => typeof v === 'string' && v));
+  const excludedCores = new Set(Array.from(optimizeNgExcludedCores).filter(v => typeof v === 'string' && v));
+  if (requirements.length === 2 && requirements[0].element === requirements[1].element) {
+    return {
+      candidates: [],
+      uniqueCores: new Set(),
+      legalCount: 0,
+      results: [],
+      requirements,
+      requiredCores,
+      excludedCores,
+      error: true,
+      note: '條件重複：元素一與元素二不可指定同一種元素。',
+      emptyText: '條件重複，無法執行最佳化。',
+    };
+  }
+  const conflictCores = Array.from(requiredCores).filter(coreName => excludedCores.has(coreName));
+  if (conflictCores.length) {
+    return {
+      candidates: [],
+      uniqueCores: new Set(),
+      legalCount: 0,
+      results: [],
+      requirements,
+      requiredCores,
+      excludedCores,
+      error: true,
+      note: `條件衝突：同一核心不能同時在必選與排除中，衝突類型：${conflictCores.join('、')}。`,
+      emptyText: '必選與排除衝突，無法執行最佳化。',
+    };
+  }
+  if (requiredCores.size > 6) {
+    return {
+      candidates: [],
+      uniqueCores: new Set(),
+      legalCount: 0,
+      results: [],
+      requirements,
+      requiredCores,
+      excludedCores,
+      error: true,
+      note: '必選過多：內功核心類型最多只能指定 6 類。',
+      emptyText: '必選過多，無法執行最佳化。',
+    };
+  }
+
+  const candidates = getNgOptimizeCandidates().filter(item => !excludedCores.has(item.coreName));
+  const uniqueCores = new Set(candidates.map(item => item.coreName));
+  if (uniqueCores.size < 6) {
+    return {
+      candidates,
+      uniqueCores,
+      legalCount: 0,
+      results: [],
+      requirements,
+      requiredCores,
+      excludedCores,
+      error: true,
+      note: '候選不足：至少需要 6 個不同核心名稱的內功。',
+      emptyText: '候選不足，無法執行最佳化。',
+    };
+  }
+  const missingRequired = Array.from(requiredCores).filter(coreName => !uniqueCores.has(coreName));
+  if (missingRequired.length) {
+    return {
+      candidates,
+      uniqueCores,
+      legalCount: 0,
+      results: [],
+      requirements,
+      requiredCores,
+      excludedCores,
+      error: true,
+      note: `必選類型不存在於目前候選中：${missingRequired.join('、')}。`,
+      emptyText: '必選類型不存在，無法執行最佳化。',
+    };
+  }
+
+  const suffixCounts = Array.from({ length: candidates.length + 1 }, () => ({ metal:0, wood:0, water:0, fire:0, earth:0 }));
+  const suffixCoreSets = Array.from({ length: candidates.length + 1 }, () => new Set());
+  for (let i = candidates.length - 1; i >= 0; i--) {
+    NG_ELEMENT_KEYS.forEach(key => {
+      suffixCounts[i][key] = suffixCounts[i + 1][key] + (candidates[i].tagCounts[key] || 0);
+    });
+    suffixCoreSets[i] = new Set(suffixCoreSets[i + 1]);
+    suffixCoreSets[i].add(candidates[i].coreName);
+  }
+
   const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
   const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const bases = { pveBase, pvpBase };
   const results = [];
-  upperTop.forEach(upper => {
-    lowerTop.forEach(lower => {
-      const items = [...upper.items, ...lower.items];
-      const evaluated = mode === 'pvp'
-        ? evaluateLowerOptimizePVP(items, pvpBase)
-        : evaluateLowerOptimizePVE(items, pveBase);
-      results.push({
-        ...evaluated,
-        items,
-        upperItems: upper.items,
-        lowerItems: lower.items,
-        upperCount: upper.modeCount,
-        lowerCount: lower.modeCount,
-        effect1: !!upper.effect1,
-        effect2: !!upper.effect2,
-      });
-    });
-  });
-  results.sort((a, b) => {
-    if (a.effect2 !== b.effect2) return (b.effect2 ? 1 : 0) - (a.effect2 ? 1 : 0);
-    return getOptimizeScore(mode, sort, b) - getOptimizeScore(mode, sort, a);
-  });
-  optimizeLastJointResults = results.slice();
-  if (noteEl) {
-    noteEl.textContent = `已用上半前 ${upperTop.length} 與下半前 ${lowerTop.length} 候選，共重算 ${combinedCount} 組完整裝備。請確認目前比較頁欄位值為全裸機體。`;
+  let legalCount = 0;
+
+  const meetsReqs = countsObj => requirements.every(req => (countsObj[req.element] || 0) >= req.min);
+  const canStillMeetReqs = (startIdx, countsObj) => requirements.every(req => ((countsObj[req.element] || 0) + (suffixCounts[startIdx]?.[req.element] || 0)) >= req.min);
+  const canStillMeetRequiredCores = (startIdx, usedCores, selectedLength) => {
+    const missingCount = Array.from(requiredCores).filter(coreName => !usedCores.has(coreName)).length;
+    if (missingCount > 6 - selectedLength) return false;
+    return Array.from(requiredCores).every(coreName => usedCores.has(coreName) || suffixCoreSets[startIdx]?.has(coreName));
+  };
+
+  function dfs(startIdx, selected, usedCores, elementCounts, appliedTotal) {
+    if (selected.length === 6) {
+      if (!meetsReqs(elementCounts)) return;
+      if (Array.from(requiredCores).some(coreName => !usedCores.has(coreName))) return;
+      legalCount++;
+      results.push(evaluateNgOptimizeResult(mode, bases, selected.slice(), elementCounts, appliedTotal));
+      return;
+    }
+    if (startIdx >= candidates.length) return;
+    if (selected.length + (candidates.length - startIdx) < 6) return;
+    if (!canStillMeetReqs(startIdx, elementCounts)) return;
+    if (!canStillMeetRequiredCores(startIdx, usedCores, selected.length)) return;
+
+    for (let i = startIdx; i < candidates.length; i++) {
+      const remaining = candidates.length - i;
+      const need = 6 - selected.length;
+      if (remaining < need) break;
+      const candidate = candidates[i];
+      if (usedCores.has(candidate.coreName)) continue;
+      const nextCounts = { ...elementCounts };
+      NG_ELEMENT_KEYS.forEach(key => { nextCounts[key] += candidate.tagCounts[key] || 0; });
+      const nextApplied = addOptimizeNgAppliedTotals(
+        addOptimizeNgAppliedTotals(appliedTotal, candidate.applied),
+        getNgCoreAdjustment(candidate.coreName)
+      );
+      selected.push(candidate);
+      usedCores.add(candidate.coreName);
+      dfs(i + 1, selected, usedCores, nextCounts, nextApplied);
+      usedCores.delete(candidate.coreName);
+      selected.pop();
+    }
   }
-  renderJointOptimizeResults(mode, results);
+
+  dfs(0, [], new Set(), { metal:0, wood:0, water:0, fire:0, earth:0 }, getEmptyNgAppliedTotal());
+  results.sort((a, b) => getOptimizeScore(mode, sort, b) - getOptimizeScore(mode, sort, a));
+  const reqText = requirements.length
+    ? requirements.map(req => `${NG_ELEMENT_LABELS[req.element]} >= ${req.min}`).join('、')
+    : '未指定元素門檻';
+  const requiredText = requiredCores.size ? Array.from(requiredCores).join('、') : '未指定必選類型';
+  const excludedText = excludedCores.size ? Array.from(excludedCores).join('、') : '未指定排除類型';
+  return {
+    candidates,
+    uniqueCores,
+    legalCount,
+    results,
+    requirements,
+    requiredCores,
+    excludedCores,
+    error: false,
+    note: `同核心名稱不可重複。元素條件：${reqText}。排除類型：${excludedText}。必選類型：${requiredText}。結果會完整顯示所有元素顆數與周天分布。`,
+    emptyText: '',
+  };
 }
 
 function renderNgOptimizeResults(mode, results) {
@@ -6876,204 +7563,290 @@ function runNgOptimize() {
   const noteEl = document.getElementById('opt_ng_candidate_note');
   const emptyEl = document.getElementById('opt_ng_result_empty');
   const resultsEl = document.getElementById('opt_ng_results');
-  const requirements = getNgOptimizeRequirements();
-  const requiredCores = new Set(Array.from(optimizeNgRequiredCores).filter(v => typeof v === 'string' && v));
-  const excludedCores = new Set(Array.from(optimizeNgExcludedCores).filter(v => typeof v === 'string' && v));
-  if (requirements.length === 2 && requirements[0].element === requirements[1].element) {
-    if (noteEl) noteEl.textContent = '條件重複：元素一與元素二不可指定同一種元素。';
-    if (emptyEl) emptyEl.textContent = '條件重複，無法執行最佳化。';
-    if (resultsEl) resultsEl.innerHTML = '';
-    return;
-  }
-  const conflictCores = Array.from(requiredCores).filter(coreName => excludedCores.has(coreName));
-  if (conflictCores.length) {
-    if (noteEl) noteEl.textContent = `條件衝突：同一核心不能同時在必選與排除中，衝突類型：${conflictCores.join('、')}。`;
-    if (emptyEl) emptyEl.textContent = '必選與排除衝突，無法執行最佳化。';
-    if (resultsEl) resultsEl.innerHTML = '';
-    return;
-  }
-  if (requiredCores.size > 6) {
-    if (noteEl) noteEl.textContent = '必選過多：內功核心類型最多只能指定 6 類。';
-    if (emptyEl) emptyEl.textContent = '必選過多，無法執行最佳化。';
-    if (resultsEl) resultsEl.innerHTML = '';
-    return;
-  }
-  const candidates = getNgOptimizeCandidates().filter(item => !excludedCores.has(item.coreName));
-  const uniqueCores = new Set(candidates.map(item => item.coreName));
-  if (counts.candidate) counts.candidate.textContent = String(candidates.length);
-  if (counts.core) counts.core.textContent = String(uniqueCores.size);
+  const built = buildNgOptimizeResults(mode, sort);
+  if (counts.candidate) counts.candidate.textContent = String(built.candidates.length);
+  if (counts.core) counts.core.textContent = String(built.uniqueCores.size);
   if (counts.combo) counts.combo.textContent = '0';
-  renderNgCandidateList(candidates);
-  if (uniqueCores.size < 6) {
-    if (noteEl) noteEl.textContent = '候選不足：至少需要 6 個不同核心名稱的內功。';
-    if (emptyEl) emptyEl.textContent = '候選不足，無法執行最佳化。';
+  renderNgCandidateList(built.candidates);
+  if (built.error) {
+    if (noteEl) noteEl.textContent = built.note;
+    if (emptyEl) emptyEl.textContent = built.emptyText;
     if (resultsEl) resultsEl.innerHTML = '';
     return;
   }
-  const missingRequired = Array.from(requiredCores).filter(coreName => !uniqueCores.has(coreName));
-  if (missingRequired.length) {
-    if (noteEl) noteEl.textContent = `必選類型不存在於目前候選中：${missingRequired.join('、')}。`;
-    if (emptyEl) emptyEl.textContent = '必選類型不存在，無法執行最佳化。';
-    if (resultsEl) resultsEl.innerHTML = '';
-    return;
-  }
+  optimizeLastNgResults = built.results.slice();
+  if (counts.combo) counts.combo.textContent = String(built.legalCount);
+  if (noteEl) noteEl.textContent = built.note;
+  renderNgOptimizeResults(mode, built.results);
+}
 
-  const suffixCounts = Array.from({ length: candidates.length + 1 }, () => ({ metal:0, wood:0, water:0, fire:0, earth:0 }));
-  const suffixCoreSets = Array.from({ length: candidates.length + 1 }, () => new Set());
-  for (let i = candidates.length - 1; i >= 0; i--) {
-    NG_ELEMENT_KEYS.forEach(key => {
-      suffixCounts[i][key] = suffixCounts[i + 1][key] + (candidates[i].tagCounts[key] || 0);
-    });
-    suffixCoreSets[i] = new Set(suffixCoreSets[i + 1]);
-    suffixCoreSets[i].add(candidates[i].coreName);
+function getFinalNgAppliedTotal(ngResult) {
+  if (ngResult?.appliedTotal && typeof ngResult.appliedTotal === 'object') {
+    return { ...ngResult.appliedTotal };
   }
+  const total = getEmptyNgAppliedTotal();
+  (Array.isArray(ngResult?.items) ? ngResult.items : []).forEach(item => {
+    const applied = item?.applied || getNgAppliedValuesFromVals(getNgDBData(item?.entry || {}));
+    Object.keys(total).forEach(key => { total[key] += applied[key] || 0; });
+  });
+  return total;
+}
 
+function getFinalOptimizeDelta(gearItems, ngResult) {
+  const gear = sumOptimizeGearDeltas(Array.isArray(gearItems) ? gearItems : []);
+  const ng = getFinalNgAppliedTotal(ngResult);
+  return {
+    atk: gear.atk + (ng.atk || 0),
+    hit: gear.hit + (ng.hit || 0),
+    crit: gear.crit + (ng.crit || 0),
+    critDmg: gear.critDmg + (ng.critDmg || 0),
+    elemAtk: gear.elemAtk + (ng.elemAtk || 0),
+    bossOver: gear.bossOver + (ng.bossOver || 0),
+    ignoreElem: gear.ignoreElem + (ng.ignoreElem || 0),
+    breakDef: gear.breakDef + (ng.breakDef || 0),
+    techOver: gear.techOver + (ng.techOver || 0),
+    breakShield: gear.breakShield + (ng.breakShield || 0),
+    bDef: gear.bDef + (ng.bDef || 0),
+    bBlock: gear.bBlock + (ng.bBlock || 0),
+    bCritRes: gear.bCritRes + (ng.bCritRes || 0),
+    bQiShield: gear.bQiShield + (ng.bQiShield || 0),
+    bElemRes: gear.bElemRes + (ng.bElemRes || 0),
+    bStyleRes: gear.bStyleRes + (ng.bBossRes || 0),
+    antiCrit: gear.antiCrit + (ng.antiCrit || 0),
+    hp: gear.hp + (ng.hp || 0),
+    traitAtk: gear.traitAtk + (ng.traitAtk || 0),
+    traitDef: gear.traitDef + (ng.traitDef || 0),
+  };
+}
+
+function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult) {
+  const gearItems = Array.isArray(jointResult?.items) ? jointResult.items : [];
+  const ngItems = Array.isArray(ngResult?.items) ? ngResult.items : [];
+  const delta = getFinalOptimizeDelta(gearItems, ngResult);
+  const common = {
+    items: [...gearItems, ...ngItems],
+    gearItems,
+    upperItems: Array.isArray(jointResult?.upperItems) ? jointResult.upperItems : gearItems.slice(0, 6),
+    lowerItems: Array.isArray(jointResult?.lowerItems) ? jointResult.lowerItems : gearItems.slice(6),
+    ngItems,
+    elementCounts: ngResult?.elementCounts ? { ...ngResult.elementCounts } : { metal:0, wood:0, water:0, fire:0, earth:0 },
+    zhoutianCounts: ngResult?.zhoutianCounts ? { ...ngResult.zhoutianCounts } : { metal:0, wood:0, water:0, fire:0, earth:0, total:0 },
+    adjustedTraitAtk: delta.traitAtk,
+    adjustedTraitDef: delta.traitDef,
+    effect1: !!jointResult?.effect1,
+    effect2: !!jointResult?.effect2,
+    upperCount: jointResult?.upperCount,
+    lowerCount: jointResult?.lowerCount,
+  };
+  if (mode === 'pvp') {
+    const pvpBase = bases.pvpBase;
+    const myAtk = {
+      ...pvpBase.myAtk,
+      atk: pvpBase.myAtk.atk + delta.atk,
+      hit: pvpBase.myAtk.hit + delta.hit,
+      crit: pvpBase.myAtk.crit + delta.crit,
+      critDmg: pvpBase.myAtk.critDmg + delta.critDmg,
+      breakShield: pvpBase.myAtk.breakShield + delta.breakShield,
+      elemAtk: pvpBase.myAtk.elemAtk + delta.elemAtk,
+      styleOver: pvpBase.myAtk.styleOver + delta.bossOver,
+      ignoreElem: pvpBase.myAtk.ignoreElem + delta.ignoreElem,
+      breakDef: pvpBase.myAtk.breakDef + delta.breakDef,
+      techOver: pvpBase.myAtk.techOver + delta.techOver,
+    };
+    const myDef = {
+      ...pvpBase.myDef,
+      bDef: pvpBase.myDef.bDef + delta.bDef,
+      bBlock: pvpBase.myDef.bBlock + delta.bBlock,
+      bCritRes: pvpBase.myDef.bCritRes + delta.bCritRes,
+      bQiShield: pvpBase.myDef.bQiShield + delta.bQiShield,
+      bElemRes: pvpBase.myDef.bElemRes + delta.bElemRes,
+      bStyleRes: pvpBase.myDef.bStyleRes + delta.bStyleRes,
+      antiCrit: pvpBase.myDef.antiCrit + delta.antiCrit,
+      oppTechOver: pvpBase.myDef.oppTechOver + delta.techOver,
+    };
+    const myExpected = calcPVPSideExpected(myAtk, pvpBase.oppDef).expected * (1 + delta.traitAtk);
+    const oppExpected = calcPVPSideExpected(pvpBase.oppAtk, myDef).expected * (1 - delta.traitDef);
+    const enemyHits = myExpected > 0 && pvpBase.enemyHp > 0 ? pvpBase.enemyHp / myExpected : Infinity;
+    const myHits = oppExpected > 0 && (pvpBase.myHp + delta.hp) > 0 ? (pvpBase.myHp + delta.hp) / oppExpected : Infinity;
+    return {
+      ...common,
+      myExpected,
+      oppExpected,
+      damageRatio: oppExpected > 0 ? (myExpected / oppExpected) * 100 : Infinity,
+      enemyHits,
+      myHits,
+      hitGap: calcOptimizeHitGap(myHits, enemyHits),
+    };
+  }
+  const pveBase = bases.pveBase;
+  const params = {
+    ...pveBase,
+    atk: pveBase.atk + delta.atk,
+    hit: pveBase.hit + delta.hit,
+    crit: pveBase.crit + delta.crit,
+    critDmg: pveBase.critDmg + delta.critDmg,
+    breakShield: pveBase.breakShield + delta.breakShield,
+    elemAtk: pveBase.elemAtk + delta.elemAtk,
+    bossOver: pveBase.bossOver + delta.bossOver,
+    ignoreElem: pveBase.ignoreElem + delta.ignoreElem,
+    breakDef: pveBase.breakDef + delta.breakDef,
+    techOver: pveBase.techOver + delta.techOver,
+  };
+  const baseResult = calcPVEExpected(params);
+  const expected = baseResult.expected * (1 + delta.traitAtk);
+  return {
+    ...common,
+    expected,
+    expectedDeltaPct: pveBase._baseExpected > 0 ? (expected / pveBase._baseExpected - 1) * 100 : 0,
+  };
+}
+
+function buildFinalOptimizeResults(mode, sort) {
+  const jointCandidateCount = Array.isArray(optimizeLastJointResults) ? optimizeLastJointResults.length : 0;
+  const ngCandidateCount = Array.isArray(optimizeLastNgResults) ? optimizeLastNgResults.length : 0;
+  const jointTop = hydrateOptimizeStoredResults('joint', optimizeLastJointResults, FINAL_OPT_JOINT_LIMIT);
+  const ngTop = hydrateOptimizeStoredResults('ng', optimizeLastNgResults, FINAL_OPT_NG_LIMIT);
+  if (!jointTop.length || !ngTop.length) {
+    const missing = [];
+    if (!jointTop.length) missing.push('上下裝備聯合最佳化');
+    if (!ngTop.length) missing.push('內功最佳化');
+    return {
+      jointBuilt: { legalCount: jointCandidateCount, results: jointTop },
+      ngBuilt: { legalCount: ngCandidateCount, results: ngTop },
+      jointTop: [],
+      ngTop: [],
+      combinedCount: 0,
+      results: [],
+      error: true,
+      note: `請先用正確基底執行${missing.join('與')}，再執行最終最佳化。`,
+      emptyText: '候選不足，無法執行最終最佳化。',
+    };
+  }
+  const combinedCount = jointTop.length * ngTop.length;
   const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
   const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const bases = { pveBase, pvpBase };
   const results = [];
-  let legalCount = 0;
-
-  const meetsReqs = countsObj => requirements.every(req => (countsObj[req.element] || 0) >= req.min);
-  const canStillMeetReqs = (startIdx, countsObj) => requirements.every(req => ((countsObj[req.element] || 0) + (suffixCounts[startIdx]?.[req.element] || 0)) >= req.min);
-  const canStillMeetRequiredCores = (startIdx, usedCores, selectedLength) => {
-    const missingCount = Array.from(requiredCores).filter(coreName => !usedCores.has(coreName)).length;
-    if (missingCount > 6 - selectedLength) return false;
-    return Array.from(requiredCores).every(coreName => usedCores.has(coreName) || suffixCoreSets[startIdx]?.has(coreName));
-  };
-
-  function evaluateNgResult(items, elementCounts, appliedTotal) {
-    const adjustedTraitAtk = appliedTotal.traitAtk || 0;
-    const adjustedTraitDef = appliedTotal.traitDef || 0;
-    if (mode === 'pvp') {
-      const myAtk = {
-        ...pvpBase.myAtk,
-        atk: pvpBase.myAtk.atk + appliedTotal.atk,
-        hit: pvpBase.myAtk.hit + appliedTotal.hit,
-        crit: pvpBase.myAtk.crit + appliedTotal.crit,
-        critDmg: pvpBase.myAtk.critDmg + appliedTotal.critDmg,
-        breakShield: pvpBase.myAtk.breakShield + appliedTotal.breakShield,
-        elemAtk: pvpBase.myAtk.elemAtk + appliedTotal.elemAtk,
-        styleOver: pvpBase.myAtk.styleOver + appliedTotal.bossOver,
-        ignoreElem: pvpBase.myAtk.ignoreElem + appliedTotal.ignoreElem,
-        breakDef: pvpBase.myAtk.breakDef + appliedTotal.breakDef,
-        techOver: pvpBase.myAtk.techOver + appliedTotal.techOver,
-      };
-      const myDef = {
-        ...pvpBase.myDef,
-        bDef: pvpBase.myDef.bDef + appliedTotal.bDef,
-        bBlock: pvpBase.myDef.bBlock + appliedTotal.bBlock,
-        bCritRes: pvpBase.myDef.bCritRes + appliedTotal.bCritRes,
-        bQiShield: pvpBase.myDef.bQiShield + appliedTotal.bQiShield,
-        bElemRes: pvpBase.myDef.bElemRes + appliedTotal.bElemRes,
-        bStyleRes: pvpBase.myDef.bStyleRes + appliedTotal.bBossRes,
-        antiCrit: pvpBase.myDef.antiCrit + appliedTotal.antiCrit,
-        oppTechOver: pvpBase.myDef.oppTechOver + appliedTotal.techOver,
-      };
-      const myExpected = calcPVPSideExpected(myAtk, pvpBase.oppDef).expected * (1 + (appliedTotal.traitAtk || 0));
-      const oppExpected = calcPVPSideExpected(pvpBase.oppAtk, myDef).expected * (1 - (appliedTotal.traitDef || 0));
-      const enemyHits = myExpected > 0 && pvpBase.enemyHp > 0 ? pvpBase.enemyHp / myExpected : Infinity;
-      const myHits = oppExpected > 0 && (pvpBase.myHp + appliedTotal.hp) > 0 ? (pvpBase.myHp + appliedTotal.hp) / oppExpected : Infinity;
-      return {
-        items,
-        elementCounts,
-        zhoutianCounts: getNgZhoutianCounts(elementCounts),
-        adjustedTraitAtk,
-        adjustedTraitDef,
-        myExpected,
-        oppExpected,
-        damageRatio: oppExpected > 0 ? (myExpected / oppExpected) * 100 : Infinity,
-        enemyHits,
-        myHits,
-        hitGap: (isFinite(myHits) ? myHits : 0) - (isFinite(enemyHits) ? enemyHits : 0),
-      };
-    }
-    const params = {
-      ...pveBase,
-      atk: pveBase.atk + appliedTotal.atk,
-      hit: pveBase.hit + appliedTotal.hit,
-      crit: pveBase.crit + appliedTotal.crit,
-      critDmg: pveBase.critDmg + appliedTotal.critDmg,
-      breakShield: pveBase.breakShield + appliedTotal.breakShield,
-      elemAtk: pveBase.elemAtk + appliedTotal.elemAtk,
-      bossOver: pveBase.bossOver + appliedTotal.bossOver,
-      ignoreElem: pveBase.ignoreElem + appliedTotal.ignoreElem,
-      breakDef: pveBase.breakDef + appliedTotal.breakDef,
-      techOver: pveBase.techOver + appliedTotal.techOver,
-    };
-    const baseResult = calcPVEExpected(params);
-    const expected = baseResult.expected * (1 + (appliedTotal.traitAtk || 0));
-    return {
-      items,
-      elementCounts,
-      zhoutianCounts: getNgZhoutianCounts(elementCounts),
-      adjustedTraitAtk,
-      adjustedTraitDef,
-      expected,
-      expectedDeltaPct: pveBase._baseExpected > 0 ? (expected / pveBase._baseExpected - 1) * 100 : 0,
-    };
-  }
-
-  function dfs(startIdx, selected, usedCores, elementCounts, appliedTotal) {
-    if (selected.length === 6) {
-      if (!meetsReqs(elementCounts)) return;
-      if (Array.from(requiredCores).some(coreName => !usedCores.has(coreName))) return;
-      legalCount++;
-      results.push(evaluateNgResult(selected.slice(), elementCounts, appliedTotal));
-      return;
-    }
-    if (startIdx >= candidates.length) return;
-    if (selected.length + (candidates.length - startIdx) < 6) return;
-    if (!canStillMeetReqs(startIdx, elementCounts)) return;
-    if (!canStillMeetRequiredCores(startIdx, usedCores, selected.length)) return;
-
-    for (let i = startIdx; i < candidates.length; i++) {
-      const remaining = candidates.length - i;
-      const need = 6 - selected.length;
-      if (remaining < need) break;
-      const candidate = candidates[i];
-      if (usedCores.has(candidate.coreName)) continue;
-      const nextCounts = { ...elementCounts };
-      NG_ELEMENT_KEYS.forEach(key => { nextCounts[key] += candidate.tagCounts[key] || 0; });
-      const nextApplied = addOptimizeNgAppliedTotals(
-        addOptimizeNgAppliedTotals(appliedTotal, candidate.applied),
-        getNgCoreAdjustment(candidate.coreName)
-      );
-      selected.push(candidate);
-      usedCores.add(candidate.coreName);
-      dfs(i + 1, selected, usedCores, nextCounts, nextApplied);
-      usedCores.delete(candidate.coreName);
-      selected.pop();
-    }
-  }
-
-  dfs(0, [], new Set(), { metal:0, wood:0, water:0, fire:0, earth:0 }, {
-    atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
-    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, antiCrit:0, techOver2:0, hp:0, traitAtk:0, traitDef:0
+  jointTop.forEach(jointResult => {
+    ngTop.forEach(ngResult => {
+      results.push(evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult));
+    });
   });
-
-  const scoreOf = result => {
-    if (mode === 'pvp') {
-      if (sort === 'hitGap') return result.hitGap;
-      if (sort === 'myExpected') return result.myExpected;
-      if (sort === 'oppExpected') return isFinite(result.oppExpected) ? -result.oppExpected : -Infinity;
-      if (sort === 'enemyHits') return isFinite(result.enemyHits) ? -result.enemyHits : -Infinity;
-      return result.damageRatio;
-    }
-    return result.expected;
+  results.sort((a, b) => {
+    if (a.effect2 !== b.effect2) return (b.effect2 ? 1 : 0) - (a.effect2 ? 1 : 0);
+    return getOptimizeScore(mode, sort, b) - getOptimizeScore(mode, sort, a);
+  });
+  return {
+    jointBuilt: { legalCount: jointCandidateCount, results: jointTop },
+    ngBuilt: { legalCount: ngCandidateCount, results: ngTop },
+    jointTop,
+    ngTop,
+    combinedCount,
+    results,
+    error: false,
+    note: `已沿用聯合裝備已存 ${jointCandidateCount} 組、內功已存 ${ngCandidateCount} 組，各取前 ${jointTop.length} / ${ngTop.length} 候選，共重算 ${combinedCount} 組完整裝備 + 內功。請確認目前比較頁欄位值為全裸機體。`,
+    emptyText: '',
   };
-  results.sort((a, b) => scoreOf(b) - scoreOf(a));
-  optimizeLastNgResults = results.slice();
-  if (counts.combo) counts.combo.textContent = String(legalCount);
-  if (noteEl) {
-    const reqText = requirements.length
-      ? requirements.map(req => `${NG_ELEMENT_LABELS[req.element]} >= ${req.min}`).join('、')
-      : '未指定元素門檻';
-    const requiredText = requiredCores.size ? Array.from(requiredCores).join('、') : '未指定必選類型';
-    const excludedText = excludedCores.size ? Array.from(excludedCores).join('、') : '未指定排除類型';
-    noteEl.textContent = `同核心名稱不可重複。元素條件：${reqText}。排除類型：${excludedText}。必選類型：${requiredText}。結果會完整顯示所有元素顆數與周天分布。`;
+}
+
+function renderFinalOptimizeResults(mode, results) {
+  const emptyEl = document.getElementById('opt_final_result_empty');
+  const resultsEl = document.getElementById('opt_final_results');
+  if (!emptyEl || !resultsEl) return;
+  updateOptimizeIgnoreClearButton('final');
+  if (!results.length) {
+    emptyEl.textContent = '目前沒有符合條件的最終結果。';
+    resultsEl.innerHTML = '';
+    return;
   }
-  renderNgOptimizeResults(mode, results);
+  const visibleResults = getOptimizeVisibleResults('final', results);
+  if (!visibleResults.length) {
+    emptyEl.textContent = '目前沒有未忽略的最終結果。可按「取消本區忽略」顯示回來。';
+    resultsEl.innerHTML = '';
+    return;
+  }
+  emptyEl.textContent = '';
+  resultsEl.innerHTML = visibleResults.map((result, idx) => {
+    const upperItems = Array.isArray(result.upperItems) ? result.upperItems : [];
+    const lowerItems = Array.isArray(result.lowerItems) ? result.lowerItems : [];
+    const ngItems = Array.isArray(result.ngItems) ? result.ngItems : [];
+    const upperText = [
+      `頭：${escHtml(upperItems[0]?.name || '-')}`,
+      `身：${escHtml(upperItems[1]?.name || '-')}`,
+      `腰：${escHtml(upperItems[2]?.name || '-')}`,
+      `手：${escHtml(upperItems[3]?.name || '-')}`,
+      `鞋：${escHtml(upperItems[4]?.name || '-')}`,
+      `臂：${escHtml(upperItems[5]?.name || '-')}`,
+    ].join('<br>');
+    const lowerText = [
+      `戒 1：${escHtml(lowerItems[0]?.name || '-')}`,
+      `戒 2：${escHtml(lowerItems[1]?.name || '-')}`,
+      `鐲 1：${escHtml(lowerItems[2]?.name || '-')}`,
+      `鐲 2：${escHtml(lowerItems[3]?.name || '-')}`,
+      `鍊：${escHtml(lowerItems[4]?.name || '-')}`,
+    ].join('<br>');
+    const ngText = ngItems.map((item, itemIdx) => `內功 ${itemIdx + 1}：${escHtml(item.name)}`).join('<br>');
+    const elemCountsText = NG_ELEMENT_KEYS.map(key => `${NG_ELEMENT_LABELS[key]} ${result.elementCounts?.[key] || 0}`).join(' / ');
+    const ztText = NG_ELEMENT_KEYS.map(key => `${NG_ELEMENT_LABELS[key]} ${result.zhoutianCounts?.[key] || 0}`).join(' / ');
+    const traitText = ((result.adjustedTraitAtk || 0) || (result.adjustedTraitDef || 0))
+      ? `總特質：進攻 ${(result.adjustedTraitAtk || 0) >= 0 ? '+' : ''}${fmtF((result.adjustedTraitAtk || 0) * 100, 2)}% / 防守 ${(result.adjustedTraitDef || 0) >= 0 ? '+' : ''}${fmtF((result.adjustedTraitDef || 0) * 100, 2)}%<br>`
+      : '';
+    const summary = mode === 'pvp'
+      ? `我方期望：${fmt(result.myExpected)}　對手期望：${fmt(result.oppExpected)}　傷害比值：${fmtF(result.damageRatio, 2)}%<br>我打倒對手：${isFinite(result.enemyHits) ? fmtF(result.enemyHits, 2) : '∞'} 下　對手打倒我：${isFinite(result.myHits) ? fmtF(result.myHits, 2) : '∞'} 下　次數差距：${fmtF(result.hitGap, 2)} 下`
+      : `PVE 輸出期望：${fmt(result.expected)}　相較基底：${fmtF(result.expectedDeltaPct, 2)}%`;
+    return `<div style="border:1px solid #d0d0d0;border-radius:6px;padding:12px;margin-bottom:12px;background:#fbfcfe;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="font-size:12px;color:#1a7c2a;">上半效果二：${result.effect2 ? '有' : '無'}　下半效果三：有　總周天 ${result.zhoutianCounts?.total || 0}</div>
+          ${getOptimizeIgnoreControl('final', result)}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(200px,1fr) minmax(220px,1fr) minmax(300px,1.25fr);gap:12px;">
+        <div style="font-size:12px;line-height:1.9;color:#333333;">${upperText}</div>
+        <div style="font-size:12px;line-height:1.9;color:#333333;">${lowerText}</div>
+        <div style="font-size:12px;line-height:1.9;color:#333333;">${ngText}</div>
+        <div style="font-size:12px;line-height:1.9;color:#333333;">
+          元素顆數：${elemCountsText}<br>
+          周天結果：${ztText} / 合計 ${result.zhoutianCounts?.total || 0}<br>
+          ${traitText}
+          ${summary}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function runFinalOptimize() {
+  const mode = document.getElementById('opt_final_mode')?.value || 'pve';
+  const sort = document.getElementById('opt_final_sort')?.value || (mode === 'pvp' ? 'damageRatio' : 'expected');
+  resetOptimizeIgnoredResults('final');
+  optimizeLastFinalResults = [];
+  const counts = {
+    joint: document.getElementById('opt_final_joint_kept_count'),
+    ng: document.getElementById('opt_final_ng_kept_count'),
+    combo: document.getElementById('opt_final_combo_count'),
+  };
+  const noteEl = document.getElementById('opt_final_candidate_note');
+  const emptyEl = document.getElementById('opt_final_result_empty');
+  const resultsEl = document.getElementById('opt_final_results');
+  if (counts.joint) counts.joint.textContent = '0';
+  if (counts.ng) counts.ng.textContent = '0';
+  if (counts.combo) counts.combo.textContent = '0';
+  const built = buildFinalOptimizeResults(mode, sort);
+  if (built.error) {
+    if (noteEl) noteEl.textContent = built.note;
+    if (emptyEl) emptyEl.textContent = built.emptyText || '條件不足，無法執行最終最佳化。';
+    if (resultsEl) resultsEl.innerHTML = '';
+    return;
+  }
+  if (counts.joint) counts.joint.textContent = String(built.jointTop.length);
+  if (counts.ng) counts.ng.textContent = String(built.ngTop.length);
+  if (counts.combo) counts.combo.textContent = String(built.combinedCount);
+  optimizeLastFinalResults = built.results.slice();
+  if (noteEl) noteEl.textContent = built.note;
+  renderFinalOptimizeResults(mode, built.results);
 }
 
 // ===================== TAB: 內功比較 =====================
