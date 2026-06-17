@@ -7849,6 +7849,8 @@ function renderMatchupRoster(title, rows, options = {}) {
 function matchupDpsGroupMetricsRows() {
   return [
     ['擊敗', 'kill'],
+    ['焚骨', 'burnCount'],
+    ['焚骨比例', 'burnPerKill'],
     ['人傷', 'pvpDamage'],
     ['塔傷', 'buildDamage'],
     ['承傷', 'takenDamage'],
@@ -7856,9 +7858,27 @@ function matchupDpsGroupMetricsRows() {
   ];
 }
 
+function matchupAverageDenominator(list, key) {
+  if (key === 'burnCount') return list.filter(player => player.job === '九靈').length;
+  return list.length;
+}
+
+function matchupMetricNumericValue(list, key, mode = 'average') {
+  if (!list.length) return null;
+  if (key === 'burnPerKill') {
+    const kills = sum(list, 'kill');
+    return kills > 0 ? sum(list, 'burnCount') / kills : null;
+  }
+  if (mode === 'total') return sum(list, key);
+  const denominator = matchupAverageDenominator(list, key);
+  return denominator > 0 ? sum(list, key) / denominator : null;
+}
+
 function matchupValueLabel(list, key, mode = 'average') {
   if (!list.length) return '-';
-  const value = mode === 'total' ? sum(list, key) : (sum(list, key) / list.length);
+  const value = matchupMetricNumericValue(list, key, mode);
+  if (value == null) return '-';
+  if (key === 'burnPerKill') return fmtF(value, 2);
   if (['kill', 'assist', 'death', 'saveCount', 'burnCount'].includes(key)) return mode === 'total' ? fmtNumber(value) : fmtAvg(value);
   return fmtLarge(value);
 }
@@ -7872,15 +7892,16 @@ function matchupNeedsWeakMark(key, mode, myList, foeList, options = {}) {
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const weakPct = Math.max(1, Number(options.weakPct || 10));
   const tracked =
-    (mode === 'average' && ['burnCount', 'saveCount', 'death'].includes(key)) ||
-    (mode === 'total' && ['burnCount', 'saveCount'].includes(key)) ||
+    (mode === 'average' && ['burnCount', 'burnPerKill', 'saveCount', 'death'].includes(key)) ||
+    (mode === 'total' && ['burnCount', 'burnPerKill', 'saveCount'].includes(key)) ||
     (mode === 'average' && allowSimpleAverageKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'overall' && allowOverallTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'group' && allowGroupTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'average' && isDpsJob && ['buildDamage', 'kill'].includes(key));
   if (!tracked) return false;
-  const myValue = mode === 'total' ? sum(myList, key) : (sum(myList, key) / myList.length);
-  const foeValue = mode === 'total' ? sum(foeList, key) : (sum(foeList, key) / foeList.length);
+  const myValue = matchupMetricNumericValue(myList, key, mode);
+  const foeValue = matchupMetricNumericValue(foeList, key, mode);
+  if (myValue == null || foeValue == null) return false;
   if (foeValue <= 0 && key !== 'death') return false;
   if (key === 'death') {
     if (foeValue <= 0) return myValue > 0;
@@ -7898,15 +7919,16 @@ function matchupNeedsStrongMark(key, mode, myList, foeList, options = {}) {
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const strongPct = Math.max(1, Number(options.strongPct || 10));
   const tracked =
-    (mode === 'average' && ['burnCount', 'saveCount', 'death'].includes(key)) ||
-    (mode === 'total' && ['burnCount', 'saveCount'].includes(key)) ||
+    (mode === 'average' && ['burnCount', 'burnPerKill', 'saveCount', 'death'].includes(key)) ||
+    (mode === 'total' && ['burnCount', 'burnPerKill', 'saveCount'].includes(key)) ||
     (mode === 'average' && allowSimpleAverageKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'overall' && allowOverallTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'total' && scope === 'group' && allowGroupTotalKillBuild && ['buildDamage', 'kill'].includes(key)) ||
     (mode === 'average' && isDpsJob && ['buildDamage', 'kill'].includes(key));
   if (!tracked) return false;
-  const myValue = mode === 'total' ? sum(myList, key) : (sum(myList, key) / myList.length);
-  const foeValue = mode === 'total' ? sum(foeList, key) : (sum(foeList, key) / foeList.length);
+  const myValue = matchupMetricNumericValue(myList, key, mode);
+  const foeValue = matchupMetricNumericValue(foeList, key, mode);
+  if (myValue == null || foeValue == null) return false;
   if (key === 'death') {
     if (myValue <= 0) return foeValue > 0;
     return Math.ceil(((foeValue - myValue) / myValue) * 100) >= strongPct;
