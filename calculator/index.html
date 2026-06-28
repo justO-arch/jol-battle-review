@@ -2865,6 +2865,19 @@
           <select id="opt_ng_sort" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;"></select>
         </div>
         <div>
+          <div style="font-size:12px;color:#555555;margin-bottom:4px;">同核心候選預篩</div>
+          <label style="display:flex;align-items:center;gap:6px;color:#333333;font-size:12px;margin-bottom:6px;cursor:pointer;">
+            <input type="checkbox" id="opt_ng_prefilter_enabled" onchange="updateNgOptimizeSearchControls()">
+            啟用快速預篩
+          </label>
+          <div style="display:grid;grid-template-columns:auto 72px auto;gap:6px;align-items:center;color:#555555;font-size:12px;">
+            <span>每核心前</span>
+            <input type="number" id="opt_ng_prefilter_limit" value="4" min="1" max="50" step="1" oninput="updateNgOptimizeSearchControls()"
+              style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;box-sizing:border-box;">
+            <span>顆</span>
+          </div>
+        </div>
+        <div>
           <div style="font-size:12px;color:#555555;margin-bottom:4px;">元素一</div>
           <div style="display:grid;grid-template-columns:1fr 92px;gap:8px;">
             <select id="opt_ng_req1_elem" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;">
@@ -4955,7 +4968,7 @@ const TAB_INPUT_IDS = {
             'ng_belemres','ng_bbossres','ng_banticrit','ng_bhp','ng_bStyleResPct',
             'ng_cls_shenxiang','ng_cls_longyin','ng_cls_suimeng',
             'ng_cls_xuanji','ng_cls_jiuling','ng_cls_xuehe'],
-  optimize: ['opt_mode','opt_sort','opt_upper_mode','opt_upper_sort','opt_joint_mode','opt_joint_sort','opt_ng_mode','opt_ng_sort','opt_ng_req1_elem','opt_ng_req1_min','opt_ng_req2_elem','opt_ng_req2_min','opt_final_mode','opt_final_sort']
+  optimize: ['opt_mode','opt_sort','opt_upper_mode','opt_upper_sort','opt_joint_mode','opt_joint_sort','opt_ng_mode','opt_ng_sort','opt_ng_prefilter_enabled','opt_ng_prefilter_limit','opt_ng_req1_elem','opt_ng_req1_min','opt_ng_req2_elem','opt_ng_req2_min','opt_final_mode','opt_final_sort']
 };
 
 function saveTabInputs(tab) {
@@ -6643,6 +6656,7 @@ function updateNgOptimizeSearchControls() {
   const sortEl = document.getElementById('opt_ng_sort');
   const noteEl = document.getElementById('opt_ng_search_note');
   if (!sortEl || !noteEl) return;
+  const prefilter = getNgOptimizePrefilterOptions();
   const options = mode === 'pvp'
     ? [
         ['damageRatio', '傷害比值最高'],
@@ -6654,7 +6668,9 @@ function updateNgOptimizeSearchControls() {
         ['expected', '輸出期望最高'],
       ];
   sortEl.innerHTML = options.map(([v, label]) => `<option value="${v}">${label}</option>`).join('');
-  noteEl.textContent = '第一版固定選 6 個內功；可指定最多 2 種元素最低顆數門檻，合法組合之間直接依排序指標比較。';
+  noteEl.textContent = prefilter.enabled
+    ? `第一版固定選 6 個內功；已啟用同核心快速預篩，每核心先保留單顆分數前 ${prefilter.limit} 顆，再依指定元素補差異元素外卡。`
+    : '第一版固定選 6 個內功；可指定最多 2 種元素最低顆數門檻，合法組合之間直接依排序指標比較。';
 }
 
 function updateJointOptimizeSearchControls() {
@@ -7163,6 +7179,92 @@ function getNgOptimizeRequirements() {
   if (req1Elem && req1Min > 0) reqs.push({ element: req1Elem, min: req1Min });
   if (req2Elem && req2Min > 0) reqs.push({ element: req2Elem, min: req2Min });
   return reqs;
+}
+
+function getNgOptimizePrefilterOptions() {
+  const enabled = !!document.getElementById('opt_ng_prefilter_enabled')?.checked;
+  const rawLimit = parseInt(document.getElementById('opt_ng_prefilter_limit')?.value || '4', 10);
+  const limit = Math.max(1, Math.min(50, rawLimit || 4));
+  return { enabled, limit };
+}
+
+function scoreNgOptimizeCandidateForPrefilter(mode, sort, bases, item) {
+  let appliedTotal = addOptimizeNgAppliedTotals(getEmptyNgAppliedTotal(), item.applied || {});
+  appliedTotal = addOptimizeNgAppliedTotals(appliedTotal, getNgCoreAdjustment(item.coreName));
+  const result = evaluateNgOptimizeResult(mode, bases, [item], { ...(item.tagCounts || {}) }, appliedTotal);
+  return getOptimizeScore(mode, sort, result);
+}
+
+function getNgCoreCommonTagCounts(items) {
+  const common = { metal:Infinity, wood:Infinity, water:Infinity, fire:Infinity, earth:Infinity };
+  (Array.isArray(items) ? items : []).forEach(item => {
+    NG_ELEMENT_KEYS.forEach(key => {
+      common[key] = Math.min(common[key], item?.tagCounts?.[key] || 0);
+    });
+  });
+  NG_ELEMENT_KEYS.forEach(key => {
+    if (!Number.isFinite(common[key])) common[key] = 0;
+  });
+  return common;
+}
+
+function getNgDifferentialElementCount(item, commonCounts, element) {
+  return Math.max(0, (item?.tagCounts?.[element] || 0) - (commonCounts?.[element] || 0));
+}
+
+function prefilterNgOptimizeCandidates(candidates, mode, sort, bases, requirements, options) {
+  const source = Array.isArray(candidates) ? candidates : [];
+  const info = {
+    enabled: !!options?.enabled,
+    limit: options?.limit || 4,
+    originalCount: source.length,
+    wildcardCount: 0,
+    requiredElements: Array.from(new Set((requirements || []).map(req => req.element).filter(Boolean))),
+  };
+  if (!info.enabled) return { candidates: source, info };
+
+  const byCore = new Map();
+  source.forEach(item => {
+    if (!byCore.has(item.coreName)) byCore.set(item.coreName, []);
+    byCore.get(item.coreName).push(item);
+  });
+
+  const keptIndexes = new Set();
+  byCore.forEach(items => {
+    const scored = items.map(item => ({
+      item,
+      score: scoreNgOptimizeCandidateForPrefilter(mode, sort, bases, item),
+    })).sort((a, b) => {
+      const scoreDiff = b.score - a.score;
+      if (scoreDiff) return scoreDiff;
+      return a.item.name.localeCompare(b.item.name, 'zh-Hant');
+    });
+    const selectedIndexes = new Set();
+    const keepItem = item => {
+      selectedIndexes.add(item.index);
+      keptIndexes.add(item.index);
+    };
+    scored.slice(0, info.limit).forEach(({ item }) => keepItem(item));
+
+    const commonCounts = getNgCoreCommonTagCounts(items);
+    info.requiredElements.forEach(element => {
+      const hasElementVariant = Array.from(selectedIndexes).some(index => {
+        const kept = items.find(item => item.index === index);
+        return kept && getNgDifferentialElementCount(kept, commonCounts, element) > 0;
+      });
+      if (hasElementVariant) return;
+      const wildcard = scored.find(({ item }) => getNgDifferentialElementCount(item, commonCounts, element) > 0);
+      if (wildcard && !selectedIndexes.has(wildcard.item.index)) {
+        keepItem(wildcard.item);
+        info.wildcardCount += 1;
+      }
+    });
+  });
+
+  return {
+    candidates: source.filter(item => keptIndexes.has(item.index)),
+    info,
+  };
 }
 
 function getOptimizePVEBase() {
@@ -8033,12 +8135,12 @@ function buildNgOptimizeResults(mode, sort) {
     };
   }
 
-  const candidates = getNgOptimizeCandidates().filter(item => !excludedCores.has(item.coreName));
-  const uniqueCores = new Set(candidates.map(item => item.coreName));
-  if (uniqueCores.size < 6) {
+  const allCandidates = getNgOptimizeCandidates().filter(item => !excludedCores.has(item.coreName));
+  const allUniqueCores = new Set(allCandidates.map(item => item.coreName));
+  if (allUniqueCores.size < 6) {
     return {
-      candidates,
-      uniqueCores,
+      candidates: allCandidates,
+      uniqueCores: allUniqueCores,
       legalCount: 0,
       results: [],
       requirements,
@@ -8049,11 +8151,11 @@ function buildNgOptimizeResults(mode, sort) {
       emptyText: '候選不足，無法執行最佳化。',
     };
   }
-  const missingRequired = Array.from(requiredCores).filter(coreName => !uniqueCores.has(coreName));
+  const missingRequired = Array.from(requiredCores).filter(coreName => !allUniqueCores.has(coreName));
   if (missingRequired.length) {
     return {
-      candidates,
-      uniqueCores,
+      candidates: allCandidates,
+      uniqueCores: allUniqueCores,
       legalCount: 0,
       results: [],
       requirements,
@@ -8065,6 +8167,20 @@ function buildNgOptimizeResults(mode, sort) {
     };
   }
 
+  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const bases = { pveBase, pvpBase };
+  const prefilter = prefilterNgOptimizeCandidates(
+    allCandidates,
+    mode,
+    sort,
+    bases,
+    requirements,
+    getNgOptimizePrefilterOptions()
+  );
+  const candidates = prefilter.candidates;
+  const uniqueCores = new Set(candidates.map(item => item.coreName));
   const suffixCounts = Array.from({ length: candidates.length + 1 }, () => ({ metal:0, wood:0, water:0, fire:0, earth:0 }));
   const suffixCoreSets = Array.from({ length: candidates.length + 1 }, () => new Set());
   for (let i = candidates.length - 1; i >= 0; i--) {
@@ -8075,10 +8191,6 @@ function buildNgOptimizeResults(mode, sort) {
     suffixCoreSets[i].add(candidates[i].coreName);
   }
 
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
-  if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
-  const bases = { pveBase, pvpBase };
   const results = [];
   let legalCount = 0;
 
@@ -8130,6 +8242,9 @@ function buildNgOptimizeResults(mode, sort) {
     : '未指定元素門檻';
   const requiredText = requiredCores.size ? Array.from(requiredCores).join('、') : '未指定必選類型';
   const excludedText = excludedCores.size ? Array.from(excludedCores).join('、') : '未指定排除類型';
+  const prefilterText = prefilter.info.enabled
+    ? `同核心預篩：每核心前 ${prefilter.info.limit} 顆，差異元素外卡 ${prefilter.info.wildcardCount} 顆，候選 ${prefilter.info.originalCount} -> ${candidates.length}。`
+    : '同核心預篩：未啟用。';
   return {
     candidates,
     uniqueCores,
@@ -8138,8 +8253,9 @@ function buildNgOptimizeResults(mode, sort) {
     requirements,
     requiredCores,
     excludedCores,
+    prefilter: prefilter.info,
     error: false,
-    note: `同核心名稱不可重複。元素條件：${reqText}。排除類型：${excludedText}。必選類型：${requiredText}。結果會完整顯示所有元素顆數與周天分布。`,
+    note: `${prefilterText} 同核心名稱不可重複。元素條件：${reqText}。排除類型：${excludedText}。必選類型：${requiredText}。結果會完整顯示所有元素顆數與周天分布。`,
     emptyText: '',
   };
 }
