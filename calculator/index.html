@@ -4039,7 +4039,7 @@ function renderPVPCmpAttackers() {
         style="${pvpCmpInpStyle()}" oninput="pvpCmpUpdate(${a.id},'${field}',this.value)"></div>`;
     return `<div class="section pvpcmp-panel ${panelClass}" style="margin-bottom:12px;">
       <div class="section-title" style="justify-content:space-between;display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
-        <span class="pvpcmp-title-main"><span class="pvpcmp-badge">${lbl}</span><span>攻方 <input type="text" value="${a.name}"
+        <span class="pvpcmp-title-main"><span class="pvpcmp-badge">${lbl}</span><span>攻方 <input type="text" value="${escHtml(a.name)}"
           class="pvpcmp-name-input"
           oninput="pvpCmpUpdate(${a.id},'name',this.value)"></span></span>
         <div style="display:flex;gap:6px;align-items:center;">
@@ -4098,7 +4098,7 @@ function renderPVPCmpAttackers() {
   if (oppSel) {
     const curVal = oppSel.value;
     oppSel.innerHTML = pvpCmpAttackers.map((a, i) =>
-      `<option value="${a.id}" ${String(a.id) === curVal ? 'selected' : ''}>${PVPCMP_LABELS[i] || i+1}. ${a.name}</option>`
+      `<option value="${a.id}" ${String(a.id) === curVal ? 'selected' : ''}>${PVPCMP_LABELS[i] || i+1}. ${escHtml(a.name)}</option>`
     ).join('');
   }
   refreshDBDropdowns();
@@ -4259,7 +4259,7 @@ function calcPVPCmp() {
   if (sel) {
     const curId = pvpCmpBaseId;
     sel.innerHTML = pvpCmpAttackers.map((a, i) =>
-      `<option value="${a.id}" ${a.id === curId ? 'selected' : ''}>${PVPCMP_LABELS[i] || i+1}. ${a.name}</option>`
+      `<option value="${a.id}" ${a.id === curId ? 'selected' : ''}>${PVPCMP_LABELS[i] || i+1}. ${escHtml(a.name)}</option>`
     ).join('');
     // 若目前 baseId 已不存在（套裝被移除），重設為第一個
     if (!pvpCmpAttackers.find(a => a.id === pvpCmpBaseId)) {
@@ -5316,6 +5316,19 @@ function isInnerSkillName(name) {
   return /\d{4}/.test(String(name || ''));
 }
 
+function isInnerSkillRoutineStack(stackItems) {
+  return Array.isArray(stackItems) &&
+    stackItems.length > 0 &&
+    stackItems.every(name => isInnerSkillName(name));
+}
+
+function isInnerSkillRoutineEntry(entry) {
+  const directStack = getNgDBStackItems(entry);
+  if (isInnerSkillRoutineStack(directStack)) return true;
+  const expandedStack = getNgDBExpandedStackItems(entry);
+  return isInnerSkillRoutineStack(expandedStack);
+}
+
 function normalizeDBList(raw) {
   let changed = false;
   const list = Array.isArray(raw) ? raw.map(entry => {
@@ -5435,7 +5448,7 @@ function dbLoad() {
   const migratedNg = [];
   let splitChanged = false;
   DB.ng.forEach(entry => {
-    if (isInnerSkillName(entry?.name)) migratedNg.push(entry);
+    if (isInnerSkillName(entry?.name) || isInnerSkillRoutineEntry(entry)) migratedNg.push(entry);
     else {
       migratedGear.push(entry);
       splitChanged = true;
@@ -5453,10 +5466,10 @@ function dbPersist(type) {
   localStorage.setItem(`${STORAGE_KEY}_db_${type}`, JSON.stringify(DB[type]));
 }
 
-function dbAdd(type, name, data) {
+function dbAdd(type, name, data, meta = null) {
   const limit = getDBStorageTypeLimit(type);
   if (DB[type].length >= limit) { alert(`已達 ${limit} 筆上限，請先刪除不需要的項目。`); return; }
-  DB[type].push(normalizeDBEntryMeta({ name, data }));
+  DB[type].push(normalizeDBEntryMeta({ name, data, ...(meta ? { meta } : {}) }));
   dbPersist(type);
   renderDB();
   refreshDBDropdowns();
@@ -5564,7 +5577,7 @@ function dbSaveNG(set) {
   const name = prompt('請輸入名稱（最多 20 字）：', '');
   if (name === null || name.trim() === '') return;
   const trimmed = name.trim().slice(0, 20);
-  dbAdd(isInnerSkillName(trimmed) ? 'ng' : 'gear', trimmed, data);
+  dbAdd(isInnerSkillName(trimmed) || isInnerSkillRoutineStack(data.stackItems) ? 'ng' : 'gear', trimmed, data);
 }
 function dbLoadNG(set, selId) {
   const name = document.getElementById(selId)?.value; if (!name) return;
@@ -5572,7 +5585,7 @@ function dbLoadNG(set, selId) {
   ngSaveCurrentVals();
   const data = getNgDBData(entry);
   NG_ATTR_ROWS.forEach(row => { ng_vals[set][row.key] = data[row.key] || 0; });
-  ng_db_stacks[set] = getNgDBStackItems(entry);
+  ng_db_stacks[set] = getNgDBExpandedStackItems(entry);
   localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
   persistNeigongUiState();
   renderNeigongInputTable(); calcNeigong();
@@ -8278,6 +8291,7 @@ function renderNgOptimizeResults(mode, results) {
   }
   emptyEl.textContent = '';
   resultsEl.innerHTML = visibleResults.map((result, idx) => {
+    const resultKey = getOptimizeResultKey(result);
     const namesHtml = result.items.map((item, itemIdx) => {
       const requiredTag = optimizeNgRequiredCores.has(item.coreName)
         ? ' <span style="font-size:11px;color:#1a7c2a;">（必選類型）</span>'
@@ -8297,6 +8311,7 @@ function renderNgOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">總周天 ${result.zhoutianCounts.total}</div>
+          <button type="button" onclick="saveNgOptimizeResultAsStack('${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('ng', result)}
         </div>
       </div>
@@ -8311,6 +8326,43 @@ function renderNgOptimizeResults(mode, results) {
       </div>
     </div>`;
   }).join('');
+}
+
+function getNgOptimizeResultStackData(result) {
+  const totals = {};
+  DB_NG_KEYS.forEach(key => { totals[key] = 0; });
+  const items = Array.isArray(result?.items) ? result.items : [];
+  items.forEach(item => {
+    const data = getNgDBData(item?.entry || {});
+    DB_NG_KEYS.forEach(key => {
+      totals[key] += parseFloat(data[key]) || 0;
+    });
+  });
+  return {
+    values: totals,
+    stackItems: items.map(item => item?.name).filter(name => typeof name === 'string' && name.trim() !== '')
+  };
+}
+
+function saveNgOptimizeResultAsStack(resultKey, rank = 0) {
+  const key = String(resultKey || '');
+  const result = (Array.isArray(optimizeLastNgResults) ? optimizeLastNgResults : [])
+    .find(item => getOptimizeResultKey(item) === key);
+  if (!result) {
+    alert('找不到這筆內功最佳化結果，請重新執行內功最佳化後再儲存。');
+    return;
+  }
+  const data = getNgOptimizeResultStackData(result);
+  if (!isInnerSkillRoutineStack(data.stackItems)) {
+    alert('這筆結果不是完整的內功套路，無法儲存。');
+    return;
+  }
+  const defaultName = `內功套路第${rank || DB.ng.length + 1}名`;
+  const name = prompt('請輸入內功套路名稱（最多 20 字）：', defaultName);
+  if (name === null || name.trim() === '') return;
+  const trimmed = name.trim().slice(0, 20);
+  dbAdd('ng', trimmed, data, { category: 'set_build', slot: null, tags: null });
+  alert(`已儲存內功套路：${trimmed}`);
 }
 
 function runNgOptimize() {
@@ -8688,6 +8740,27 @@ function getNgDBStackItems(entry) {
     : [];
 }
 
+function getNgDBExpandedStackItems(entry, seen = new Set()) {
+  const stackItems = getNgDBStackItems(entry);
+  if (!stackItems.length) return [];
+  const expanded = [];
+  stackItems.forEach(name => {
+    const key = String(name);
+    if (seen.has(key)) return;
+    const child = findNgDBEntry(name);
+    const childStack = getNgDBStackItems(child);
+    if (child && childStack.length) {
+      const childExpanded = getNgDBExpandedStackItems(child, new Set([...seen, key]));
+      if (isInnerSkillRoutineStack(childExpanded)) {
+        expanded.push(...childExpanded);
+        return;
+      }
+    }
+    expanded.push(name);
+  });
+  return expanded;
+}
+
 function getNgUiStateStorageKey() {
   return `${STORAGE_KEY}_ng_ui`;
 }
@@ -8826,7 +8899,7 @@ function refreshNgStackModalList() {
   }
   list.innerHTML = entries.map((entry, idx) => {
     const name = entry && entry.name ? entry.name : `未命名 ${idx + 1}`;
-    const typeLabel = isInnerSkillName(name) ? '內功' : '裝備';
+    const typeLabel = isInnerSkillName(name) || isInnerSkillRoutineEntry(entry) ? '內功' : '裝備';
     const checked = selected.has(name) ? 'checked' : '';
     return `<label class="ng-stack-option">
       <input type="checkbox" class="ng-stack-check" value="${escHtml(name)}" ${checked} onchange="handleNgStackCheckbox(this)">
@@ -8871,14 +8944,18 @@ function confirmNgStackSelection() {
   const set = ng_stack_modal_set;
   const selectedNames = Array.from(document.querySelectorAll('#ng_stack_modal_list .ng-stack-check:checked')).map(el => el.value);
   const totals = {};
+  const selectedStackItems = [];
   DB_NG_KEYS.forEach(key => { totals[key] = 0; });
   selectedNames.forEach(name => {
     const entry = findNgDBEntry(name);
     const data = getNgDBData(entry);
     DB_NG_KEYS.forEach(key => { totals[key] += parseFloat(data[key]) || 0; });
+    const expandedStack = getNgDBExpandedStackItems(entry);
+    if (isInnerSkillRoutineStack(expandedStack)) selectedStackItems.push(...expandedStack);
+    else selectedStackItems.push(name);
   });
   DB_NG_KEYS.forEach(key => { ng_vals[set][key] = totals[key]; });
-  ng_db_stacks[set] = selectedNames;
+  ng_db_stacks[set] = selectedStackItems;
   localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
   syncNgActiveSets();
   persistNeigongUiState();
@@ -9332,7 +9409,7 @@ function calcNeigong() {
   let hRow = `<tr><th style="${lthS}">屬性</th><th style="${thS}">效果類型</th>`;
   ng_active.forEach(s => {
     const name = document.getElementById(`ng_name_${s}`)?.value || ng_names[s];
-    hRow += `<th style="${thS}">${name}</th>`;
+    hRow += `<th style="${thS}">${escHtml(name)}</th>`;
   });
   thead.innerHTML = hRow + '</tr>';
 
@@ -9429,7 +9506,7 @@ function calcNeigong() {
   let fullH = `<tr><th style="${lthS}">項目</th>`;
   ng_active.forEach(s => {
     const name = document.getElementById(`ng_name_${s}`)?.value || ng_names[s];
-    fullH += `<th style="${thS}">${name}</th>`;
+    fullH += `<th style="${thS}">${escHtml(name)}</th>`;
   });
   fullH += `</tr>`;
   fullHead.innerHTML = fullH;
