@@ -1511,6 +1511,13 @@
   .squad-detail-table td {
     white-space: nowrap;
   }
+  .squad-selection-hint {
+    align-self: center;
+    color: var(--warn);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.5;
+  }
   .squad-name-cell {
     font-weight: 900;
     color: var(--accent);
@@ -2921,6 +2928,7 @@
                   <div class="inline-actions" style="margin-top:0;">
                     <button class="btn-secondary" type="button" id="btn_squad_check_all">全勾</button>
                     <button class="btn-ghost" type="button" id="btn_squad_uncheck_all">全不勾</button>
+                    <span class="squad-selection-hint">建議只看單場較有價值，因為不同場的隊員組成很可能大不相同。</span>
                   </div>
                   <div id="squad_battle_select" class="checklist-box"></div>
                 </div>
@@ -3598,7 +3606,7 @@ function collectUiState() {
     squadOpponentFilter: document.getElementById('squad_opponent_filter')?.value || 'all',
     squadDateFromFilter: document.getElementById('squad_date_from_filter')?.value || '',
     squadDateToFilter: document.getElementById('squad_date_to_filter')?.value || '',
-    squadBattleIds: selectedBattleIds('squad_battle_select'),
+    squadBattleIds: selectedSquadBattleIds(),
     professionOwnTeamFilter: document.getElementById('profession_own_team_filter')?.value || 'all',
     professionOpponentFilter: document.getElementById('profession_opponent_filter')?.value || 'all',
     professionDateFromFilter: document.getElementById('profession_date_from_filter')?.value || '',
@@ -4520,6 +4528,10 @@ function defenseSquadSortValue(squadName) {
   }
   const codeMatch = text.match(/\((\d+)-(\d+)\)/);
   if (codeMatch) return (Number(codeMatch[1]) - 1) * 10 + Number(codeMatch[2]);
+  if (teamMatch) {
+    const team = chineseNumberValue(teamMatch[1]);
+    if (team != null) return team;
+  }
   return null;
 }
 
@@ -4562,6 +4574,50 @@ function squadScoreForPlayer(player, scoreMap) {
   return Number(scoreMap?.get?.(squadScoreKey(player?.name || '', groupType)) || 0);
 }
 
+function squadMemberSignature(names) {
+  return [...(names || [])]
+    .filter(Boolean)
+    .sort((a, b) => String(a || '').localeCompare(String(b || ''), 'zh-Hant'))
+    .join('\u001f');
+}
+
+function aggregateSquadMembers(members = []) {
+  const map = new Map();
+  members.forEach(member => {
+    const key = canonicalPlayerName(member?.name || '') || String(member?.name || '');
+    if (!key) return;
+    if (!map.has(key)) {
+      map.set(key, {
+        ...member,
+        score: 0,
+        kill: 0,
+        death: 0,
+        pvpDamage: 0,
+        heal: 0,
+        buildDamage: 0,
+        takenDamage: 0,
+        burnCount: 0,
+        springCount: 0,
+        featherCount: 0,
+        entries: 0,
+      });
+    }
+    const row = map.get(key);
+    row.entries += 1;
+    row.score += Number(member.score || 0);
+    row.kill += Number(member.kill || 0);
+    row.death += Number(member.death || 0);
+    row.pvpDamage += Number(member.pvpDamage || 0);
+    row.heal += Number(member.heal || 0);
+    row.buildDamage += Number(member.buildDamage || 0);
+    row.takenDamage += Number(member.takenDamage || 0);
+    row.burnCount += Number(member.burnCount || 0);
+    row.springCount += Number(member.springCount || 0);
+    row.featherCount += Number(member.featherCount || 0);
+  });
+  return [...map.values()];
+}
+
 function buildSquadPerformanceRows(battles = [], options = {}) {
   const scoreMap = options.scoreMap instanceof Map ? options.scoreMap : new Map();
   const buckets = new Map();
@@ -4577,6 +4633,7 @@ function buildSquadPerformanceRows(battles = [], options = {}) {
           playerNames: new Set(),
           entries: 0,
           totalScore: 0,
+          memberNamesByBattle: new Map(),
           kill: 0,
           death: 0,
           pvpDamage: 0,
@@ -4590,9 +4647,13 @@ function buildSquadPerformanceRows(battles = [], options = {}) {
         });
       }
       const bucket = buckets.get(squad);
+      const battleId = battle.id || '';
+      const playerName = canonicalPlayerName(player.name || '');
       const metrics = squadMetricValues(player, squadScoreForPlayer(player, scoreMap));
-      bucket.battleIds.add(battle.id || '');
-      bucket.playerNames.add(canonicalPlayerName(player.name || ''));
+      bucket.battleIds.add(battleId);
+      bucket.playerNames.add(playerName);
+      if (!bucket.memberNamesByBattle.has(battleId)) bucket.memberNamesByBattle.set(battleId, new Set());
+      if (playerName) bucket.memberNamesByBattle.get(battleId).add(playerName);
       bucket.entries += 1;
       Object.keys(metrics).forEach(key => {
         if (key === 'score') bucket.totalScore += metrics.score;
@@ -4608,16 +4669,24 @@ function buildSquadPerformanceRows(battles = [], options = {}) {
       });
     });
   });
-  return [...buckets.values()].map(bucket => ({
-    ...bucket,
-    battleIds: [...bucket.battleIds].filter(Boolean),
-    playerCount: [...bucket.playerNames].filter(Boolean).length,
-    avgScore: bucket.entries ? bucket.totalScore / bucket.entries : 0,
-    members: bucket.members.sort((a, b) => {
+  return [...buckets.values()].map(bucket => {
+    const { memberNamesByBattle, ...bucketRow } = bucket;
+    const memberSignatures = [...memberNamesByBattle.values()].map(squadMemberSignature);
+    const sameMembersAcrossBattles = memberSignatures.length <= 1
+      || memberSignatures.every(signature => signature === memberSignatures[0]);
+    const members = aggregateSquadMembers(bucket.members).sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       return String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hant');
-    }),
-  })).sort((a, b) => {
+    });
+    return {
+      ...bucketRow,
+      battleIds: [...bucket.battleIds].filter(Boolean),
+      playerCount: [...bucket.playerNames].filter(Boolean).length,
+      avgScore: bucket.entries ? bucket.totalScore / bucket.entries : 0,
+      sameMembersAcrossBattles,
+      members,
+    };
+  }).sort((a, b) => {
     const aOrder = squadSortValue(a.squad);
     const bOrder = squadSortValue(b.squad);
     if (aOrder != null && bOrder != null && aOrder !== bOrder) {
@@ -6554,10 +6623,15 @@ function renderReviewLists(review) {
   });
 }
 
-function selectedBattleIds(selectId) {
+function checkedBattleIds(selectId) {
   const checked = [...(document.querySelectorAll(`#${selectId} input[type="checkbox"]:checked`) || [])]
     .map(input => input.value)
     .filter(Boolean);
+  return checked;
+}
+
+function selectedBattleIds(selectId) {
+  const checked = checkedBattleIds(selectId);
   return checked.length ? checked : state.battles.map(battle => battle.id);
 }
 
@@ -6565,6 +6639,37 @@ function filteredBattlesByIds(ids) {
   if (!Array.isArray(ids) || !ids.length) return [];
   const set = new Set(ids);
   return state.battles.filter(battle => set.has(battle.id));
+}
+
+function latestBattleIdFromIds(ids) {
+  const idSet = new Set((ids || []).filter(Boolean));
+  let bestBattle = null;
+  let bestIndex = -1;
+  state.battles.forEach((battle, index) => {
+    if (!idSet.has(battle.id)) return;
+    if (!bestBattle) {
+      bestBattle = battle;
+      bestIndex = index;
+      return;
+    }
+    const date = battleDateValue(battle);
+    const bestDate = battleDateValue(bestBattle);
+    if (date !== bestDate) {
+      if (date > bestDate) {
+        bestBattle = battle;
+        bestIndex = index;
+      }
+      return;
+    }
+    const label = String(battle.sourceLabel || '');
+    const bestLabel = String(bestBattle.sourceLabel || '');
+    const labelOrder = label.localeCompare(bestLabel, 'zh-Hant', { numeric: true });
+    if (labelOrder > 0 || (labelOrder === 0 && index > bestIndex)) {
+      bestBattle = battle;
+      bestIndex = index;
+    }
+  });
+  return bestBattle?.id || '';
 }
 
 function ownTeamMatchesFilter(teamName, filterKey = 'all') {
@@ -6682,7 +6787,27 @@ function selectedPlayerBattleIds() {
 }
 
 function selectedSquadBattleIds() {
-  return selectedReviewBattleIds('squad_battle_select', currentSquadReviewFilters());
+  const filters = currentSquadReviewFilters();
+  const checkedIds = checkedBattleIds('squad_battle_select');
+  const scopedCheckedIds = checkedIds.length
+    ? filterBattleIdsByReviewFilters(
+      checkedIds,
+      filters.ownTeamFilter || 'all',
+      filters.opponentFilter || 'all',
+      filters.dateFrom || '',
+      filters.dateTo || ''
+    )
+    : [];
+  if (scopedCheckedIds.length) return scopedCheckedIds;
+  const visibleIds = filterBattleIdsByReviewFilters(
+    state.battles.map(battle => battle.id),
+    filters.ownTeamFilter || 'all',
+    filters.opponentFilter || 'all',
+    filters.dateFrom || '',
+    filters.dateTo || ''
+  );
+  const latestId = latestBattleIdFromIds(visibleIds);
+  return latestId ? [latestId] : [];
 }
 
 function selectedProfessionBattleIds() {
@@ -7833,7 +7958,6 @@ function renderSquadMemberDetails(row) {
         <tr>
           <th>玩家</th>
           <th>職業</th>
-          <th>總分</th>
           <th>擊敗</th>
           <th>重傷</th>
           <th>人傷</th>
@@ -7850,7 +7974,6 @@ function renderSquadMemberDetails(row) {
           <tr>
             <td>${escHtml(member.name)}</td>
             <td>${escHtml(member.job || '-')}</td>
-            <td>${fmtNumber(member.score)}</td>
             <td>${fmtNumber(member.kill)}</td>
             <td>${fmtNumber(member.death)}</td>
             <td>${fmtLarge(member.pvpDamage)}</td>
@@ -7880,8 +8003,9 @@ function renderSquadPerformanceTable() {
     return;
   }
   body.innerHTML = rows.map(row => {
-    const detailOpen = singleBattle && squadOpenDetailKeys.has(row.key);
-    const detailCell = singleBattle
+    const canExpandDetails = singleBattle || !!row.sameMembersAcrossBattles;
+    const detailOpen = canExpandDetails && squadOpenDetailKeys.has(row.key);
+    const detailCell = canExpandDetails
       ? `<button type="button" class="btn-ghost squad-detail-toggle" data-squad-key="${escHtml(row.key)}">${detailOpen ? '收合' : '展開'}</button>`
       : '<span class="subtle">跨場</span>';
     const mainRow = `
@@ -9346,10 +9470,15 @@ function renderBattleFilterOptions(selectId) {
     box.innerHTML = '<div class="subtle">目前沒有符合己方/對手篩選的場次。</div>';
     return;
   }
+  const hasVisibleChecked = visibleBattles.some(battle => checkedIds.has(battle.id));
+  const defaultCheckedId = selectId === 'squad_battle_select' && !hasVisibleChecked
+    ? latestBattleIdFromIds(visibleBattles.map(battle => battle.id))
+    : '';
   box.innerHTML = visibleBattles.map((battle) => {
     const label = battleDisplayLabel(battle, { includePlayers: false });
+    const checked = checkedIds.has(battle.id) || battle.id === defaultCheckedId;
     return `<label class="check-item">
-      <input type="checkbox" value="${escHtml(battle.id)}" ${checkedIds.has(battle.id) ? 'checked' : ''}>
+      <input type="checkbox" value="${escHtml(battle.id)}" ${checked ? 'checked' : ''}>
       <span>${escHtml(label)}</span>
     </label>`;
   }).join('');
