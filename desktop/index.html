@@ -1498,6 +1498,23 @@
   }
   .metric-table td:first-child { color: var(--muted); width: 160px; }
   .metric-table td:last-child { font-weight: 700; }
+  .squad-detail-toggle-cell { text-align: center; white-space: nowrap; }
+  .squad-detail-row > td {
+    background: #fbf7f0;
+    padding: 10px 12px;
+  }
+  .squad-detail-table {
+    width: 100%;
+    font-size: 13px;
+  }
+  .squad-detail-table th,
+  .squad-detail-table td {
+    white-space: nowrap;
+  }
+  .squad-name-cell {
+    font-weight: 900;
+    color: var(--accent);
+  }
   .mini-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2378,7 +2395,7 @@
         <div class="hero-main">
           <h1>幫戰覆盤工具 <span style="color:var(--warn); font-size:0.72em; font-weight:900;">（不能單憑數據直接判定誰打不好）</span></h1>
           <p>這一頁獨立處理幫戰戰報。核心流程固定依照覆盤規則：先切資料、再分工、再跑第一輪門檻篩選，最後用交集名單與特殊職責做人工判讀。</p>
-          <div class="hero-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、別名合併、能力六邊形、多場統計、職業對位。</div>
+          <div class="hero-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、小隊表現、別名合併、能力六邊形、多場統計、職業對位。</div>
         </div>
         <div class="hero-tools">
           <div class="inline-actions">
@@ -2483,7 +2500,7 @@
                 <div class="step import-step">
                   <div>
                     <b>步驟 4：加入場次</b>
-                    <span class="subtle">加入後可到右側分頁查看分工、單場覆盤、玩家查詢與職業表現。</span>
+                    <span class="subtle">加入後可到右側分頁查看分工、單場覆盤、玩家查詢、職業表現與小隊表現。</span>
                   </div>
                   <div class="inline-actions import-step-actions">
                     <button class="btn-primary" id="btn_add_battle">加入場次</button>
@@ -2499,13 +2516,14 @@
 
       <div class="stack">
         <section class="panel">
-          <div class="panel-title">覆盤主區 <small>右側分頁查看分工、單場、累積與職業表現</small></div>
+          <div class="panel-title">覆盤主區 <small>右側分頁查看分工、單場、累積、職業與小隊表現</small></div>
           <div class="tab-bar">
             <button class="btn-secondary tab-btn active" data-tab="assignment">分工</button>
             <button class="btn-secondary tab-btn" data-tab="review">單場覆盤</button>
             <button class="btn-secondary tab-btn" data-tab="matchup">單場對位</button>
             <button class="btn-secondary tab-btn" data-tab="opponents">重點人物</button>
             <button class="btn-secondary tab-btn" data-tab="profession">職業表現</button>
+            <button class="btn-secondary tab-btn" data-tab="squad">小隊表現</button>
             <button class="btn-secondary tab-btn" data-tab="players">玩家查詢</button>
             <button class="btn-secondary tab-btn" data-tab="rules">判讀說明</button>
             <div class="tab-bar-spacer"></div>
@@ -2871,6 +2889,69 @@
               </div>
             </div>
 
+            <div class="tab-panel" data-tab-panel="squad">
+              <div class="grid-4">
+                <div class="field">
+                  <label>己方</label>
+                  <select id="squad_own_team_filter">
+                    <option value="all">全部</option>
+                    <option value="chenyan">塵煙如夢</option>
+                    <option value="chensi">塵煙似夢</option>
+                    <option value="jianzhao">劍照霜寒</option>
+                    <option value="zouyu">驟雨初歇</option>
+                    <option value="flower_other">花舞或其他</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>對手</label>
+                  <select id="squad_opponent_filter">
+                    <option value="all">全部</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>日期起</label>
+                  <input id="squad_date_from_filter" type="date">
+                </div>
+                <div class="field">
+                  <label>日期迄</label>
+                  <input id="squad_date_to_filter" type="date">
+                </div>
+                <div class="field" style="grid-column: span 4;">
+                  <label>勾選要納入統計的場次</label>
+                  <div class="inline-actions" style="margin-top:0;">
+                    <button class="btn-secondary" type="button" id="btn_squad_check_all">全勾</button>
+                    <button class="btn-ghost" type="button" id="btn_squad_uncheck_all">全不勾</button>
+                  </div>
+                  <div id="squad_battle_select" class="checklist-box"></div>
+                </div>
+              </div>
+              <div style="height:12px;"></div>
+              <div class="table-wrap">
+                <table id="squad_performance_table" class="metric-table">
+                  <thead>
+                    <tr>
+                      <th>明細</th>
+                      <th>小隊</th>
+                      <th>場次</th>
+                      <th>人次</th>
+                      <th>人均總分</th>
+                      <th>小隊總分</th>
+                      <th>擊敗</th>
+                      <th>重傷</th>
+                      <th>人傷</th>
+                      <th>治療量</th>
+                      <th>塔傷</th>
+                      <th>承傷</th>
+                      <th>焚骨</th>
+                      <th>清泉</th>
+                      <th>化羽</th>
+                    </tr>
+                  </thead>
+                  <tbody id="squad_performance_body"></tbody>
+                </table>
+              </div>
+            </div>
+
             <div class="tab-panel" data-tab-panel="opponents">
               <div class="grid-4">
                 <div class="field">
@@ -3147,6 +3228,7 @@ let importedBattleFileLabel = '';
 let selectedPlayer = '';
 let professionTableSort = { field: 'reviewSuggestCount', order: 'desc' };
 let dpsProfessionTableSort = { field: 'avgBuildDamage', order: 'desc' };
+let squadOpenDetailKeys = new Set();
 let currentPlayerLookupContext = null;
 let currentPlayerLeadersContext = null;
 let batchExportRunState = null;
@@ -3512,6 +3594,11 @@ function collectUiState() {
     playerDateToFilter: document.getElementById('player_date_to_filter')?.value || '',
     playerGroupFilter: document.getElementById('player_group_filter')?.value || 'all',
     playerCohortFilter: document.getElementById('player_cohort_filter')?.value || 'same_job',
+    squadOwnTeamFilter: document.getElementById('squad_own_team_filter')?.value || 'all',
+    squadOpponentFilter: document.getElementById('squad_opponent_filter')?.value || 'all',
+    squadDateFromFilter: document.getElementById('squad_date_from_filter')?.value || '',
+    squadDateToFilter: document.getElementById('squad_date_to_filter')?.value || '',
+    squadBattleIds: selectedBattleIds('squad_battle_select'),
     professionOwnTeamFilter: document.getElementById('profession_own_team_filter')?.value || 'all',
     professionOpponentFilter: document.getElementById('profession_opponent_filter')?.value || 'all',
     professionDateFromFilter: document.getElementById('profession_date_from_filter')?.value || '',
@@ -3546,6 +3633,10 @@ function restoreUiState(uiState = {}) {
   if (document.getElementById('player_date_to_filter')) document.getElementById('player_date_to_filter').value = uiState.playerDateToFilter || '';
   if (document.getElementById('player_group_filter')) document.getElementById('player_group_filter').value = uiState.playerGroupFilter || 'all';
   if (document.getElementById('player_cohort_filter')) document.getElementById('player_cohort_filter').value = uiState.playerCohortFilter || 'same_job';
+  if (document.getElementById('squad_own_team_filter')) document.getElementById('squad_own_team_filter').value = uiState.squadOwnTeamFilter || 'all';
+  if (document.getElementById('squad_opponent_filter')) document.getElementById('squad_opponent_filter').value = uiState.squadOpponentFilter || 'all';
+  if (document.getElementById('squad_date_from_filter')) document.getElementById('squad_date_from_filter').value = uiState.squadDateFromFilter || '';
+  if (document.getElementById('squad_date_to_filter')) document.getElementById('squad_date_to_filter').value = uiState.squadDateToFilter || '';
   if (document.getElementById('profession_own_team_filter')) document.getElementById('profession_own_team_filter').value = uiState.professionOwnTeamFilter || 'all';
   if (document.getElementById('profession_opponent_filter')) document.getElementById('profession_opponent_filter').value = uiState.professionOpponentFilter || 'all';
   if (document.getElementById('profession_date_from_filter')) document.getElementById('profession_date_from_filter').value = uiState.professionDateFromFilter || '';
@@ -3566,11 +3657,14 @@ function restoreUiState(uiState = {}) {
   if (typeof refreshReviewOpponentFilterOptions === 'function') refreshReviewOpponentFilterOptions();
   if (typeof renderBattleFilterOptions === 'function') {
     renderBattleFilterOptions('player_battle_select');
+    renderBattleFilterOptions('squad_battle_select');
     renderBattleFilterOptions('profession_battle_select');
   }
   restoreBattleCheckboxes('player_battle_select', uiState.playerBattleIds || []);
+  restoreBattleCheckboxes('squad_battle_select', uiState.squadBattleIds || []);
   restoreBattleCheckboxes('profession_battle_select', uiState.professionBattleIds || []);
   renderPlayerLookup();
+  if (typeof renderSquadPerformanceTable === 'function') renderSquadPerformanceTable();
   renderProfessionTable();
   if (typeof renderRulesExplain === 'function') renderRulesExplain();
   switchTab(uiState.activeTab || 'assignment');
@@ -4373,6 +4467,168 @@ function computeBattleReview(battle) {
 
 function sum(list, key) {
   return list.reduce((acc, item) => acc + Number(item[key] || 0), 0);
+}
+
+function squadNameForPlayer(player) {
+  const subgroup = String(player?.subgroup || '').trim();
+  return subgroup || '未分組';
+}
+
+function squadScoreKey(name, groupType) {
+  return `${canonicalPlayerName(name || '')}||${groupType || 'unknown'}`;
+}
+
+function squadMetricValues(player, score = 0) {
+  const row = derivePlayer(player || {});
+  const saveCount = Number(row.saveCount || 0);
+  return {
+    score: Number(score || 0),
+    kill: Number(row.kill || 0),
+    death: Number(row.death || 0),
+    pvpDamage: Number(row.pvpDamage || 0),
+    heal: Number(row.heal || 0),
+    buildDamage: Number(row.buildDamage || 0),
+    takenDamage: Number(row.takenDamage || 0),
+    burnCount: row.job === '九靈' ? Number(row.burnCount || 0) : 0,
+    springCount: row.job === '潮光' ? saveCount : 0,
+    featherCount: row.job === '素問' ? saveCount : 0,
+  };
+}
+
+function chineseNumberValue(text) {
+  const raw = String(text || '').trim();
+  if (/^\d+$/.test(raw)) return Number(raw);
+  const values = { 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+  if (raw === '十') return 10;
+  if (/^十[一二三四五六七八九]$/.test(raw)) return 10 + values[raw.slice(1)];
+  if (/^[一二三四五六七八九]十$/.test(raw)) return values[raw[0]] * 10;
+  if (/^[一二三四五六七八九]十[一二三四五六七八九]$/.test(raw)) {
+    return values[raw[0]] * 10 + values[raw.slice(2)];
+  }
+  return values[raw] ?? null;
+}
+
+function defenseSquadSortValue(squadName) {
+  const text = String(squadName || '');
+  if (!/防守/.test(text)) return null;
+  const pageMatch = text.match(/([一二三四五六七八九十\d]+)頁/);
+  const teamMatch = text.match(/([一二三四五六七八九十\d]+)隊/);
+  if (pageMatch && teamMatch) {
+    const page = chineseNumberValue(pageMatch[1]);
+    const team = chineseNumberValue(teamMatch[1]);
+    if (page != null && team != null) return (page - 1) * 10 + team;
+  }
+  const codeMatch = text.match(/\((\d+)-(\d+)\)/);
+  if (codeMatch) return (Number(codeMatch[1]) - 1) * 10 + Number(codeMatch[2]);
+  return null;
+}
+
+function attackSquadSortValue(squadName) {
+  const text = String(squadName || '');
+  if (!/進攻/.test(text)) return null;
+  const pageMatch = text.match(/進攻\s*([一二三四五六七八九十\d]+)/);
+  const teamMatch = text.match(/[-－\s]([一二三四五六七八九十\d]+)隊/);
+  if (!pageMatch || !teamMatch) return null;
+  const page = chineseNumberValue(pageMatch[1]);
+  const team = chineseNumberValue(teamMatch[1]);
+  if (page == null || team == null) return null;
+  return (page - 1) * 10 + team;
+}
+
+function squadSortValue(squadName) {
+  const attackOrder = attackSquadSortValue(squadName);
+  if (attackOrder != null) return attackOrder;
+  const defenseOrder = defenseSquadSortValue(squadName);
+  if (defenseOrder != null) return 100 + defenseOrder;
+  return null;
+}
+
+function buildSquadRoleScoreMap(battleIds, cohortFilter = 'same_job') {
+  const scoreMap = new Map();
+  ['attack', 'defense', 'bodyguard'].forEach(groupKey => {
+    const rows = lookupPlayerRows(battleIds, groupKey);
+    rows.forEach(row => {
+      const cohort = filterPlayerCohortRows(rows, row, cohortFilter);
+      const score = computeRoleScoreFromRow(row, cohort.length ? cohort : [row], groupKey);
+      scoreMap.set(squadScoreKey(row.name, groupKey), score == null ? 0 : score);
+    });
+  });
+  return scoreMap;
+}
+
+function squadScoreForPlayer(player, scoreMap) {
+  const groupType = player?.groupType || 'unknown';
+  if (!['attack', 'defense', 'bodyguard'].includes(groupType)) return 0;
+  return Number(scoreMap?.get?.(squadScoreKey(player?.name || '', groupType)) || 0);
+}
+
+function buildSquadPerformanceRows(battles = [], options = {}) {
+  const scoreMap = options.scoreMap instanceof Map ? options.scoreMap : new Map();
+  const buckets = new Map();
+  (battles || []).forEach(battle => {
+    (battle?.players || []).forEach(rawPlayer => {
+      const player = derivePlayer(rawPlayer);
+      const squad = squadNameForPlayer(player);
+      if (!buckets.has(squad)) {
+        buckets.set(squad, {
+          key: squad,
+          squad,
+          battleIds: new Set(),
+          playerNames: new Set(),
+          entries: 0,
+          totalScore: 0,
+          kill: 0,
+          death: 0,
+          pvpDamage: 0,
+          heal: 0,
+          buildDamage: 0,
+          takenDamage: 0,
+          burnCount: 0,
+          springCount: 0,
+          featherCount: 0,
+          members: [],
+        });
+      }
+      const bucket = buckets.get(squad);
+      const metrics = squadMetricValues(player, squadScoreForPlayer(player, scoreMap));
+      bucket.battleIds.add(battle.id || '');
+      bucket.playerNames.add(canonicalPlayerName(player.name || ''));
+      bucket.entries += 1;
+      Object.keys(metrics).forEach(key => {
+        if (key === 'score') bucket.totalScore += metrics.score;
+        else bucket[key] += metrics[key];
+      });
+      bucket.members.push({
+        battleId: battle.id || '',
+        name: player.name || '',
+        job: player.job || '',
+        groupType: player.groupType || 'unknown',
+        subgroup: player.subgroup || '',
+        ...metrics,
+      });
+    });
+  });
+  return [...buckets.values()].map(bucket => ({
+    ...bucket,
+    battleIds: [...bucket.battleIds].filter(Boolean),
+    playerCount: [...bucket.playerNames].filter(Boolean).length,
+    avgScore: bucket.entries ? bucket.totalScore / bucket.entries : 0,
+    members: bucket.members.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hant');
+    }),
+  })).sort((a, b) => {
+    const aOrder = squadSortValue(a.squad);
+    const bOrder = squadSortValue(b.squad);
+    if (aOrder != null && bOrder != null && aOrder !== bOrder) {
+      return aOrder - bOrder;
+    }
+    if (aOrder != null && bOrder == null) return -1;
+    if (aOrder == null && bOrder != null) return 1;
+    if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
+    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+    return a.squad.localeCompare(b.squad, 'zh-Hant');
+  });
 }
 
 function getPrimaryCohort(player, pools) {
@@ -6384,6 +6640,15 @@ function currentPlayerReviewFilters() {
   };
 }
 
+function currentSquadReviewFilters() {
+  return {
+    ownTeamFilter: document.getElementById('squad_own_team_filter')?.value || 'all',
+    opponentFilter: document.getElementById('squad_opponent_filter')?.value || 'all',
+    dateFrom: document.getElementById('squad_date_from_filter')?.value || '',
+    dateTo: document.getElementById('squad_date_to_filter')?.value || '',
+  };
+}
+
 function currentProfessionReviewFilters() {
   return {
     ownTeamFilter: document.getElementById('profession_own_team_filter')?.value || 'all',
@@ -6396,6 +6661,7 @@ function currentProfessionReviewFilters() {
 
 function currentReviewFiltersForBattleSelect(selectId) {
   if (selectId === 'profession_battle_select') return currentProfessionReviewFilters();
+  if (selectId === 'squad_battle_select') return currentSquadReviewFilters();
   if (selectId === 'player_battle_select') return currentPlayerReviewFilters();
   return { ownTeamFilter: 'all', opponentFilter: 'all', dateFrom: '', dateTo: '' };
 }
@@ -6413,6 +6679,10 @@ function selectedReviewBattleIds(selectId, filters = null) {
 
 function selectedPlayerBattleIds() {
   return selectedReviewBattleIds('player_battle_select', currentPlayerReviewFilters());
+}
+
+function selectedSquadBattleIds() {
+  return selectedReviewBattleIds('squad_battle_select', currentSquadReviewFilters());
 }
 
 function selectedProfessionBattleIds() {
@@ -7552,6 +7822,101 @@ async function exportFocusPdf(options = {}) {
     if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
     throw err;
   }
+}
+
+function renderSquadMemberDetails(row) {
+  const members = Array.isArray(row?.members) ? row.members : [];
+  if (!members.length) return '<div class="empty">這個小隊目前沒有成員資料。</div>';
+  return `
+    <table class="squad-detail-table">
+      <thead>
+        <tr>
+          <th>玩家</th>
+          <th>職業</th>
+          <th>總分</th>
+          <th>擊敗</th>
+          <th>重傷</th>
+          <th>人傷</th>
+          <th>治療量</th>
+          <th>塔傷</th>
+          <th>承傷</th>
+          <th>焚骨</th>
+          <th>清泉</th>
+          <th>化羽</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${members.map(member => `
+          <tr>
+            <td>${escHtml(member.name)}</td>
+            <td>${escHtml(member.job || '-')}</td>
+            <td>${fmtNumber(member.score)}</td>
+            <td>${fmtNumber(member.kill)}</td>
+            <td>${fmtNumber(member.death)}</td>
+            <td>${fmtLarge(member.pvpDamage)}</td>
+            <td>${fmtLarge(member.heal)}</td>
+            <td>${fmtLarge(member.buildDamage)}</td>
+            <td>${fmtLarge(member.takenDamage)}</td>
+            <td>${fmtNumber(member.burnCount)}</td>
+            <td>${fmtNumber(member.springCount)}</td>
+            <td>${fmtNumber(member.featherCount)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderSquadPerformanceTable() {
+  const body = document.getElementById('squad_performance_body');
+  if (!body) return;
+  const battleIds = selectedSquadBattleIds();
+  const battles = filteredBattlesByIds(battleIds);
+  const rows = buildSquadPerformanceRows(battles, { scoreMap: buildSquadRoleScoreMap(battleIds) });
+  const singleBattle = battleIds.length === 1;
+  const colspan = 15;
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="${colspan}"><div class="empty">目前沒有符合條件的小隊資料。</div></td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map(row => {
+    const detailOpen = singleBattle && squadOpenDetailKeys.has(row.key);
+    const detailCell = singleBattle
+      ? `<button type="button" class="btn-ghost squad-detail-toggle" data-squad-key="${escHtml(row.key)}">${detailOpen ? '收合' : '展開'}</button>`
+      : '<span class="subtle">跨場</span>';
+    const mainRow = `
+      <tr>
+        <td class="squad-detail-toggle-cell">${detailCell}</td>
+        <td class="squad-name-cell">${escHtml(row.squad)}</td>
+        <td>${fmtNumber(row.battleIds.length)}</td>
+        <td>${fmtNumber(row.entries)}</td>
+        <td>${fmtAvg(row.avgScore)}</td>
+        <td>${fmtNumber(row.totalScore)}</td>
+        <td>${fmtNumber(row.kill)}</td>
+        <td>${fmtNumber(row.death)}</td>
+        <td>${fmtLarge(row.pvpDamage)}</td>
+        <td>${fmtLarge(row.heal)}</td>
+        <td>${fmtLarge(row.buildDamage)}</td>
+        <td>${fmtLarge(row.takenDamage)}</td>
+        <td>${fmtNumber(row.burnCount)}</td>
+        <td>${fmtNumber(row.springCount)}</td>
+        <td>${fmtNumber(row.featherCount)}</td>
+      </tr>
+    `;
+    const detailRow = detailOpen
+      ? `<tr class="squad-detail-row"><td colspan="${colspan}">${renderSquadMemberDetails(row)}</td></tr>`
+      : '';
+    return mainRow + detailRow;
+  }).join('');
+  body.querySelectorAll?.('.squad-detail-toggle[data-squad-key]')?.forEach(button => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.squadKey || '';
+      if (!key) return;
+      if (squadOpenDetailKeys.has(key)) squadOpenDetailKeys.delete(key);
+      else squadOpenDetailKeys.add(key);
+      renderSquadPerformanceTable();
+    });
+  });
 }
 
 function renderProfessionTable() {
@@ -8961,6 +9326,7 @@ function refreshOpponentFilterOptions(selectId) {
 
 function refreshReviewOpponentFilterOptions() {
   refreshOpponentFilterOptions('player_opponent_filter');
+  refreshOpponentFilterOptions('squad_opponent_filter');
   refreshOpponentFilterOptions('profession_opponent_filter');
 }
 
@@ -9347,9 +9713,11 @@ function refreshAll() {
   refreshJobFilterOptions();
   refreshReviewOpponentFilterOptions();
   renderBattleFilterOptions('player_battle_select');
+  renderBattleFilterOptions('squad_battle_select');
   renderBattleFilterOptions('profession_battle_select');
   renderAliasList();
   markPlayerSearchPending('請按「搜尋」更新玩家查詢結果。');
+  renderSquadPerformanceTable();
   renderProfessionTable();
   renderOpponentFocusOptions();
   renderTeamFocusOptions();
@@ -9809,6 +10177,17 @@ function handlePlayerBattleScopeChange() {
   refreshPlayerLookupAfterControlChange();
 }
 
+function handleSquadBattleScopeChange() {
+  squadOpenDetailKeys.clear();
+  renderBattleFilterOptions('squad_battle_select');
+  renderSquadPerformanceTable();
+}
+
+function handleSquadBattleSelectionChange() {
+  squadOpenDetailKeys.clear();
+  renderSquadPerformanceTable();
+}
+
 function handleProfessionBattleScopeChange() {
   renderBattleFilterOptions('profession_battle_select');
   renderProfessionTable();
@@ -9829,6 +10208,11 @@ document.getElementById('player_date_from_filter').addEventListener('change', ha
 document.getElementById('player_date_to_filter').addEventListener('change', handlePlayerBattleScopeChange);
 document.getElementById('player_group_filter').addEventListener('change', refreshPlayerLookupAfterControlChange);
 document.getElementById('player_cohort_filter').addEventListener('change', refreshPlayerLookupAfterControlChange);
+document.getElementById('squad_battle_select').addEventListener('change', handleSquadBattleSelectionChange);
+document.getElementById('squad_own_team_filter').addEventListener('change', handleSquadBattleScopeChange);
+document.getElementById('squad_opponent_filter').addEventListener('change', handleSquadBattleScopeChange);
+document.getElementById('squad_date_from_filter').addEventListener('change', handleSquadBattleScopeChange);
+document.getElementById('squad_date_to_filter').addEventListener('change', handleSquadBattleScopeChange);
 document.getElementById('profession_own_team_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_opponent_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_date_from_filter').addEventListener('change', handleProfessionBattleScopeChange);
@@ -9922,6 +10306,14 @@ document.getElementById('btn_player_uncheck_all').addEventListener('click', () =
   refreshPlayerLookupAfterControlChange();
 });
 document.getElementById('btn_player_delete_checked')?.addEventListener('click', () => deleteCheckedBattles('player_battle_select'));
+document.getElementById('btn_squad_check_all').addEventListener('click', () => {
+  setBattleCheckboxes('squad_battle_select', true);
+  handleSquadBattleSelectionChange();
+});
+document.getElementById('btn_squad_uncheck_all').addEventListener('click', () => {
+  setBattleCheckboxes('squad_battle_select', false);
+  handleSquadBattleSelectionChange();
+});
 document.getElementById('btn_prof_check_all').addEventListener('click', () => {
   setBattleCheckboxes('profession_battle_select', true);
   renderProfessionTable();
