@@ -1314,6 +1314,13 @@
     z-index: 4;
     background: #faf3e7;
   }
+  .squad-floating-header-table th:nth-child(1),
+  .squad-floating-header-table th:nth-child(2),
+  .squad-floating-header-table th:nth-child(3) {
+    position: static;
+    left: auto;
+    z-index: 1;
+  }
   .top-scroll-wrap::-webkit-scrollbar {
     height: 14px;
   }
@@ -2934,7 +2941,7 @@
                 </div>
               </div>
               <div style="height:12px;"></div>
-              <div class="table-wrap">
+              <div class="table-wrap" id="squad_table_wrap">
                 <table id="squad_performance_table" class="metric-table">
                   <thead>
                     <tr>
@@ -2957,6 +2964,11 @@
                   </thead>
                   <tbody id="squad_performance_body"></tbody>
                 </table>
+              </div>
+              <div class="floating-header-wrap" id="squad_floating_header" hidden>
+                <div class="floating-header-scroll" id="squad_floating_header_scroll">
+                  <table class="floating-header-table squad-floating-header-table" id="squad_floating_header_table"></table>
+                </div>
               </div>
             </div>
 
@@ -8041,6 +8053,7 @@ function renderSquadPerformanceTable() {
       renderSquadPerformanceTable();
     });
   });
+  syncSquadFloatingHeader();
 }
 
 function renderProfessionTable() {
@@ -8183,14 +8196,14 @@ function renderHealerProfessionAverageTable() {
   });
 }
 
-function syncProfessionFloatingHeader() {
-  const wrap = document.getElementById('profession_table_wrap');
-  const table = document.getElementById('profession_table');
-  const headerWrap = document.getElementById('profession_floating_header');
-  const headerScroll = document.getElementById('profession_floating_header_scroll');
-  const headerTable = document.getElementById('profession_floating_header_table');
-  const professionPanel = document.querySelector('[data-tab-panel="profession"]');
-  if (!wrap || !table || !headerWrap || !headerScroll || !headerTable || !professionPanel) return;
+function syncFloatingHeaderTable(config = {}) {
+  const wrap = document.getElementById(config.wrapId || '');
+  const table = document.getElementById(config.tableId || '');
+  const headerWrap = document.getElementById(config.headerWrapId || '');
+  const headerScroll = document.getElementById(config.headerScrollId || '');
+  const headerTable = document.getElementById(config.headerTableId || '');
+  const panel = document.querySelector(config.panelSelector || '');
+  if (!wrap || !table || !headerWrap || !headerScroll || !headerTable || !panel) return;
   const thead = table.querySelector('thead');
   const headerRow = thead?.rows?.[0];
   if (!thead || !headerRow) {
@@ -8199,10 +8212,10 @@ function syncProfessionFloatingHeader() {
   }
   if (headerTable.innerHTML !== thead.innerHTML) {
     headerTable.innerHTML = thead.innerHTML;
-    bindProfessionSortButtons(headerTable);
+    if (typeof config.onHeaderRender === 'function') config.onHeaderRender(headerTable);
   }
-  const active = professionPanel.classList.contains('active');
-  const hasOverflow = table.scrollWidth > wrap.clientWidth + 1;
+  const active = panel.classList.contains('active');
+  const hasOverflow = config.requireOverflow === false || table.scrollWidth > wrap.clientWidth + 1;
   const wrapRect = typeof wrap.getBoundingClientRect === 'function'
     ? wrap.getBoundingClientRect()
     : { top: 0, bottom: 0, left: 0, width: 0 };
@@ -8227,6 +8240,31 @@ function syncProfessionFloatingHeader() {
       floatingCells[index].style.maxWidth = `${width}px`;
       floatingCells[index].style.boxSizing = 'border-box';
     }
+  });
+}
+
+function syncProfessionFloatingHeader() {
+  syncFloatingHeaderTable({
+    wrapId: 'profession_table_wrap',
+    tableId: 'profession_table',
+    headerWrapId: 'profession_floating_header',
+    headerScrollId: 'profession_floating_header_scroll',
+    headerTableId: 'profession_floating_header_table',
+    panelSelector: '[data-tab-panel="profession"]',
+    requireOverflow: true,
+    onHeaderRender: bindProfessionSortButtons,
+  });
+}
+
+function syncSquadFloatingHeader() {
+  syncFloatingHeaderTable({
+    wrapId: 'squad_table_wrap',
+    tableId: 'squad_performance_table',
+    headerWrapId: 'squad_floating_header',
+    headerScrollId: 'squad_floating_header_scroll',
+    headerTableId: 'squad_floating_header_table',
+    panelSelector: '[data-tab-panel="squad"]',
+    requireOverflow: false,
   });
 }
 
@@ -8262,12 +8300,22 @@ function syncProfessionScrollbars() {
 
 let professionScrollSyncLock = false;
 let professionFloatingScrollRaf = 0;
+let squadHeaderScrollSyncLock = false;
+let squadFloatingHeaderRaf = 0;
 
 function scheduleProfessionFloatingScrollbarSync() {
   if (professionFloatingScrollRaf) return;
   professionFloatingScrollRaf = requestAnimationFrame(() => {
     professionFloatingScrollRaf = 0;
     syncProfessionScrollbars();
+  });
+}
+
+function scheduleSquadFloatingHeaderSync() {
+  if (squadFloatingHeaderRaf) return;
+  squadFloatingHeaderRaf = requestAnimationFrame(() => {
+    squadFloatingHeaderRaf = 0;
+    syncSquadFloatingHeader();
   });
 }
 
@@ -9880,6 +9928,11 @@ function switchTab(tab) {
   } else {
     scheduleProfessionFloatingScrollbarSync();
   }
+  if (tab === 'squad') {
+    requestAnimationFrame(syncSquadFloatingHeader);
+  } else {
+    scheduleSquadFloatingHeaderSync();
+  }
   if (tab === 'matchup') {
     requestAnimationFrame(syncMatchupTableWidthToRoster);
   }
@@ -10423,8 +10476,25 @@ document.getElementById('profession_floating_header_scroll').addEventListener('s
   if (floating && floating.scrollLeft !== event.target.scrollLeft) floating.scrollLeft = event.target.scrollLeft;
   professionScrollSyncLock = false;
 });
+document.getElementById('squad_table_wrap').addEventListener('scroll', event => {
+  if (squadHeaderScrollSyncLock) return;
+  const headerScroll = document.getElementById('squad_floating_header_scroll');
+  squadHeaderScrollSyncLock = true;
+  if (headerScroll && headerScroll.scrollLeft !== event.target.scrollLeft) headerScroll.scrollLeft = event.target.scrollLeft;
+  squadHeaderScrollSyncLock = false;
+  scheduleSquadFloatingHeaderSync();
+});
+document.getElementById('squad_floating_header_scroll').addEventListener('scroll', event => {
+  if (squadHeaderScrollSyncLock) return;
+  const wrap = document.getElementById('squad_table_wrap');
+  squadHeaderScrollSyncLock = true;
+  if (wrap && wrap.scrollLeft !== event.target.scrollLeft) wrap.scrollLeft = event.target.scrollLeft;
+  squadHeaderScrollSyncLock = false;
+});
 window.addEventListener('resize', scheduleProfessionFloatingScrollbarSync);
 window.addEventListener('scroll', scheduleProfessionFloatingScrollbarSync, { passive: true });
+window.addEventListener('resize', scheduleSquadFloatingHeaderSync);
+window.addEventListener('scroll', scheduleSquadFloatingHeaderSync, { passive: true });
 document.getElementById('btn_player_check_all').addEventListener('click', () => {
   setBattleCheckboxes('player_battle_select', true);
   refreshPlayerLookupAfterControlChange();
