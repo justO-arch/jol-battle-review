@@ -2949,8 +2949,6 @@
                       <th>小隊</th>
                       <th>場次</th>
                       <th>人次</th>
-                      <th>人均總分</th>
-                      <th>小隊總分</th>
                       <th>擊敗</th>
                       <th>重傷</th>
                       <th>人傷</th>
@@ -5746,10 +5744,10 @@ function buildPlayerRadarCharts(player, comparisons) {
   };
 }
 
-function renderPlayerRadarModalCharts(player, comparisons, cohortRows) {
+function renderPlayerRadarModalCharts(player, comparisons, cohortRows, sourceLabel = '職業表現') {
   const { prAxes, absoluteAxes, prScores, absoluteScores } = buildPlayerRadarCharts(player, comparisons);
   return `
-    <div class="subtle" style="margin-bottom:10px;">依職業表現目前篩選條件產生，母體固定為同職業，共 ${fmtNumber(cohortRows.length)} 人。</div>
+    <div class="subtle" style="margin-bottom:10px;">依${escHtml(sourceLabel)}目前篩選條件產生，母體固定為同職業，共 ${fmtNumber(cohortRows.length)} 人。</div>
     <div class="radar-modal-grid">
       ${renderRadarCard('玩家能力圖（排名/人數）', prAxes, prScores, '#9b4d1d', '依玩家各軸 PR 畫出，外圈保留 5% 空白。')}
       ${renderRadarCard('玩家絕對數值圖（玩家數值/最佳數值）', absoluteAxes, absoluteScores, '#346a95', '依玩家目前平均數值換算。')}
@@ -7200,10 +7198,12 @@ function closeProfessionJobQuadrantModal() {
   professionQuadrantMode = { job: '', metric: 'default' };
 }
 
-function openProfessionPlayerRadarModal(playerName) {
-  const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = currentProfessionReviewFilters();
-  const groupFilter = document.getElementById('profession_group_filter')?.value || 'all';
-  const battleIds = selectedProfessionBattleIds();
+function openProfessionPlayerRadarModal(playerName, options = {}) {
+  const sourceLabel = options.sourceLabel || '職業表現';
+  const filters = options.filters || currentProfessionReviewFilters();
+  const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = filters;
+  const groupFilter = options.groupFilter || document.getElementById('profession_group_filter')?.value || 'all';
+  const battleIds = Array.isArray(options.battleIds) ? options.battleIds : selectedProfessionBattleIds();
   const rows = professionLookupRows(battleIds, groupFilter);
   const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => professionLookupRows(battleIds, key));
   const player = rows.find(item => item.name === playerName);
@@ -7229,9 +7229,9 @@ function openProfessionPlayerRadarModal(playerName) {
   const totalBattleCount = battleIds.length;
   title.innerHTML = `
     <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(player.name)}｜${escHtml(player.job)} <span class="subtle" style="font-size:16px; font-weight:700;">(${escHtml(buildGroupCountTitleText(player))}，對照樣本共${fmtNumber(totalBattleCount)}場)</span></div>
-    <div class="subtle" style="margin-top:4px;">職業表現快速預覽：PR 六角圖 / 絕對數值六角圖</div>
+    <div class="subtle" style="margin-top:4px;">${escHtml(sourceLabel)}快速預覽：PR 六角圖 / 絕對數值六角圖</div>
   `;
-  body.innerHTML = renderPlayerRadarModalCharts(player, context.comparisons, context.comparisonRows);
+  body.innerHTML = renderPlayerRadarModalCharts(player, context.comparisons, context.comparisonRows, sourceLabel);
   overlay.hidden = false;
 }
 
@@ -7984,7 +7984,7 @@ function renderSquadMemberDetails(row) {
       <tbody>
         ${members.map(member => `
           <tr>
-            <td>${escHtml(member.name)}</td>
+            <td><button type="button" class="profession-player-btn squad-player-btn" data-squad-player-name="${escHtml(member.name)}">${escHtml(member.name)}</button></td>
             <td>${escHtml(member.job || '-')}</td>
             <td>${fmtNumber(member.kill)}</td>
             <td>${fmtNumber(member.death)}</td>
@@ -8009,7 +8009,7 @@ function renderSquadPerformanceTable() {
   const battles = filteredBattlesByIds(battleIds);
   const rows = buildSquadPerformanceRows(battles, { scoreMap: buildSquadRoleScoreMap(battleIds) });
   const singleBattle = battleIds.length === 1;
-  const colspan = 15;
+  const colspan = 13;
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="${colspan}"><div class="empty">目前沒有符合條件的小隊資料。</div></td></tr>`;
     return;
@@ -8026,8 +8026,6 @@ function renderSquadPerformanceTable() {
         <td class="squad-name-cell">${escHtml(row.squad)}</td>
         <td>${fmtNumber(row.battleIds.length)}</td>
         <td>${fmtNumber(row.entries)}</td>
-        <td>${fmtAvg(row.avgScore)}</td>
-        <td>${fmtNumber(row.totalScore)}</td>
         <td>${fmtNumber(row.kill)}</td>
         <td>${fmtNumber(row.death)}</td>
         <td>${fmtLarge(row.pvpDamage)}</td>
@@ -8052,6 +8050,14 @@ function renderSquadPerformanceTable() {
       else squadOpenDetailKeys.add(key);
       renderSquadPerformanceTable();
     });
+  });
+  body.querySelectorAll?.('.squad-player-btn[data-squad-player-name]')?.forEach(button => {
+    button.addEventListener('click', () => openProfessionPlayerRadarModal(button.dataset.squadPlayerName || '', {
+      sourceLabel: '小隊表現',
+      filters: currentSquadReviewFilters(),
+      groupFilter: 'all',
+      battleIds,
+    }));
   });
   syncSquadFloatingHeader();
 }
