@@ -1287,6 +1287,181 @@
   #tab-neigong .section-title span:first-child {
     font-weight: 700;
   }
+  #tab-artifact-tree .artifact-tool-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(330px, 0.9fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .artifact-mode-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .artifact-mode-btn {
+    background: linear-gradient(180deg, rgba(255,252,247,0.98), rgba(243,232,210,0.9));
+    border: 1px solid rgba(168, 122, 47, 0.42);
+    color: #7e5720;
+    padding: 7px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .artifact-mode-btn.active {
+    background: #8b6230;
+    border-color: #8b6230;
+    color: #fffaf1;
+  }
+  .artifact-board-shell {
+    background: rgba(255, 252, 247, 0.76);
+    border: 1px solid rgba(168, 122, 47, 0.16);
+    border-radius: 16px;
+    padding: 12px;
+    overflow: hidden;
+  }
+  .artifact-tree-board {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1240 / 692;
+    min-height: 300px;
+    border-radius: 14px;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(15, 22, 30, 0.08), rgba(15, 22, 30, 0.08)),
+      url('assets/calculator/artifact-skill-tree.png') center / contain no-repeat,
+      #1c2a38;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), 0 18px 38px rgba(21,33,44,0.16);
+    cursor: crosshair;
+    user-select: none;
+  }
+  .artifact-edge-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .artifact-edge-layer line {
+    pointer-events: stroke;
+    cursor: pointer;
+    stroke: rgba(255, 236, 178, 0.92);
+    stroke-width: 3.2;
+    filter: drop-shadow(0 0 5px rgba(255, 201, 92, 0.42));
+  }
+  .artifact-edge-layer line.pending-edge {
+    stroke: rgba(121, 192, 255, 0.9);
+    stroke-dasharray: 10 7;
+  }
+  .artifact-edge-layer line.no-prereq-edge {
+    stroke: rgba(188, 197, 208, 0.78);
+    stroke-dasharray: 8 7;
+  }
+  .artifact-edge-layer line.selected-edge {
+    stroke: #79c0ff;
+    stroke-width: 5;
+    filter: drop-shadow(0 0 8px rgba(121, 192, 255, 0.72));
+  }
+  .artifact-node-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .artifact-node {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 236, 178, 0.96);
+    background: rgba(18, 25, 34, 0.78);
+    color: #fff7df;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    box-shadow: 0 0 0 3px rgba(255, 201, 92, 0.12), 0 0 16px rgba(255, 201, 92, 0.42);
+    cursor: grab;
+    pointer-events: auto;
+  }
+  .artifact-node:hover {
+    border-color: #79c0ff;
+    box-shadow: 0 0 0 4px rgba(121, 192, 255, 0.16), 0 0 18px rgba(121, 192, 255, 0.48);
+  }
+  .artifact-node.selected-node {
+    border-color: #79c0ff;
+    background: rgba(27, 73, 105, 0.92);
+    box-shadow: 0 0 0 5px rgba(121, 192, 255, 0.18), 0 0 20px rgba(121, 192, 255, 0.62);
+  }
+  .artifact-node.pending-node {
+    border-color: #f2cc60;
+    background: rgba(91, 61, 11, 0.94);
+  }
+  .artifact-side-panel {
+    display: grid;
+    gap: 12px;
+  }
+  .artifact-list {
+    max-height: 260px;
+    overflow: auto;
+    border: 1px solid rgba(168, 122, 47, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 252, 247, 0.82);
+  }
+  .artifact-list-item {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 0;
+    border-bottom: 1px solid rgba(168, 122, 47, 0.11);
+    background: transparent;
+    color: #3f4d5c;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .artifact-list-item:last-child { border-bottom: 0; }
+  .artifact-list-item:hover,
+  .artifact-list-item.active {
+    background: rgba(255, 244, 221, 0.9);
+    color: #7e5720;
+  }
+  .artifact-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .artifact-form-grid .field.full {
+    grid-column: 1 / -1;
+  }
+  .artifact-export-preview {
+    min-height: 180px;
+    max-height: 320px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .artifact-validation-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #704b19;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  @media (max-width: 980px) {
+    #tab-artifact-tree .artifact-tool-layout {
+      grid-template-columns: 1fr;
+    }
+  }
   </style>
 </head>
 <body>
@@ -1307,6 +1482,7 @@
   <button class="tab-btn" onclick="switchTab('database')">📦 資料庫</button>
   <button class="tab-btn" onclick="switchTab('metadata')">補登</button>
   <button class="tab-btn" onclick="switchTab('optimize')">最佳化</button>
+  <button class="tab-btn" onclick="switchTab('artifact-tree')">神器樹標註</button>
   <button class="tab-btn" onclick="switchTab('settings')">⚙ 公式設定</button>
 </div>
 
@@ -1366,19 +1542,19 @@
         <div class="section-title">BOSS 屬性</div>
         <div class="section-body">
           <div class="preset-group">
-            <button class="preset-btn active" id="pve_preset_0" onclick="setPVEBoss(0)">九光英雄外</button>
+            <button class="preset-btn active" id="pve_preset_0" onclick="setPVEBoss(0)">南海亂墟·普通</button>
             <button class="preset-btn" id="pve_preset_1" onclick="setPVEBoss(1)">天機迷城</button>
             <button class="preset-btn" id="pve_preset_2" onclick="setPVEBoss(2)">天機英雄</button>
             <button class="preset-btn" id="pve_preset_3" onclick="setPVEBoss(3)">幫會外塔</button>
             <button class="preset-btn" id="pve_preset_custom" onclick="setPVEBoss(-1)">自訂</button>
           </div>
           <div class="form-grid">
-            <div class="field"><label>防禦力</label><input type="number" id="pve_bdef" value="21410" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>格檔</label><input type="number" id="pve_bblock" value="4163" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>會心抗性</label><input type="number" id="pve_bcritres" value="4163" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>防禦力</label><input type="number" id="pve_bdef" value="27985" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>格檔</label><input type="number" id="pve_bblock" value="5439" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>會心抗性</label><input type="number" id="pve_bcritres" value="5439" oninput="setPVEBoss(-1); calcPVE()"></div>
             <div class="field"><label>氣盾</label><input type="number" id="pve_bqishield" value="0" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>元素抗性</label><input type="number" id="pve_belemres" value="4163" oninput="setPVEBoss(-1); calcPVE()"></div>
-            <div class="field"><label>首領抵禦</label><input type="number" id="pve_bbossdef" value="21000" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>元素抗性</label><input type="number" id="pve_belemres" value="5439" oninput="setPVEBoss(-1); calcPVE()"></div>
+            <div class="field"><label>首領抵禦</label><input type="number" id="pve_bbossdef" value="27400" oninput="setPVEBoss(-1); calcPVE()"></div>
           </div>
         </div>
       </div>
@@ -1691,19 +1867,19 @@
     <div class="section-title">BOSS 屬性 (共用)</div>
     <div class="section-body">
       <div class="preset-group">
-        <button class="preset-btn active" id="cmp_preset_0" onclick="setCmpBoss(0)">九光英雄外</button>
+        <button class="preset-btn active" id="cmp_preset_0" onclick="setCmpBoss(0)">南海亂墟·普通</button>
         <button class="preset-btn" id="cmp_preset_1" onclick="setCmpBoss(1)">天機迷城</button>
         <button class="preset-btn" id="cmp_preset_2" onclick="setCmpBoss(2)">天機英雄</button>
         <button class="preset-btn" id="cmp_preset_3" onclick="setCmpBoss(3)">幫會外塔</button>
         <button class="preset-btn" id="cmp_preset_custom" onclick="setCmpBoss(-1)">自訂</button>
       </div>
       <div class="form-grid">
-        <div class="field"><label>防禦力</label><input type="number" id="cmp_bdef" value="21410" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>格檔</label><input type="number" id="cmp_bblock" value="4163" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>會心抗性</label><input type="number" id="cmp_bcritres" value="4163" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>防禦力</label><input type="number" id="cmp_bdef" value="27985" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>格檔</label><input type="number" id="cmp_bblock" value="5439" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>會心抗性</label><input type="number" id="cmp_bcritres" value="5439" oninput="setCmpBoss(-1); calcCompare()"></div>
         <div class="field"><label>氣盾</label><input type="number" id="cmp_bqishield" value="0" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>元素抗性</label><input type="number" id="cmp_belemres" value="4163" oninput="setCmpBoss(-1); calcCompare()"></div>
-        <div class="field"><label>首領抵禦</label><input type="number" id="cmp_bbossdef" value="21000" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>元素抗性</label><input type="number" id="cmp_belemres" value="5439" oninput="setCmpBoss(-1); calcCompare()"></div>
+        <div class="field"><label>首領抵禦</label><input type="number" id="cmp_bbossdef" value="27400" oninput="setCmpBoss(-1); calcCompare()"></div>
       </div>
     </div>
   </div>
@@ -3019,6 +3195,142 @@
 
 </div>
 
+<!-- ==================== TAB: 神器樹標註 ==================== -->
+<div id="tab-artifact-tree" class="tab-pane">
+
+  <div class="action-ribbon" style="gap:10px;">
+    <button type="button" onclick="saveArtifactTreeAnnotation()" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 18px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">儲存標註</button>
+    <button type="button" onclick="exportArtifactTreeAnnotation()" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:8px 18px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">匯出 JSON</button>
+    <button type="button" onclick="importArtifactTreeAnnotation()" style="background:#ffffff;border:1px solid #777777;color:#555555;padding:8px 18px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">匯入 JSON</button>
+    <button type="button" onclick="clearArtifactTreeAnnotation()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:8px 18px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">清空標註</button>
+    <span id="artifact_tree_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">神器技能樹標註工具</div>
+    <div class="section-body">
+      <div class="formula-note" style="margin-top:0;">
+        此頁只負責把截圖轉成結構化資料：節點座標、節點名稱、等級上限、每級消耗、效果文字，以及有方向的前置邊。
+        第一個點選的節點會作為前置，第二個點選的節點會作為後續；最佳化計算會在下一階段才接上。
+      </div>
+    </div>
+  </div>
+
+  <div class="artifact-tool-layout">
+    <div>
+      <div class="section">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <span>截圖標註板</span>
+          <div class="artifact-mode-bar">
+            <button type="button" id="artifact_mode_select_btn" class="artifact-mode-btn" onclick="setArtifactToolMode('select')">選取</button>
+            <button type="button" id="artifact_mode_node_btn" class="artifact-mode-btn" onclick="setArtifactToolMode('node')">新增節點</button>
+            <button type="button" id="artifact_mode_edge_btn" class="artifact-mode-btn" onclick="setArtifactToolMode('edge')">新增邊</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div id="artifact_edge_hint" class="formula-note" style="margin:0 0 12px;"></div>
+          <div class="artifact-board-shell">
+            <div id="artifact_tree_board" class="artifact-tree-board"
+              onclick="artifactBoardClick(event)"
+              onmousemove="artifactBoardMouseMove(event)"
+              onmouseup="artifactStopNodeDrag()"
+              onmouseleave="artifactStopNodeDrag()">
+              <svg id="artifact_edge_layer" class="artifact-edge-layer" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+              <div id="artifact_node_layer" class="artifact-node-layer"></div>
+            </div>
+          </div>
+          <div class="results-grid" style="margin-top:14px;">
+            <div class="result-item"><div class="result-label">節點數</div><div class="result-value" id="artifact_node_count">0</div></div>
+            <div class="result-item"><div class="result-label">邊數</div><div class="result-value" id="artifact_edge_count">0</div></div>
+            <div class="result-item"><div class="result-label">前置邊</div><div class="result-value" id="artifact_prereq_edge_count">0</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">JSON 預覽</div>
+        <div class="section-body">
+          <textarea id="artifact_export_preview" class="artifact-export-preview" readonly></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <button type="button" onclick="copyArtifactTreeJson()" class="db-btn">複製 JSON</button>
+            <span style="color:#666666;font-size:12px;">此預覽會轉成後續最佳化器可讀的 nodes / edges 格式。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="artifact-side-panel">
+      <div class="section">
+        <div class="section-title">目前選取</div>
+        <div class="section-body">
+          <div id="artifact_selection_empty" class="formula-note" style="margin-top:0;">尚未選取節點或邊。</div>
+
+          <div id="artifact_node_form" style="display:none;">
+            <div class="artifact-form-grid">
+              <div class="field"><label>節點 ID</label><input type="text" id="artifact_node_id" readonly></div>
+              <div class="field"><label>節點名稱</label><input type="text" id="artifact_node_name" oninput="updateArtifactSelectedNode('name',this.value)"></div>
+              <div class="field"><label>目前等級</label><input type="number" id="artifact_node_current_level" min="0" step="1" oninput="updateArtifactSelectedNode('currentLevel',this.value)"></div>
+              <div class="field"><label>等級上限</label><input type="number" id="artifact_node_max_level" min="1" step="1" oninput="updateArtifactSelectedNode('maxLevel',this.value)"></div>
+              <div class="field"><label>X 座標 %</label><input type="number" id="artifact_node_x" min="0" max="100" step="0.1" oninput="updateArtifactSelectedNode('xPercent',this.value)"></div>
+              <div class="field"><label>Y 座標 %</label><input type="number" id="artifact_node_y" min="0" max="100" step="0.1" oninput="updateArtifactSelectedNode('yPercent',this.value)"></div>
+              <div class="field full"><label>每級消耗（逗號分隔）</label><input type="text" id="artifact_node_cost_text" placeholder="例如 1,1,2,2,3" oninput="updateArtifactSelectedNode('costText',this.value)"></div>
+              <div class="field full"><label>效果文字</label><textarea id="artifact_node_effects_text" rows="4" placeholder="例如：會心 +30；滿級額外提升..." oninput="updateArtifactSelectedNode('effectsText',this.value)"></textarea></div>
+              <div class="field full"><label>效果 JSON（可選）</label><textarea id="artifact_node_effects_json" rows="4" placeholder='例如 {"crit":[20,45,75]}' oninput="updateArtifactSelectedNode('effectsJson',this.value)"></textarea></div>
+              <div class="field full"><label>備註</label><textarea id="artifact_node_notes" rows="3" oninput="updateArtifactSelectedNode('notes',this.value)"></textarea></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+              <button type="button" onclick="duplicateArtifactSelectedNode()" class="db-btn">複製節點</button>
+              <button type="button" onclick="deleteArtifactSelectedNode()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:5px 10px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:11px;">刪除節點</button>
+            </div>
+          </div>
+
+          <div id="artifact_edge_form" style="display:none;">
+            <div class="artifact-form-grid">
+              <div class="field full"><label>邊 ID</label><input type="text" id="artifact_edge_id" readonly></div>
+              <div class="field"><label>前置節點</label><select id="artifact_edge_from" onchange="updateArtifactSelectedEdge('from',this.value)"></select></div>
+              <div class="field"><label>後續節點</label><select id="artifact_edge_to" onchange="updateArtifactSelectedEdge('to',this.value)"></select></div>
+              <div class="field"><label>前置關係</label>
+                <select id="artifact_edge_is_prereq" onchange="updateArtifactSelectedEdge('isPrerequisite',this.value)">
+                  <option value="true">是</option>
+                  <option value="false">否，只是畫面連線</option>
+                </select>
+              </div>
+              <div class="field"><label>所需前置等級</label><input type="number" id="artifact_edge_required_level" min="0" step="1" oninput="updateArtifactSelectedEdge('requiredLevel',this.value)"></div>
+              <div class="field full"><label>備註</label><textarea id="artifact_edge_notes" rows="3" oninput="updateArtifactSelectedEdge('notes',this.value)"></textarea></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+              <button type="button" onclick="swapArtifactSelectedEdge()" class="db-btn">交換方向</button>
+              <button type="button" onclick="deleteArtifactSelectedEdge()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:5px 10px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:11px;">刪除邊</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">節點清單</div>
+        <div class="section-body">
+          <div id="artifact_node_list" class="artifact-list"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">邊清單</div>
+        <div class="section-body">
+          <div id="artifact_edge_list" class="artifact-list"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">資料檢查</div>
+        <div class="section-body">
+          <div id="artifact_validation_summary" class="formula-note" style="margin-top:0;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <!-- ==================== TAB 6: 公式設定 ==================== -->
 <div id="tab-settings" class="tab-pane">
 
@@ -3075,16 +3387,16 @@
       <div class="section-title">PVE 計算係數</div>
       <div class="section-body">
         <div class="form-grid">
-          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pve_aPen" value="19030" step="1"></div>
+          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pve_aPen" value="24895" step="1"></div>
           <div class="field"><label>B_防　穿透修正</label><input type="number" id="set_pve_bPen" value="0.1" step="0.01"></div>
-          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pve_aElem" value="4760" step="1"></div>
+          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pve_aElem" value="6205" step="1"></div>
           <div class="field"><label>A_會　會心斜率</label><input type="number" id="set_pve_aCrit" value="115" step="1"></div>
-          <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pve_bCrit" value="165" step="1"></div>
-          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pve_cCrit" value="2739" step="1"></div>
+          <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pve_bCrit" value="0" step="1"></div>
+          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pve_cCrit" value="3575" step="1"></div>
           <div class="field"><label>基礎會心率 ★</label><input type="number" id="set_pve_baseCrit" value="0.05" step="0.01"></div>
           <div class="field"><label>A_命　命中基底</label><input type="number" id="set_pve_aHit" value="0.95" step="0.01"></div>
           <div class="field"><label>B_命　命中斜率</label><input type="number" id="set_pve_bHit" value="1.43" step="0.01"></div>
-          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pve_cHit" value="10718" step="1"></div>
+          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pve_cHit" value="13990" step="1"></div>
           <div class="field"><label>攻克基礎 k₁</label><input type="number" id="set_pve_k1" value="0" step="1"></div>
           <div class="field"><label>攻克係數 k₂</label><input type="number" id="set_pve_k2" value="1" step="0.01"></div>
           <div class="field"><label>元素傷害係數 k₃</label><input type="number" id="set_pve_k3" value="1" step="0.01"></div>
@@ -3137,13 +3449,13 @@
           </thead>
           <tbody>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_0_name" value="九光英雄外" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_def" value="21410" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_block" value="4163" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_critRes" value="4163" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_0_name" value="南海亂墟·普通" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_def" value="27985" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_block" value="5439" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_critRes" value="5439" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_qiShield" value="0" style="width:60px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_elemRes" value="4163" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
-              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_bossRes" value="21000" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_elemRes" value="5439" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_bossRes" value="27400" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
               <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_1_name" value="天機迷城" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
@@ -3190,12 +3502,12 @@
         <b style="color:#0066cc;">防禦穿透率</b>　= A<sub>防</sub> ÷ (Δ防禦 + A<sub>防</sub>) − B<sub>防</sub><br>
         <b style="color:#0066cc;">元素穿透率</b>　= A<sub>元</sub> ÷ (Δ抗性 + A<sub>元</sub>)<br>
         <span style="color:#666666;">── 命中 / 會心 ──────────────────────────────────</span><br>
-        <b style="color:#0066cc;">會心率</b>　　　= ( A<sub>會</sub> × Δ會心 + B<sub>會</sub> ) ÷ ( Δ會心 + C<sub>會</sub> )<br>
+        <b style="color:#0066cc;">會心率</b>　　　= ( A<sub>會</sub> × Δ會心 + B<sub>會</sub> ) ÷ ( Δ會心 + C<sub>會</sub> ) + 基礎會心率<br>
         <b style="color:#0066cc;">命中率</b>　　　= A<sub>命</sub> + ( B<sub>命</sub> × Δ命中 ) ÷ ( Δ命中 + C<sub>命</sub> )<br>
         <span style="color:#666666;">── 傷害 ────────────────────────────────────────</span><br>
         <b style="color:#0066cc;">氣盾衰減</b>　　= 若 氣盾 ≥ 3×破盾：剩 氣盾−2×破盾；否則：剩 0.5×(氣盾−破盾)；下限 0<br>
         <b style="color:#0066cc;">元素傷害</b>　　= k₃ × 元素攻擊 × 元素穿透率<br>
-        <b style="color:#0066cc;">PVE 攻克基底</b>　= max(2868 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制 − 首領抵禦, (2868 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制) × 15%)<br>
+        <b style="color:#0066cc;">PVE 攻克基底</b>　= max(4000 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制 − 首領抵禦, (4000 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制) ÷ 6)<br>
         <b style="color:#0066cc;">PVE 攻克傷害</b>　= k₁ + k₂ × PVE 攻克基底 × 防禦穿透率<br>
         <b style="color:#0066cc;">PVP 攻克傷害</b>　= k₁ + k₂ × max(2868 + 攻擊 − 剩餘氣盾 + 流派克制 − 流派抵禦 + 技巧差, 0) × 防禦穿透率<br>
         <b style="color:#0066cc;">PVE 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×會心倍率 + (1−會心率)) + 0.5×(1−命中率) ] × 獨立乘區<br>
@@ -3281,16 +3593,16 @@ const STORAGE_KEY = 'jol'; // 複本改成 'jol2', 'jol3' 等，避免存檔互�
 
 // ===================== CONSTANTS =====================
 const PVE_CONST = {
-  aPen: 19030,   // A_防 防禦係數
+  aPen: 24895,   // A_防 防禦係數
   bPen: 0.1,     // B_防 穿透修正（公式為 - B_防）
-  aElem: 4760,   // A_元 元素抗性係數
+  aElem: 6205,   // A_元 元素抗性係數
   aCrit: 115,    // A_會 會心斜率
-  bCrit: 165,    // B_會 會心截距
-  cCrit: 2739,   // C_會 會心分母
+  bCrit: 0,      // B_會 會心截距
+  cCrit: 3575,   // C_會 會心分母
   baseCrit: 0.05,// 基礎會心率
   aHit: 0.95,    // A_命 命中基底
   bHit: 1.43,    // B_命 命中斜率
-  cHit: 10718,   // C_命 命中分母
+  cHit: 13990,   // C_命 命中分母
   k1: 0,
   k2: 1,
   k3: 1          // k₃ 元素傷害係數
@@ -3314,14 +3626,15 @@ const PVP_CONST = {
 
 // Boss presets
 const PVE_BOSSES = [
-  { name: '九光英雄外', def: 21410, block: 4163, critRes: 4163, qiShield: 0, elemRes: 4163, bossRes: 21000 },
+  { name: '南海亂墟·普通', def: 27985, block: 5439, critRes: 5439, qiShield: 0, elemRes: 5439, bossRes: 27400 },
   { name: '天機迷城',   def: 12017, block: 2560, critRes: 2325, qiShield: 0, elemRes: 2672, bossRes: 9000 },
   { name: '天機英雄',   def: 17182, block: 3568, critRes: 3280, qiShield: 0, elemRes: 3310, bossRes: 14040 },
   { name: '幫會外塔',   def: 1100,  block: 300,  critRes: 150,  qiShield: 0, elemRes: 0,    bossRes: 0 }
 ];
 
+const PVE_BREACH_BASE = 4000;
 const BREACH_BASE = 2868;
-const PVE_BREACH_FLOOR_RATE = 0.15;
+const PVE_BREACH_FLOOR_RATE = 1 / 6;
 
 
 // ===================== HELPERS =====================
@@ -3658,7 +3971,7 @@ function calcElemDmg(elemAtk, bElemRes, ignoreElem, C) {
 
 // PVE 攻克傷害
 function calcBreachDmgPVE(atk, qiShieldRem, bossOver, techOver, bossRes, penetration, C) {
-  const preResist = BREACH_BASE + atk - qiShieldRem + bossOver + techOver;
+  const preResist = PVE_BREACH_BASE + atk - qiShieldRem + bossOver + techOver;
   const totalOver = Math.max(preResist - bossRes, preResist * PVE_BREACH_FLOOR_RATE);
   return C.k1 + C.k2 * totalOver * penetration;
 }
@@ -3999,6 +4312,667 @@ function switchTab(tab, evt) {
     (typeof event !== 'undefined' && event ? (event.currentTarget || event.target) : null) ||
     document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
   if (activeBtn) activeBtn.classList.add('active');
+}
+
+// ===================== TAB: 神器樹標註 =====================
+const ARTIFACT_TREE_VERSION = 1;
+const ARTIFACT_TREE_IMAGE = {
+  src: 'assets/calculator/artifact-skill-tree.png',
+  width: 1240,
+  height: 692
+};
+
+let artifactToolMode = 'select';
+let artifactSelected = { type: null, id: null };
+let artifactPendingEdgeFrom = null;
+let artifactDraggingNodeId = null;
+let artifactTreeData = createDefaultArtifactTreeData();
+
+function getArtifactTreeStorageKey() {
+  return `${STORAGE_KEY}_artifact_tree_annotation`;
+}
+
+function createDefaultArtifactTreeData() {
+  return {
+    version: ARTIFACT_TREE_VERSION,
+    image: { ...ARTIFACT_TREE_IMAGE },
+    nodes: [],
+    edges: []
+  };
+}
+
+function clampArtifactCoord(v) {
+  const n = parseFloat(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+
+function normalizeArtifactNode(raw, fallbackIndex) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const id = String(src.id || `node_${String(fallbackIndex + 1).padStart(2, '0')}`).trim();
+  const maxLevel = Math.max(1, parseInt(src.maxLevel ?? src.max_level ?? 1, 10) || 1);
+  const currentLevel = Math.max(0, Math.min(maxLevel, parseInt(src.currentLevel ?? src.current_level ?? 0, 10) || 0));
+  const costText = src.costText !== undefined
+    ? String(src.costText)
+    : (Array.isArray(src.costByLevel) ? src.costByLevel.join(',') : '');
+  return {
+    id,
+    name: String(src.name || ''),
+    x: clampArtifactCoord(src.x ?? 0.5),
+    y: clampArtifactCoord(src.y ?? 0.5),
+    currentLevel,
+    maxLevel,
+    costText,
+    effectsText: String(src.effectsText ?? src.effects_text ?? ''),
+    effectsJson: src.effectsJson !== undefined
+      ? String(src.effectsJson)
+      : (src.effectData !== undefined ? JSON.stringify(src.effectData, null, 2) : ''),
+    notes: String(src.notes || '')
+  };
+}
+
+function normalizeArtifactEdge(raw, fallbackIndex, validNodeIds) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const id = String(src.id || `edge_${String(fallbackIndex + 1).padStart(2, '0')}`).trim();
+  const from = String(src.from || '').trim();
+  const to = String(src.to || '').trim();
+  if (!from || !to || !validNodeIds.has(from) || !validNodeIds.has(to) || from === to) return null;
+  return {
+    id,
+    from,
+    to,
+    isPrerequisite: src.isPrerequisite !== false && src.is_prerequisite !== false,
+    requiredLevel: Math.max(0, parseInt(src.requiredLevel ?? src.required_level ?? 1, 10) || 0),
+    notes: String(src.notes || '')
+  };
+}
+
+function normalizeArtifactTreeData(raw) {
+  const base = createDefaultArtifactTreeData();
+  if (!raw || typeof raw !== 'object') return base;
+  const seenNodeIds = new Set();
+  const nodes = [];
+  (Array.isArray(raw.nodes) ? raw.nodes : []).forEach((rawNode, idx) => {
+    const node = normalizeArtifactNode(rawNode, idx);
+    if (!node.id || seenNodeIds.has(node.id)) return;
+    seenNodeIds.add(node.id);
+    nodes.push(node);
+  });
+  const seenEdgeIds = new Set();
+  const seenEdgePairs = new Set();
+  const edges = [];
+  (Array.isArray(raw.edges) ? raw.edges : []).forEach((rawEdge, idx) => {
+    const edge = normalizeArtifactEdge(rawEdge, idx, seenNodeIds);
+    if (!edge || seenEdgeIds.has(edge.id)) return;
+    const pairKey = `${edge.from}->${edge.to}`;
+    if (seenEdgePairs.has(pairKey)) return;
+    seenEdgeIds.add(edge.id);
+    seenEdgePairs.add(pairKey);
+    edges.push(edge);
+  });
+  return {
+    version: ARTIFACT_TREE_VERSION,
+    image: { ...ARTIFACT_TREE_IMAGE },
+    nodes,
+    edges
+  };
+}
+
+function loadArtifactTreeAnnotation() {
+  try {
+    artifactTreeData = normalizeArtifactTreeData(JSON.parse(localStorage.getItem(getArtifactTreeStorageKey()) || 'null'));
+  } catch(e) {
+    artifactTreeData = createDefaultArtifactTreeData();
+  }
+}
+
+function persistArtifactTreeAnnotation(showMessage = false) {
+  try {
+    localStorage.setItem(getArtifactTreeStorageKey(), JSON.stringify(artifactTreeData));
+    if (showMessage) {
+      const msg = document.getElementById('artifact_tree_saved_msg');
+      if (msg) { msg.style.opacity = '1'; setTimeout(() => msg.style.opacity = '0', 2000); }
+    }
+  } catch(e) {
+    if (showMessage) alert('儲存失敗，可能是瀏覽器本地儲存空間已滿。');
+  }
+}
+
+function saveArtifactTreeAnnotation() {
+  persistArtifactTreeAnnotation(true);
+  renderArtifactTreeAnnotator();
+}
+
+function getArtifactNode(id) {
+  return artifactTreeData.nodes.find(node => node.id === id) || null;
+}
+
+function getArtifactEdge(id) {
+  return artifactTreeData.edges.find(edge => edge.id === id) || null;
+}
+
+function getArtifactNodeLabel(id) {
+  const node = getArtifactNode(id);
+  if (!node) return id || '';
+  return node.name ? `${node.id} ${node.name}` : node.id;
+}
+
+function getNextArtifactId(prefix, items) {
+  const used = new Set(items.map(item => item.id));
+  let i = 1;
+  let id = `${prefix}_${String(i).padStart(2, '0')}`;
+  while (used.has(id)) {
+    i += 1;
+    id = `${prefix}_${String(i).padStart(2, '0')}`;
+  }
+  return id;
+}
+
+function setArtifactToolMode(mode) {
+  artifactToolMode = ['select', 'node', 'edge'].includes(mode) ? mode : 'select';
+  artifactPendingEdgeFrom = null;
+  artifactDraggingNodeId = null;
+  renderArtifactTreeAnnotator();
+}
+
+function artifactBoardClick(evt) {
+  if (artifactToolMode !== 'node') return;
+  const board = document.getElementById('artifact_tree_board');
+  if (!board || !evt) return;
+  if (evt.target?.closest && evt.target.closest('.artifact-node')) return;
+  const rect = board.getBoundingClientRect();
+  const x = clampArtifactCoord((evt.clientX - rect.left) / rect.width);
+  const y = clampArtifactCoord((evt.clientY - rect.top) / rect.height);
+  const node = {
+    id: getNextArtifactId('node', artifactTreeData.nodes),
+    name: '',
+    x,
+    y,
+    currentLevel: 0,
+    maxLevel: 1,
+    costText: '',
+    effectsText: '',
+    effectsJson: '',
+    notes: ''
+  };
+  artifactTreeData.nodes.push(node);
+  artifactSelected = { type: 'node', id: node.id };
+  artifactPendingEdgeFrom = null;
+  persistArtifactTreeAnnotation();
+  renderArtifactTreeAnnotator();
+}
+
+function selectArtifactNode(id, evt) {
+  if (evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+  if (!getArtifactNode(id)) return;
+  if (artifactToolMode === 'edge') {
+    if (!artifactPendingEdgeFrom) {
+      artifactPendingEdgeFrom = id;
+      artifactSelected = { type: 'node', id };
+      renderArtifactTreeAnnotator();
+      return;
+    }
+    if (artifactPendingEdgeFrom !== id) {
+      const edge = addArtifactEdge(artifactPendingEdgeFrom, id);
+      artifactPendingEdgeFrom = null;
+      artifactSelected = edge ? { type: 'edge', id: edge.id } : { type: 'node', id };
+      persistArtifactTreeAnnotation();
+      renderArtifactTreeAnnotator();
+      return;
+    }
+    artifactPendingEdgeFrom = null;
+  }
+  artifactSelected = { type: 'node', id };
+  renderArtifactTreeAnnotator();
+}
+
+function startArtifactNodeDrag(id, evt) {
+  if (artifactToolMode === 'edge') return;
+  if (evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+  if (!getArtifactNode(id)) return;
+  artifactDraggingNodeId = id;
+  artifactSelected = { type: 'node', id };
+  renderArtifactTreeAnnotator();
+}
+
+function artifactBoardMouseMove(evt) {
+  if (!artifactDraggingNodeId || !evt) return;
+  const node = getArtifactNode(artifactDraggingNodeId);
+  const board = document.getElementById('artifact_tree_board');
+  if (!node || !board) return;
+  const rect = board.getBoundingClientRect();
+  node.x = clampArtifactCoord((evt.clientX - rect.left) / rect.width);
+  node.y = clampArtifactCoord((evt.clientY - rect.top) / rect.height);
+  updateArtifactNodeFormPosition(node);
+  renderArtifactBoard();
+  renderArtifactLists();
+  renderArtifactExportPreview();
+}
+
+function artifactStopNodeDrag() {
+  if (!artifactDraggingNodeId) return;
+  artifactDraggingNodeId = null;
+  persistArtifactTreeAnnotation();
+}
+
+function addArtifactEdge(from, to) {
+  const existing = artifactTreeData.edges.find(edge => edge.from === from && edge.to === to);
+  if (existing) return existing;
+  const edge = {
+    id: getNextArtifactId('edge', artifactTreeData.edges),
+    from,
+    to,
+    isPrerequisite: true,
+    requiredLevel: 1,
+    notes: ''
+  };
+  artifactTreeData.edges.push(edge);
+  return edge;
+}
+
+function selectArtifactEdge(id, evt) {
+  if (evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+  if (!getArtifactEdge(id)) return;
+  artifactSelected = { type: 'edge', id };
+  artifactPendingEdgeFrom = null;
+  renderArtifactTreeAnnotator();
+}
+
+function updateArtifactSelectedNode(field, value) {
+  if (artifactSelected.type !== 'node') return;
+  const node = getArtifactNode(artifactSelected.id);
+  if (!node) return;
+  if (field === 'currentLevel') node.currentLevel = Math.max(0, parseInt(value, 10) || 0);
+  else if (field === 'maxLevel') node.maxLevel = Math.max(1, parseInt(value, 10) || 1);
+  else if (field === 'xPercent') node.x = clampArtifactCoord((parseFloat(value) || 0) / 100);
+  else if (field === 'yPercent') node.y = clampArtifactCoord((parseFloat(value) || 0) / 100);
+  else if (['name','costText','effectsText','effectsJson','notes'].includes(field)) node[field] = String(value ?? '');
+  if (node.currentLevel > node.maxLevel) node.currentLevel = node.maxLevel;
+  persistArtifactTreeAnnotation();
+  renderArtifactDerivedViews();
+}
+
+function updateArtifactSelectedEdge(field, value) {
+  if (artifactSelected.type !== 'edge') return;
+  const edge = getArtifactEdge(artifactSelected.id);
+  if (!edge) return;
+  if (field === 'from' || field === 'to') {
+    const next = String(value || '');
+    if (!getArtifactNode(next)) return;
+    if (field === 'from' && next === edge.to) return;
+    if (field === 'to' && next === edge.from) return;
+    edge[field] = next;
+  } else if (field === 'isPrerequisite') {
+    edge.isPrerequisite = value === true || value === 'true';
+  } else if (field === 'requiredLevel') {
+    edge.requiredLevel = Math.max(0, parseInt(value, 10) || 0);
+  } else if (field === 'notes') {
+    edge.notes = String(value ?? '');
+  }
+  persistArtifactTreeAnnotation();
+  renderArtifactDerivedViews();
+}
+
+function duplicateArtifactSelectedNode() {
+  if (artifactSelected.type !== 'node') return;
+  const node = getArtifactNode(artifactSelected.id);
+  if (!node) return;
+  const copy = {
+    ...node,
+    id: getNextArtifactId('node', artifactTreeData.nodes),
+    name: node.name ? `${node.name} 複本` : '',
+    x: clampArtifactCoord(node.x + 0.025),
+    y: clampArtifactCoord(node.y + 0.025)
+  };
+  artifactTreeData.nodes.push(copy);
+  artifactSelected = { type: 'node', id: copy.id };
+  persistArtifactTreeAnnotation();
+  renderArtifactTreeAnnotator();
+}
+
+function deleteArtifactSelectedNode() {
+  if (artifactSelected.type !== 'node') return;
+  const node = getArtifactNode(artifactSelected.id);
+  if (!node) return;
+  if (!confirm(`刪除節點 ${node.id}？相關邊也會一起移除。`)) return;
+  artifactTreeData.nodes = artifactTreeData.nodes.filter(item => item.id !== node.id);
+  artifactTreeData.edges = artifactTreeData.edges.filter(edge => edge.from !== node.id && edge.to !== node.id);
+  artifactSelected = { type: null, id: null };
+  artifactPendingEdgeFrom = null;
+  persistArtifactTreeAnnotation();
+  renderArtifactTreeAnnotator();
+}
+
+function deleteArtifactSelectedEdge() {
+  if (artifactSelected.type !== 'edge') return;
+  const edge = getArtifactEdge(artifactSelected.id);
+  if (!edge) return;
+  artifactTreeData.edges = artifactTreeData.edges.filter(item => item.id !== edge.id);
+  artifactSelected = { type: null, id: null };
+  persistArtifactTreeAnnotation();
+  renderArtifactTreeAnnotator();
+}
+
+function swapArtifactSelectedEdge() {
+  if (artifactSelected.type !== 'edge') return;
+  const edge = getArtifactEdge(artifactSelected.id);
+  if (!edge) return;
+  const oldFrom = edge.from;
+  edge.from = edge.to;
+  edge.to = oldFrom;
+  persistArtifactTreeAnnotation();
+  renderArtifactTreeAnnotator();
+}
+
+function parseArtifactNumberList(text) {
+  return String(text || '')
+    .split(/[,\s，、/]+/)
+    .map(v => parseFloat(v))
+    .filter(v => Number.isFinite(v));
+}
+
+function parseArtifactEffectJson(text) {
+  const src = String(text || '').trim();
+  if (!src) return null;
+  try {
+    return JSON.parse(src);
+  } catch(e) {
+    return { __parseError: e.message };
+  }
+}
+
+function buildArtifactTreeExport() {
+  return {
+    version: ARTIFACT_TREE_VERSION,
+    image: { ...ARTIFACT_TREE_IMAGE },
+    nodes: artifactTreeData.nodes.map(node => {
+      const effectData = parseArtifactEffectJson(node.effectsJson);
+      const out = {
+        id: node.id,
+        name: node.name,
+        x: Number(node.x.toFixed(6)),
+        y: Number(node.y.toFixed(6)),
+        currentLevel: node.currentLevel,
+        maxLevel: node.maxLevel,
+        costByLevel: parseArtifactNumberList(node.costText),
+        effectsText: node.effectsText,
+        notes: node.notes
+      };
+      if (node.effectsJson.trim()) out.effectData = effectData;
+      return out;
+    }),
+    edges: artifactTreeData.edges.map(edge => ({
+      id: edge.id,
+      from: edge.from,
+      to: edge.to,
+      isPrerequisite: !!edge.isPrerequisite,
+      requiredLevel: edge.requiredLevel,
+      notes: edge.notes
+    }))
+  };
+}
+
+function getArtifactValidationIssues() {
+  const issues = [];
+  const nodeIds = new Set(artifactTreeData.nodes.map(node => node.id));
+  artifactTreeData.nodes.forEach(node => {
+    if (!node.name.trim()) issues.push(`${node.id} 尚未填節點名稱。`);
+    if (!node.costText.trim()) issues.push(`${node.id} 尚未填每級消耗。`);
+    if (!node.effectsText.trim() && !node.effectsJson.trim()) issues.push(`${node.id} 尚未填效果。`);
+    if (node.effectsJson.trim() && parseArtifactEffectJson(node.effectsJson).__parseError) issues.push(`${node.id} 效果 JSON 格式錯誤。`);
+    if (node.currentLevel > node.maxLevel) issues.push(`${node.id} 目前等級超過上限。`);
+  });
+  artifactTreeData.edges.forEach(edge => {
+    if (!nodeIds.has(edge.from) || !nodeIds.has(edge.to)) issues.push(`${edge.id} 連到不存在的節點。`);
+    if (edge.from === edge.to) issues.push(`${edge.id} 前置與後續不能是同一節點。`);
+    const fromNode = getArtifactNode(edge.from);
+    if (fromNode && edge.requiredLevel > fromNode.maxLevel) issues.push(`${edge.id} 所需前置等級高於 ${edge.from} 上限。`);
+  });
+  const pairCounts = {};
+  artifactTreeData.edges.forEach(edge => {
+    const key = `${edge.from}->${edge.to}`;
+    pairCounts[key] = (pairCounts[key] || 0) + 1;
+  });
+  Object.entries(pairCounts).forEach(([key, count]) => {
+    if (count > 1) issues.push(`重複邊：${key}`);
+  });
+  return issues;
+}
+
+function renderArtifactBoard() {
+  const edgeLayer = document.getElementById('artifact_edge_layer');
+  const nodeLayer = document.getElementById('artifact_node_layer');
+  if (!edgeLayer || !nodeLayer) return;
+  const marker = `
+    <defs>
+      <marker id="artifact_edge_arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,236,178,0.95)"></path>
+      </marker>
+      <marker id="artifact_edge_arrow_selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#79c0ff"></path>
+      </marker>
+    </defs>`;
+  const lines = artifactTreeData.edges.map(edge => {
+    const from = getArtifactNode(edge.from);
+    const to = getArtifactNode(edge.to);
+    if (!from || !to) return '';
+    const cls = [
+      edge.isPrerequisite ? '' : 'no-prereq-edge',
+      artifactSelected.type === 'edge' && artifactSelected.id === edge.id ? 'selected-edge' : ''
+    ].filter(Boolean).join(' ');
+    const markerId = artifactSelected.type === 'edge' && artifactSelected.id === edge.id
+      ? 'artifact_edge_arrow_selected'
+      : 'artifact_edge_arrow';
+    return `<line class="${cls}" x1="${from.x * 1000}" y1="${from.y * 1000}" x2="${to.x * 1000}" y2="${to.y * 1000}" marker-end="url(#${markerId})" onclick="selectArtifactEdge('${escJs(edge.id)}',event)"></line>`;
+  }).join('');
+  edgeLayer.innerHTML = marker + lines;
+  nodeLayer.innerHTML = artifactTreeData.nodes.map((node, idx) => {
+    const cls = [
+      'artifact-node',
+      artifactSelected.type === 'node' && artifactSelected.id === node.id ? 'selected-node' : '',
+      artifactPendingEdgeFrom === node.id ? 'pending-node' : ''
+    ].filter(Boolean).join(' ');
+    const label = String(idx + 1).padStart(2, '0');
+    const title = escHtml(node.name ? `${node.id} ${node.name}` : node.id);
+    return `<button type="button" class="${cls}" style="left:${node.x * 100}%;top:${node.y * 100}%;" title="${title}" onclick="selectArtifactNode('${escJs(node.id)}',event)" onmousedown="startArtifactNodeDrag('${escJs(node.id)}',event)">${label}</button>`;
+  }).join('');
+}
+
+function renderArtifactModeButtons() {
+  ['select','node','edge'].forEach(mode => {
+    const btn = document.getElementById(`artifact_mode_${mode}_btn`);
+    if (btn) btn.classList.toggle('active', artifactToolMode === mode);
+  });
+  const hint = document.getElementById('artifact_edge_hint');
+  if (!hint) return;
+  if (artifactToolMode === 'node') {
+    hint.textContent = '新增節點模式：在截圖上點一下新增節點，之後可拖曳調整位置。';
+  } else if (artifactToolMode === 'edge') {
+    hint.textContent = artifactPendingEdgeFrom
+      ? `新增邊模式：已選前置 ${getArtifactNodeLabel(artifactPendingEdgeFrom)}，請再點後續節點。`
+      : '新增邊模式：先點前置節點，再點後續節點。';
+  } else {
+    hint.textContent = '選取模式：點節點或邊查看並修改資料；拖曳節點可微調座標。';
+  }
+}
+
+function setArtifactInput(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value ?? '';
+}
+
+function setArtifactDisplay(id, shown) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = shown ? '' : 'none';
+}
+
+function renderArtifactForms() {
+  const node = artifactSelected.type === 'node' ? getArtifactNode(artifactSelected.id) : null;
+  const edge = artifactSelected.type === 'edge' ? getArtifactEdge(artifactSelected.id) : null;
+  setArtifactDisplay('artifact_selection_empty', !node && !edge);
+  setArtifactDisplay('artifact_node_form', !!node);
+  setArtifactDisplay('artifact_edge_form', !!edge);
+  if (node) {
+    setArtifactInput('artifact_node_id', node.id);
+    setArtifactInput('artifact_node_name', node.name);
+    setArtifactInput('artifact_node_current_level', node.currentLevel);
+    setArtifactInput('artifact_node_max_level', node.maxLevel);
+    setArtifactInput('artifact_node_cost_text', node.costText);
+    setArtifactInput('artifact_node_effects_text', node.effectsText);
+    setArtifactInput('artifact_node_effects_json', node.effectsJson);
+    setArtifactInput('artifact_node_notes', node.notes);
+    updateArtifactNodeFormPosition(node);
+  }
+  if (edge) {
+    setArtifactInput('artifact_edge_id', edge.id);
+    const options = artifactTreeData.nodes.map(nodeItem =>
+      `<option value="${escHtml(nodeItem.id)}">${escHtml(getArtifactNodeLabel(nodeItem.id))}</option>`
+    ).join('');
+    const fromEl = document.getElementById('artifact_edge_from');
+    const toEl = document.getElementById('artifact_edge_to');
+    if (fromEl) { fromEl.innerHTML = options; fromEl.value = edge.from; }
+    if (toEl) { toEl.innerHTML = options; toEl.value = edge.to; }
+    setArtifactInput('artifact_edge_is_prereq', edge.isPrerequisite ? 'true' : 'false');
+    setArtifactInput('artifact_edge_required_level', edge.requiredLevel);
+    setArtifactInput('artifact_edge_notes', edge.notes);
+  }
+}
+
+function updateArtifactNodeFormPosition(node) {
+  if (!node) return;
+  setArtifactInput('artifact_node_x', (node.x * 100).toFixed(1));
+  setArtifactInput('artifact_node_y', (node.y * 100).toFixed(1));
+}
+
+function renderArtifactLists() {
+  const nodeList = document.getElementById('artifact_node_list');
+  const edgeList = document.getElementById('artifact_edge_list');
+  if (nodeList) {
+    nodeList.innerHTML = artifactTreeData.nodes.length
+      ? artifactTreeData.nodes.map(node => {
+          const active = artifactSelected.type === 'node' && artifactSelected.id === node.id ? ' active' : '';
+          const label = node.name || '未命名';
+          return `<button type="button" class="artifact-list-item${active}" onclick="selectArtifactNode('${escJs(node.id)}',event)"><span>${escHtml(node.id)} ${escHtml(label)}</span><span>${node.currentLevel}/${node.maxLevel}</span></button>`;
+        }).join('')
+      : '<div style="padding:10px 12px;color:#666666;font-size:12px;">尚未新增節點。</div>';
+  }
+  if (edgeList) {
+    edgeList.innerHTML = artifactTreeData.edges.length
+      ? artifactTreeData.edges.map(edge => {
+          const active = artifactSelected.type === 'edge' && artifactSelected.id === edge.id ? ' active' : '';
+          const rel = edge.isPrerequisite ? `需 ${edge.requiredLevel} 級` : '非前置';
+          return `<button type="button" class="artifact-list-item${active}" onclick="selectArtifactEdge('${escJs(edge.id)}',event)"><span>${escHtml(edge.from)} → ${escHtml(edge.to)}</span><span>${escHtml(rel)}</span></button>`;
+        }).join('')
+      : '<div style="padding:10px 12px;color:#666666;font-size:12px;">尚未新增邊。</div>';
+  }
+}
+
+function renderArtifactStats() {
+  const nodeCount = document.getElementById('artifact_node_count');
+  const edgeCount = document.getElementById('artifact_edge_count');
+  const prereqCount = document.getElementById('artifact_prereq_edge_count');
+  if (nodeCount) nodeCount.textContent = artifactTreeData.nodes.length;
+  if (edgeCount) edgeCount.textContent = artifactTreeData.edges.length;
+  if (prereqCount) prereqCount.textContent = artifactTreeData.edges.filter(edge => edge.isPrerequisite).length;
+}
+
+function renderArtifactValidation() {
+  const el = document.getElementById('artifact_validation_summary');
+  if (!el) return;
+  const issues = getArtifactValidationIssues();
+  if (!issues.length) {
+    el.innerHTML = '目前沒有資料檢查問題。';
+    return;
+  }
+  el.innerHTML = `<ul class="artifact-validation-list">${issues.map(issue => `<li>${escHtml(issue)}</li>`).join('')}</ul>`;
+}
+
+function renderArtifactExportPreview() {
+  const el = document.getElementById('artifact_export_preview');
+  if (el) el.value = JSON.stringify(buildArtifactTreeExport(), null, 2);
+}
+
+function renderArtifactDerivedViews() {
+  renderArtifactBoard();
+  renderArtifactLists();
+  renderArtifactStats();
+  renderArtifactValidation();
+  renderArtifactExportPreview();
+  renderArtifactModeButtons();
+}
+
+function renderArtifactTreeAnnotator() {
+  renderArtifactDerivedViews();
+  renderArtifactForms();
+}
+
+function copyArtifactTreeJson() {
+  const text = JSON.stringify(buildArtifactTreeExport(), null, 2);
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert('已複製 JSON。')).catch(() => alert('複製失敗，請從預覽框手動複製。'));
+  } else {
+    const el = document.getElementById('artifact_export_preview');
+    if (el) {
+      el.focus();
+      el.select();
+    }
+    alert('瀏覽器不支援直接複製，請從預覽框手動複製。');
+  }
+}
+
+function exportArtifactTreeAnnotation() {
+  const json = JSON.stringify(buildArtifactTreeExport(), null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const date = new Date().toISOString().slice(0, 10);
+  a.download = `${STORAGE_KEY}_artifact_tree_${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importArtifactTreeAnnotation() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        artifactTreeData = normalizeArtifactTreeData(data);
+        artifactSelected = { type: null, id: null };
+        artifactPendingEdgeFrom = null;
+        persistArtifactTreeAnnotation(true);
+        renderArtifactTreeAnnotator();
+      } catch(err) {
+        alert('匯入失敗：' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function clearArtifactTreeAnnotation() {
+  if (!confirm('清空神器樹標註資料？此動作只會清除本頁標註 localStorage，不會影響裝備或內功資料。')) return;
+  artifactTreeData = createDefaultArtifactTreeData();
+  artifactSelected = { type: null, id: null };
+  artifactPendingEdgeFrom = null;
+  localStorage.removeItem(getArtifactTreeStorageKey());
+  renderArtifactTreeAnnotator();
 }
 
 // ===================== DEFAULT SNAPSHOTS (for reset) =====================
@@ -4872,11 +5846,13 @@ function isLegacyJiuGuangConst(c) {
     c.bCrit === -2435 && c.cCrit === 2520 && c.cHit === 9990;
   const fittedCalc = c.aPen === 19088 && c.aElem === 4850 &&
     c.bCrit === -12574 && c.cCrit === 2624 && c.cHit === 10705;
+  const verifiedCalc = c.aPen === 19030 && c.aElem === 4760 &&
+    c.bCrit === 165 && c.cCrit === 2739 && c.cHit === 10718;
   return c.bPen === 0.1 && c.aCrit === 115 &&
     (c.baseCrit === 0 || c.baseCrit === 0.05) &&
     c.aHit === 0.95 && c.bHit === 1.43 &&
     c.k1 === 0 && c.k2 === 1 && c.k3 === 1 &&
-    (oldCalc || fittedCalc);
+    (oldCalc || fittedCalc || verifiedCalc);
 }
 
 function isLegacyJiuGuangBoss(b) {
@@ -4886,7 +5862,10 @@ function isLegacyJiuGuangBoss(b) {
     (b.bossRes === 0 || b.bossRes === 15400);
   const fittedBoss = b.def === 21441 && b.block === 4163 &&
     b.critRes === 4054 && b.elemRes === 4196 && b.bossRes === 20850;
-  return (b.name === '九光寒林' || b.name === '九光英雄外') && b.qiShield === 0 && (oldBoss || fittedBoss);
+  const verifiedBoss = b.def === 21410 && b.block === 4163 &&
+    b.critRes === 4163 && b.elemRes === 4163 && b.bossRes === 21000;
+  return (b.name === '九光寒林' || b.name === '九光英雄外') && b.qiShield === 0 &&
+    (oldBoss || fittedBoss || verifiedBoss);
 }
 
 function migrateLegacyJiuGuangSettings() {
@@ -7737,6 +8716,7 @@ function renderLowerOptimizeResults(mode, results) {
   }
   emptyEl.textContent = '';
   resultsEl.innerHTML = visibleResults.map((result, idx) => {
+    const resultKey = getOptimizeResultKey(result);
     const itemText = [
       `戒 1：${escHtml(result.items[0].name)}`,
       `戒 2：${escHtml(result.items[1].name)}`,
@@ -7753,6 +8733,7 @@ function renderLowerOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">${effectLabel}：有（模式件數 ${result.modeCount}）</div>
+          <button type="button" onclick="saveGearOptimizeResultAsStack('lower','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('lower', result)}
         </div>
       </div>
@@ -7782,6 +8763,7 @@ function renderUpperOptimizeResults(mode, results) {
   }
   emptyEl.textContent = '';
   resultsEl.innerHTML = visibleResults.map((result, idx) => {
+    const resultKey = getOptimizeResultKey(result);
     const itemText = [
       `頭：${escHtml(result.items[0].name)}`,
       `身：${escHtml(result.items[1].name)}`,
@@ -7798,6 +8780,7 @@ function renderUpperOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">效果一：${result.effect1 ? '有' : '無'}　效果二：${result.effect2 ? '有' : '無'}　模式件數 ${result.modeCount}</div>
+          <button type="button" onclick="saveGearOptimizeResultAsStack('upper','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('upper', result)}
         </div>
       </div>
@@ -8030,6 +9013,7 @@ function renderJointOptimizeResults(mode, results) {
   }
   emptyEl.textContent = '';
   resultsEl.innerHTML = visibleResults.map((result, idx) => {
+    const resultKey = getOptimizeResultKey(result);
     const upperText = [
       `頭：${escHtml(result.upperItems[0].name)}`,
       `身：${escHtml(result.upperItems[1].name)}`,
@@ -8053,6 +9037,7 @@ function renderJointOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">上半效果一：${result.effect1 ? '有' : '無'}　上半效果二：${result.effect2 ? '有' : '無'}　下半效果三：有</div>
+          <button type="button" onclick="saveGearOptimizeResultAsStack('joint','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('joint', result)}
         </div>
       </div>
@@ -8363,6 +9348,57 @@ function saveNgOptimizeResultAsStack(resultKey, rank = 0) {
   const trimmed = name.trim().slice(0, 20);
   dbAdd('ng', trimmed, data, { category: 'set_build', slot: null, tags: null });
   alert(`已儲存內功套路：${trimmed}`);
+}
+
+const OPTIMIZE_GEAR_STACK_LABELS = {
+  lower: '下半裝備',
+  upper: '上半裝備',
+  joint: '聯合裝備',
+};
+
+function getGearOptimizeResultsByKind(kind) {
+  if (kind === 'lower') return Array.isArray(optimizeLastLowerResults) ? optimizeLastLowerResults : [];
+  if (kind === 'upper') return Array.isArray(optimizeLastUpperResults) ? optimizeLastUpperResults : [];
+  if (kind === 'joint') return Array.isArray(optimizeLastJointResults) ? optimizeLastJointResults : [];
+  return [];
+}
+
+function getGearOptimizeResultStackData(result) {
+  const totals = {};
+  DB_NG_KEYS.forEach(key => { totals[key] = 0; });
+  const items = Array.isArray(result?.items) ? result.items : [];
+  items.forEach(item => {
+    const data = getNgDBData(item?.entry || {});
+    DB_NG_KEYS.forEach(key => {
+      totals[key] += parseFloat(data[key]) || 0;
+    });
+  });
+  return {
+    values: totals,
+    stackItems: items.map(item => item?.name).filter(name => typeof name === 'string' && name.trim() !== '')
+  };
+}
+
+function saveGearOptimizeResultAsStack(kind, resultKey, rank = 0) {
+  const label = OPTIMIZE_GEAR_STACK_LABELS[kind] || '裝備';
+  const key = String(resultKey || '');
+  const result = getGearOptimizeResultsByKind(kind)
+    .find(item => getOptimizeResultKey(item) === key);
+  if (!result) {
+    alert(`找不到這筆${label}最佳化結果，請重新執行最佳化後再儲存。`);
+    return;
+  }
+  const data = getGearOptimizeResultStackData(result);
+  if (!data.stackItems.length) {
+    alert('這筆結果沒有可儲存的裝備清單。');
+    return;
+  }
+  const defaultName = `${label}套路第${rank || DB.gear.length + 1}名`;
+  const name = prompt('請輸入裝備套路名稱（最多 20 字）：', defaultName);
+  if (name === null || name.trim() === '') return;
+  const trimmed = name.trim().slice(0, 20);
+  dbAdd('gear', trimmed, data, { category: 'set_build', slot: null, tags: null });
+  alert(`已儲存${label}套路：${trimmed}`);
 }
 
 function runNgOptimize() {
@@ -8951,7 +9987,7 @@ function confirmNgStackSelection() {
     const data = getNgDBData(entry);
     DB_NG_KEYS.forEach(key => { totals[key] += parseFloat(data[key]) || 0; });
     const expandedStack = getNgDBExpandedStackItems(entry);
-    if (isInnerSkillRoutineStack(expandedStack)) selectedStackItems.push(...expandedStack);
+    if (expandedStack.length) selectedStackItems.push(...expandedStack);
     else selectedStackItems.push(name);
   });
   DB_NG_KEYS.forEach(key => { ng_vals[set][key] = totals[key]; });
@@ -9836,6 +10872,8 @@ window.onload = function() {
   calcNeigong();
   renderDB();
   refreshDBDropdowns();
+  loadArtifactTreeAnnotation();
+  renderArtifactTreeAnnotator();
   renderOptimizePage();
   restoreOptimizePage();
   renderOptimizeExcludeList();
