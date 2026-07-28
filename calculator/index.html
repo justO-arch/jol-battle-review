@@ -2206,7 +2206,8 @@
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="mgn_critdmg" value="1.803" step="0.001" oninput="calcMarginal()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="mgn_elementatk" value="5729" oninput="calcMarginal()"></div>
             <div class="field"><label>元素傷害加成</label><input type="number" id="mgn_elemBonus" value="0" step="0.001" oninput="calcMarginal()"></div>
-            <div class="field"><label>首領/流派克制</label><input type="number" id="mgn_bossover" value="15935" oninput="calcMarginal()"></div>
+            <div class="field"><label>首領克制</label><input type="number" id="mgn_bossover" value="15935" oninput="calcMarginal()"></div>
+            <div class="field"><label>流派克制</label><input type="number" id="mgn_styleover" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="mgn_ignoreelem" value="3081" oninput="calcMarginal()"></div>
             <div class="field"><label>破防</label><input type="number" id="mgn_breakdef" value="5765" oninput="calcMarginal()"></div>
             <div class="field"><label>破盾</label><input type="number" id="mgn_breakshield" value="0" oninput="calcMarginal()"></div>
@@ -2219,7 +2220,8 @@
             <div class="field"><label>抗會心</label><input type="number" id="mgn_mycritres" value="3280" oninput="calcMarginal()"></div>
             <div class="field"><label>氣盾</label><input type="number" id="mgn_myqishield" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>元素抗性</label><input type="number" id="mgn_myelemres" value="3310" oninput="calcMarginal()"></div>
-            <div class="field"><label>流派/首領抵禦</label><input type="number" id="mgn_mybossres" value="14040" oninput="calcMarginal()"></div>
+            <div class="field"><label>首領抵禦</label><input type="number" id="mgn_mybossres" value="14040" oninput="calcMarginal()"></div>
+            <div class="field"><label>流派抵禦</label><input type="number" id="mgn_mystyleres" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>抗會傷（倍率）</label><input type="number" id="mgn_myanticrit" value="0.1" step="0.01" oninput="calcMarginal()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="mgn_myhp" value="150000" oninput="calcMarginal()"></div>
           </div>
@@ -2242,7 +2244,8 @@
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="mgn_ecritdmg" value="1.803" step="0.001" oninput="calcMarginal()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="mgn_eelemAtk" value="5729" oninput="calcMarginal()"></div>
             <div class="field"><label>元素傷害加成</label><input type="number" id="mgn_eelemBonus" value="0" step="0.001" oninput="calcMarginal()"></div>
-            <div class="field"><label>首領/流派克制</label><input type="number" id="mgn_ebossover" value="15935" oninput="calcMarginal()"></div>
+            <div class="field"><label>首領克制</label><input type="number" id="mgn_ebossover" value="15935" oninput="calcMarginal()"></div>
+            <div class="field"><label>流派克制</label><input type="number" id="mgn_estyleover" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="mgn_eignoreelem" value="3081" oninput="calcMarginal()"></div>
             <div class="field"><label>破防</label><input type="number" id="mgn_ebreakdef" value="5765" oninput="calcMarginal()"></div>
             <div class="field"><label>破盾</label><input type="number" id="mgn_ebreakshield" value="0" oninput="calcMarginal()"></div>
@@ -2255,7 +2258,8 @@
             <div class="field"><label>抗會心</label><input type="number" id="mgn_bcritres" value="3280" oninput="calcMarginal()"></div>
             <div class="field"><label>氣盾</label><input type="number" id="mgn_bqishield" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>元素抗性</label><input type="number" id="mgn_belemres" value="3310" oninput="calcMarginal()"></div>
-            <div class="field"><label>流派/首領抵禦</label><input type="number" id="mgn_bbossres" value="14040" oninput="calcMarginal()"></div>
+            <div class="field"><label>首領抵禦</label><input type="number" id="mgn_bbossres" value="14040" oninput="calcMarginal()"></div>
+            <div class="field"><label>流派抵禦</label><input type="number" id="mgn_bstyleres" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>抗會傷（倍率）</label><input type="number" id="mgn_banticrit" value="0.1" step="0.01" oninput="calcMarginal()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="mgn_bhp" value="150000" oninput="calcMarginal()"></div>
           </div>
@@ -2434,7 +2438,8 @@
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="ng_critdmg" value="1.803" step="0.001" oninput="calcNeigong()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="ng_elementatk" value="5729" oninput="calcNeigong()"></div>
             <div class="field"><label>元素傷害加成</label><input type="number" id="ng_elemBonus" value="0" step="0.001" oninput="calcNeigong()"></div>
-            <div class="field"><label>首領/流派克制</label><input type="number" id="ng_bossover" value="15935" oninput="calcNeigong()"></div>
+            <div class="field"><label>首領克制</label><input type="number" id="ng_bossover" value="15935" oninput="calcNeigong()"></div>
+            <div class="field"><label>流派克制</label><input type="number" id="ng_styleover" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="ng_ignoreelem" value="3081" oninput="calcNeigong()"></div>
             <div class="field"><label>破防</label><input type="number" id="ng_breakdef" value="5765" oninput="calcNeigong()"></div>
             <div class="field"><label>技巧克制</label><input type="number" id="ng_techover" value="0" oninput="calcNeigong()"></div>
@@ -2453,7 +2458,8 @@
             <div class="field"><label>抗會心</label><input type="number" id="ng_mycritres" value="3280" oninput="calcNeigong()"></div>
             <div class="field"><label>氣盾</label><input type="number" id="ng_myqishield" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>元素抗性</label><input type="number" id="ng_myelemres" value="3310" oninput="calcNeigong()"></div>
-            <div class="field"><label>流派/首領抵禦</label><input type="number" id="ng_mybossres" value="14040" oninput="calcNeigong()"></div>
+            <div class="field"><label>首領抵禦</label><input type="number" id="ng_mybossres" value="14040" oninput="calcNeigong()"></div>
+            <div class="field"><label>流派抵禦</label><input type="number" id="ng_mystyleres" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>抗會傷（倍率）</label><input type="number" id="ng_myanticrit" value="0.1" step="0.01" oninput="calcNeigong()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="ng_myhp" value="150000" oninput="calcNeigong()"></div>
           </div>
@@ -2476,7 +2482,8 @@
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="ng_ecritdmg" value="1.803" step="0.001" oninput="calcNeigong()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="ng_eelemAtk" value="5729" oninput="calcNeigong()"></div>
             <div class="field"><label>元素傷害加成</label><input type="number" id="ng_eelemBonus" value="0" step="0.001" oninput="calcNeigong()"></div>
-            <div class="field"><label>首領/流派克制</label><input type="number" id="ng_ebossover" value="15935" oninput="calcNeigong()"></div>
+            <div class="field"><label>首領克制</label><input type="number" id="ng_ebossover" value="15935" oninput="calcNeigong()"></div>
+            <div class="field"><label>流派克制</label><input type="number" id="ng_estyleover" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="ng_eignoreelem" value="3081" oninput="calcNeigong()"></div>
             <div class="field"><label>破防</label><input type="number" id="ng_ebreakdef" value="5765" oninput="calcNeigong()"></div>
             <div class="field"><label>技巧克制</label><input type="number" id="ng_etechover" value="0" oninput="calcNeigong()"></div>
@@ -2495,7 +2502,8 @@
             <div class="field"><label>抗會心</label><input type="number" id="ng_bcritres" value="3280" oninput="calcNeigong()"></div>
             <div class="field"><label>氣盾</label><input type="number" id="ng_bqishield" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>元素抗性</label><input type="number" id="ng_belemres" value="3310" oninput="calcNeigong()"></div>
-            <div class="field"><label>流派/首領抵禦</label><input type="number" id="ng_bbossres" value="14040" oninput="calcNeigong()"></div>
+            <div class="field"><label>首領抵禦</label><input type="number" id="ng_bbossres" value="14040" oninput="calcNeigong()"></div>
+            <div class="field"><label>流派抵禦</label><input type="number" id="ng_bstyleres" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>抗會傷（倍率）</label><input type="number" id="ng_banticrit" value="0.1" step="0.01" oninput="calcNeigong()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="ng_bhp" value="150000" oninput="calcNeigong()"></div>
           </div>
@@ -5447,8 +5455,9 @@ function enforceMgnCls() {
 
 const MGN_DELTAS = {
   atk: 100, hit: 100, crit: 100, critdmg: 0.1, elemAtk: 100,
-  bossover: 100, ignoreelem: 100, breakdef: 100, breakshield: 0,
-  def: 100, block: 100, critres: 100, qishield: 0, elemres: 100, bossres: 100, anticrit: 0.1, hp: 1000
+  bossover: 100, styleover: 100, ignoreelem: 100, breakdef: 100, breakshield: 0,
+  def: 100, block: 100, critres: 100, qishield: 0, elemres: 100,
+  bossres: 100, styleres: 100, anticrit: 0.1, hp: 1000
 };
 function setMgnDelta(key, val) {
   const v = parseFloat(val);
@@ -5462,30 +5471,32 @@ function calcMarginal() {
   // My attack params
   const myAtk = { atk:n('mgn_atk'), hit:n('mgn_hit'), crit:n('mgn_crit'), critDmg:n('mgn_critdmg'),
     breakShield:n('mgn_breakshield'), elemAtk:n('mgn_elementatk'), elemBonus:n('mgn_elemBonus'), bossOver:n('mgn_bossover'),
+    styleOver:n('mgn_styleover'),
     ignoreElem:n('mgn_ignoreelem'), breakDef:n('mgn_breakdef'), techOver:0, lei:0, xinsui:0, stylePct:0 };
   // Opponent's defense (as target for my attack)
   const oppDef = { bDef:n('mgn_bdef'), bBlock:n('mgn_bblock'), bCritRes:n('mgn_bcritres'),
-    bQiShield:n('mgn_bqishield'), bElemRes:n('mgn_belemres'), bStyleRes:n('mgn_bbossres'),
+    bQiShield:n('mgn_bqishield'), bElemRes:n('mgn_belemres'), bStyleRes:n('mgn_bstyleres'),
     antiCrit:n('mgn_banticrit'), oppTechOver:n('mgn_etechover'), bBossRes:n('mgn_bbossres') };
   // Opponent's attack params
   const oppAtk = { atk:n('mgn_eatk'), hit:n('mgn_ehit'), crit:n('mgn_ecrit'), critDmg:n('mgn_ecritdmg'),
     breakShield:n('mgn_ebreakshield'), elemAtk:n('mgn_eelemAtk'), elemBonus:n('mgn_eelemBonus'), bossOver:n('mgn_ebossover'),
+    styleOver:n('mgn_estyleover'),
     ignoreElem:n('mgn_eignoreelem'), breakDef:n('mgn_ebreakdef'), techOver:0, lei:0, xinsui:0, stylePct:0 };
   // My defense (opponent attacks me)
   const myDef = { bDef:n('mgn_mydef'), bBlock:n('mgn_myblock'), bCritRes:n('mgn_mycritres'),
-    bQiShield:n('mgn_myqishield'), bElemRes:n('mgn_myelemres'), bStyleRes:n('mgn_mybossres'),
+    bQiShield:n('mgn_myqishield'), bElemRes:n('mgn_myelemres'), bStyleRes:n('mgn_mystyleres'),
     antiCrit:n('mgn_myanticrit'), oppTechOver:n('mgn_techover'), bBossRes:n('mgn_mybossres') };
   const myHp = n('mgn_myhp'), oppHp = n('mgn_bhp');
 
   function getMyOut(a, d) {
     if (!isPVP) return calcPVEExpected({ ...a, bossOverPct:0, bDef:d.bDef, bBlock:d.bBlock,
       bCritRes:d.bCritRes, bQiShield:d.bQiShield, bElemRes:d.bElemRes, bBossRes:d.bBossRes, antiCrit:d.antiCrit||0 }).expected;
-    return calcPVPSideExpected({ ...a, styleOver:a.bossOver }, d).expected;
+    return calcPVPSideExpected(a, d).expected;
   }
   function getOppOut(a, d) {
     if (!isPVP) return calcPVEExpected({ ...a, bossOverPct:0, bDef:d.bDef, bBlock:d.bBlock,
       bCritRes:d.bCritRes, bQiShield:d.bQiShield, bElemRes:d.bElemRes, bBossRes:d.bBossRes, antiCrit:d.antiCrit||0 }).expected;
-    return calcPVPSideExpected({ ...a, styleOver:a.bossOver }, d).expected;
+    return calcPVPSideExpected(a, d).expected;
   }
 
   const myBaseOut  = getMyOut(myAtk, oppDef);
@@ -5539,14 +5550,14 @@ function calcMarginal() {
     return { label, dc: deltaInput(key), outPct:null, atkEq:null, defPct, hpEq: dhp };
   }
 
-  const atkLabel = isPVP ? '流派克制' : '首領克制';
   let rows = [
     atkRow('攻擊',      'atk',        {atk:       MGN_DELTAS.atk}),
     atkRow('命中',      'hit',        {hit:       MGN_DELTAS.hit}),
     atkRow('會心',      'crit',       {crit:      MGN_DELTAS.crit}),
     atkRow('會心傷害',  'critdmg',    {critDmg:   MGN_DELTAS.critdmg}),
     atkRow('元素攻擊',  'elemAtk',    {elemAtk:   MGN_DELTAS.elemAtk}),
-    atkRow(atkLabel,    'bossover',   {bossOver:  MGN_DELTAS.bossover}),
+    atkRow('首領克制',  'bossover',   {bossOver:  MGN_DELTAS.bossover}),
+    atkRow('流派克制',  'styleover',  {styleOver: MGN_DELTAS.styleover}),
     atkRow('忽視元素抗','ignoreelem', {ignoreElem:MGN_DELTAS.ignoreelem}),
     atkRow('破防',      'breakdef',   {breakDef:  MGN_DELTAS.breakdef}),
     atkRow('破盾',      'breakshield',{breakShield:MGN_DELTAS.breakshield}),
@@ -5555,7 +5566,8 @@ function calcMarginal() {
     defRow('抗會心',    'critres',    {bCritRes:  MGN_DELTAS.critres}),
     defRow('氣盾',      'qishield',   {bQiShield: MGN_DELTAS.qishield}),
     defRow('元素抗性',  'elemres',    {bElemRes:  MGN_DELTAS.elemres}),
-    defRow('流派/首領抵禦','bossres', {bStyleRes: MGN_DELTAS.bossres, bBossRes: MGN_DELTAS.bossres}),
+    defRow('首領抵禦',  'bossres',    {bBossRes:  MGN_DELTAS.bossres}),
+    defRow('流派抵禦',  'styleres',   {bStyleRes: MGN_DELTAS.styleres}),
     defRow('抗會心傷害','anticrit',   {antiCrit:  MGN_DELTAS.anticrit}),
     hpRow ('氣血',      'hp',         MGN_DELTAS.hp),
   ];
@@ -5649,14 +5661,14 @@ function calcMarginal() {
 }
 
 function resetMarginalInputs() {
-  ['mgn_atk','mgn_hit','mgn_crit','mgn_critdmg','mgn_elementatk','mgn_bossover',
+  ['mgn_atk','mgn_hit','mgn_crit','mgn_critdmg','mgn_elementatk','mgn_bossover','mgn_styleover',
    'mgn_ignoreelem','mgn_breakdef','mgn_breakshield',
    'mgn_mydef','mgn_myblock','mgn_mycritres','mgn_myqishield','mgn_myelemres',
-   'mgn_mybossres','mgn_myanticrit','mgn_myhp',
-   'mgn_eatk','mgn_ehit','mgn_ecrit','mgn_ecritdmg','mgn_eelemAtk','mgn_ebossover',
+   'mgn_mybossres','mgn_mystyleres','mgn_myanticrit','mgn_myhp',
+   'mgn_eatk','mgn_ehit','mgn_ecrit','mgn_ecritdmg','mgn_eelemAtk','mgn_ebossover','mgn_estyleover',
    'mgn_eignoreelem','mgn_ebreakdef','mgn_ebreakshield',
    'mgn_bdef','mgn_bblock','mgn_bcritres','mgn_bqishield','mgn_belemres',
-   'mgn_bbossres','mgn_banticrit','mgn_bhp',
+   'mgn_bbossres','mgn_bstyleres','mgn_banticrit','mgn_bhp',
    'mgn_base_qihai','mgn_base_shenfa','mgn_base_naili','mgn_base_gengu'
   ].forEach(id => { const el = document.getElementById(id); if (el) el.value = 0; });
   calcMarginal();
@@ -5679,6 +5691,9 @@ function loadMarginalFromPVE() {
     const s = document.getElementById(src); const d = document.getElementById(dst);
     if (s && d) d.value = s.value;
   });
+  ['mgn_styleover','mgn_estyleover','mgn_mystyleres','mgn_bstyleres'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = 0;
+  });
   document.getElementById('mgn_mode').value = 'pve';
   calcMarginal();
 }
@@ -5687,21 +5702,24 @@ function loadMarginalFromPVP() {
   // My side = attacker (atk_*); opponent = defender (def_*)
   const map = {
     mgn_atk:'atk_atk', mgn_hit:'atk_hit', mgn_crit:'atk_crit', mgn_critdmg:'atk_critdmg',
-    mgn_elementatk:'atk_elemAtk', mgn_elemBonus:'atk_elemBonus', mgn_bossover:'atk_styleOver',
+    mgn_elementatk:'atk_elemAtk', mgn_elemBonus:'atk_elemBonus', mgn_styleover:'atk_styleOver',
     mgn_ignoreelem:'atk_ignoreElem', mgn_breakdef:'atk_breakDef', mgn_breakshield:'atk_breakshield',
     mgn_mydef:'atk_bdef', mgn_myblock:'atk_bblock', mgn_mycritres:'atk_bcritres',
     mgn_myqishield:'atk_bqishield', mgn_myelemres:'atk_belemres',
-    mgn_mybossres:'atk_styleRes', mgn_myanticrit:'atk_antiCrit', mgn_myhp:'atk_hp',
+    mgn_mystyleres:'atk_styleRes', mgn_myanticrit:'atk_antiCrit', mgn_myhp:'atk_hp',
     mgn_eatk:'def_atk', mgn_ehit:'def_hit', mgn_ecrit:'def_crit', mgn_ecritdmg:'def_critdmg',
-    mgn_eelemAtk:'def_elemAtk', mgn_eelemBonus:'def_elemBonus', mgn_ebossover:'def_styleOver',
+    mgn_eelemAtk:'def_elemAtk', mgn_eelemBonus:'def_elemBonus', mgn_estyleover:'def_styleOver',
     mgn_eignoreelem:'def_ignoreElem', mgn_ebreakdef:'def_breakDef', mgn_ebreakshield:'def_breakshield',
     mgn_bdef:'def_bdef', mgn_bblock:'def_bblock', mgn_bcritres:'def_bcritres',
     mgn_bqishield:'def_bqishield', mgn_belemres:'def_belemres',
-    mgn_bbossres:'def_styleRes', mgn_banticrit:'def_antiCrit', mgn_bhp:'def_hp'
+    mgn_bstyleres:'def_styleRes', mgn_banticrit:'def_antiCrit', mgn_bhp:'def_hp'
   };
   Object.entries(map).forEach(([dst, src]) => {
     const s = document.getElementById(src); const d = document.getElementById(dst);
     if (s && d) d.value = s.value;
+  });
+  ['mgn_bossover','mgn_ebossover','mgn_mybossres','mgn_bbossres'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = 0;
   });
   document.getElementById('mgn_mode').value = 'pvp';
   calcMarginal();
@@ -5926,25 +5944,25 @@ const TAB_INPUT_IDS = {
   convert: ['xj_excess','xj_ratio_elem','xj_ratio_atk','xj_ratio_bdef',
             'mgn_mode',
             'mgn_atk','mgn_hit','mgn_crit','mgn_critdmg','mgn_elementatk','mgn_elemBonus',
-            'mgn_bossover','mgn_ignoreelem','mgn_breakdef','mgn_breakshield',
+            'mgn_bossover','mgn_styleover','mgn_ignoreelem','mgn_breakdef','mgn_breakshield',
             'mgn_mydef','mgn_myblock','mgn_mycritres','mgn_myqishield',
-            'mgn_myelemres','mgn_mybossres','mgn_myanticrit','mgn_myhp',
+            'mgn_myelemres','mgn_mybossres','mgn_mystyleres','mgn_myanticrit','mgn_myhp',
             'mgn_eatk','mgn_ehit','mgn_ecrit','mgn_ecritdmg','mgn_eelemAtk','mgn_eelemBonus',
-            'mgn_ebossover','mgn_eignoreelem','mgn_ebreakdef','mgn_ebreakshield',
+            'mgn_ebossover','mgn_estyleover','mgn_eignoreelem','mgn_ebreakdef','mgn_ebreakshield',
             'mgn_bdef','mgn_bblock','mgn_bcritres','mgn_bqishield',
-            'mgn_belemres','mgn_bbossres','mgn_banticrit','mgn_bhp',
+            'mgn_belemres','mgn_bbossres','mgn_bstyleres','mgn_banticrit','mgn_bhp',
             'mgn_base_qihai','mgn_base_shenfa','mgn_base_naili','mgn_base_gengu',
             'mgn_cls_shenxiang','mgn_cls_longyin','mgn_cls_suimeng',
             'mgn_cls_xuanji','mgn_cls_jiuling','mgn_cls_xuehe'],
   neigong: ['ng_mode',
             'ng_atk','ng_hit','ng_crit','ng_critdmg','ng_elementatk','ng_elemBonus',
-            'ng_bossover','ng_ignoreelem','ng_breakdef','ng_techover','ng_breakshield','ng_stylePct',
+            'ng_bossover','ng_styleover','ng_ignoreelem','ng_breakdef','ng_techover','ng_breakshield','ng_stylePct',
             'ng_mydef','ng_myblock','ng_mycritres','ng_myqishield',
-            'ng_myelemres','ng_mybossres','ng_myanticrit','ng_myhp','ng_myStyleResPct',
+            'ng_myelemres','ng_mybossres','ng_mystyleres','ng_myanticrit','ng_myhp','ng_myStyleResPct',
             'ng_eatk','ng_ehit','ng_ecrit','ng_ecritdmg','ng_eelemAtk','ng_eelemBonus',
-            'ng_ebossover','ng_eignoreelem','ng_ebreakdef','ng_etechover','ng_ebreakshield','ng_eStylePct',
+            'ng_ebossover','ng_estyleover','ng_eignoreelem','ng_ebreakdef','ng_etechover','ng_ebreakshield','ng_eStylePct',
             'ng_bdef','ng_bblock','ng_bcritres','ng_bqishield',
-            'ng_belemres','ng_bbossres','ng_banticrit','ng_bhp','ng_bStyleResPct',
+            'ng_belemres','ng_bbossres','ng_bstyleres','ng_banticrit','ng_bhp','ng_bStyleResPct',
             'ng_cls_shenxiang','ng_cls_longyin','ng_cls_suimeng',
             'ng_cls_xuanji','ng_cls_jiuling','ng_cls_xuehe'],
   optimize: ['opt_mode','opt_sort','opt_upper_mode','opt_upper_sort','opt_joint_mode','opt_joint_sort','opt_ng_mode','opt_ng_sort','opt_ng_prefilter_enabled','opt_ng_prefilter_limit','opt_ng_req1_elem','opt_ng_req1_min','opt_ng_req2_elem','opt_ng_req2_min','opt_final_mode','opt_final_sort']
@@ -6221,6 +6239,52 @@ function calcConvert() { calcXuanJi(); calcMarginal(); }
 
 function loadAllTabInputs() {
   const recalcs = { pve: calcPVE, pvp: calcPVP, cmp: calcCompare, pvpcmp: calcPVPCmp, suw: calcSuWenCompare, convert: calcConvert, neigong: calcNeigong };
+  const normalizeLegacyOverStatTabData = (tab, rawData) => {
+    if (!rawData || typeof rawData !== 'object') return rawData;
+    const configs = {
+      convert: {
+        modeKey: 'mgn_mode',
+        pairs: [
+          ['mgn_bossover', 'mgn_styleover'],
+          ['mgn_ebossover', 'mgn_estyleover'],
+          ['mgn_mybossres', 'mgn_mystyleres'],
+          ['mgn_bbossres', 'mgn_bstyleres'],
+        ],
+      },
+      neigong: {
+        modeKey: 'ng_mode',
+        pairs: [
+          ['ng_bossover', 'ng_styleover'],
+          ['ng_ebossover', 'ng_estyleover'],
+          ['ng_mybossres', 'ng_mystyleres'],
+          ['ng_bbossres', 'ng_bstyleres'],
+        ],
+      },
+    };
+    const config = configs[tab];
+    if (!config) return rawData;
+    const hasAnySplitField = config.pairs.some(([, splitKey]) =>
+      Object.prototype.hasOwnProperty.call(rawData, splitKey)
+    );
+    const out = { ...rawData };
+    let changed = false;
+    config.pairs.forEach(([legacyKey, splitKey]) => {
+      if (hasAnySplitField) {
+        if (!Object.prototype.hasOwnProperty.call(out, splitKey)) {
+          out[splitKey] = 0;
+          changed = true;
+        }
+      } else if (rawData[config.modeKey] === 'pvp') {
+        out[splitKey] = parseFloat(rawData[legacyKey]) || 0;
+        out[legacyKey] = 0;
+        changed = true;
+      } else {
+        out[splitKey] = 0;
+        changed = true;
+      }
+    });
+    return changed ? out : rawData;
+  };
   // PVP裝備比較：先恢復攻方陣列（在靜態欄位恢復之前）
   try {
     const saved = localStorage.getItem(`${STORAGE_KEY}_tab_pvpcmp_attackers`);
@@ -6235,7 +6299,11 @@ function loadAllTabInputs() {
   Object.keys(TAB_INPUT_IDS).forEach(tab => {
     const saved = localStorage.getItem(`${STORAGE_KEY}_tab_${tab}`); if (!saved) return;
     try {
-      const data = JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      const data = normalizeLegacyOverStatTabData(tab, parsed);
+      if (data !== parsed) {
+        localStorage.setItem(`${STORAGE_KEY}_tab_${tab}`, JSON.stringify(data));
+      }
       TAB_INPUT_IDS[tab].forEach(id => {
         const el = document.getElementById(id); if (!el || data[id] === undefined) return;
         if (el.type === 'checkbox') el.checked = (data[id] === true || data[id] === 'true');
@@ -6268,19 +6336,19 @@ const DB_SET_SUBSET_ID_MAPS = {
   cmp_a: { atk:'cmp_a_atk', hit:'cmp_a_hit', crit:'cmp_a_crit', critDmg:'cmp_a_critdmg', breakShield:'cmp_a_breakshield', elemAtk:'cmp_a_elemAtk', elemBonus:'cmp_a_elemBonus', styleOver:'cmp_a_bossOver', ignoreElem:'cmp_a_ignoreElem', breakDef:'cmp_a_breakDef', techOver:'cmp_a_techOver' },
   cmp_b: { atk:'cmp_b_atk', hit:'cmp_b_hit', crit:'cmp_b_crit', critDmg:'cmp_b_critdmg', breakShield:'cmp_b_breakshield', elemAtk:'cmp_b_elemAtk', elemBonus:'cmp_b_elemBonus', styleOver:'cmp_b_bossOver', ignoreElem:'cmp_b_ignoreElem', breakDef:'cmp_b_breakDef', techOver:'cmp_b_techOver' },
   sw_opp: { atk:'sw_opp_atk', hit:'sw_opp_hit', crit:'sw_opp_crit', critDmg:'sw_opp_critdmg', breakShield:'sw_opp_breakshield', elemAtk:'sw_opp_elemAtk', elemBonus:'sw_opp_elemBonus', styleOver:'sw_opp_styleOver', ignoreElem:'sw_opp_ignoreElem', breakDef:'sw_opp_breakDef', techOver:'sw_opp_techOver', lei:'sw_opp_lei', xinsui:'sw_opp_xinsui', stylePct:'sw_opp_stylePct' },
-  ng_my:  { atk:'ng_atk', hit:'ng_hit', crit:'ng_crit', critDmg:'ng_critdmg', breakShield:'ng_breakshield', elemAtk:'ng_elementatk', elemBonus:'ng_elemBonus', styleOver:'ng_bossover', ignoreElem:'ng_ignoreelem', breakDef:'ng_breakdef', techOver:'ng_techover', stylePct:'ng_stylePct' },
-  ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_ebossover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct' },
-  mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_bossover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef' },
-  mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_ebossover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef' },
+  ng_my:  { atk:'ng_atk', hit:'ng_hit', crit:'ng_crit', critDmg:'ng_critdmg', breakShield:'ng_breakshield', elemAtk:'ng_elementatk', elemBonus:'ng_elemBonus', styleOver:'ng_styleover', ignoreElem:'ng_ignoreelem', breakDef:'ng_breakdef', techOver:'ng_techover', stylePct:'ng_stylePct' },
+  ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_estyleover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct' },
+  mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_styleover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef' },
+  mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_estyleover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef' },
 };
 const DB_SET_FULL_ID_MAPS = {
   atk: { atk:'atk_atk', hit:'atk_hit', crit:'atk_crit', critDmg:'atk_critdmg', breakShield:'atk_breakshield', elemAtk:'atk_elemAtk', elemBonus:'atk_elemBonus', styleOver:'atk_styleOver', ignoreElem:'atk_ignoreElem', breakDef:'atk_breakDef', techOver:'atk_techOver', lei:'atk_lei', xinsui:'atk_xinsui', stylePct:'atk_stylePct', bDef:'atk_bdef', bBlock:'atk_bblock', bCritRes:'atk_bcritres', bQiShield:'atk_bqishield', bElemRes:'atk_belemres', bStyleRes:'atk_styleRes', antiCrit:'atk_antiCrit', techOver2:'atk_techOver2', styleResPct:'atk_styleResPct', hp:'atk_hp' },
   def: { atk:'def_atk', hit:'def_hit', crit:'def_crit', critDmg:'def_critdmg', breakShield:'def_breakshield', elemAtk:'def_elemAtk', elemBonus:'def_elemBonus', styleOver:'def_styleOver', ignoreElem:'def_ignoreElem', breakDef:'def_breakDef', techOver:'def_techOver', lei:'def_lei', xinsui:'def_xinsui', stylePct:'def_stylePct', bDef:'def_bdef', bBlock:'def_bblock', bCritRes:'def_bcritres', bQiShield:'def_bqishield', bElemRes:'def_belemres', bStyleRes:'def_styleRes', antiCrit:'def_antiCrit', techOver2:'def_techOver2', styleResPct:'def_styleResPct', hp:'def_hp' },
   pvpcmp_opp: { atk:'pvpcmp_oatk', hit:'pvpcmp_ohit', crit:'pvpcmp_ocrit', critDmg:'pvpcmp_ocritdmg', breakShield:'pvpcmp_obreakshield', elemAtk:'pvpcmp_oelemAtk', elemBonus:'pvpcmp_oelemBonus', styleOver:'pvpcmp_ostyleOver', ignoreElem:'pvpcmp_oignoreElem', breakDef:'pvpcmp_obreakDef', techOver:'pvpcmp_otechOver', lei:'pvpcmp_olei', xinsui:'pvpcmp_oxinsui', stylePct:'pvpcmp_ostylePct', hp:'pvpcmp_ohp', bDef:'pvpcmp_bdef', bBlock:'pvpcmp_bblock', bCritRes:'pvpcmp_bcritres', bQiShield:'pvpcmp_bqishield', bElemRes:'pvpcmp_belemres', bStyleRes:'pvpcmp_bstyleres', antiCrit:'pvpcmp_anticrit', techOver2:'pvpcmp_techover', styleResPct:'pvpcmp_bstyleresPct' },
-  ng_my:  { atk:'ng_atk', hit:'ng_hit', crit:'ng_crit', critDmg:'ng_critdmg', breakShield:'ng_breakshield', elemAtk:'ng_elementatk', elemBonus:'ng_elemBonus', styleOver:'ng_bossover', ignoreElem:'ng_ignoreelem', breakDef:'ng_breakdef', techOver:'ng_techover', stylePct:'ng_stylePct', bDef:'ng_mydef', bBlock:'ng_myblock', bCritRes:'ng_mycritres', bQiShield:'ng_myqishield', bElemRes:'ng_myelemres', bStyleRes:'ng_mybossres', antiCrit:'ng_myanticrit', styleResPct:'ng_myStyleResPct', hp:'ng_myhp' },
-  ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_ebossover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct', bDef:'ng_bdef', bBlock:'ng_bblock', bCritRes:'ng_bcritres', bQiShield:'ng_bqishield', bElemRes:'ng_belemres', bStyleRes:'ng_bbossres', antiCrit:'ng_banticrit', styleResPct:'ng_bStyleResPct', hp:'ng_bhp' },
-  mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_bossover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef', techOver:'mgn_techover', bDef:'mgn_mydef', bBlock:'mgn_myblock', bCritRes:'mgn_mycritres', bQiShield:'mgn_myqishield', bElemRes:'mgn_myelemres', bStyleRes:'mgn_mybossres', antiCrit:'mgn_myanticrit', techOver2:'mgn_mytechover', hp:'mgn_myhp' },
-  mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_ebossover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef', techOver:'mgn_etechover', bDef:'mgn_bdef', bBlock:'mgn_bblock', bCritRes:'mgn_bcritres', bQiShield:'mgn_bqishield', bElemRes:'mgn_belemres', bStyleRes:'mgn_bbossres', antiCrit:'mgn_banticrit', techOver2:'mgn_btechover', hp:'mgn_bhp' },
+  ng_my:  { atk:'ng_atk', hit:'ng_hit', crit:'ng_crit', critDmg:'ng_critdmg', breakShield:'ng_breakshield', elemAtk:'ng_elementatk', elemBonus:'ng_elemBonus', styleOver:'ng_styleover', ignoreElem:'ng_ignoreelem', breakDef:'ng_breakdef', techOver:'ng_techover', stylePct:'ng_stylePct', bDef:'ng_mydef', bBlock:'ng_myblock', bCritRes:'ng_mycritres', bQiShield:'ng_myqishield', bElemRes:'ng_myelemres', bStyleRes:'ng_mystyleres', antiCrit:'ng_myanticrit', styleResPct:'ng_myStyleResPct', hp:'ng_myhp' },
+  ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_estyleover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct', bDef:'ng_bdef', bBlock:'ng_bblock', bCritRes:'ng_bcritres', bQiShield:'ng_bqishield', bElemRes:'ng_belemres', bStyleRes:'ng_bstyleres', antiCrit:'ng_banticrit', styleResPct:'ng_bStyleResPct', hp:'ng_bhp' },
+  mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_styleover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef', techOver:'mgn_techover', bDef:'mgn_mydef', bBlock:'mgn_myblock', bCritRes:'mgn_mycritres', bQiShield:'mgn_myqishield', bElemRes:'mgn_myelemres', bStyleRes:'mgn_mystyleres', antiCrit:'mgn_myanticrit', techOver2:'mgn_mytechover', hp:'mgn_myhp' },
+  mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_estyleover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef', techOver:'mgn_etechover', bDef:'mgn_bdef', bBlock:'mgn_bblock', bCritRes:'mgn_bcritres', bQiShield:'mgn_bqishield', bElemRes:'mgn_belemres', bStyleRes:'mgn_bstyleres', antiCrit:'mgn_banticrit', techOver2:'mgn_btechover', hp:'mgn_bhp' },
 };
 const DB_HEALER_ID_MAPS = {
   a: { atk:'sw_a_atk', healPower:'sw_a_healPower', crit:'sw_a_crit', critDmg:'sw_a_critDmg', skillFlat:'sw_a_skillFlat', skillPct:'sw_a_skillPct', extraCritRate:'sw_a_extraCritRate', def:'sw_a_def', block:'sw_a_block', critRes:'sw_a_critRes', qiShield:'sw_a_qiShield', elemRes:'sw_a_elemRes', styleRes:'sw_a_styleRes', antiCrit:'sw_a_antiCrit', techOver:'sw_a_techOver', styleResPct:'sw_a_styleResPct', hp:'sw_a_hp' },
@@ -6308,10 +6376,64 @@ function isInnerSkillRoutineEntry(entry) {
   return isInnerSkillRoutineStack(expandedStack);
 }
 
+const LEGACY_BOSS_OVER_GEAR_NAMES = new Set([
+  '129仇千浪頭',
+  '129巨鯤手',
+  '129雀隱腰',
+  '129龍腰',
+]);
+
+function normalizeNgStatValues(entry, values) {
+  const src = values && typeof values === 'object' ? values : {};
+  const hasOwn = key => Object.prototype.hasOwnProperty.call(src, key);
+  const hasLegacyOverStats = hasOwn('bossover') || hasOwn('bossres');
+  const hasSplitOverStats = hasOwn('styleover') || hasOwn('styleres');
+  if (!hasLegacyOverStats && !hasSplitOverStats) return src;
+  if (hasSplitOverStats) {
+    if (hasOwn('styleover') && hasOwn('styleres')) return src;
+    return {
+      ...src,
+      styleover: parseFloat(src.styleover) || 0,
+      styleres: parseFloat(src.styleres) || 0,
+    };
+  }
+
+  const out = {
+    ...src,
+    styleover: 0,
+    styleres: 0,
+  };
+  if (!LEGACY_BOSS_OVER_GEAR_NAMES.has(String(entry?.name || ''))) {
+    out.styleover = parseFloat(src.bossover) || 0;
+    out.styleres = parseFloat(src.bossres) || 0;
+    out.bossover = 0;
+    out.bossres = 0;
+  }
+  return out;
+}
+
+function normalizeDBEntryStatValues(entry) {
+  if (!entry || typeof entry !== 'object') return entry;
+  const rawData = entry.data && typeof entry.data === 'object' ? entry.data : null;
+  if (rawData?.values && typeof rawData.values === 'object') {
+    const values = normalizeNgStatValues(entry, rawData.values);
+    if (values === rawData.values) return entry;
+    return { ...entry, data: { ...rawData, values } };
+  }
+  if (rawData) {
+    const data = normalizeNgStatValues(entry, rawData);
+    if (data === rawData) return entry;
+    return { ...entry, data };
+  }
+  const normalized = normalizeNgStatValues(entry, entry);
+  return normalized === entry ? entry : normalized;
+}
+
 function normalizeDBList(raw) {
   let changed = false;
   const list = Array.isArray(raw) ? raw.map(entry => {
-    const normalized = normalizeDBEntryMeta(entry);
+    let normalized = normalizeDBEntryMeta(entry);
+    normalized = normalizeDBEntryStatValues(normalized);
     if (normalized !== entry) changed = true;
     return normalized;
   }) : [];
@@ -7731,6 +7853,7 @@ function getNgAppliedValuesFromVals(vals, cls = getOptimizeClassFlags()) {
     critDmg:    parseFloat(vals?.critdmg) || 0,
     elemAtk:    (parseFloat(vals?.elemAtk) || 0) + converted.elemAtk,
     bossOver:   parseFloat(vals?.bossover) || 0,
+    styleOver:  parseFloat(vals?.styleover) || 0,
     ignoreElem: parseFloat(vals?.ignoreelem) || 0,
     breakDef:   (parseFloat(vals?.breakdef) || 0) + converted.breakdef,
     techOver:   parseFloat(vals?.techover) || 0,
@@ -7741,6 +7864,7 @@ function getNgAppliedValuesFromVals(vals, cls = getOptimizeClassFlags()) {
     bQiShield:  parseFloat(vals?.qishield) || 0,
     bElemRes:   parseFloat(vals?.elemres) || 0,
     bBossRes:   parseFloat(vals?.bossres) || 0,
+    bStyleRes:  parseFloat(vals?.styleres) || 0,
     antiCrit:   parseFloat(vals?.anticrit) || 0,
     techOver2:  parseFloat(vals?.techover2) || 0,
     hp:         (parseFloat(vals?.hp) || 0) + converted.hp,
@@ -7759,6 +7883,7 @@ function getOptimizeGearDelta(entry) {
     critDmg: applied.critDmg,
     elemAtk: applied.elemAtk,
     bossOver: applied.bossOver,
+    styleOver: applied.styleOver,
     ignoreElem: applied.ignoreElem,
     breakDef: applied.breakDef,
     techOver: applied.techOver,
@@ -7768,7 +7893,8 @@ function getOptimizeGearDelta(entry) {
     bCritRes: applied.bCritRes,
     bQiShield: applied.bQiShield,
     bElemRes: applied.bElemRes,
-    bStyleRes: applied.bBossRes,
+    bBossRes: applied.bBossRes,
+    bStyleRes: applied.bStyleRes,
     antiCrit: applied.antiCrit,
     hp: applied.hp,
     traitAtk: applied.traitAtk,
@@ -7778,8 +7904,8 @@ function getOptimizeGearDelta(entry) {
 
 function sumOptimizeGearDeltas(entries) {
   const total = {
-    atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
-    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bStyleRes:0, antiCrit:0, hp:0, traitAtk:0, traitDef:0
+    atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, styleOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
+    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, bStyleRes:0, antiCrit:0, hp:0, traitAtk:0, traitDef:0
   };
   entries.forEach(item => {
     const delta = item.delta || getOptimizeGearDelta(item.entry);
@@ -8279,27 +8405,27 @@ function getOptimizePVPBase() {
     myAtk: {
       atk: n('ng_atk'), hit: n('ng_hit'), crit: n('ng_crit'),
       critDmg: n('ng_critdmg'), breakShield: n('ng_breakshield'),
-      elemAtk: n('ng_elementatk'), elemBonus: n('ng_elemBonus'), styleOver: n('ng_bossover'),
+      elemAtk: n('ng_elementatk'), elemBonus: n('ng_elemBonus'), styleOver: n('ng_styleover'),
       ignoreElem: n('ng_ignoreelem'), breakDef: n('ng_breakdef'),
       techOver: n('ng_techover'), lei: 0, xinsui: 0, stylePct: n('ng_stylePct')
     },
     oppDef: {
       bDef: n('ng_bdef'), bBlock: n('ng_bblock'), bCritRes: n('ng_bcritres'),
       bQiShield: n('ng_bqishield'), bElemRes: n('ng_belemres'),
-      bStyleRes: n('ng_bbossres'), antiCrit: n('ng_banticrit'),
+      bStyleRes: n('ng_bstyleres'), antiCrit: n('ng_banticrit'),
       oppTechOver: n('ng_etechover'), bStyleResPct: n('ng_bStyleResPct')
     },
     oppAtk: {
       atk: n('ng_eatk'), hit: n('ng_ehit'), crit: n('ng_ecrit'),
       critDmg: n('ng_ecritdmg'), breakShield: n('ng_ebreakshield'),
-      elemAtk: n('ng_eelemAtk'), elemBonus: n('ng_eelemBonus'), styleOver: n('ng_ebossover'),
+      elemAtk: n('ng_eelemAtk'), elemBonus: n('ng_eelemBonus'), styleOver: n('ng_estyleover'),
       ignoreElem: n('ng_eignoreelem'), breakDef: n('ng_ebreakdef'),
       techOver: n('ng_etechover'), lei: 0, xinsui: 0, stylePct: n('ng_eStylePct')
     },
     myDef: {
       bDef: n('ng_mydef'), bBlock: n('ng_myblock'), bCritRes: n('ng_mycritres'),
       bQiShield: n('ng_myqishield'), bElemRes: n('ng_myelemres'),
-      bStyleRes: n('ng_mybossres'), antiCrit: n('ng_myanticrit'),
+      bStyleRes: n('ng_mystyleres'), antiCrit: n('ng_myanticrit'),
       oppTechOver: n('ng_techover'), bStyleResPct: n('ng_myStyleResPct')
     },
     myHp: n('ng_myhp'),
@@ -8341,7 +8467,7 @@ function evaluateLowerOptimizePVP(items, base) {
     critDmg: base.myAtk.critDmg + delta.critDmg,
     breakShield: base.myAtk.breakShield + delta.breakShield,
     elemAtk: base.myAtk.elemAtk + delta.elemAtk,
-    styleOver: base.myAtk.styleOver + delta.bossOver,
+    styleOver: base.myAtk.styleOver + delta.styleOver,
     ignoreElem: base.myAtk.ignoreElem + delta.ignoreElem,
     breakDef: base.myAtk.breakDef + delta.breakDef,
     techOver: base.myAtk.techOver + delta.techOver,
@@ -8393,8 +8519,8 @@ function calcOptimizeHitGap(myHits, enemyHits) {
 
 function getEmptyNgAppliedTotal() {
   return {
-    atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
-    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, antiCrit:0, techOver2:0, hp:0, traitAtk:0, traitDef:0
+    atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, styleOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
+    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, bStyleRes:0, antiCrit:0, techOver2:0, hp:0, traitAtk:0, traitDef:0
   };
 }
 
@@ -8411,7 +8537,7 @@ function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTota
       critDmg: pvpBase.myAtk.critDmg + appliedTotal.critDmg,
       breakShield: pvpBase.myAtk.breakShield + appliedTotal.breakShield,
       elemAtk: pvpBase.myAtk.elemAtk + appliedTotal.elemAtk,
-      styleOver: pvpBase.myAtk.styleOver + appliedTotal.bossOver,
+      styleOver: pvpBase.myAtk.styleOver + appliedTotal.styleOver,
       ignoreElem: pvpBase.myAtk.ignoreElem + appliedTotal.ignoreElem,
       breakDef: pvpBase.myAtk.breakDef + appliedTotal.breakDef,
       techOver: pvpBase.myAtk.techOver + appliedTotal.techOver,
@@ -8423,7 +8549,7 @@ function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTota
       bCritRes: pvpBase.myDef.bCritRes + appliedTotal.bCritRes,
       bQiShield: pvpBase.myDef.bQiShield + appliedTotal.bQiShield,
       bElemRes: pvpBase.myDef.bElemRes + appliedTotal.bElemRes,
-      bStyleRes: pvpBase.myDef.bStyleRes + appliedTotal.bBossRes,
+      bStyleRes: pvpBase.myDef.bStyleRes + appliedTotal.bStyleRes,
       antiCrit: pvpBase.myDef.antiCrit + appliedTotal.antiCrit,
       oppTechOver: pvpBase.myDef.oppTechOver + appliedTotal.techOver,
     };
@@ -9453,6 +9579,7 @@ function getFinalOptimizeDelta(gearItems, ngResult) {
     critDmg: gear.critDmg + (ng.critDmg || 0),
     elemAtk: gear.elemAtk + (ng.elemAtk || 0),
     bossOver: gear.bossOver + (ng.bossOver || 0),
+    styleOver: gear.styleOver + (ng.styleOver || 0),
     ignoreElem: gear.ignoreElem + (ng.ignoreElem || 0),
     breakDef: gear.breakDef + (ng.breakDef || 0),
     techOver: gear.techOver + (ng.techOver || 0),
@@ -9462,7 +9589,8 @@ function getFinalOptimizeDelta(gearItems, ngResult) {
     bCritRes: gear.bCritRes + (ng.bCritRes || 0),
     bQiShield: gear.bQiShield + (ng.bQiShield || 0),
     bElemRes: gear.bElemRes + (ng.bElemRes || 0),
-    bStyleRes: gear.bStyleRes + (ng.bBossRes || 0),
+    bBossRes: gear.bBossRes + (ng.bBossRes || 0),
+    bStyleRes: gear.bStyleRes + (ng.bStyleRes || 0),
     antiCrit: gear.antiCrit + (ng.antiCrit || 0),
     hp: gear.hp + (ng.hp || 0),
     traitAtk: gear.traitAtk + (ng.traitAtk || 0),
@@ -9499,7 +9627,7 @@ function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult) {
       critDmg: pvpBase.myAtk.critDmg + delta.critDmg,
       breakShield: pvpBase.myAtk.breakShield + delta.breakShield,
       elemAtk: pvpBase.myAtk.elemAtk + delta.elemAtk,
-      styleOver: pvpBase.myAtk.styleOver + delta.bossOver,
+      styleOver: pvpBase.myAtk.styleOver + delta.styleOver,
       ignoreElem: pvpBase.myAtk.ignoreElem + delta.ignoreElem,
       breakDef: pvpBase.myAtk.breakDef + delta.breakDef,
       techOver: pvpBase.myAtk.techOver + delta.techOver,
@@ -9715,7 +9843,8 @@ const NG_ATTR_ROWS = [
   { key: 'crit',       label: '會心',          type: 'atk', amod: k => ({crit: k}),                      step: '1' },
   { key: 'critdmg',    label: '會心傷害',      type: 'atk', amod: k => ({critDmg: k}),                   step: '0.001' },
   { key: 'elemAtk',    label: '元素攻擊',      type: 'atk', amod: k => ({elemAtk: k}),                   step: '1' },
-  { key: 'bossover',   label: '首領/流派克制', type: 'atk', amod: k => ({bossOver: k}),                  step: '1' },
+  { key: 'bossover',   label: '首領克制',      type: 'atk', amod: k => ({bossOver: k}),                  step: '1' },
+  { key: 'styleover',  label: '流派克制',      type: 'atk', amod: k => ({styleOver: k}),                 step: '1' },
   { key: 'ignoreelem', label: '忽視元素抗性',  type: 'atk', amod: k => ({ignoreElem: k}),                step: '1' },
   { key: 'breakdef',    label: '破防',          type: 'atk', amod: k => ({breakDef: k}),                  step: '1' },
   { key: 'techover',    label: '技巧克制',      type: 'atk', amod: k => ({techOver: k}),                  step: '1' },
@@ -9725,7 +9854,8 @@ const NG_ATTR_ROWS = [
   { key: 'critres',     label: '抗會心',        type: 'def', dmod: k => ({bCritRes: k}),                  step: '1' },
   { key: 'qishield',    label: '氣盾',          type: 'def', dmod: k => ({bQiShield: k}),                 step: '1' },
   { key: 'elemres',     label: '元素抗性',      type: 'def', dmod: k => ({bElemRes: k}),                  step: '1' },
-  { key: 'bossres',    label: '流派/首領抵禦', type: 'def', dmod: k => ({bStyleRes: k, bBossRes: k}),    step: '1' },
+  { key: 'bossres',    label: '首領抵禦',      type: 'def', dmod: k => ({bBossRes: k}),                  step: '1' },
+  { key: 'styleres',   label: '流派抵禦',      type: 'def', dmod: k => ({bStyleRes: k}),                 step: '1' },
   { key: 'anticrit',   label: '抗會心傷害',    type: 'def', dmod: k => ({antiCrit: k}),                  step: '0.01' },
   { key: 'hp',         label: '氣血',          type: 'hp',                                                step: '1' },
   { key: 'base_qihai',  label: '氣海/力量',     type: 'base',      baseKey: 'qihai',  display: 'atk', step: '1' },
@@ -9764,8 +9894,8 @@ function escJs(v) {
 function getNgDBData(entry) {
   if (!entry || typeof entry !== 'object') return {};
   const raw = entry.data && typeof entry.data === 'object' ? entry.data : entry;
-  if (raw.values && typeof raw.values === 'object') return raw.values;
-  return raw;
+  const values = raw.values && typeof raw.values === 'object' ? raw.values : raw;
+  return normalizeNgStatValues(entry, values);
 }
 
 function getNgDBStackItems(entry) {
@@ -9851,6 +9981,7 @@ function refreshNgAddButtons() {
 
 function restoreNeigongUiState() {
   let savedActive = null;
+  let migrated = false;
   try {
     const saved = localStorage.getItem(getNgUiStateStorageKey());
     if (saved) {
@@ -9863,11 +9994,14 @@ function restoreNeigongUiState() {
           }
           const savedVals = data.vals && typeof data.vals[set] === 'object' ? data.vals[set] : null;
           if (savedVals) {
+            const normalizedVals = normalizeNgStatValues({ name: ng_names[set] }, savedVals);
+            if (normalizedVals !== savedVals) migrated = true;
             DB_NG_KEYS.forEach(key => {
-              ng_vals[set][key] = parseFloat(savedVals[key]) || 0;
+              ng_vals[set][key] = parseFloat(normalizedVals[key]) || 0;
             });
           }
         });
+        if (migrated) persistNeigongUiState();
       }
     }
   } catch(e) {}
@@ -10217,6 +10351,7 @@ function ngApplySetToMyStats(set, sign = 1) {
   adjust('ng_critdmg',     applied.critDmg);
   adjust('ng_elementatk',  applied.elemAtk);
   adjust('ng_bossover',    applied.bossOver);
+  adjust('ng_styleover',   applied.styleOver);
   adjust('ng_ignoreelem',  applied.ignoreElem);
   adjust('ng_breakdef',    applied.breakDef);
   adjust('ng_techover',    applied.techOver);
@@ -10228,6 +10363,7 @@ function ngApplySetToMyStats(set, sign = 1) {
   adjust('ng_myqishield',  applied.bQiShield);
   adjust('ng_myelemres',   applied.bElemRes);
   adjust('ng_mybossres',   applied.bBossRes);
+  adjust('ng_mystyleres',  applied.bStyleRes);
   adjust('ng_myanticrit',  applied.antiCrit);
   adjust('ng_myhp',        applied.hp);
 
@@ -10267,6 +10403,7 @@ function getNgFullAppliedStats(baseAtk, baseDef, baseHp, applied) {
     elemAtk: baseAtk.elemAtk + applied.elemAtk,
     elemBonus: baseAtk.elemBonus || 0,
     bossOver: baseAtk.bossOver + applied.bossOver,
+    styleOver: baseAtk.styleOver + applied.styleOver,
     ignoreElem: baseAtk.ignoreElem + applied.ignoreElem,
     breakDef: baseAtk.breakDef + applied.breakDef,
     techOver: baseAtk.techOver + applied.techOver,
@@ -10278,7 +10415,8 @@ function getNgFullAppliedStats(baseAtk, baseDef, baseHp, applied) {
     bCritRes: baseDef.bCritRes + applied.bCritRes,
     bQiShield: baseDef.bQiShield + applied.bQiShield,
     bElemRes: baseDef.bElemRes + applied.bElemRes,
-    bStyleRes: baseDef.bStyleRes + applied.bBossRes,
+    bBossRes: baseDef.bBossRes + applied.bBossRes,
+    bStyleRes: baseDef.bStyleRes + applied.bStyleRes,
     antiCrit: baseDef.antiCrit + applied.antiCrit,
     bStyleResPct: baseDef.bStyleResPct || 0,
     hp: baseHp + applied.hp,
@@ -10293,24 +10431,26 @@ function calcNeigong() {
   const isPVP = document.getElementById('ng_mode').value === 'pvp';
   const myAtk = { atk:n('ng_atk'), hit:n('ng_hit'), crit:n('ng_crit'), critDmg:n('ng_critdmg'),
     breakShield:n('ng_breakshield'), elemAtk:n('ng_elementatk'), elemBonus:n('ng_elemBonus'), bossOver:n('ng_bossover'),
+    styleOver:n('ng_styleover'),
     ignoreElem:n('ng_ignoreelem'), breakDef:n('ng_breakdef'), techOver:n('ng_techover'), lei:0, xinsui:0, stylePct:n('ng_stylePct') };
   const oppDef = { bDef:n('ng_bdef'), bBlock:n('ng_bblock'), bCritRes:n('ng_bcritres'),
     bQiShield:n('ng_bqishield'), bElemRes:n('ng_belemres'),
-    bStyleRes:n('ng_bbossres'), antiCrit:n('ng_banticrit'), oppTechOver:n('ng_etechover'), bBossRes:n('ng_bbossres'),
+    bStyleRes:n('ng_bstyleres'), antiCrit:n('ng_banticrit'), oppTechOver:n('ng_etechover'), bBossRes:n('ng_bbossres'),
     bStyleResPct:n('ng_bStyleResPct') };
   const oppAtk = { atk:n('ng_eatk'), hit:n('ng_ehit'), crit:n('ng_ecrit'), critDmg:n('ng_ecritdmg'),
     breakShield:n('ng_ebreakshield'), elemAtk:n('ng_eelemAtk'), elemBonus:n('ng_eelemBonus'), bossOver:n('ng_ebossover'),
+    styleOver:n('ng_estyleover'),
     ignoreElem:n('ng_eignoreelem'), breakDef:n('ng_ebreakdef'), techOver:n('ng_etechover'), lei:0, xinsui:0, stylePct:n('ng_eStylePct') };
   const myDef = { bDef:n('ng_mydef'), bBlock:n('ng_myblock'), bCritRes:n('ng_mycritres'),
     bQiShield:n('ng_myqishield'), bElemRes:n('ng_myelemres'),
-    bStyleRes:n('ng_mybossres'), antiCrit:n('ng_myanticrit'), oppTechOver:n('ng_techover'), bBossRes:n('ng_mybossres'),
+    bStyleRes:n('ng_mystyleres'), antiCrit:n('ng_myanticrit'), oppTechOver:n('ng_techover'), bBossRes:n('ng_mybossres'),
     bStyleResPct:n('ng_myStyleResPct') };
   const myHp = n('ng_myhp');
 
   function getOut(a, d) {
     if (!isPVP) return calcPVEExpected({ ...a, bossOverPct:0, bDef:d.bDef, bBlock:d.bBlock,
       bCritRes:d.bCritRes, bQiShield:d.bQiShield, bElemRes:d.bElemRes, bBossRes:d.bBossRes, antiCrit:d.antiCrit||0 }).expected;
-    return calcPVPSideExpected({ ...a, styleOver:a.bossOver }, d).expected;
+    return calcPVPSideExpected(a, d).expected;
   }
 
   const baseOut    = getOut(myAtk, oppDef);
@@ -10547,9 +10687,9 @@ function calcNeigong() {
   fullH += `</tr>`;
   fullHead.innerHTML = fullH;
 
-  const baseMyAtk = {...myAtk, styleOver: myAtk.bossOver, stylePct: myAtk.stylePct || 0 };
+  const baseMyAtk = {...myAtk, stylePct: myAtk.stylePct || 0 };
   const baseMyDef = {...myDef, bStyleResPct: myDef.bStyleResPct || 0};
-  const baseOppAtk = {...oppAtk, styleOver: oppAtk.bossOver, stylePct: oppAtk.stylePct || 0 };
+  const baseOppAtk = {...oppAtk, stylePct: oppAtk.stylePct || 0 };
   const baseOppDef = {...oppDef, bStyleResPct: oppDef.bStyleResPct || 0};
   const baseMyExpected = calcPVPSideExpected(baseMyAtk, baseOppDef).expected;
   const baseOppExpected = calcPVPSideExpected(baseOppAtk, baseMyDef).expected;
@@ -10579,7 +10719,7 @@ function calcNeigong() {
         breakShield: fullMy.breakShield,
         elemAtk: fullMy.elemAtk,
         elemBonus: fullMy.elemBonus || 0,
-        styleOver: fullMy.bossOver,
+        styleOver: fullMy.styleOver,
         ignoreElem: fullMy.ignoreElem,
         breakDef: fullMy.breakDef,
         techOver: fullMy.techOver || 0,
@@ -10633,6 +10773,9 @@ function loadNeigongFromPVE() {
     const s = document.getElementById(src), d = document.getElementById(dst);
     if (s && d) d.value = s.value;
   });
+  ['ng_styleover','ng_estyleover','ng_mystyleres','ng_bstyleres'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = 0;
+  });
   document.getElementById('ng_mode').value = 'pve';
   calcNeigong();
 }
@@ -10640,21 +10783,24 @@ function loadNeigongFromPVE() {
 function loadNeigongFromPVP() {
   const map = {
     ng_atk:'atk_atk', ng_hit:'atk_hit', ng_crit:'atk_crit', ng_critdmg:'atk_critdmg',
-    ng_elementatk:'atk_elemAtk', ng_elemBonus:'atk_elemBonus', ng_bossover:'atk_styleOver',
+    ng_elementatk:'atk_elemAtk', ng_elemBonus:'atk_elemBonus', ng_styleover:'atk_styleOver',
     ng_ignoreelem:'atk_ignoreElem', ng_breakdef:'atk_breakDef', ng_techover:'atk_techOver', ng_breakshield:'atk_breakshield', ng_stylePct:'atk_stylePct',
     ng_mydef:'atk_bdef', ng_myblock:'atk_bblock', ng_mycritres:'atk_bcritres',
     ng_myqishield:'atk_bqishield', ng_myelemres:'atk_belemres',
-    ng_mybossres:'atk_styleRes', ng_myanticrit:'atk_antiCrit', ng_myStyleResPct:'atk_styleResPct', ng_myhp:'atk_hp',
+    ng_mystyleres:'atk_styleRes', ng_myanticrit:'atk_antiCrit', ng_myStyleResPct:'atk_styleResPct', ng_myhp:'atk_hp',
     ng_eatk:'def_atk', ng_ehit:'def_hit', ng_ecrit:'def_crit', ng_ecritdmg:'def_critdmg',
-    ng_eelemAtk:'def_elemAtk', ng_eelemBonus:'def_elemBonus', ng_ebossover:'def_styleOver',
+    ng_eelemAtk:'def_elemAtk', ng_eelemBonus:'def_elemBonus', ng_estyleover:'def_styleOver',
     ng_eignoreelem:'def_ignoreElem', ng_ebreakdef:'def_breakDef', ng_etechover:'def_techOver', ng_ebreakshield:'def_breakshield', ng_eStylePct:'def_stylePct',
     ng_bdef:'def_bdef', ng_bblock:'def_bblock', ng_bcritres:'def_bcritres',
     ng_bqishield:'def_bqishield', ng_belemres:'def_belemres',
-    ng_bbossres:'def_styleRes', ng_banticrit:'def_antiCrit', ng_bStyleResPct:'def_styleResPct', ng_bhp:'def_hp'
+    ng_bstyleres:'def_styleRes', ng_banticrit:'def_antiCrit', ng_bStyleResPct:'def_styleResPct', ng_bhp:'def_hp'
   };
   Object.entries(map).forEach(([dst, src]) => {
     const s = document.getElementById(src), d = document.getElementById(dst);
     if (s && d) d.value = s.value;
+  });
+  ['ng_bossover','ng_ebossover','ng_mybossres','ng_bbossres'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = 0;
   });
   document.getElementById('ng_mode').value = 'pvp';
   calcNeigong();
