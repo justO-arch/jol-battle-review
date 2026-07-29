@@ -8009,7 +8009,8 @@ function optimizeResultHasRequiredGear(items, requiredItems) {
 
 function getNgCoreName(name) {
   return String(name || '')
-    .replace(/\d+$/u, '')
+    .replace(/[（(][^()（）]*[）)]$/u, '')
+    .replace(/\d+(?:PVE|[PE])?$/iu, '')
     .replace(/^[金木水火土]/u, '')
     .trim();
 }
