@@ -2581,10 +2581,10 @@
     <div class="section-title">最佳化頁面（第一階段）</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        目前先實作資料準備與 metadata 補登，不直接改動既有公式、既有比較頁流程，也不做跨頁一鍵帶入。
+        此頁提供資料準備、metadata 補登，以及裝備名稱與數值修正；不直接改動既有公式、既有比較頁流程，也不做跨頁一鍵帶入。
       </div>
       <div class="formula-note">
-        舊資料的數值內容不會被改寫；此頁只會補上分類資訊（<code>category</code> / <code>slot</code> / <code>tags</code>）。
+        進入此頁不會自動改寫舊資料；裝備 DB 可手動修改名稱與數值，內功仍只會補上分類資訊（<code>category</code> / <code>slot</code> / <code>tags</code>）。
       </div>
     </div>
   </div>
@@ -2611,7 +2611,7 @@
     <div class="section-body">
       <div id="opt_pending_panel" style="display:none;">
       <div class="formula-note" style="margin-bottom:12px;">
-        系統會先依名稱提供建議值。儲存時只會更新 metadata，不會改動原本數值資料。
+        系統會先依名稱提供建議值。裝備可一併修改名稱與數值；內功儲存時仍只更新 metadata。
       </div>
       <div id="opt_bulk_panel" style="display:none;border:1px solid #d0d0d0;border-radius:6px;padding:12px;margin-bottom:12px;background:#fbfcfe;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
@@ -2657,7 +2657,7 @@
     <div class="section-body">
       <div id="opt_done_panel" style="display:none;">
         <div class="formula-note" style="margin-bottom:12px;">
-          已儲存 metadata 的資料會顯示在這裡；若類別或部位填錯，可以直接回來修改後再儲存。
+          已儲存 metadata 的資料會顯示在這裡；裝備可修改名稱、數值、類別與部位，內功則維持只修改 metadata。
         </div>
         <div id="opt_done_empty" style="display:none;color:#666666;font-size:13px;">目前沒有已補登資料。</div>
         <div id="opt_done_list"></div>
@@ -6824,6 +6824,63 @@ function isOptimizeInnerSkillItem(item) {
   return item?.type === 'ng';
 }
 
+function isEditableOptimizeGearItem(item) {
+  return item?.type === 'gear' && !isOptimizeInnerSkillItem(item);
+}
+
+function getOptimizeGearEditRows() {
+  const defenderTechRow = { key: 'techover2', label: '技巧克制（守）', step: '1' };
+  return NG_ATTR_ROWS.flatMap(row => row.key === 'anticrit' ? [row, defenderTechRow] : [row]);
+}
+
+function withOptimizeGearValues(entry, values) {
+  const normalized = entry && typeof entry === 'object' ? entry : {};
+  const rawData = normalized.data && typeof normalized.data === 'object' ? normalized.data : null;
+  if (rawData?.values && typeof rawData.values === 'object') {
+    return { ...normalized, data: { ...rawData, values: { ...rawData.values, ...values } } };
+  }
+  if (rawData) {
+    return { ...normalized, data: { ...rawData, ...values } };
+  }
+  return { ...normalized, ...values };
+}
+
+function renameOptimizeGearReferences(oldName, newName) {
+  const changedTypes = new Set();
+  if (!oldName || oldName === newName) return changedTypes;
+  ['gear', 'ng'].forEach(type => {
+    DB[type].forEach((entry, index) => {
+      const rawData = entry?.data && typeof entry.data === 'object' ? entry.data : null;
+      if (rawData && Array.isArray(rawData.stackItems) && rawData.stackItems.includes(oldName)) {
+        DB[type][index] = {
+          ...entry,
+          data: {
+            ...rawData,
+            stackItems: rawData.stackItems.map(name => name === oldName ? newName : name)
+          }
+        };
+        changedTypes.add(type);
+      } else if (Array.isArray(entry?.stackItems) && entry.stackItems.includes(oldName)) {
+        DB[type][index] = {
+          ...entry,
+          stackItems: entry.stackItems.map(name => name === oldName ? newName : name)
+        };
+        changedTypes.add(type);
+      }
+    });
+  });
+  let activeStacksChanged = false;
+  Object.keys(ng_db_stacks).forEach(set => {
+    if (!Array.isArray(ng_db_stacks[set]) || !ng_db_stacks[set].includes(oldName)) return;
+    ng_db_stacks[set] = ng_db_stacks[set].map(name => name === oldName ? newName : name);
+    activeStacksChanged = true;
+  });
+  if (activeStacksChanged) {
+    localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
+  }
+  return changedTypes;
+}
+
 function optimizeCategoryNeedsSlot(category) {
   return category !== 'inner_skill' && category !== 'set_build';
 }
@@ -7053,6 +7110,7 @@ function renderOptimizePage() {
   const renderOptimizeCard = (item, saveLabel = '儲存 metadata') => {
     const key = `${item.type}_${item.index}`;
     const group = isOptimizeInnerSkillItem(item) ? 'ng' : 'gear';
+    const editableGear = isEditableOptimizeGearItem(item);
     const metaView = getOptimizeMetaView(item.entry, item.type);
     const categorySel = singleCategoryOptions.map(([v, label]) => `<option value="${v}" ${metaView.category===v?'selected':''}>${label}</option>`).join('');
     const slotSel = singleSlotOptions.map(([v, label]) => `<option value="${v}" ${metaView.slot===v?'selected':''}>${label}</option>`).join('');
@@ -7060,6 +7118,25 @@ function renderOptimizePage() {
       const opts = tagOptions.map(([v, label]) => `<option value="${v}" ${tag===v?'selected':''}>${label}</option>`).join('');
       return `<select id="opt_meta_tags_${key}_${idx}" style="background:#ffffff;border:1px solid #cccccc;color:#333333;padding:4px 6px;border-radius:3px;font-size:12px;">${opts}</select>`;
     }).join('');
+    const gearValues = editableGear ? getNgDBData(item.entry) : {};
+    const gearValueInputs = editableGear ? getOptimizeGearEditRows().map(row => {
+      const parsed = Number(gearValues?.[row.key]);
+      const value = Number.isFinite(parsed) ? parsed : 0;
+      return `<label style="display:block;">
+        <span style="display:block;font-size:11px;color:#555555;margin-bottom:3px;">${escHtml(row.label)}</span>
+        <input type="number" id="opt_gear_value_${key}_${row.key}" value="${value}" step="${escHtml(row.step || 'any')}" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:5px 7px;border-radius:4px;font-size:12px;box-sizing:border-box;">
+      </label>`;
+    }).join('') : '';
+    const gearEditorHtml = editableGear ? `
+      <div id="opt_gear_edit_wrap_${key}" style="grid-column:1 / -1;">
+        <div style="font-size:12px;color:#555555;margin-bottom:4px;">裝備名稱</div>
+        <input type="text" id="opt_gear_name_${key}" value="${escHtml(item.entry.name || '')}" maxlength="20" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;box-sizing:border-box;">
+        <details style="margin-top:10px;border:1px solid #dddddd;border-radius:5px;background:#ffffff;">
+          <summary style="cursor:pointer;padding:8px 10px;color:#0055aa;font-size:12px;font-weight:bold;">裝備數值（展開修改）</summary>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:10px;border-top:1px solid #eeeeee;">${gearValueInputs}</div>
+        </details>
+      </div>` : '';
+    const actionLabel = editableGear ? (saveLabel.startsWith('更新') ? '更新裝備' : '儲存裝備') : saveLabel;
     return `<div style="border:1px solid #d0d0d0;border-radius:6px;padding:12px;margin-bottom:12px;background:#fbfcfe;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
         <div style="display:flex;align-items:flex-start;gap:10px;">
@@ -7072,7 +7149,7 @@ function renderOptimizePage() {
           <div style="font-size:11px;color:#666666;">來源：${optimizeEntryLabel(item.type)}</div>
           </div>
         </div>
-        <button onclick="saveOptimizeMeta('${item.type}',${item.index})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">${saveLabel}</button>
+        <button onclick="saveOptimizeMeta('${item.type}',${item.index})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">${actionLabel}</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;align-items:end;">
         <div>
@@ -7087,6 +7164,7 @@ function renderOptimizePage() {
           <div style="font-size:12px;color:#555555;margin-bottom:6px;">內功五行標記</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">${tagsHtml}</div>
         </div>
+        ${gearEditorHtml}
       </div>
     </div>`;
   };
@@ -7126,8 +7204,10 @@ function updateOptimizeMetaRowControls(key) {
   const category = document.getElementById(`opt_meta_category_${key}`)?.value || '';
   const slotWrap = document.getElementById(`opt_meta_slot_wrap_${key}`);
   const tagsWrap = document.getElementById(`opt_meta_tags_wrap_${key}`);
+  const gearEditWrap = document.getElementById(`opt_gear_edit_wrap_${key}`);
   if (slotWrap) slotWrap.style.display = optimizeCategoryNeedsSlot(category) ? '' : 'none';
   if (tagsWrap) tagsWrap.style.display = category === 'inner_skill' ? '' : 'none';
+  if (gearEditWrap) gearEditWrap.style.display = category === 'inner_skill' ? 'none' : '';
 }
 
 function saveOptimizeMeta(type, index) {
@@ -7140,15 +7220,39 @@ function saveOptimizeMeta(type, index) {
   if (!category) { alert('請先選擇類別。'); return; }
   if (optimizeCategoryNeedsSlot(category) && !slot) { alert('裝備請選擇部位。'); return; }
   if (category === 'inner_skill' && tags.some(tag => !tag)) { alert('內功請補齊 5 個元素標記。'); return; }
+  let nextEntry = normalizeDBEntryMeta(entry);
+  const oldName = String(entry.name || '');
+  let nextName = oldName;
+  if (type === 'gear' && category !== 'inner_skill') {
+    nextName = String(document.getElementById(`opt_gear_name_${key}`)?.value ?? oldName).trim().slice(0, 20);
+    if (!nextName) { alert('裝備名稱不能留空。'); return; }
+    if (nextName !== oldName && getNgDBEntries().some(candidate => candidate !== entry && candidate?.name === nextName)) {
+      alert('裝備／內功資料庫已有同名資料，請使用不同名稱。');
+      return;
+    }
+    const currentValues = getNgDBData(entry);
+    const values = {};
+    for (const row of getOptimizeGearEditRows()) {
+      const input = document.getElementById(`opt_gear_value_${key}_${row.key}`);
+      const raw = String(input?.value ?? currentValues?.[row.key] ?? 0).trim();
+      const value = raw === '' ? 0 : Number(raw);
+      if (!Number.isFinite(value)) { alert(`${row.label}請輸入有效數字。`); return; }
+      values[row.key] = value;
+    }
+    nextEntry = withOptimizeGearValues(nextEntry, values);
+    nextEntry = { ...nextEntry, name: nextName };
+  }
   DB[type][index] = {
-    ...normalizeDBEntryMeta(entry),
+    ...nextEntry,
     meta: {
       category,
       slot: optimizeCategoryNeedsSlot(category) ? slot : null,
       tags: category === 'inner_skill' ? tags : null
     }
   };
-  dbPersist(type);
+  const changedTypes = renameOptimizeGearReferences(oldName, nextName);
+  changedTypes.add(type);
+  changedTypes.forEach(dbPersist);
   renderDB();
   refreshDBDropdowns();
   renderOptimizePage();
