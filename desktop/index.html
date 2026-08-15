@@ -3960,7 +3960,7 @@ function parsePlayerRow(row) {
 }
 
 function parseRoleCsv(text) {
-  const rows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean).map(line => splitCsvLine(line));
+  const rows = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean).map(line => splitCsvLine(line));
   if (!rows.length) return [];
   const headers = rows[0].map(h => String(h || '').trim());
   return rows.slice(1).map(row => {
