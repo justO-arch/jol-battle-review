@@ -3993,13 +3993,33 @@ function makeBattleId() {
   return `battle_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function battleSidePlayers(battle) {
+  return [...(battle?.players || []), ...(battle?.opponentPlayers || [])];
+}
+
+function assignmentPlayers(battle) {
+  const rosterNames = Array.isArray(battle?.assignmentRosterNames)
+    ? battle.assignmentRosterNames.filter(Boolean)
+    : [];
+  if (!rosterNames.length) return battle?.players || [];
+  const rosterSet = new Set(rosterNames);
+  const seen = new Set();
+  return battleSidePlayers(battle).filter(player => {
+    if (!rosterSet.has(player.name) || seen.has(player.name)) return false;
+    seen.add(player.name);
+    return true;
+  });
+}
+
 function applyRoleRowsToBattle(battle, roleRows) {
   if (!battle || !Array.isArray(roleRows) || !roleRows.length) {
-    return { matched: 0, unmatchedRoles: roleRows?.length || 0, battleOnly: battle?.players?.length || 0 };
+    return { matched: 0, unmatchedRoles: roleRows?.length || 0, battleOnly: battleSidePlayers(battle).length };
   }
   const roleMap = new Map(roleRows.map(row => [row.name, row]));
+  const players = battleSidePlayers(battle);
+  battle.assignmentRosterNames = [...new Set(roleRows.map(row => row.name).filter(Boolean))];
   let matched = 0;
-  battle.players.forEach(player => {
+  players.forEach(player => {
     const role = roleMap.get(player.name);
     if (!role) return;
     matched += 1;
@@ -4014,8 +4034,8 @@ function applyRoleRowsToBattle(battle, roleRows) {
   });
   return {
     matched,
-    unmatchedRoles: roleRows.filter(row => !battle.players.some(player => player.name === row.name)).length,
-    battleOnly: battle.players.filter(player => !roleMap.has(player.name)).length,
+    unmatchedRoles: roleRows.filter(row => !players.some(player => player.name === row.name)).length,
+    battleOnly: players.filter(player => !roleMap.has(player.name)).length,
   };
 }
 
@@ -6458,11 +6478,12 @@ function renderAssignmentTable() {
     if (unknownBox) unknownBox.textContent = '請先加入並選取一場戰報。';
     return;
   }
+  const players = assignmentPlayers(battle);
   const counts = {
-    attack: battle.players.filter(player => player.groupType === 'attack').length,
-    defense: battle.players.filter(player => player.groupType === 'defense').length,
-    bodyguard: battle.players.filter(player => player.groupType === 'bodyguard').length,
-    unknown: battle.players.filter(player => (player.groupType || 'unknown') === 'unknown').length,
+    attack: players.filter(player => player.groupType === 'attack').length,
+    defense: players.filter(player => player.groupType === 'defense').length,
+    bodyguard: players.filter(player => player.groupType === 'bodyguard').length,
+    unknown: players.filter(player => (player.groupType || 'unknown') === 'unknown').length,
   };
   if (stats) {
     stats.innerHTML = `
@@ -6473,7 +6494,7 @@ function renderAssignmentTable() {
     `;
   }
   if (commanderBox) {
-    const commanders = [...battle.players]
+    const commanders = [...players]
       .filter(player => isCommander(player))
       .sort(comparePlayers);
     commanderBox.innerHTML = commanders.length
@@ -6481,7 +6502,7 @@ function renderAssignmentTable() {
       : '目前沒有標記為 commander 的玩家。';
   }
   if (unknownBox) {
-    const unknownPlayers = [...battle.players]
+    const unknownPlayers = [...players]
       .filter(player => (player.groupType || 'unknown') === 'unknown')
       .sort(comparePlayers);
     unknownBox.innerHTML = unknownPlayers.length
@@ -6489,7 +6510,7 @@ function renderAssignmentTable() {
       : '目前沒有分工未知的玩家。';
   }
   const readonlyAttr = isPublicReadOnlyMode() ? ' disabled' : '';
-  const rows = [...battle.players].sort(comparePlayers).map(player => `
+  const rows = [...players].sort(comparePlayers).map(player => `
     <tr>
       <td><input type="checkbox" class="assign-check" value="${escHtml(player.name)}"${readonlyAttr}></td>
       <td>${escHtml(player.name)}</td>
@@ -9973,7 +9994,7 @@ function updatePlayerAssignment(battleId, playerName, field, value) {
   if (preventPublicWrite('修改分工')) return;
   const battle = state.battles.find(item => item.id === battleId);
   if (!battle) return;
-  const player = battle.players.find(item => item.name === playerName);
+  const player = assignmentPlayers(battle).find(item => item.name === playerName);
   if (!player) return;
   if (field === 'specialRoles') {
     player.specialRoles = String(value).split(',').map(item => item.trim()).filter(Boolean);
@@ -9988,9 +10009,14 @@ function deleteBattlePlayer(battleId, playerName) {
   if (preventPublicWrite('刪除玩家')) return;
   const battle = state.battles.find(item => item.id === battleId);
   if (!battle) return;
-  const nextPlayers = battle.players.filter(player => player.name !== playerName);
-  if (nextPlayers.length === battle.players.length) return;
-  battle.players = nextPlayers;
+  const playerSide = (battle.players || []).some(player => player.name === playerName) ? 'players' : 'opponentPlayers';
+  const currentPlayers = battle[playerSide] || [];
+  const nextPlayers = currentPlayers.filter(player => player.name !== playerName);
+  if (nextPlayers.length === currentPlayers.length) return;
+  battle[playerSide] = nextPlayers;
+  if (Array.isArray(battle.assignmentRosterNames)) {
+    battle.assignmentRosterNames = battle.assignmentRosterNames.filter(name => name !== playerName);
+  }
   saveState();
   refreshAll();
 }
@@ -10004,7 +10030,7 @@ function bulkSetGroup(groupType) {
   const battle = activeBattle();
   if (!battle) return;
   const names = selectedAssignmentNames();
-  battle.players.forEach(player => {
+  assignmentPlayers(battle).forEach(player => {
     if (names.includes(player.name)) player.groupType = groupType;
   });
   saveState();
@@ -10016,7 +10042,8 @@ function resetAllAssignments() {
   const battle = activeBattle();
   if (!battle) return;
   if (!window.confirm('確定要將目前場次所有玩家分工重置為未定？')) return;
-  (battle.players || []).forEach(player => {
+  const players = assignmentPlayers(battle);
+  players.forEach(player => {
     player.groupType = 'unknown';
     player.subgroup = '';
     player.assignmentNote = '';
@@ -10024,7 +10051,7 @@ function resetAllAssignments() {
   });
   saveState();
   refreshAll();
-  window.alert(`已重置 ${fmtNumber((battle.players || []).length)} 位玩家分工為未定。`);
+  window.alert(`已重置 ${fmtNumber(players.length)} 位玩家分工為未定。`);
 }
 
 function autoSetPlayersByKillAndBuild(options) {
@@ -10047,7 +10074,7 @@ function autoSetPlayersByKillAndBuild(options) {
   const killPassText = killComparator === 'lt' ? '<' : '>';
   const buildPassText = buildComparator === 'gt' ? '>' : '<';
   const changed = [];
-  (battle.players || []).forEach(player => {
+  assignmentPlayers(battle).forEach(player => {
     if ((player.groupType || 'unknown') !== sourceGroup) return;
     const killValue = Number(player.kill || 0);
     const buildValue = Number(player.buildDamage || 0);
@@ -10108,7 +10135,8 @@ function autoInferUnknownAssignments() {
   if (preventPublicWrite('一鍵自動分工')) return;
   const battle = activeBattle();
   if (!battle) return;
-  const inferredPlayers = (battle.players || []).map((player, index) => ({
+  const players = assignmentPlayers(battle);
+  const inferredPlayers = players.map((player, index) => ({
     ...derivePlayer(player),
     autoIndex: index,
   }));
@@ -10120,7 +10148,7 @@ function autoInferUnknownAssignments() {
   const changed = [];
   targets.forEach(player => {
     const result = inferPlayerAssignment(player, inferredPlayers);
-    const target = battle.players[player.autoIndex];
+    const target = players[player.autoIndex];
     if (!target) return;
     target.groupType = result.groupType;
     target.assignmentConfidence = result.confidence;
@@ -10247,7 +10275,7 @@ function handleApplyRolesToActiveBattle() {
   const result = applyRoleRowsToBattle(battle, importedRoleRows);
   saveState();
   refreshAll();
-  noteBox.textContent = `已套用分工到目前場次：成功對上 ${result.matched} 人，戰報中仍有 ${result.battleOnly} 人未對上分工，分工表另有 ${result.unmatchedRoles} 筆未出現在戰報。`;
+  noteBox.textContent = `已套用分工到目前場次：跨兩側成功對上 ${result.matched} 人；分工表另有 ${result.unmatchedRoles} 筆未出現在戰報。戰報另有 ${result.battleOnly} 人不在分工表，仍保留於原始陣營資料。`;
 }
 
 function handleAddBattle() {
@@ -10285,7 +10313,7 @@ function handleAddBattle() {
     resultText = ` 已自動推測分工：進攻 ${fmtNumber(counts.attack || 0)} 人，防守 ${fmtNumber(counts.defense || 0)} 人，保鑣 ${fmtNumber(counts.bodyguard || 0)} 人。`;
   } else {
     const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
-    resultText = ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。`;
+    resultText = ` 分工跨兩側對上 ${applyResult.matched} 人，分工表未出場 ${applyResult.unmatchedRoles} 人；另有 ${applyResult.battleOnly} 人保留為非分工戰場資料。`;
   }
   state.battles.unshift(battle);
   state.activeBattleId = battle.id;

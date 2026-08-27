@@ -1610,13 +1610,33 @@ function makeBattleId() {
   return `battle_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function battleSidePlayers(battle) {
+  return [...(battle?.players || []), ...(battle?.opponentPlayers || [])];
+}
+
+function assignmentPlayers(battle) {
+  const rosterNames = Array.isArray(battle?.assignmentRosterNames)
+    ? battle.assignmentRosterNames.filter(Boolean)
+    : [];
+  if (!rosterNames.length) return battle?.players || [];
+  const rosterSet = new Set(rosterNames);
+  const seen = new Set();
+  return battleSidePlayers(battle).filter(player => {
+    if (!rosterSet.has(player.name) || seen.has(player.name)) return false;
+    seen.add(player.name);
+    return true;
+  });
+}
+
 function applyRoleRowsToBattle(battle, roleRows) {
   if (!battle || !Array.isArray(roleRows) || !roleRows.length) {
-    return { matched: 0, unmatchedRoles: roleRows?.length || 0, battleOnly: battle?.players?.length || 0 };
+    return { matched: 0, unmatchedRoles: roleRows?.length || 0, battleOnly: battleSidePlayers(battle).length };
   }
   const roleMap = new Map(roleRows.map(row => [row.name, row]));
+  const players = battleSidePlayers(battle);
+  battle.assignmentRosterNames = [...new Set(roleRows.map(row => row.name).filter(Boolean))];
   let matched = 0;
-  battle.players.forEach(player => {
+  players.forEach(player => {
     const role = roleMap.get(player.name);
     if (!role) return;
     matched += 1;
@@ -1631,8 +1651,8 @@ function applyRoleRowsToBattle(battle, roleRows) {
   });
   return {
     matched,
-    unmatchedRoles: roleRows.filter(row => !battle.players.some(player => player.name === row.name)).length,
-    battleOnly: battle.players.filter(player => !roleMap.has(player.name)).length,
+    unmatchedRoles: roleRows.filter(row => !players.some(player => player.name === row.name)).length,
+    battleOnly: players.filter(player => !roleMap.has(player.name)).length,
   };
 }
 
@@ -2619,11 +2639,12 @@ function renderAssignmentTable() {
     if (stats) stats.innerHTML = '';
     return;
   }
+  const players = assignmentPlayers(battle);
   const counts = {
-    attack: battle.players.filter(player => player.groupType === 'attack').length,
-    defense: battle.players.filter(player => player.groupType === 'defense').length,
-    bodyguard: battle.players.filter(player => player.groupType === 'bodyguard').length,
-    unknown: battle.players.filter(player => (player.groupType || 'unknown') === 'unknown').length,
+    attack: players.filter(player => player.groupType === 'attack').length,
+    defense: players.filter(player => player.groupType === 'defense').length,
+    bodyguard: players.filter(player => player.groupType === 'bodyguard').length,
+    unknown: players.filter(player => (player.groupType || 'unknown') === 'unknown').length,
   };
   if (stats) {
     stats.innerHTML = `
@@ -2633,7 +2654,7 @@ function renderAssignmentTable() {
       <div class="assignment-stat">未定人數<b>${fmtNumber(counts.unknown)}</b></div>
     `;
   }
-  const rows = [...battle.players].sort(comparePlayers).map(player => `
+  const rows = [...players].sort(comparePlayers).map(player => `
     <tr>
       <td><input type="checkbox" class="assign-check" value="${escHtml(player.name)}"></td>
       <td>${escHtml(player.name)}</td>
@@ -3161,7 +3182,7 @@ function deleteBattle(id) {
 function updatePlayerAssignment(battleId, playerName, field, value) {
   const battle = state.battles.find(item => item.id === battleId);
   if (!battle) return;
-  const player = battle.players.find(item => item.name === playerName);
+  const player = assignmentPlayers(battle).find(item => item.name === playerName);
   if (!player) return;
   if (field === 'specialRoles') {
     player.specialRoles = String(value).split(',').map(item => item.trim()).filter(Boolean);
@@ -3175,9 +3196,14 @@ function updatePlayerAssignment(battleId, playerName, field, value) {
 function deleteBattlePlayer(battleId, playerName) {
   const battle = state.battles.find(item => item.id === battleId);
   if (!battle) return;
-  const nextPlayers = battle.players.filter(player => player.name !== playerName);
-  if (nextPlayers.length === battle.players.length) return;
-  battle.players = nextPlayers;
+  const playerSide = (battle.players || []).some(player => player.name === playerName) ? 'players' : 'opponentPlayers';
+  const currentPlayers = battle[playerSide] || [];
+  const nextPlayers = currentPlayers.filter(player => player.name !== playerName);
+  if (nextPlayers.length === currentPlayers.length) return;
+  battle[playerSide] = nextPlayers;
+  if (Array.isArray(battle.assignmentRosterNames)) {
+    battle.assignmentRosterNames = battle.assignmentRosterNames.filter(name => name !== playerName);
+  }
   saveState();
   refreshAll();
 }
@@ -3190,7 +3216,7 @@ function bulkSetGroup(groupType) {
   const battle = activeBattle();
   if (!battle) return;
   const names = selectedAssignmentNames();
-  battle.players.forEach(player => {
+  assignmentPlayers(battle).forEach(player => {
     if (names.includes(player.name)) player.groupType = groupType;
   });
   saveState();
@@ -3266,7 +3292,7 @@ function handleApplyRolesToActiveBattle() {
   const result = applyRoleRowsToBattle(battle, importedRoleRows);
   saveState();
   refreshAll();
-  noteBox.textContent = `已套用分工到目前場次：成功對上 ${result.matched} 人，戰報中仍有 ${result.battleOnly} 人未對上分工，分工表另有 ${result.unmatchedRoles} 筆未出現在戰報。`;
+  noteBox.textContent = `已套用分工到目前場次：跨兩側成功對上 ${result.matched} 人；分工表另有 ${result.unmatchedRoles} 筆未出現在戰報。戰報另有 ${result.battleOnly} 人不在分工表，仍保留於原始陣營資料。`;
 }
 
 function handleAddBattle() {
@@ -3296,7 +3322,7 @@ function handleAddBattle() {
   state.activeBattleId = battle.id;
   saveState();
   refreshAll();
-  document.getElementById('import_note_box').textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${importedRoleRows.length ? ` 分工對上 ${applyResult.matched} 人，未對上 ${applyResult.battleOnly} 人。` : ' 目前尚未套入分工 CSV。'}`;
+  document.getElementById('import_note_box').textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${importedRoleRows.length ? ` 分工跨兩側對上 ${applyResult.matched} 人，分工表未出場 ${applyResult.unmatchedRoles} 人；另有 ${applyResult.battleOnly} 人保留為非分工戰場資料。` : ' 目前尚未套入分工 CSV。'}`;
 }
 
 document.getElementById('btn_parse_csv').addEventListener('click', handleParseCsv);
