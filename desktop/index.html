@@ -2640,6 +2640,25 @@
                   <div class="review-note">重要提醒：數據很多時候無法體現戰術價值，系統規則是寫死的，實際狀況還要結合錄像和人員覆盤判斷。</div>
                 </div>
               </div>
+              <div class="note-box" id="review_batch_delete_controls">
+                <div style="font-weight:800; color:var(--danger); margin-bottom:10px;">依日期批量刪除場次</div>
+                <div class="settings-strip" style="margin-bottom:8px;">
+                  <div class="field">
+                    <label>開始日期（包含）</label>
+                    <input id="review_delete_date_from" type="date">
+                  </div>
+                  <div class="field">
+                    <label>結束日期（包含）</label>
+                    <input id="review_delete_date_to" type="date">
+                  </div>
+                  <div class="field">
+                    <label>&nbsp;</label>
+                    <button class="btn-danger" id="btn_delete_battles_by_date" type="button">刪除日期範圍場次</button>
+                  </div>
+                </div>
+                <div class="subtle">起訖日期都必須填寫；按下後會先顯示符合場數並要求確認。</div>
+              </div>
+              <div style="height:14px;"></div>
               <div class="summary-grid" id="battle_summary"></div>
               <div style="height:14px;"></div>
               <div class="screening-grid" id="screening_grid"></div>
@@ -3294,8 +3313,27 @@ function emptyState() {
   };
 }
 
+function normalizedBattleDateValue(battle) {
+  const raw = String(battle?.date || '').trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
+}
+
+function sortBattlesByDateDescending(battles = []) {
+  return (Array.isArray(battles) ? battles : [])
+    .map((battle, index) => ({ battle, index, date: normalizedBattleDateValue(battle) }))
+    .sort((a, b) => {
+      if (a.date !== b.date) {
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return b.date.localeCompare(a.date);
+      }
+      return a.index - b.index;
+    })
+    .map(item => item.battle);
+}
+
 function normalizeStatePayload(next = {}) {
-  const battles = Array.isArray(next.battles) ? next.battles : [];
+  const battles = sortBattlesByDateDescending(Array.isArray(next.battles) ? next.battles : []);
   return {
     battles,
     activeBattleId: next.activeBattleId || battles[0]?.id || '',
@@ -3495,11 +3533,11 @@ function mergePublicStateIntoLocal(publicState, localState) {
     if (key !== '|||') localKeys.add(key);
   });
   return {
-    state: {
+    state: normalizeStatePayload({
       ...local,
       battles: [...additions, ...local.battles],
       activeBattleId: additions[0]?.id || local.activeBattleId || local.battles[0]?.id || '',
-    },
+    }),
     added: additions.length,
     skipped: incoming.battles.length - additions.length,
   };
@@ -3585,6 +3623,7 @@ function renderPublicModeUi() {
   toggleElement('public_readonly_note', !publicMode);
   toggleElement('btn_toggle_battle_meta_editor', publicMode);
   toggleElement('btn_delete_current_battle', publicMode);
+  toggleElement('review_batch_delete_controls', publicMode);
   const landscapeButton = document.getElementById('btn_toggle_public_landscape');
   if (landscapeButton) {
     landscapeButton.textContent = landscapeMode ? '標準公開版' : '手機橫版檢視';
@@ -4785,16 +4824,17 @@ function buildPlayerSummary(player, primaryMetric, hits, primaryPct, deathPct) {
   return lines.join('｜');
 }
 
-function aggregatePlayers(battleIds = null) {
+function aggregatePlayers(battleIds = null, { splitByJob = false } = {}) {
   const bucket = new Map();
   const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
   battles.forEach(battle => {
     const review = computeBattleReview(battle);
     (review?.summaries || []).forEach(player => {
-      const key = canonicalPlayerName(player.name);
+      const canonicalName = canonicalPlayerName(player.name);
+      const key = splitByJob ? `${canonicalName}\u0000${player.job || ''}` : canonicalName;
       if (!bucket.has(key)) {
         bucket.set(key, {
-          name: key,
+          name: canonicalName,
           job: player.job,
           aliasNames: new Set(),
           battles: 0,
@@ -4918,10 +4958,10 @@ function aggregateOpponentProfessionPlayers(battleIds = null) {
   const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
   battles.forEach(battle => {
     (battle.opponentPlayers || []).map(deriveOpponentProfessionPlayer).forEach(player => {
-      const key = player.name;
+      const key = `${player.name}\u0000${player.job || ''}`;
       if (!bucket.has(key)) {
         bucket.set(key, {
-          name: key,
+          name: player.name,
           job: player.job,
           aliasNames: new Set(),
           battles: 0,
@@ -5000,7 +5040,9 @@ function aggregateOpponentProfessionPlayers(battleIds = null) {
 }
 
 function aggregateProfessionPlayers(battleIds = null) {
-  return isProfessionOpponentMode() ? aggregateOpponentProfessionPlayers(battleIds) : aggregatePlayers(battleIds);
+  return isProfessionOpponentMode()
+    ? aggregateOpponentProfessionPlayers(battleIds)
+    : aggregatePlayers(battleIds, { splitByJob: true });
 }
 
 function professionLookupRows(battleIds, groupFilter = 'all') {
@@ -6461,6 +6503,7 @@ function updateBattleMetadata(field, value) {
   } else {
     battle[field] = String(value || '').trim();
   }
+  if (field === 'date') state.battles = sortBattlesByDateDescending(state.battles);
   saveState();
   refreshAll();
 }
@@ -7136,9 +7179,7 @@ function exportBattleLabel(battle) {
 }
 
 function battleDateValue(battle) {
-  const raw = String(battle?.date || '').trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
-  return '';
+  return normalizedBattleDateValue(battle);
 }
 
 function battleSummaryMeta(battles) {
@@ -9990,6 +10031,45 @@ function deleteBattle(id) {
   refreshAll();
 }
 
+function battlesInDateRange(battles, dateFrom, dateTo) {
+  const from = String(dateFrom || '').trim();
+  const to = String(dateTo || '').trim();
+  if (!from || !to || from > to) return [];
+  return (Array.isArray(battles) ? battles : []).filter(battle => {
+    const date = battleDateValue(battle);
+    return date && date >= from && date <= to;
+  });
+}
+
+function deleteBattlesByDateRange() {
+  if (preventPublicWrite('依日期批量刪除場次')) return;
+  const dateFrom = document.getElementById('review_delete_date_from')?.value || '';
+  const dateTo = document.getElementById('review_delete_date_to')?.value || '';
+  if (!dateFrom || !dateTo) {
+    window.alert('請同時選擇開始日期與結束日期。');
+    return;
+  }
+  if (dateFrom > dateTo) {
+    window.alert('開始日期不能晚於結束日期。');
+    return;
+  }
+  const matches = battlesInDateRange(state.battles, dateFrom, dateTo);
+  if (!matches.length) {
+    window.alert(`找不到 ${dateFrom} 至 ${dateTo} 的場次。`);
+    return;
+  }
+  const ok = window.confirm(`確定刪除 ${dateFrom} 至 ${dateTo}（包含起訖日）的 ${fmtNumber(matches.length)} 場戰報？此操作無法復原。`);
+  if (!ok) return;
+  const ids = new Set(matches.map(battle => battle.id));
+  state.battles = state.battles.filter(battle => !ids.has(battle.id));
+  if (!state.battles.some(battle => battle.id === state.activeBattleId)) {
+    state.activeBattleId = state.battles[0]?.id || '';
+  }
+  saveState();
+  refreshAll();
+  window.alert(`已刪除 ${fmtNumber(matches.length)} 場戰報。`);
+}
+
 function updatePlayerAssignment(battleId, playerName, field, value) {
   if (preventPublicWrite('修改分工')) return;
   const battle = state.battles.find(item => item.id === battleId);
@@ -10315,7 +10395,7 @@ function handleAddBattle() {
     const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
     resultText = ` 分工跨兩側對上 ${applyResult.matched} 人，分工表未出場 ${applyResult.unmatchedRoles} 人；另有 ${applyResult.battleOnly} 人保留為非分工戰場資料。`;
   }
-  state.battles.unshift(battle);
+  state.battles = sortBattlesByDateDescending([battle, ...state.battles]);
   state.activeBattleId = battle.id;
   saveState();
   refreshAll();
@@ -10583,6 +10663,7 @@ document.getElementById('btn_delete_current_battle').addEventListener('click', (
   const battle = activeBattle();
   if (battle) deleteBattle(battle.id);
 });
+document.getElementById('btn_delete_battles_by_date').addEventListener('click', deleteBattlesByDateRange);
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
