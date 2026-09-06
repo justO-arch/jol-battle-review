@@ -14,6 +14,7 @@
 </style>
 <style>
 .page-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:5px}.page-nav a{padding:4px 8px;border:1px solid var(--line);border-radius:6px;color:#b7cad6;text-decoration:none}.page-nav a[aria-current=page]{border-color:var(--gold);color:#ffe2a3}.route-row{display:grid;grid-template-columns:1fr auto;gap:5px;margin-bottom:5px}.route-row button:first-child{flex:1;text-align:left;border-left:3px solid var(--ally)}.route-color{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--muted);font-size:11px}.route-color select{flex:1;color:var(--ink);background:#192a37;border:1px solid var(--line);border-radius:7px;padding:6px}.route-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.route-list small{color:var(--muted);font-size:10px}
+.actor-row{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}.actor-row.editable{grid-template-columns:minmax(0,1fr) auto}.actor-row.editing{grid-template-columns:minmax(0,1fr)}.actor-row .rename-btn{padding-inline:9px}.actor-list .name-input{width:100%;min-width:0;padding:7px 9px;color:var(--ink);background:#192a37;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:7px}.bottom-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 </style>
 <link rel="stylesheet" href="tactical-notes.css">
 <link rel="stylesheet" href="match-shell.css"></head>
@@ -53,6 +54,6 @@
   <div class="video-head" style="grid-template-columns:1fr auto"><b>目前 3D 快照的四視角證據與原片連結</b><output class="clock" id="video-clock">11:10</output></div>
   <div class="videos" id="videos"></div><div class="video-status" id="video-status">選擇上方 3D 快照後，可由截圖開啟原片對應時間；不做同步播放。</div>
 </section>
-<script src="unsaved-guard.js"></script><script src="match-shell.js"></script>
+<script src="unsaved-guard.js"></script><script src="brush-core.js"></script><script src="match-shell.js"></script>
 </body>
 </html>

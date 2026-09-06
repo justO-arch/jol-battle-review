@@ -337,8 +337,10 @@
   const hitMeshes = [];
   const pieceLabels = [];
   let selectedId = null;
+  let renamingId = null;
   let nextId = 1;
   let routeEditor = null;
+  const cleanLabel = value => String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 24);
   const routesByScene = new Map(scenes.filter(item => item.kind !== 'full').map(item => [item.id, []]));
   const notesByScene = new Map();
   $('tactical-notes').addEventListener('input', () => notesByScene.set(activeSceneId, $('tactical-notes').value));
@@ -419,6 +421,53 @@
       if (index >= 0) labels.splice(index, 1);
     }
   }
+  // 顯示名稱可直接在清單內改；內部 id 永遠不動，留白就回到 id。
+  function renamePiece(id, label) {
+    const piece = pieces.find(item => item.id === id);
+    if (!piece) return false;
+    const next = cleanLabel(label);
+    if (piece.label === next) return false;
+    remember();
+    piece.label = next;
+    renderPieces();
+    $('status').textContent = `已更名為 ${pieceTitle(piece)}。`;
+    return true;
+  }
+  function nameEditor(piece) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'name-input';
+    input.maxLength = 24;
+    input.value = piece.label;
+    input.placeholder = piece.id;
+    input.dataset.nameInput = piece.id;
+    input.setAttribute('aria-label', `${pieceTitle(piece)} 顯示名稱`);
+    let composing = false;
+    let cancelled = false;
+    input.addEventListener('compositionstart', () => { composing = true; });
+    input.addEventListener('compositionend', () => { composing = false; });
+    input.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (composing || event.isComposing) return;
+      if (event.key === 'Enter') { event.preventDefault(); input.blur(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); cancelled = true; input.blur(); }
+    });
+    input.addEventListener('blur', () => {
+      const value = input.value;
+      renamingId = null;
+      if (cancelled || !renamePiece(piece.id, value)) renderPieceList();
+    });
+    return input;
+  }
+  function beginRename(id) {
+    if (!pieces.some(item => item.id === id)) return false;
+    renamingId = id;
+    renderPieceList();
+    const input = $('piece-list').querySelector(`[data-name-input="${CSS.escape(id)}"]`);
+    input?.focus();
+    input?.select();
+    return true;
+  }
   function renderPieceList() {
     $('piece-list').replaceChildren();
     if (!pieces.length) {
@@ -427,23 +476,37 @@
       $('piece-list').append(empty);
     }
     for (const piece of pieces) {
+      const editing = renamingId === piece.id;
       const row = document.createElement('div');
-      row.className = `piece-row ${piece.side === 'enemy' ? 'enemy' : ''} ${piece.kind === 'marker' ? 'marker' : ''}`;
-      const select = document.createElement('button');
-      select.type = 'button';
-      select.dataset.piece = piece.id;
-      select.setAttribute('aria-pressed', String(piece.id === selectedId));
-      const title = document.createElement('b');
-      title.textContent = pieceTitle(piece);
-      select.append(title);
-      select.onclick = () => selectPiece(piece.id);
+      row.className = `piece-row ${piece.side === 'enemy' ? 'enemy' : ''} ${piece.kind === 'marker' ? 'marker' : ''} ${editing ? 'editing' : ''}`;
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'remove';
       remove.textContent = '×';
       remove.title = `刪除 ${pieceTitle(piece)}`;
       remove.onclick = () => deletePiece(piece.id);
-      row.append(select, remove);
+      if (editing) {
+        row.append(nameEditor(piece), remove);
+      } else {
+        const select = document.createElement('button');
+        select.type = 'button';
+        select.dataset.rename = piece.id;
+        select.setAttribute('aria-pressed', String(piece.id === selectedId));
+        const title = document.createElement('b');
+        title.textContent = pieceTitle(piece);
+        select.append(title);
+        select.title = '點名稱即可編輯';
+        select.onclick = () => beginRename(piece.id);
+        const rename = document.createElement('button');
+        rename.type = 'button';
+        rename.className = 'rename-btn';
+        rename.dataset.piece = piece.id;
+        rename.textContent = '選取';
+        rename.title = `選取 ${pieceTitle(piece)}`;
+        rename.setAttribute('aria-pressed', String(piece.id === selectedId));
+        rename.onclick = () => selectPiece(piece.id);
+        row.append(select, rename, remove);
+      }
       $('piece-list').append(row);
     }
     $('piece-count').textContent = `${pieces.length} 個項目`;
@@ -520,12 +583,13 @@
     if (sceneData?.kind !== 'home') return .2;
     const layout = homeLayout(sceneData);
     const towardStairs = z * layout.stairSign;
-    if (Math.abs(x) >= 4.1) return .2;
+    if (Math.abs(x) > 4) return .2;
     const stairStart = layout.stairPlatformDistance - 3.2;
-    if (towardStairs >= layout.stairPlatformDistance - 1.25) return 1.5;
-    if (towardStairs >= stairStart + 2.1) return 1.16;
-    if (towardStairs >= stairStart + 1.05) return .84;
-    if (towardStairs >= stairStart) return .55;
+    // 與 buildHomeScene 的方塊中心、半深度和高度一致，並保留棋子底座間距 .2。
+    if (Math.abs(towardStairs - layout.stairPlatformDistance) <= 1.275) return 1.5;
+    for (let step = 2; step >= 0; step--) {
+      if (Math.abs(towardStairs - (stairStart + step * 1.05)) <= .55) return .55 + step * .32;
+    }
     return .2;
   }
   function safeNextPosition(index) {
@@ -770,9 +834,19 @@
     pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
   }
+  // 指標落點要落在真正的地表高度上（家中樓梯會抬高），否則斜角視角下拖曳與畫面會偏移。
   function groundPoint(event) {
     cast(event);
-    return raycaster.ray.intersectPlane(plane, new T.Vector3());
+    // 樓梯高度是離散的：疊代猜高度在邊緣可能來回跳，改取最近的有效水平面交點。
+    let point = null;
+    for (const height of [.2, .55, .87, 1.19, 1.5]) {
+      plane.constant = -height;
+      const hit = raycaster.ray.intersectPlane(plane, new T.Vector3());
+      if (!hit || Math.abs(placementY(hit.x, hit.z) - height) >= .001) continue;
+      if (!point || hit.distanceToSquared(raycaster.ray.origin) < point.distanceToSquared(raycaster.ray.origin)) point = hit;
+    }
+    plane.constant = -.2;
+    return point;
   }
   routeEditor = window.createRouteEditor3D({
     THREE: T,
@@ -848,7 +922,8 @@
     updateCamera();
   }, { passive: false });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Delete' && !event.target.matches('input,select')) deletePiece(selectedId);
+    if (event.target.matches?.('input,select,textarea')) return;
+    if (event.key === 'Delete') deletePiece(selectedId);
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
   });
 
@@ -892,9 +967,16 @@
     getPieces: () => clone(pieces),
     addPiece,
     deletePiece,
+    renamePiece,
+    beginRename,
+    get renamingId() { return renamingId; },
     movePiece,
     canPlace,
     placementY,
+    groundPoint: (clientX, clientY) => {
+      const point = groundPoint({ clientX, clientY });
+      return point ? { x: point.x, y: point.y, z: point.z } : null;
+    },
     selectPiece,
     duplicateSelected,
     routeEditor,

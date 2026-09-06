@@ -13,7 +13,7 @@ button,input,select{font:inherit;color:inherit;background:#192a37;border:1px sol
 .form{display:grid;grid-template-columns:1fr 1fr;gap:6px}.form label{display:grid;gap:3px;color:var(--muted);font-size:10px;min-width:0}.form label.is-disabled{opacity:.42}.form .wide{grid-column:1/-1}.form button{grid-column:1/-1;background:#203749}.form output{padding:6px 8px;border:1px dashed var(--line);border-radius:7px;font-size:11px;color:#b9cbd3;overflow-wrap:anywhere}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.actions .wide{grid-column:1/-1}.route-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}.route-controls label{display:grid;gap:3px;grid-column:1/-1;color:var(--muted);font-size:10px}
 .rename{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-bottom:8px}
-.item-list{display:grid;gap:5px;max-height:230px;overflow:auto}.item-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px}.item-row button:first-child{text-align:left;font-size:11px;border-left:3px solid var(--ally);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item-row.enemy button:first-child{border-left-color:var(--enemy)}.item-row.neutral button:first-child{border-left-color:var(--gold)}.item-row .remove{padding-inline:9px}.item-list small{color:var(--muted);font-size:10px}
+.item-list{display:grid;gap:5px;max-height:230px;overflow:auto}.item-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px}.item-row button:first-child{text-align:left;font-size:11px;border-left:3px solid var(--ally);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item-row.enemy button:first-child{border-left-color:var(--enemy)}.item-row.neutral button:first-child{border-left-color:var(--gold)}.item-row .remove{padding-inline:9px}.item-row{grid-template-columns:minmax(0,1fr) auto auto}.item-row.editing{grid-template-columns:minmax(0,1fr) auto}.item-row .rename-btn{padding-inline:8px}.item-row .name-input{width:100%;min-width:0;font-size:11px;border-left:3px solid var(--gold)}.item-list small{color:var(--muted);font-size:10px}
 .import-input{display:none}
 .mode-hint{color:var(--gold)}
 .embed-toggle{display:none}
@@ -83,7 +83,7 @@ body.overlay .tactical-notes{display:none}
     <p class="note">底圖只確認相對位置、道路連通與區域功能；距離、轉角及山壁輪廓仍是示意比例。棋子、標記與路線全是手動推演，不是實際戰況觀測。</p>
   </aside>
 </div>
-<script src="unsaved-guard.js"></script>
+<script src="unsaved-guard.js"></script><script src="brush-core.js"></script>
 <script src="tactical-map.js"></script>
 <script src="tactical-editor.js"></script>
 </body>

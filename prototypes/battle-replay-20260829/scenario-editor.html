@@ -13,6 +13,7 @@
 .piece-row.marker button:first-child{border-left-color:var(--gold)}
 .route-row{display:grid;grid-template-columns:1fr auto;gap:5px}.route-row button:first-child{text-align:left;border-left:3px solid var(--ally)}.route-row.enemy button:first-child{border-left-color:var(--enemy)}.route-row.neutral button:first-child{border-left-color:var(--gold)}
 .route-color{display:grid;gap:3px;margin-bottom:6px;color:var(--muted);font-size:10px}.route-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.piece-row{grid-template-columns:minmax(0,1fr) auto auto}.piece-row.editing{grid-template-columns:minmax(0,1fr) auto}.piece-row .rename-btn{padding-inline:9px}.piece-row .name-input{width:100%;min-width:0;text-align:left;border-left:3px solid var(--gold)}
 .page-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:5px}.page-nav a{padding:4px 8px;border:1px solid var(--line);border-radius:6px;text-decoration:none}.page-nav a[aria-current=page]{border-color:var(--gold);color:#ffe2a3}.full-map-stage{display:none;height:720px}.full-map-stage iframe{display:block;width:100%;height:100%;border:0;background:#08121a}body.full-map .stage,body.full-map .side{display:none}body.full-map .full-map-stage{display:block}body.full-map .workspace{grid-template-columns:1fr}
 </style>
 <link rel="stylesheet" href="tactical-notes.css">
@@ -51,7 +52,7 @@
     <ul class="help"><li>棋子底座／外框表示敵我；職業棋子顯示圖示，小隊棋子以三人造型表示；自訂標記使用黃色菱形。文字只顯示 ID。</li><li>新增路線後，單擊地面增加節點，雙擊加入終點並完成；點線段只會選取，新增節點須先按工具按鈕。</li><li>12 點固定朝敵方；我方視角右側是上路、左側是下路。塔前／塔後會依敵我塔自動換算。</li><li>外塔左右為山壁、前後為寬路；家中以 3–9 點為長邊，三門各接內塔，較短的樓梯端沒有出口或塔。</li><li>野區左右連通相鄰兩路；道路與周圍綠地可配置棋子，12／6 點外圍山壁不可直接穿越。</li><li>中央河道實際是 3–9 點方向的長大道；大道在左右接塔路口終止，12／6 點兩側各有左、中、右三條支路。</li><li>另存新檔會保存自由推演；開啟舊檔可讀取先前檔案，不會改動史實覆盤資料。</li></ul>
   </aside>
 </div>
-<script src="unsaved-guard.js"></script>
+<script src="unsaved-guard.js"></script><script src="brush-core.js"></script>
 <script src="../tower-sandbox/vendor/three.min.js"></script>
 <script src="route-editor-3d.js"></script>
 <script src="scenario-editor.js"></script>
