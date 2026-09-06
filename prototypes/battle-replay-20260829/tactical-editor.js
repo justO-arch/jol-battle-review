@@ -72,11 +72,24 @@
   const state = { pieces: [], arrows: [], reference: { matchLabel: '', countdown: '', remainingSeconds: null } };
   const history = [];
   let selectedId = null;
+  let renamingId = null;
   let selectedPointIndex = null;
   let insertMode = false;
   let annotationsHidden = false;
   let draft = null;
   let nextSerial = 1;
+  const isBrush = item => item?.kind === 'brush';
+  const brushButton = document.createElement('button');
+  brushButton.id = 'brush-start'; brushButton.textContent = '＋ 自由畫筆';
+  const widthSelect = document.createElement('select');
+  widthSelect.id = 'brush-width'; widthSelect.setAttribute('aria-label', '筆畫粗細');
+  for (const [i, text] of ['細筆', '中筆', '粗筆'].entries()) widthSelect.append(new Option(text, i + 1));
+  widthSelect.value = '2';
+  $('arrow-start').before(brushButton, widthSelect);
+  brushButton.onclick = () => startBrush($('route-color').value, Number(widthSelect.value));
+  widthSelect.onchange = () => setBrushWidth(Number(widthSelect.value));
+  $('arrow-delete').textContent = '刪除線／筆畫';
+  $('arrow-undo').textContent = '線／筆畫復原';
 
   const allIds = () => new Set([...state.pieces.map(item => item.id), ...state.arrows.map(item => item.id)]);
   function makeId(prefix) {
@@ -152,20 +165,69 @@
     const color = ROUTE_COLORS[colorName];
     const chosen = arrow.id === selectedId;
     const group = shape('g', { class: `route ${colorName}`, 'data-arrow': arrow.id }, '', arrowLayer);
-    shape('title', {}, `${title(arrow)}（調兵路線）`, group);
-    shape('path', { d: routeD(arrow.points), class: 'arrow-path', stroke: color, 'marker-end': `url(#route-head-${colorName})`, opacity: .92 }, '', group);
+    shape('title', {}, `${title(arrow)}（${isBrush(arrow) ? '自由筆畫' : '調兵路線'}）`, group);
+    shape('path', { d: routeD(arrow.points), class: isBrush(arrow) ? 'brush-path' : 'arrow-path', stroke: color,
+      ...(isBrush(arrow) ? { fill: 'none', 'stroke-width': arrow.width * 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' } : { 'marker-end': `url(#route-head-${colorName})` }), opacity: .92 }, '', group);
     shape('path', { d: routeD(arrow.points), class: 'arrow-hit', 'data-arrow-hit': arrow.id }, '', group);
-    if (chosen) arrow.points.forEach((point, index) => shape('circle', { cx: point[0], cy: point[1], r: 7, fill: index === selectedPointIndex ? '#fff' : '#0b1720', stroke: color, 'stroke-width': 2.5, class: 'arrow-handle', 'data-arrow-point': arrow.id, 'data-point-index': index }, '', group));
+    if (chosen && !isBrush(arrow)) arrow.points.forEach((point, index) => shape('circle', { cx: point[0], cy: point[1], r: 7, fill: index === selectedPointIndex ? '#fff' : '#0b1720', stroke: color, 'stroke-width': 2.5, class: 'arrow-handle', 'data-arrow-point': arrow.id, 'data-point-index': index }, '', group));
+    if (chosen && isBrush(arrow)) shape('circle', { cx: arrow.points[0][0], cy: arrow.points[0][1], r: 6, fill: 'none', stroke: '#fff', 'stroke-width': 2, 'pointer-events': 'none' }, '', group);
     if (arrow.label) shape('text', { x: arrow.points[0][0], y: arrow.points[0][1] - 14, fill: color, 'text-anchor': 'middle', class: 'arrow-label' }, arrow.label, group);
   }
   function drawDraft() {
     draftLayer.replaceChildren();
     if (!draft || !draft.points.length) return;
     const color = ROUTE_COLORS[draft.color] ?? ROUTE_COLORS.blue;
-    if (draft.points.length > 1) shape('path', { d: routeD(draft.points), class: 'draft-path', stroke: color }, '', draftLayer);
-    draft.points.forEach(point => shape('circle', { cx: point[0], cy: point[1], r: 5, fill: color, opacity: .9 }, '', draftLayer));
+    if (draft.points.length > 1) shape('path', { d: routeD(draft.points), class: isBrush(draft) ? 'brush-path' : 'draft-path', stroke: color, ...(isBrush(draft) ? { fill: 'none', 'stroke-width': draft.width * 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' } : {}) }, '', draftLayer);
+    if (!isBrush(draft)) draft.points.forEach(point => shape('circle', { cx: point[0], cy: point[1], r: 5, fill: color, opacity: .9 }, '', draftLayer));
   }
 
+  // 顯示名稱可直接在清單內改；內部 id 永遠不動，留白就回到 id。
+  function renameItem(id, text) {
+    const item = findPiece(id) ?? findArrow(id);
+    if (!item) return false;
+    const label = safeText(text);
+    if (item.label === label) return false;
+    remember();
+    item.label = label;
+    render();
+    status(`已更名為 ${title(item)}。`);
+    return true;
+  }
+  function nameEditor(item) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'name-input';
+    input.maxLength = LIMITS.label;
+    input.value = item.label;
+    input.placeholder = item.id;
+    input.dataset.nameInput = item.id;
+    input.setAttribute('aria-label', `${title(item)} 顯示名稱`);
+    let composing = false;
+    let cancelled = false;
+    input.addEventListener('compositionstart', () => { composing = true; });
+    input.addEventListener('compositionend', () => { composing = false; });
+    input.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (composing || event.isComposing) return;
+      if (event.key === 'Enter') { event.preventDefault(); input.blur(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); cancelled = true; input.blur(); }
+    });
+    input.addEventListener('blur', () => {
+      const value = input.value;
+      renamingId = null;
+      if (cancelled || !renameItem(item.id, value)) renderList();
+    });
+    return input;
+  }
+  function beginRename(id) {
+    if (annotationsHidden || !(findPiece(id) ?? findArrow(id))) return false;
+    renamingId = id;
+    renderList();
+    const input = $('item-list').querySelector(`[data-name-input="${CSS.escape(id)}"]`);
+    input?.focus();
+    input?.select();
+    return true;
+  }
   function renderList() {
     const list = $('item-list');
     list.replaceChildren();
@@ -177,23 +239,41 @@
     }
     for (const item of rows) {
       const arrow = Array.isArray(item.points);
+      const editing = renamingId === item.id;
       const row = document.createElement('div');
-      row.className = `item-row ${item.side}`;
-      const select = document.createElement('button');
-      select.type = 'button';
-      select.dataset.item = item.id;
-      select.setAttribute('aria-pressed', String(item.id === selectedId));
-      const kindLabel = arrow ? `路線 ${item.points.length} 點` : item.kind === 'marker' ? '中立標記' : item.kind === 'group' ? '小隊' : professionById.get(item.profession).label;
-      select.textContent = `${title(item)}・${kindLabel}`;
-      if (arrow) select.style.borderLeftColor = ROUTE_COLORS[normalizeRouteColor(item.color, item.side)];
-      select.onclick = () => selectItem(item.id);
+      row.className = `item-row ${item.side} ${editing ? 'editing' : ''}`;
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'remove';
       remove.textContent = '×';
       remove.title = `刪除 ${title(item)}`;
       remove.onclick = () => deleteItem(item.id);
-      row.append(select, remove);
+      if (editing) {
+        row.append(nameEditor(item), remove);
+        list.append(row);
+        continue;
+      }
+      const select = document.createElement('button');
+      select.type = 'button';
+      select.dataset.item = item.id;
+      select.setAttribute('aria-pressed', String(item.id === selectedId));
+      const kindLabel = isBrush(item) ? '筆畫' : arrow ? `路線 ${item.points.length} 點` : item.kind === 'marker' ? '中立標記' : item.kind === 'group' ? '小隊' : professionById.get(item.profession).label;
+      select.textContent = `${title(item)}・${kindLabel}`;
+      if (arrow) select.style.borderLeftColor = ROUTE_COLORS[normalizeRouteColor(item.color, item.side)];
+      select.onclick = () => selectItem(item.id);
+      const rename = document.createElement('button');
+      rename.type = 'button';
+      rename.className = 'rename-btn';
+      rename.textContent = '選取';
+      rename.title = `選取 ${title(item)}`;
+      rename.disabled = annotationsHidden;
+      rename.onclick = () => selectItem(item.id);
+      rename.dataset.item = item.id;
+      delete select.dataset.item;
+      select.dataset.rename = item.id;
+      select.title = '點名稱即可編輯';
+      select.onclick = () => beginRename(item.id);
+      row.append(select, rename, remove);
       list.append(row);
     }
     $('item-count').textContent = `${state.pieces.length} 棋子／標記・${state.arrows.length} 路線`;
@@ -210,7 +290,10 @@
     syncModeHint();
   }
   function syncModeHint() {
-    $('mode-hint').textContent = draft ? `繪製路線中・已放 ${draft.points.length} 點` : insertMode ? '新增節點模式・請點選線段' : selected() ? `已選取 ${title(selected())}` : '選取模式';
+    brushButton.disabled = annotationsHidden || Boolean(draft) || state.arrows.length >= LIMITS.arrows;
+    widthSelect.disabled = annotationsHidden || Boolean(draft);
+    if (isBrush(selected())) widthSelect.value = String(selected().width);
+    $('mode-hint').textContent = isBrush(draft) ? '畫筆模式・拖曳繪製，放開完成' : draft ? `繪製路線中・已放 ${draft.points.length} 點` : insertMode ? '新增節點模式・請點選線段' : selected() ? `已選取 ${title(selected())}${isBrush(selected()) ? '・可拖曳整筆' : ''}` : '選取模式';
     $('add-token').disabled = annotationsHidden;
     $('rename').disabled = annotationsHidden || !selected();
     $('delete').disabled = annotationsHidden || !selected();
@@ -219,9 +302,9 @@
     $('import').disabled = annotationsHidden;
     $('arrow-cancel').disabled = annotationsHidden || !draft;
     $('arrow-start').disabled = annotationsHidden || Boolean(draft) || state.arrows.length >= LIMITS.arrows;
-    $('arrow-add-point').disabled = annotationsHidden || !findArrow(selectedId) || Boolean(draft);
+    $('arrow-add-point').disabled = annotationsHidden || !findArrow(selectedId) || isBrush(selected()) || Boolean(draft);
     $('arrow-add-point').setAttribute('aria-pressed', String(insertMode));
-    $('arrow-remove-point').disabled = annotationsHidden || !findArrow(selectedId) || selectedPointIndex == null || findArrow(selectedId).points.length <= 2 || Boolean(draft);
+    $('arrow-remove-point').disabled = annotationsHidden || !findArrow(selectedId) || isBrush(selected()) || selectedPointIndex == null || findArrow(selectedId).points.length <= 2 || Boolean(draft);
     $('arrow-delete').disabled = annotationsHidden || !findArrow(selectedId) || Boolean(draft);
     $('arrow-undo').disabled = annotationsHidden || history.length === 0;
     $('route-color').disabled = annotationsHidden || Boolean(draft);
@@ -267,7 +350,7 @@
     const item = selected();
     $('rename-input').value = item?.label ?? '';
     render();
-    if (item) status(`已選取 ${title(item)}；${Array.isArray(item.points) ? '可選取並拖曳節點，或使用新增／移除節點。' : '可直接拖曳移動。'}`);
+    if (item) status(`已選取 ${title(item)}；${isBrush(item) ? '可拖曳整筆移動。' : Array.isArray(item.points) ? '可選取並拖曳節點，或使用新增／移除節點。' : '可直接拖曳移動。'}`);
     return Boolean(item);
   }
   function moveItem(id, x, y) {
@@ -332,7 +415,7 @@
   }
 
   function startArrow(color) {
-    if (draft) return false;
+    if (draft || annotationsHidden) return false;
     if (state.arrows.length >= LIMITS.arrows) {
       status(`單一戰術盤最多 ${LIMITS.arrows} 條路線。`);
       return false;
@@ -346,6 +429,32 @@
     status('路線繪製中：單擊增加節點，雙擊加入終點並完成。');
     postToParent({ type: 'editing-started' });
     return true;
+  }
+  function startBrush(color = 'blue', width = 2) {
+    if (!window.BrushCore.validWidth(width) || !startArrow(color)) return false;
+    draft.kind = 'brush'; draft.width = width;
+    syncModeHint();
+    status('畫筆：按住拖曳繪製，放開完成一筆；完成後可拖曳整筆。');
+    return true;
+  }
+  function addBrushPoint(x, y) {
+    if (!isBrush(draft) || !insideArena(x, y)) return false;
+    if (draft.points.length >= window.BrushCore.MAX_SAMPLES) { status('已達單筆取樣上限；放開完成後可另起一筆。'); return false; }
+    if (!window.BrushCore.append(draft.points, [round(x), round(y)], 2)) return false;
+    drawDraft(); return true;
+  }
+  function moveStroke(id, dx, dy, base, record = true) {
+    const stroke = findArrow(id);
+    if (!isBrush(stroke) || !finite(dx) || !finite(dy) || annotationsHidden) return false;
+    const points = (base ?? stroke.points).map(([x, y]) => [round(x + dx), round(y + dy)]);
+    if (!points.every(([x, y]) => insideArena(x, y))) return false;
+    if (record) remember();
+    stroke.points = points; render(); return true;
+  }
+  function setBrushWidth(width) {
+    const stroke = selected();
+    if (!isBrush(stroke) || !window.BrushCore.validWidth(width) || stroke.width === width || annotationsHidden) return false;
+    remember(); stroke.width = width; render(); return true;
   }
   function addArrowPoint(x, y) {
     if (!draft || draft.points.length >= LIMITS.arrowPoints || !insideArena(x, y)) return false;
@@ -364,15 +473,16 @@
   }
   function finishArrow() {
     if (!draft || draft.points.length < 2) return false;
+    if (isBrush(draft)) draft.points = window.BrushCore.finish(draft.points, 1.2);
     remember();
-    const arrow = { id: makeId('route'), color: draft.color, side: draft.side, label: draft.label, points: draft.points.map(point => [point[0], point[1]]), source: 'manual' };
+    const arrow = { id: makeId('route'), color: draft.color, side: draft.side, label: draft.label, points: draft.points.map(point => [point[0], point[1]]), source: 'manual', ...(isBrush(draft) ? { kind: 'brush', width: draft.width } : {}) };
     state.arrows.push(arrow);
     draft = null;
     selectedId = arrow.id;
     selectedPointIndex = null;
     $('token-label').value = '';
     render();
-    status(`已完成 ${title(arrow)}，共 ${arrow.points.length} 個轉折點。`);
+    status(isBrush(arrow) ? `已完成 ${title(arrow)}；可拖曳整筆，或再按自由畫筆新增一筆。` : `已完成 ${title(arrow)}，共 ${arrow.points.length} 個轉折點。`);
     return arrow.id;
   }
   function cancelArrow() {
@@ -403,7 +513,7 @@
   }
   function beginInsertArrowPoint() {
     const arrow = findArrow(selectedId);
-    if (!arrow || draft) return false;
+    if (!arrow || isBrush(arrow) || draft) return false;
     insertMode = !insertMode;
     selectedPointIndex = null;
     render();
@@ -412,7 +522,7 @@
   }
   function insertArrowPoint(id, x, y) {
     const arrow = findArrow(id);
-    if (!arrow || arrow.points.length >= LIMITS.arrowPoints || !insideArena(x, y)) return false;
+    if (!arrow || isBrush(arrow) || arrow.points.length >= LIMITS.arrowPoints || !insideArena(x, y)) return false;
     let bestIndex = 1, bestPoint = null, bestDistance = Infinity;
     for (let index = 0; index < arrow.points.length - 1; index++) {
       const [ax, ay] = arrow.points[index], [bx, by] = arrow.points[index + 1];
@@ -432,7 +542,7 @@
   }
   function deleteArrowPoint(id, index) {
     const arrow = findArrow(id);
-    if (!arrow || arrow.points.length <= 2 || !arrow.points[index]) return false;
+    if (!arrow || isBrush(arrow) || arrow.points.length <= 2 || !arrow.points[index]) return false;
     remember();
     arrow.points.splice(index, 1);
     selectedPointIndex = Math.min(index, arrow.points.length - 1);
@@ -517,7 +627,9 @@
       if (item.color == null && !['ally', 'enemy', 'neutral'].includes(item.side)) throw new Error(`${position} 的顏色無效`);
       const color = normalizeRouteColor(item.color, item.side);
       if (!Array.isArray(item.points) || item.points.length < 2) throw new Error(`${position} 至少要有兩個轉折點`);
-      if (item.points.length > LIMITS.arrowPoints) throw new Error(`${position} 的轉折點超過 ${LIMITS.arrowPoints} 個`);
+      if (item.kind != null && !['arrow', 'brush'].includes(item.kind)) throw new Error('不支援的筆畫類型');
+      if (isBrush(item) && !window.BrushCore.validWidth(item.width)) throw new Error('筆畫粗細無效');
+      if (item.points.length > (isBrush(item) ? window.BrushCore.MAX_POINTS : LIMITS.arrowPoints)) throw new Error(`${position} 的點數超過上限`);
       const points = item.points.map((point, pointIndex) => {
         if (!Array.isArray(point) || point.length !== 2) throw new Error(`${position} 第 ${pointIndex + 1} 個轉折點格式無效`);
         const x = point[0], y = point[1];
@@ -525,7 +637,7 @@
         if (!insideArena(x, y)) throw new Error(`${position} 第 ${pointIndex + 1} 個轉折點落在底圖範圍外`);
         return [round(x), round(y)];
       });
-      return { id: takeId(item.id, position), color, side: legacyRouteSide(color), label: safeText(item.label), points, source: 'manual' };
+      return { id: takeId(item.id, position), color, side: legacyRouteSide(color), label: safeText(item.label), points, source: 'manual', ...(isBrush(item) ? { kind: 'brush', width: item.width } : {}) };
     });
     return { reference, pieces, arrows, tacticalNotes: typeof payload.tacticalNotes === 'string' ? payload.tacticalNotes.slice(0, 10000) : '' };
   }
@@ -615,6 +727,7 @@
       if (annotationsHidden) {
         draft = null;
         insertMode = false;
+        renamingId = null;
         gesture = null;
       }
       render();
@@ -640,6 +753,12 @@
     if (annotationsHidden) return;
     const point = toMapPoint(event);
     if (!point) return;
+    if (isBrush(draft)) {
+      event.preventDefault();
+      if (event.button !== 0 || gesture || !addBrushPoint(point.x, point.y)) return;
+      gesture = { pointerId: event.pointerId, brush: true };
+      svg.setPointerCapture(event.pointerId); return;
+    }
     if (draft) {
       event.preventDefault();
       return;
@@ -667,6 +786,10 @@
     if (arrowId) {
       if (insertMode && arrowId === selectedId) insertArrowPoint(arrowId, point.x, point.y);
       else selectItem(arrowId);
+      if (isBrush(findArrow(arrowId))) {
+        gesture = { pointerId: event.pointerId, strokeId: arrowId, origin: point, base: clone(findArrow(arrowId).points) };
+        svg.setPointerCapture(event.pointerId);
+      }
       return;
     }
     if (selectedId) selectItem(null);
@@ -675,6 +798,12 @@
     if (!gesture || gesture.pointerId !== event.pointerId) return;
     const point = toMapPoint(event);
     if (!point) return;
+    if (gesture.brush) { addBrushPoint(point.x, point.y); return; }
+    if (gesture.strokeId) {
+      const dx = point.x - gesture.origin.x, dy = point.y - gesture.origin.y;
+      if (Math.hypot(dx, dy) > .1 && moveStroke(gesture.strokeId, dx, dy, gesture.base, !gesture.remembered)) gesture.remembered = true;
+      return;
+    }
     const safe = clampToArena(point.x, point.y);
     const previous = gesture.pieceId ? findPiece(gesture.pieceId) : null;
     const previousPoint = gesture.arrowId ? findArrow(gesture.arrowId)?.points[gesture.pointIndex] : null;
@@ -686,6 +815,8 @@
   });
   function release(event) {
     if (!gesture || gesture.pointerId !== event.pointerId) return;
+    if (gesture.brush && event.type !== 'pointercancel') { const p = toMapPoint(event); if (p) addBrushPoint(p.x, p.y); }
+    if (gesture.brush && (event.type === 'pointercancel' || !finishArrow())) cancelArrow();
     gesture = null;
     if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
   }
@@ -693,14 +824,14 @@
   svg.addEventListener('pointercancel', release);
   let clickTimer = 0;
   svg.addEventListener('click', event => {
-    if (!draft || annotationsHidden) return;
+    if (!draft || isBrush(draft) || annotationsHidden) return;
     event.preventDefault();
     clearTimeout(clickTimer);
     const point = toMapPoint(event);
     clickTimer = setTimeout(() => { if (point) addArrowPoint(point.x, point.y); }, 230);
   });
   svg.addEventListener('dblclick', event => {
-    if (draft) {
+    if (draft && !isBrush(draft)) {
       event.preventDefault();
       clearTimeout(clickTimer);
       const point = toMapPoint(event);
@@ -712,7 +843,7 @@
   document.addEventListener('keydown', event => {
     if (event.target.matches('input,select,textarea')) return;
     if (event.key === 'Escape' && draft) { event.preventDefault(); cancelArrow(); return; }
-    if (event.key === 'Enter' && draft) { event.preventDefault(); finishArrow(); return; }
+    if (event.key === 'Enter' && draft && !isBrush(draft)) { event.preventDefault(); finishArrow(); return; }
     if (event.key === 'Delete' && selectedId) { event.preventDefault(); deleteItem(selectedId); return; }
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
   });
@@ -784,6 +915,9 @@
     selectItem,
     moveItem,
     renameSelected,
+    renameItem,
+    beginRename,
+    get renamingId() { return renamingId; },
     deleteItem,
     clearAll,
     undo,
@@ -797,6 +931,7 @@
     beginInsertArrowPoint,
     insertArrowPoint,
     deleteArrowPoint,
+    startBrush, addBrushPoint, moveStroke, setBrushWidth,
     exportPlan,
     importPlan,
     setReference(reference) {

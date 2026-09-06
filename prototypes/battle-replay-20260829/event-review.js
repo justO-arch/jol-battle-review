@@ -220,21 +220,124 @@
     hitMeshes.push(hit);
     const label = addLabel(actor, new T.Vector3());
     actorObjects.set(actor.id, { actor, group, ring: ringActor, label });
-
-    const button = document.createElement('button');
-    button.className = `actor ${actor.side === 'enemy' ? 'enemy' : ''}`;
-    button.dataset.actor = actor.id;
-    button.setAttribute('aria-pressed', 'false');
-    button.innerHTML = `<b>${actor.label}</b><small>${actor.profession}・${actor.kind === 'group' ? '群組棋子' : observers.get(actor.id.replace('OBS_', ''))?.assignment || '錄影者'}</small>`;
-    button.onclick = () => selectActor(actor.id);
-    $('actor-list').append(button);
   }
 
   const teachingBySnapshot = new Map(data.snapshots.map(snapshot => [snapshot.battleCountdown, Object.fromEntries(
     Object.entries(snapshot.positions).map(([id, position]) => [id, { x: position[0], z: position[1] }]),
   )]));
   const routesBySnapshot = new Map(data.snapshots.map(snapshot => [snapshot.battleCountdown, []]));
+  // 教學分支的顯示名稱另存一份；觀察草模的 actor.id 與原始 label 一律唯讀。
+  const teachingNamesBySnapshot = new Map(data.snapshots.map(snapshot => [snapshot.battleCountdown, {}]));
+  const nameHistoryBySnapshot = new Map(data.snapshots.map(snapshot => [snapshot.battleCountdown, []]));
+  const undoNameButton = document.createElement('button');
+  undoNameButton.id = 'name-undo';
+  undoNameButton.textContent = '改名復原';
+  $('reset').before(undoNameButton);
+  function undoName() {
+    if (mode !== 'teaching') return false;
+    const previous = nameHistoryBySnapshot.get(activeSnapshot).pop();
+    if (!previous) return false;
+    teachingNamesBySnapshot.set(activeSnapshot, previous);
+    syncActors();
+    return true;
+  }
+  undoNameButton.onclick = undoName;
   const notesBySnapshot = new Map();
+  const cleanName = value => String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 24);
+  const nameOverrides = () => teachingNamesBySnapshot.get(activeSnapshot) ?? {};
+  const displayName = actor => (mode === 'teaching' && nameOverrides()[actor.id]) || actor.label;
+  function renameActor(id, text) {
+    const object = actorObjects.get(id);
+    if (mode !== 'teaching' || !object) return false;
+    const names = nameOverrides();
+    const next = cleanName(text);
+    if ((names[id] ?? '') === next) return false;
+    const history = nameHistoryBySnapshot.get(activeSnapshot);
+    history.push({ ...names });
+    if (history.length > 40) history.shift();
+    if (next) names[id] = next;
+    else delete names[id];
+    syncActors();
+    return true;
+  }
+  let renamingId = null;
+  function nameEditor(actor) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'name-input';
+    input.maxLength = 24;
+    input.value = nameOverrides()[actor.id] ?? '';
+    input.placeholder = actor.label;
+    input.dataset.nameInput = actor.id;
+    input.setAttribute('aria-label', `${displayName(actor)} 教學顯示名稱`);
+    let composing = false;
+    let cancelled = false;
+    input.addEventListener('compositionstart', () => { composing = true; });
+    input.addEventListener('compositionend', () => { composing = false; });
+    input.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (composing || event.isComposing) return;
+      if (event.key === 'Enter') { event.preventDefault(); input.blur(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); cancelled = true; input.blur(); }
+    });
+    input.addEventListener('blur', () => {
+      const value = input.value;
+      renamingId = null;
+      if (cancelled || !renameActor(actor.id, value)) renderActorList();
+    });
+    return input;
+  }
+  function beginRename(id) {
+    if (mode !== 'teaching' || !actorObjects.has(id)) return false;
+    renamingId = id;
+    renderActorList();
+    const input = $('actor-list').querySelector(`[data-name-input="${CSS.escape(id)}"]`);
+    input?.focus();
+    input?.select();
+    return true;
+  }
+  function renderActorList() {
+    const teaching = mode === 'teaching';
+    undoNameButton.disabled = !teaching || !nameHistoryBySnapshot.get(activeSnapshot).length;
+    $('actor-list').replaceChildren();
+    for (const actor of data.actors) {
+      const editing = teaching && renamingId === actor.id;
+      const row = document.createElement('div');
+      row.className = `actor-row ${teaching ? 'editable' : ''} ${editing ? 'editing' : ''}`;
+      if (editing) {
+        row.append(nameEditor(actor));
+        $('actor-list').append(row);
+        continue;
+      }
+      const button = document.createElement('button');
+      button.className = `actor ${actor.side === 'enemy' ? 'enemy' : ''}`;
+      button.dataset.actor = actor.id;
+      button.setAttribute('aria-pressed', String(actor.id === selectedActor));
+      const name = document.createElement('b');
+      name.textContent = displayName(actor);
+      const meta = document.createElement('small');
+      meta.textContent = `${actor.profession}・${actor.kind === 'group' ? '群組棋子' : observers.get(actor.id.replace('OBS_', ''))?.assignment || '錄影者'}`;
+      button.append(name, meta);
+      button.onclick = () => selectActor(actor.id);
+      row.append(button);
+      if (teaching) {
+        const rename = document.createElement('button');
+        rename.type = 'button';
+        rename.className = 'rename-btn';
+        rename.dataset.actor = actor.id;
+        rename.textContent = '選取';
+        rename.title = `選取 ${displayName(actor)}`;
+        rename.setAttribute('aria-pressed', String(actor.id === selectedActor));
+        rename.onclick = () => selectActor(actor.id);
+        delete button.dataset.actor;
+        button.dataset.rename = actor.id;
+        button.title = '點名稱即可編輯';
+        button.onclick = () => beginRename(actor.id);
+        row.append(rename);
+      }
+      $('actor-list').append(row);
+    }
+  }
   $('tactical-notes').addEventListener('input', () => { if (mode === 'teaching') notesBySnapshot.set(activeSnapshot, $('tactical-notes').value); });
   const reason = document.createElement('div');
   reason.id = 'selection-reason'; reason.className = 'selection-reason';
@@ -266,15 +369,17 @@
     for (const [id, object] of actorObjects) {
       const original = originalPosition(id);
       const current = mode === 'teaching' ? teachingBySnapshot.get(activeSnapshot)[id] : original;
-      object.group.position.set(current.x, .22, current.z);
-      object.label.position.set(current.x, 2.2, current.z);
+      object.group.position.set(current.x, GROUND_Y, current.z);
+      object.label.position.set(current.x, GROUND_Y + 2.1, current.z);
+      object.label.element.textContent = displayName(object.actor);
       if (mode === 'teaching' && Math.hypot(current.x - original.x, current.z - original.z) > .05) {
-        const start = new T.Vector3(original.x, .34, original.z);
-        const end = new T.Vector3(current.x, .34, current.z);
+        const start = new T.Vector3(original.x, GROUND_Y + .24, original.z);
+        const end = new T.Vector3(current.x, GROUND_Y + .24, current.z);
         const direction = end.clone().sub(start);
         teachingLines.add(new T.ArrowHelper(direction.clone().normalize(), start, direction.length(), 0xefc979, .7, .35));
       }
     }
+    renderActorList();
   }
   function renderSnapshotSummary() {
     const snapshot = evidence.snapshots.find(item => item.battleCountdown === activeSnapshot);
@@ -342,6 +447,8 @@
   $('reset').onclick = () => {
     const snapshot = snapshotData();
     teachingBySnapshot.set(activeSnapshot, Object.fromEntries(Object.entries(snapshot.positions).map(([id, position]) => [id, { x: position[0], z: position[1] }])));
+    teachingNamesBySnapshot.set(activeSnapshot, {});
+    nameHistoryBySnapshot.set(activeSnapshot, []);
     routesBySnapshot.set(activeSnapshot, []);
     notesBySnapshot.set(activeSnapshot, '');
     $('tactical-notes').value = '';
@@ -358,7 +465,9 @@
       snapshot: activeSnapshot,
       coordinateSystem: data.coordinateSystem,
       original: Object.fromEntries(Object.keys(snapshotData().positions).map(id => [id, originalPosition(id)])),
+      originalNames: Object.fromEntries(data.actors.map(actor => [actor.id, actor.label])),
       teaching: teachingBySnapshot.get(activeSnapshot),
+      teachingNames: { ...nameOverrides() },
       tacticalNotes: notesBySnapshot.get(activeSnapshot) ?? '',
       routes: routeEditor.getRoutes(),
       note: 'Teaching positions are separate from the manual observation draft.',
@@ -387,8 +496,17 @@
         positions[actor.id] = { x: Number(point.x), z: Number(point.z) };
       }
       const routes = routeEditor.validate(payload.routes ?? []);
+      // 舊檔沒有 teachingNames，讀回後就是空的覆寫表，顯示名稱自動回到原始觀察名稱。
+      const names = {};
+      for (const [id, value] of Object.entries(payload.teachingNames ?? {})) {
+        if (!actorObjects.has(id)) throw new Error(`${id} 不在本事件的棋子清單`);
+        const name = cleanName(value);
+        if (name) names[id] = name;
+      }
       if (!window.UnsavedGuard.confirm([payload.snapshot])) return;
       teachingBySnapshot.set(payload.snapshot, positions);
+      teachingNamesBySnapshot.set(payload.snapshot, names);
+      nameHistoryBySnapshot.set(payload.snapshot, []);
       setSnapshot(payload.snapshot);
       notesBySnapshot.set(payload.snapshot, typeof payload.tacticalNotes === 'string' ? payload.tacticalNotes.slice(0, 10000) : '');
       $('tactical-notes').value = notesBySnapshot.get(payload.snapshot);
@@ -431,7 +549,10 @@
   document.querySelectorAll('[data-camera]').forEach(button => button.onclick = () => setCamera(button.dataset.camera));
   const raycaster = new T.Raycaster();
   const pointer = new T.Vector2();
-  const plane = new T.Plane(new T.Vector3(0, 1, 0), -.22);
+  // 塔盤鋪面頂面與前後道路都在 y = .1；指標投影、拖曳與路線貼地都用同一個地表高度。
+  const GROUND_Y = .1;
+  const groundHeight = () => GROUND_Y;
+  const plane = new T.Plane(new T.Vector3(0, 1, 0), -GROUND_Y);
   function cast(event) {
     const rect = canvas.getBoundingClientRect();
     pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
@@ -449,6 +570,7 @@
     cast,
     groundPoint,
     canPlace,
+    heightAt: groundHeight,
     color: () => $('route-color').value,
     colorSelect: $('route-color'),
     label: () => '',
@@ -460,7 +582,7 @@
     addPointButton: $('route-add-node'),
     removePointButton: $('route-remove-node'),
     isEnabled: () => mode === 'teaching',
-    onStatus: text => { $('evidence').innerHTML = `<strong>教學路線</strong>${text}`; },
+    onStatus: text => { $('evidence').replaceChildren(Object.assign(document.createElement('strong'), { textContent: '教學標註' }), document.createTextNode(text)); },
     onMode: drawing => $('stage').classList.toggle('drawing-route', drawing),
     onChange: routes => routesBySnapshot.set(activeSnapshot, routes),
   });
@@ -546,7 +668,15 @@
     setCamera,
     selectActor,
     moveActor,
+    renameActor,
+    undoName,
+    beginRename,
+    get renamingId() { return renamingId; },
     canPlace,
+    groundHeight,
+    displayNameOf: id => { const object = actorObjects.get(id); return object ? displayName(object.actor) : null; },
+    getOriginalNames: () => Object.fromEntries(data.actors.map(actor => [actor.id, actor.label])),
+    getTeachingNames: () => ({ ...nameOverrides() }),
     getOriginal: () => Object.fromEntries(Object.keys(snapshotData().positions).map(id => [id, originalPosition(id)])),
     getTeaching: () => JSON.parse(JSON.stringify(teachingBySnapshot.get(activeSnapshot))),
     getRoutes: () => routeEditor.getRoutes(),
@@ -554,7 +684,7 @@
   };
   for (const snapshot of data.snapshots) {
     const key = snapshot.battleCountdown;
-    window.UnsavedGuard.track(key, () => ({ teaching: teachingBySnapshot.get(key), notes: notesBySnapshot.get(key) ?? '', routes: key === activeSnapshot ? routeEditor.getRoutes() : routesBySnapshot.get(key), draft: key === activeSnapshot ? routeEditor.draftPoints : null }));
+    window.UnsavedGuard.track(key, () => ({ teaching: teachingBySnapshot.get(key), names: teachingNamesBySnapshot.get(key), notes: notesBySnapshot.get(key) ?? '', routes: key === activeSnapshot ? routeEditor.getRoutes() : routesBySnapshot.get(key), draft: key === activeSnapshot ? routeEditor.draftPoints : null }));
   }
   renderNotesMode();
   if (requestedSnapshot) setSnapshot(requestedSnapshot);
