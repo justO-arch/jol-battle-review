@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "id": "20260829-round2",
+  "date": "2026-08-29",
+  "round": 2,
+  "ally": "驟雨初歇",
+  "enemy": "臥龍殿",
+  "label": "2026/08/29・第 2 場・驟雨初歇 vs 臥龍殿",
+  "overview": {
+    "duration": 1370,
+    "frames": {
+      "pattern": "webp/{frame}.webp",
+      "count": 1370,
+      "digits": 4,
+      "quality": 85,
+      "width": 712,
+      "height": 448
+    },
+    "hud": "../../data/r3-hud-merged.json",
+    "towerStates": "../../data/r3-tower-states.json",
+    "candidates": "../../data/p4-event-candidates.json",
+    "evidencePattern": "../../assets/p2-timeline/V06/V06-{slug}.jpg",
+    "hudCrop": [
+      480,
+      0,
+      800,
+      120
+    ],
+    "sourceLabel": "飯飯視角"
+  },
+  "events": [
+    {
+      "id": "P4-C02",
+      "title": "敵方上路第二哨塔・兩分鐘局部覆盤",
+      "renderer": "tower-disc",
+      "window": {
+        "start": "12:10",
+        "end": "10:10"
+      },
+      "evidence": "evidence.json",
+      "scene": "scene.json",
+      "legacyEventId": "E01-upper-second-tower",
+      "selectionReason": "選取倒數 12:10–10:10，是因為全局資料顯示雙方在相近時間各掉一座塔。優先重建敵方上路第二哨塔，是因為已有四個視角可交叉核對，適合驗證局部重建流程。",
+      "evidenceBoundary": "本段不是已確認的全場最關鍵事件；局部畫面也不能證明全局掉塔發生於此塔，或由此處交戰造成。人物位置是區域級人工草模，不是精確攝影測量。",
+      "sources": {
+        "V04": {
+          "videoId": "hlUWtFsi5K8",
+          "offset": 1448
+        },
+        "V05": {
+          "videoId": "3UiCZJ_oNzY",
+          "offset": 1415
+        },
+        "V06": {
+          "videoId": "JARgAjyjV4U",
+          "offset": 1477
+        },
+        "V08": {
+          "videoId": "pUg4p8_9sKs",
+          "offset": 1396
+        }
+      },
+      "snapshots": {
+        "11:35": {
+          "V04": "../../assets/events/E01-upper-second-tower/context/V04-11m35s.png",
+          "V05": "../../assets/events/E01-upper-second-tower/context/V05-11m35s.png",
+          "V06": "../../assets/events/E01-upper-second-tower/context/V06-11m35s.png",
+          "V08": "../../assets/events/E01-upper-second-tower/context/V08-11m35s.png"
+        },
+        "11:30": {
+          "V04": "../../assets/events/E01-upper-second-tower/frames/V04/V04-11m30s.jpg",
+          "V05": "../../assets/events/E01-upper-second-tower/frames/V05/V05-11m30s.jpg",
+          "V06": "../../assets/events/E01-upper-second-tower/frames/V06/V06-11m30s.jpg",
+          "V08": "../../assets/events/E01-upper-second-tower/frames/V08/V08-11m30s.jpg"
+        },
+        "11:10": {
+          "V04": "../../assets/events/E01-upper-second-tower/frames/V04/V04-11m10s.jpg",
+          "V05": "../../assets/events/E01-upper-second-tower/frames/V05/V05-11m10s.jpg",
+          "V06": "../../assets/events/E01-upper-second-tower/frames/V06/V06-11m10s.jpg",
+          "V08": "../../assets/events/E01-upper-second-tower/frames/V08/V08-11m10s.jpg"
+        },
+        "10:50": {
+          "V04": "../../assets/events/E01-upper-second-tower/frames/V04/V04-10m50s.jpg",
+          "V05": "../../assets/events/E01-upper-second-tower/frames/V05/V05-10m50s.jpg",
+          "V06": "../../assets/events/E01-upper-second-tower/frames/V06/V06-10m50s.jpg",
+          "V08": "../../assets/events/E01-upper-second-tower/frames/V08/V08-10m50s.jpg"
+        },
+        "10:35": {
+          "V04": "../../assets/events/E01-upper-second-tower/context/V04-10m35s.png",
+          "V05": "../../assets/events/E01-upper-second-tower/context/V05-10m35s.png",
+          "V06": "../../assets/events/E01-upper-second-tower/context/V06-10m35s.png",
+          "V08": "../../assets/events/E01-upper-second-tower/context/V08-10m35s.png"
+        }
+      },
+      "keyframes": {
+        "12:10": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-12m10s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-12m10s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-12m10s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-12m10s.jpg"
+        },
+        "11:50": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-11m50s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-11m50s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-11m50s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-11m50s.jpg"
+        },
+        "11:30": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-11m30s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-11m30s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-11m30s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-11m30s.jpg"
+        },
+        "11:10": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-11m10s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-11m10s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-11m10s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-11m10s.jpg"
+        },
+        "10:50": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-10m50s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-10m50s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-10m50s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-10m50s.jpg"
+        },
+        "10:30": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-10m30s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-10m30s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-10m30s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-10m30s.jpg"
+        },
+        "10:10": {
+          "V04": "../../assets/events/P4-C02/keyframes/V04-10m10s.jpg",
+          "V05": "../../assets/events/P4-C02/keyframes/V05-10m10s.jpg",
+          "V06": "../../assets/events/P4-C02/keyframes/V06-10m10s.jpg",
+          "V08": "../../assets/events/P4-C02/keyframes/V08-10m10s.jpg"
+        }
+      }
+    }
+  ]
+}

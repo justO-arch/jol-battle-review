@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "match_id": "20260829_205556_驟雨初歇_vs_臥龍殿",
+  "generated_at": "2026-09-06",
+  "status": "system_candidates_pending_tactical_review",
+  "policy": {
+    "user_windows_have_priority": true,
+    "maximum_initial_candidates": 3,
+    "default_window_seconds": 120,
+    "detector": "R3 merged tower-count transitions define event centers; verified tower-progress changes inside each 120-second window contribute to ranking; adjacent transitions within 70 seconds are grouped",
+    "ranking": "10 points per lost tower plus the combined verified progress change and 4 points when both sides changed",
+    "excluded_from_trigger": [
+      "upper_percent_raw",
+      "tower-progress percentage as single-tower health",
+      "density alone"
+    ]
+  },
+  "detected_transitions": [
+    {
+      "side": "enemy",
+      "field": "enemy_remaining_towers",
+      "from_value": 9,
+      "to_value": 8,
+      "loss": 1,
+      "interval_start_seconds": 1020,
+      "interval_end_seconds": 1010,
+      "interval_start": "17:00",
+      "interval_end": "16:50",
+      "midpoint_seconds": 1015,
+      "evidence_before": "../assets/p2-timeline/V06/V06-17m00s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-16m50s.jpg"
+    },
+    {
+      "side": "ally",
+      "field": "ally_remaining_towers",
+      "from_value": 9,
+      "to_value": 8,
+      "loss": 1,
+      "interval_start_seconds": 970,
+      "interval_end_seconds": 960,
+      "interval_start": "16:10",
+      "interval_end": "16:00",
+      "midpoint_seconds": 965,
+      "evidence_before": "../assets/p2-timeline/V06/V06-16m10s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-16m00s.jpg"
+    },
+    {
+      "side": "enemy",
+      "field": "enemy_remaining_towers",
+      "from_value": 8,
+      "to_value": 7,
+      "loss": 1,
+      "interval_start_seconds": 960,
+      "interval_end_seconds": 950,
+      "interval_start": "16:00",
+      "interval_end": "15:50",
+      "midpoint_seconds": 955,
+      "evidence_before": "../assets/p2-timeline/V06/V06-16m00s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-15m50s.jpg"
+    },
+    {
+      "side": "ally",
+      "field": "ally_remaining_towers",
+      "from_value": 8,
+      "to_value": 7,
+      "loss": 1,
+      "interval_start_seconds": 950,
+      "interval_end_seconds": 940,
+      "interval_start": "15:50",
+      "interval_end": "15:40",
+      "midpoint_seconds": 945,
+      "evidence_before": "../assets/p2-timeline/V06/V06-15m50s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-15m40s.jpg"
+    },
+    {
+      "side": "enemy",
+      "field": "enemy_remaining_towers",
+      "from_value": 7,
+      "to_value": 6,
+      "loss": 1,
+      "interval_start_seconds": 700,
+      "interval_end_seconds": 690,
+      "interval_start": "11:40",
+      "interval_end": "11:30",
+      "midpoint_seconds": 695,
+      "evidence_before": "../assets/p2-timeline/V06/V06-11m40s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-11m30s.jpg"
+    },
+    {
+      "side": "ally",
+      "field": "ally_remaining_towers",
+      "from_value": 7,
+      "to_value": 6,
+      "loss": 1,
+      "interval_start_seconds": 680,
+      "interval_end_seconds": 670,
+      "interval_start": "11:20",
+      "interval_end": "11:10",
+      "midpoint_seconds": 675,
+      "evidence_before": "../assets/p2-timeline/V06/V06-11m20s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-11m10s.jpg"
+    },
+    {
+      "side": "enemy",
+      "field": "enemy_remaining_towers",
+      "from_value": 6,
+      "to_value": 5,
+      "loss": 1,
+      "interval_start_seconds": 570,
+      "interval_end_seconds": 560,
+      "interval_start": "09:30",
+      "interval_end": "09:20",
+      "midpoint_seconds": 565,
+      "evidence_before": "../assets/p2-timeline/V06/V06-09m30s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-09m20s.jpg"
+    },
+    {
+      "side": "ally",
+      "field": "ally_remaining_towers",
+      "from_value": 6,
+      "to_value": 5,
+      "loss": 1,
+      "interval_start_seconds": 260,
+      "interval_end_seconds": 250,
+      "interval_start": "04:20",
+      "interval_end": "04:10",
+      "midpoint_seconds": 255,
+      "evidence_before": "../assets/p2-timeline/V06/V06-04m20s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-04m10s.jpg"
+    },
+    {
+      "side": "enemy",
+      "field": "enemy_remaining_towers",
+      "from_value": 5,
+      "to_value": 4,
+      "loss": 1,
+      "interval_start_seconds": 230,
+      "interval_end_seconds": 220,
+      "interval_start": "03:50",
+      "interval_end": "03:40",
+      "midpoint_seconds": 225,
+      "evidence_before": "../assets/p2-timeline/V06/V06-03m50s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-03m40s.jpg"
+    },
+    {
+      "side": "enemy",
+      "field": "enemy_remaining_towers",
+      "from_value": 4,
+      "to_value": 3,
+      "loss": 1,
+      "interval_start_seconds": 100,
+      "interval_end_seconds": 90,
+      "interval_start": "01:40",
+      "interval_end": "01:30",
+      "midpoint_seconds": 95,
+      "evidence_before": "../assets/p2-timeline/V06/V06-01m40s.jpg",
+      "evidence_after": "../assets/p2-timeline/V06/V06-01m30s.jpg"
+    }
+  ],
+  "candidates": [
+    {
+      "event_id": "P4-C01",
+      "layer": "inference",
+      "status": "candidate",
+      "title": "前段多塔交換",
+      "question": "這段塔數交換前後，雙方兵力如何轉點，哪一側的調度值得局部覆盤？",
+      "window": {
+        "start_seconds": 1030,
+        "end_seconds": 910,
+        "start": "17:10",
+        "end": "15:10",
+        "duration_seconds": 120
+      },
+      "trigger": {
+        "kind": "multi_source_merged_and_visually_reviewed_tower_count_changes",
+        "total_tower_loss": 4,
+        "both_sides": true,
+        "score": 58,
+        "progress_change_total": 14,
+        "progress_changes": [
+          {
+            "side": "ally",
+            "field": "ally_tower_progress_percent",
+            "from_value": 91,
+            "to_value": 84,
+            "change": 7,
+            "evidence_before": "../assets/p2-timeline/V06/V06-17m10s.jpg",
+            "evidence_after": "../assets/r3-hud/V03/V03-15m10s.jpg"
+          },
+          {
+            "side": "enemy",
+            "field": "enemy_tower_progress_percent",
+            "from_value": 88,
+            "to_value": 81,
+            "change": 7,
+            "evidence_before": "../assets/p2-timeline/V06/V06-17m10s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-15m10s.jpg"
+          }
+        ],
+        "transitions": [
+          {
+            "side": "enemy",
+            "field": "enemy_remaining_towers",
+            "from_value": 9,
+            "to_value": 8,
+            "loss": 1,
+            "interval_start_seconds": 1020,
+            "interval_end_seconds": 1010,
+            "interval_start": "17:00",
+            "interval_end": "16:50",
+            "midpoint_seconds": 1015,
+            "evidence_before": "../assets/p2-timeline/V06/V06-17m00s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-16m50s.jpg"
+          },
+          {
+            "side": "ally",
+            "field": "ally_remaining_towers",
+            "from_value": 9,
+            "to_value": 8,
+            "loss": 1,
+            "interval_start_seconds": 970,
+            "interval_end_seconds": 960,
+            "interval_start": "16:10",
+            "interval_end": "16:00",
+            "midpoint_seconds": 965,
+            "evidence_before": "../assets/p2-timeline/V06/V06-16m10s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-16m00s.jpg"
+          },
+          {
+            "side": "enemy",
+            "field": "enemy_remaining_towers",
+            "from_value": 8,
+            "to_value": 7,
+            "loss": 1,
+            "interval_start_seconds": 960,
+            "interval_end_seconds": 950,
+            "interval_start": "16:00",
+            "interval_end": "15:50",
+            "midpoint_seconds": 955,
+            "evidence_before": "../assets/p2-timeline/V06/V06-16m00s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-15m50s.jpg"
+          },
+          {
+            "side": "ally",
+            "field": "ally_remaining_towers",
+            "from_value": 8,
+            "to_value": 7,
+            "loss": 1,
+            "interval_start_seconds": 950,
+            "interval_end_seconds": 940,
+            "interval_start": "15:50",
+            "interval_end": "15:40",
+            "midpoint_seconds": 945,
+            "evidence_before": "../assets/p2-timeline/V06/V06-15m50s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-15m40s.jpg"
+          }
+        ],
+        "caveat": "拆塔進度與塔數變化用來定位候選窗口；百分比不是單塔血量，也不單獨證明交戰地點或戰術因果。"
+      },
+      "location": {
+        "status": "unknown",
+        "label": "待由主畫面確認",
+        "basis": "全場 HUD 只能確定塔數變化。"
+      },
+      "source_coverage": [
+        {
+          "source_id": "V06",
+          "coverage": "full_window_overview"
+        }
+      ],
+      "selection_reason": "按塔損總量與雙方是否同時變化排序；需補查主畫面才能進 P5。"
+    },
+    {
+      "event_id": "P4-C02",
+      "layer": "inference",
+      "status": "selected_for_reconstruction",
+      "title": "中段雙方掉塔",
+      "question": "這段塔數交換前後，雙方兵力如何轉點，哪一側的調度值得局部覆盤？",
+      "window": {
+        "start_seconds": 730,
+        "end_seconds": 610,
+        "start": "12:10",
+        "end": "10:10",
+        "duration_seconds": 120
+      },
+      "trigger": {
+        "kind": "multi_source_merged_and_visually_reviewed_tower_count_changes",
+        "total_tower_loss": 2,
+        "both_sides": true,
+        "score": 31,
+        "progress_change_total": 7,
+        "progress_changes": [
+          {
+            "side": "ally",
+            "field": "ally_tower_progress_percent",
+            "from_value": 79,
+            "to_value": 76,
+            "change": 3,
+            "evidence_before": "../assets/p2-timeline/V06/V06-12m10s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-10m10s.jpg"
+          },
+          {
+            "side": "enemy",
+            "field": "enemy_tower_progress_percent",
+            "from_value": 73,
+            "to_value": 69,
+            "change": 4,
+            "evidence_before": "../assets/r3-hud/V05/V05-12m10s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-10m10s.jpg"
+          }
+        ],
+        "transitions": [
+          {
+            "side": "enemy",
+            "field": "enemy_remaining_towers",
+            "from_value": 7,
+            "to_value": 6,
+            "loss": 1,
+            "interval_start_seconds": 700,
+            "interval_end_seconds": 690,
+            "interval_start": "11:40",
+            "interval_end": "11:30",
+            "midpoint_seconds": 695,
+            "evidence_before": "../assets/p2-timeline/V06/V06-11m40s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-11m30s.jpg"
+          },
+          {
+            "side": "ally",
+            "field": "ally_remaining_towers",
+            "from_value": 7,
+            "to_value": 6,
+            "loss": 1,
+            "interval_start_seconds": 680,
+            "interval_end_seconds": 670,
+            "interval_start": "11:20",
+            "interval_end": "11:10",
+            "midpoint_seconds": 675,
+            "evidence_before": "../assets/p2-timeline/V06/V06-11m20s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-11m10s.jpg"
+          }
+        ],
+        "caveat": "拆塔進度與塔數變化用來定位候選窗口；百分比不是單塔血量，也不單獨證明交戰地點或戰術因果。"
+      },
+      "location": {
+        "status": "evidence_hint",
+        "label": "上路第二哨塔附近",
+        "basis": "既有 E01 多視角主畫面；P5 仍須重新校正。"
+      },
+      "source_coverage": [
+        {
+          "source_id": "V06",
+          "coverage": "full_window_overview"
+        },
+        {
+          "source_id": "V04",
+          "coverage": "partial_11:30-10:41"
+        },
+        {
+          "source_id": "V05",
+          "coverage": "partial_11:30-10:41"
+        },
+        {
+          "source_id": "V08",
+          "coverage": "partial_11:30-10:41"
+        }
+      ],
+      "selection_reason": "兩側塔數在相近時間下降，且 12:10–10:10 已有四視角、每 20 秒一格的局部證據；在三個候選中最適合先進 P5。"
+    },
+    {
+      "event_id": "P4-C03",
+      "layer": "inference",
+      "status": "candidate",
+      "title": "後段雙方掉塔",
+      "question": "這段塔數交換前後，雙方兵力如何轉點，哪一側的調度值得局部覆盤？",
+      "window": {
+        "start_seconds": 300,
+        "end_seconds": 180,
+        "start": "05:00",
+        "end": "03:00",
+        "duration_seconds": 120
+      },
+      "trigger": {
+        "kind": "multi_source_merged_and_visually_reviewed_tower_count_changes",
+        "total_tower_loss": 2,
+        "both_sides": true,
+        "score": 35,
+        "progress_change_total": 11,
+        "progress_changes": [
+          {
+            "side": "ally",
+            "field": "ally_tower_progress_percent",
+            "from_value": 66,
+            "to_value": 60,
+            "change": 6,
+            "evidence_before": "../assets/p2-timeline/V06/V06-05m00s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-03m00s.jpg"
+          },
+          {
+            "side": "enemy",
+            "field": "enemy_tower_progress_percent",
+            "from_value": 55,
+            "to_value": 50,
+            "change": 5,
+            "evidence_before": "../assets/p2-timeline/V06/V06-05m00s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-03m00s.jpg"
+          }
+        ],
+        "transitions": [
+          {
+            "side": "ally",
+            "field": "ally_remaining_towers",
+            "from_value": 6,
+            "to_value": 5,
+            "loss": 1,
+            "interval_start_seconds": 260,
+            "interval_end_seconds": 250,
+            "interval_start": "04:20",
+            "interval_end": "04:10",
+            "midpoint_seconds": 255,
+            "evidence_before": "../assets/p2-timeline/V06/V06-04m20s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-04m10s.jpg"
+          },
+          {
+            "side": "enemy",
+            "field": "enemy_remaining_towers",
+            "from_value": 5,
+            "to_value": 4,
+            "loss": 1,
+            "interval_start_seconds": 230,
+            "interval_end_seconds": 220,
+            "interval_start": "03:50",
+            "interval_end": "03:40",
+            "midpoint_seconds": 225,
+            "evidence_before": "../assets/p2-timeline/V06/V06-03m50s.jpg",
+            "evidence_after": "../assets/p2-timeline/V06/V06-03m40s.jpg"
+          }
+        ],
+        "caveat": "拆塔進度與塔數變化用來定位候選窗口；百分比不是單塔血量，也不單獨證明交戰地點或戰術因果。"
+      },
+      "location": {
+        "status": "unknown",
+        "label": "待由主畫面確認",
+        "basis": "全場 HUD 只能確定塔數變化。"
+      },
+      "source_coverage": [
+        {
+          "source_id": "V06",
+          "coverage": "full_window_overview"
+        }
+      ],
+      "selection_reason": "按塔損總量與雙方是否同時變化排序；需補查主畫面才能進 P5。"
+    }
+  ],
+  "p5_selection": "P4-C02"
+}

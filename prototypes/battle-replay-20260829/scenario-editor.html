@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>幫戰空白劇本・自由沙盤</title>
+<style>
+:root{color-scheme:dark;--bg:#081018;--panel:#101d27;--panel2:#152633;--line:#294150;--ink:#edf3f6;--muted:#91a6b5;--gold:#efc979;--ally:#65caed;--enemy:#f17873}*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#071018,#111c24 65%,#08121a);color:var(--ink);font:14px/1.5 system-ui,"Microsoft JhengHei",sans-serif}button,input,select{font:inherit;color:inherit;background:#192a37;border:1px solid var(--line);border-radius:7px;padding:7px 9px}button{cursor:pointer}button:hover,button[aria-pressed=true]{border-color:var(--gold);color:#ffe2a3}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 22px;border-bottom:1px solid var(--line)}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:700}h1{margin:1px 0 0;font-size:22px}header p{margin:0;color:var(--muted);text-align:right;font-size:12px}a{color:#b7cad6}.workspace{display:grid;grid-template-columns:minmax(620px,1fr) 370px;gap:12px;padding:12px}.panel{background:#0e1a24e8;border:1px solid var(--line);border-radius:9px;overflow:hidden}.toolbar{padding:9px 12px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}.toolbar label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px}.toolbar select{min-width:190px}.stage{height:660px;position:relative;background:radial-gradient(ellipse at 50% 52%,#263844,#0a131b 75%);overflow:hidden}.stage.editing canvas{cursor:crosshair}canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}.stage-info{position:absolute;top:14px;left:15px;pointer-events:none;background:#0b151dcc;border:1px solid #304552;border-radius:7px;padding:8px 10px}.stage-info b{display:block;color:var(--gold)}.stage-info small{display:block;color:var(--muted)}.legend{position:absolute;right:14px;top:14px;display:grid;gap:3px;padding:7px 9px;border-radius:6px;background:#0b151dcc;font-size:10px;color:#b9c8d1;pointer-events:none}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--ally)}.dot.enemy{background:var(--enemy)}.stage-note{position:absolute;left:15px;bottom:12px;pointer-events:none;color:#a9bac5;font-size:10px}.labels{position:absolute;inset:0;pointer-events:none}.piece-label{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:5px;min-width:70px;padding:3px 6px;border:1px solid var(--ally);border-radius:6px;background:#09141de8;color:#c7effb;font-size:10px;white-space:nowrap;filter:drop-shadow(0 2px 3px #000)}.piece-label.enemy{border-color:var(--enemy);color:#ffc5c0}.piece-label.group{font-weight:700;border-style:double}.piece-label.selected{border-color:var(--gold);color:#ffe2a1}.direction-label{position:absolute;transform:translate(-50%,-50%);padding:4px 7px;border:1px solid #9f8755;border-radius:5px;background:#17140edb;color:#ffe0a0;font-size:9px;line-height:1.25;text-align:center;white-space:pre-line;filter:drop-shadow(0 2px 3px #000)}.direction-label.lateral{color:#d4e5ee;border-color:#667d8a}.profession-icon{width:25px;height:25px;flex:0 0 25px;background-image:url("assets/ui/profession-icons.png");background-repeat:no-repeat;background-size:25px 225px;background-position:0 calc(var(--profession-index) * -25px);border-radius:4px}.side{padding:13px;max-height:720px;overflow:auto}.side h2{font-size:13px;margin:0 0 8px}.form{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}.form label{display:grid;gap:3px;color:var(--muted);font-size:10px}.form label.is-disabled{opacity:.42}.form .wide{grid-column:1/-1}.form button{grid-column:1/-1;background:#203749}.status{padding:9px 10px;border:1px solid #584a32;background:#251f17;border-radius:7px;margin-bottom:12px;color:#d9c394;font-size:11px}.piece-list{display:grid;gap:6px;margin-bottom:10px}.piece-row{display:grid;grid-template-columns:1fr auto;gap:5px}.piece-row button:first-child{text-align:left;border-left:3px solid var(--ally)}.piece-row.enemy button:first-child{border-left-color:var(--enemy)}.piece-row small{display:block;color:var(--muted);font-size:9px}.piece-row .remove{padding-inline:10px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}.actions button:last-child{grid-column:1/-1}.import-input{display:none}.help{margin:12px 0 0;padding-left:18px;color:#aebdc6;font-size:10px}@media(max-width:1000px){.workspace{grid-template-columns:1fr}.side{max-height:none}.stage{height:560px}}@media(max-width:620px){header{display:block}header p{text-align:left;margin-top:6px}.workspace{padding:7px;display:block}.panel{margin-bottom:7px}.stage{height:500px}.toolbar label{width:100%}.toolbar select{flex:1}.form{grid-template-columns:1fr}.form .wide,.form button{grid-column:auto}}
+</style>
+<style>
+.dot.marker{background:var(--gold);border-radius:1px;transform:rotate(45deg)}
+.piece-label.marker{border-color:var(--gold);color:#ffe2a1}
+.piece-row.marker button:first-child{border-left-color:var(--gold)}
+.route-row{display:grid;grid-template-columns:1fr auto;gap:5px}.route-row button:first-child{text-align:left;border-left:3px solid var(--ally)}.route-row.enemy button:first-child{border-left-color:var(--enemy)}.route-row.neutral button:first-child{border-left-color:var(--gold)}
+.route-color{display:grid;gap:3px;margin-bottom:6px;color:var(--muted);font-size:10px}.route-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.page-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:5px}.page-nav a{padding:4px 8px;border:1px solid var(--line);border-radius:6px;text-decoration:none}.page-nav a[aria-current=page]{border-color:var(--gold);color:#ffe2a3}.full-map-stage{display:none;height:720px}.full-map-stage iframe{display:block;width:100%;height:100%;border:0;background:#08121a}body.full-map .stage,body.full-map .side{display:none}body.full-map .full-map-stage{display:block}body.full-map .workspace{grid-template-columns:1fr}
+</style>
+<link rel="stylesheet" href="tactical-notes.css">
+</head>
+<body>
+<header><div><div class="eyebrow">JUSTICEOL / TACTICAL SANDBOX</div><h1>幫戰空白劇本・自由沙盤</h1></div><div><nav class="page-nav" aria-label="主要頁面"><a href="overview.html">大局概覽</a><a href="event-review.html">局部覆盤</a><a href="scenario-editor.html" aria-current="page">空白劇本</a></nav><p>選擇全場或局部場景，自行配置棋子、標記與調兵路線。<br>本頁內容均為手動推演，不代表實際戰況。</p></div></header>
+<div class="workspace">
+  <main class="panel">
+    <nav class="toolbar" aria-label="空白劇本工具">
+      <label>場景<select id="scene-select" aria-label="選擇沙盤場景"></select></label>
+      <span>視角</span><button type="button" data-camera="overview">我方視角</button><button type="button" data-camera="top">俯視</button><button type="button" data-camera="reverse">敵方反向</button>
+    </nav>
+    <div class="stage editing" id="stage">
+      <canvas id="scene" aria-label="可旋轉並放置棋子或自訂標記的三維沙盤"></canvas><div class="labels" id="labels"></div>
+      <div class="stage-info"><b id="scene-title">我方上外塔</b><small id="scene-kind">外塔場景</small><small id="piece-count">0 枚棋子</small></div>
+      <div class="legend"><span><i class="dot"></i>我方棋子</span><span><i class="dot enemy"></i>敵方棋子</span><span><i class="dot marker"></i>自訂標記</span></div>
+      <div class="stage-note">拖曳旋轉・滾輪縮放・右鍵平移<br>選取棋子後可直接拖曳位置</div>
+    </div>
+    <div class="full-map-stage" id="full-map-stage"><iframe id="full-map-frame" title="全場空白劇本" src="tactical-map.html?embed=1"></iframe></div>
+    <section class="tactical-notes" id="local-notes"><label for="tactical-notes">戰術說明</label><textarea id="tactical-notes" maxlength="10000" placeholder="記錄調兵順序、進攻條件、撤退時機與各隊任務。"></textarea><small>隨目前劇本另存新檔；開啟舊檔可還原。</small></section>
+  </main>
+  <aside class="panel side">
+    <div class="status" id="status">目前是空白劇本，請新增第一枚棋子。</div>
+    <h2>新增棋子或標記</h2>
+    <div class="form">
+      <label id="side-field">陣營<select id="piece-side"><option value="ally">我方</option><option value="enemy">敵方</option></select></label>
+      <label>項目類型<select id="piece-kind"><option value="profession">職業棋子</option><option value="group">小隊棋子</option><option value="marker">自訂標記</option></select></label>
+      <label id="profession-field">職業<select id="piece-profession"></select></label>
+      <label class="wide"><span id="label-field-title">棋子 ID（選填，未填自動編號）</span><input id="piece-label" maxlength="24" placeholder="例：飯飯／進攻二隊"></label>
+      <button type="button" id="add-piece">＋ 新增棋子</button>
+    </div>
+    <h2>場上項目</h2><div class="piece-list" id="piece-list"></div>
+    <h2>調兵路線</h2><label class="route-color">路線顏色<select id="route-color"><option value="red">紅色</option><option value="green">綠色</option><option value="blue" selected>藍色</option><option value="yellow">黃色</option></select></label><div class="route-tools"><button type="button" id="route-start">＋ 新增路線</button><button type="button" id="route-cancel">取消繪製</button><button type="button" id="route-add-node">＋ 新增節點</button><button type="button" id="route-remove-node">－ 移除節點</button><button type="button" id="route-delete">刪除路線</button><button type="button" id="route-undo">路線復原</button></div><div class="piece-list" id="route-list"></div>
+    <div class="actions"><button type="button" id="duplicate">複製選取</button><button type="button" id="undo">復原</button><button type="button" id="clear">清空全部</button><button type="button" id="export">另存新檔</button><button type="button" id="import">開啟舊檔</button></div>
+    <input class="import-input" id="import-file" type="file" accept="application/json,.json">
+    <ul class="help"><li>棋子底座／外框表示敵我；職業棋子顯示圖示，小隊棋子以三人造型表示；自訂標記使用黃色菱形。文字只顯示 ID。</li><li>新增路線後，單擊地面增加節點，雙擊加入終點並完成；點線段只會選取，新增節點須先按工具按鈕。</li><li>12 點固定朝敵方；我方視角右側是上路、左側是下路。塔前／塔後會依敵我塔自動換算。</li><li>外塔左右為山壁、前後為寬路；家中以 3–9 點為長邊，三門各接內塔，較短的樓梯端沒有出口或塔。</li><li>野區左右連通相鄰兩路；道路與周圍綠地可配置棋子，12／6 點外圍山壁不可直接穿越。</li><li>中央河道實際是 3–9 點方向的長大道；大道在左右接塔路口終止，12／6 點兩側各有左、中、右三條支路。</li><li>另存新檔會保存自由推演；開啟舊檔可讀取先前檔案，不會改動史實覆盤資料。</li></ul>
+  </aside>
+</div>
+<script src="unsaved-guard.js"></script>
+<script src="../tower-sandbox/vendor/three.min.js"></script>
+<script src="route-editor-3d.js"></script>
+<script src="scenario-editor.js"></script>
+</body>
+</html>
