@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>幫戰全場戰術盤・手動編輯</title>
+<style>
+:root{color-scheme:dark;--bg:#071018;--panel:#0e1b25;--line:#294454;--ink:#edf4f7;--muted:#91a8b7;--gold:#efc979;--ally:#65caed;--enemy:#f17873}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 35%,#18303e,#071018 72%);color:var(--ink);font:14px/1.5 system-ui,"Microsoft JhengHei",sans-serif}header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 22px;border-bottom:1px solid var(--line)}h1{margin:2px 0 0;font-size:23px}.eyebrow{color:var(--gold);font-size:10px;font-weight:700;letter-spacing:2px}header p{margin:0;color:var(--muted);text-align:right;font-size:12px}a{color:#b9d3df}.layout{display:grid;grid-template-columns:minmax(620px,1fr) 300px;gap:12px;padding:12px}.panel{background:#0b1720e8;border:1px solid var(--line);border-radius:10px;overflow:hidden}.map-head{display:flex;justify-content:space-between;gap:12px;padding:9px 13px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}.map-head strong{color:var(--gold)}#tactical-map{display:block;width:100%;height:auto;min-height:620px;background:#0b1822;touch-action:none}.aside{padding:14px;overflow:auto}.aside h2{font-size:13px;margin:14px 0 7px}.aside h2:first-of-type{margin-top:0}.aside p{color:#a9bbc5;font-size:11px}.legend{display:grid;gap:8px;margin:14px 0}.legend span{display:flex;align-items:center;gap:8px}.swatch{width:13px;height:13px;border-radius:50%;background:var(--ally)}.swatch.enemy{background:var(--enemy)}.swatch.road{border-radius:3px;background:#aaa58f}.swatch.wild{border-radius:3px;background:#526f5b}.note{padding:10px;border:1px solid #5c4b2e;border-radius:7px;background:#261f15;color:#dcc796;font-size:11px}.checklist{padding-left:18px;color:#aebec7;font-size:11px}@media(max-width:1000px){.layout{grid-template-columns:1fr}#tactical-map{min-height:0}}@media(max-width:620px){header{display:block}header p{text-align:left;margin-top:7px}.layout{padding:7px}.map-head{display:block}.map-head span{display:block;margin-top:3px}}
+</style>
+<style>
+button,input,select{font:inherit;color:inherit;background:#192a37;border:1px solid var(--line);border-radius:7px;padding:6px 8px;max-width:100%}button{cursor:pointer}button:hover,button[aria-pressed=true]{border-color:var(--gold);color:#ffe2a3}button:disabled{opacity:.4;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.status{padding:9px 10px;border:1px solid #584a32;background:#251f17;border-radius:7px;color:#d9c394;font-size:11px;margin-bottom:12px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:6px}.form label{display:grid;gap:3px;color:var(--muted);font-size:10px;min-width:0}.form label.is-disabled{opacity:.42}.form .wide{grid-column:1/-1}.form button{grid-column:1/-1;background:#203749}.form output{padding:6px 8px;border:1px dashed var(--line);border-radius:7px;font-size:11px;color:#b9cbd3;overflow-wrap:anywhere}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.actions .wide{grid-column:1/-1}.route-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}.route-controls label{display:grid;gap:3px;grid-column:1/-1;color:var(--muted);font-size:10px}
+.rename{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-bottom:8px}
+.item-list{display:grid;gap:5px;max-height:230px;overflow:auto}.item-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px}.item-row button:first-child{text-align:left;font-size:11px;border-left:3px solid var(--ally);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.item-row.enemy button:first-child{border-left-color:var(--enemy)}.item-row.neutral button:first-child{border-left-color:var(--gold)}.item-row .remove{padding-inline:9px}.item-list small{color:var(--muted);font-size:10px}
+.import-input{display:none}
+.mode-hint{color:var(--gold)}
+.embed-toggle{display:none}
+.page-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:5px}.page-nav a{padding:4px 8px;border:1px solid var(--line);border-radius:6px;text-decoration:none}.page-nav a[aria-current=page]{border-color:var(--gold);color:#ffe2a3}
+.token{cursor:grab}.token-label{font-size:11px;font-weight:800;paint-order:stroke;stroke:#06101a;stroke-width:3.5;stroke-linejoin:round;pointer-events:none}.arrow-path{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.arrow-hit{fill:none;stroke:#fff;stroke-opacity:0;stroke-width:20;stroke-linecap:round;stroke-linejoin:round;cursor:pointer}.arrow-handle{cursor:grab}.arrow-label{font-size:11px;font-weight:800;paint-order:stroke;stroke:#06101a;stroke-width:3.5;stroke-linejoin:round;pointer-events:none}.draft-path{fill:none;stroke:var(--gold);stroke-width:4;stroke-dasharray:9 7;stroke-linecap:round}.select-ring{fill:none;stroke:var(--gold);stroke-width:3}
+body.embedded header{display:none}body.embedded .layout{display:flex;flex-direction:column;height:100dvh;padding:6px;gap:6px}body.embedded main.panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}body.embedded main.panel #tactical-map{flex:1 1 auto;min-height:0;height:100%}body.embedded .aside{flex:0 0 auto;max-height:42%;padding:9px}body.embedded .legend,body.embedded .checklist,body.embedded .note{display:none}body.embedded .item-list{max-height:120px}
+body.embedded .embed-toggle{display:inline-block;flex-shrink:0;font-size:11px;padding:3px 8px}body.embedded .map-head{display:flex;align-items:center;flex-shrink:0}body.embedded .map-head>span:not(.mode-hint){display:none}body.embedded .aside{display:none;position:absolute;z-index:2;right:6px;top:52px;bottom:6px;width:min(300px,calc(100% - 12px));max-height:none;background:#0e1b25;box-shadow:0 6px 22px #0009}body.embedded.tools-open .aside{display:block}
+body.overlay{background:transparent;overflow:hidden}body.overlay .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:8px;padding:0;height:100dvh}body.overlay main.panel{display:block;min-height:0;border:0;border-radius:0;background:transparent}body.overlay .map-head{display:none}body.overlay #tactical-map{background:transparent;width:100%;height:100%;min-height:0}body.overlay #tactical-map>.arena,body.overlay #tactical-map>.zones,body.overlay #tactical-map>.roads,body.overlay #tactical-map>.objectives,body.overlay #tactical-map>.map-labels,body.overlay #tactical-map>rect{display:none}body.overlay .aside,body.overlay.tools-open .aside{display:block;position:static;width:auto;max-height:none;padding:9px;border-radius:8px;background:#0e1b25;box-shadow:none}body.overlay .embed-toggle{display:none}body.overlay.annotations-hidden .route-layer,body.overlay.annotations-hidden .piece-layer,body.overlay.annotations-hidden .draft-layer{display:none}body.overlay.annotations-hidden #tactical-map{pointer-events:none}
+@media(max-width:760px){body.overlay{overflow:auto}body.overlay .layout{grid-template-columns:1fr;height:auto;min-height:100dvh}body.overlay main.panel{height:55dvh}body.overlay .aside{min-height:45dvh}}
+</style>
+<link rel="stylesheet" href="tactical-notes.css">
+<style>
+body.embedded:not(.overlay) .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100dvh;gap:12px}
+body.embedded:not(.overlay) .aside{display:block;position:static;width:auto;max-height:none;min-height:0;box-shadow:none}
+body.embedded:not(.overlay) .embed-toggle{display:none}
+body.embedded:not(.overlay) main.panel{min-width:0}
+body.embedded:not(.overlay) main.panel #tactical-map{height:0;min-height:220px}
+body.overlay .tactical-notes{display:none}
+@media(max-width:800px){body.embedded:not(.overlay) .layout{display:flex;height:auto}body.embedded:not(.overlay) main.panel #tactical-map{height:auto;min-height:0}body.embedded:not(.overlay) .aside{position:static;width:auto;max-height:none}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">JUSTICEOL / TACTICAL PLANNER</div><h1>幫戰全場戰術盤</h1></div><div><nav class="page-nav" aria-label="主要頁面"><a href="overview.html">大局概覽</a><a href="event-review.html">局部覆盤</a><a href="scenario-editor.html" aria-current="page">空白劇本</a></nav><p>底圖為已確認的靜態校正版；上方標記與路線均為手動推演。</p></div></header>
+<div class="layout">
+  <main class="panel">
+    <div class="map-head"><strong>敵方在左・我方在右</strong><span>上路在上・下路在下・中央河道為無水大道</span><span class="mode-hint" id="mode-hint">選取模式</span><button type="button" class="embed-toggle" id="editor-tools" aria-expanded="false" aria-controls="editor-sidebar">編輯工具</button></div>
+    <svg id="tactical-map" viewBox="0 0 1000 620" role="img" aria-labelledby="map-title map-desc"><title id="map-title">幫戰全場戰術盤</title><desc id="map-desc">包含雙方家中、十八座塔、三路、四個野區與中央大道的靜態拓撲圖，並可疊加手動棋子、標記與調兵路線。</desc></svg>
+    <section class="tactical-notes" id="tactical-notes-panel"><label for="tactical-notes">戰術說明</label><textarea id="tactical-notes" maxlength="10000" placeholder="記錄調兵順序、進攻條件、撤退時機與各隊任務。"></textarea><small>隨目前劇本另存新檔；開啟舊檔可還原。</small></section>
+  </main>
+  <aside class="panel aside" id="editor-sidebar">
+    <div class="status" id="status">目前是空白戰術盤，請先新增棋子、標記或路線。</div>
+    <h2>對應場次</h2>
+    <div class="form">
+      <label class="wide">場次名稱<input id="reference-match" maxlength="48" placeholder="例：8/29 驟雨初歇 vs 臥龍殿"></label>
+      <label>戰場倒數<input id="reference-countdown" maxlength="5" placeholder="12:10" inputmode="numeric"></label>
+      <label>底圖版本<output id="map-version">—</output></label>
+    </div>
+    <h2>新增棋子或標記</h2>
+    <div class="form">
+      <label id="side-field">陣營<select id="token-side"><option value="ally">我方</option><option value="enemy">敵方</option></select></label>
+      <label>項目類型<select id="token-kind"><option value="profession">職業棋子</option><option value="group">小隊棋子</option><option value="marker">中立標記</option></select></label>
+      <label id="profession-field">職業<select id="token-profession"></select></label>
+      <label class="wide"><span id="label-field-title">使用者 ID（選填，未填自動編號）</span><input id="token-label" maxlength="24" placeholder="例：飯飯／進攻二隊"></label>
+      <button type="button" id="add-token">＋ 新增棋子</button>
+    </div>
+    <h2>調兵路線</h2>
+    <div class="route-controls">
+      <label>路線顏色<select id="route-color"><option value="red">紅色</option><option value="green">綠色</option><option value="blue" selected>藍色</option><option value="yellow">黃色</option></select></label>
+      <button type="button" id="arrow-start">＋ 新增路線</button>
+      <button type="button" id="arrow-cancel">取消繪製</button>
+      <button type="button" id="arrow-add-point">＋ 新增節點</button>
+      <button type="button" id="arrow-remove-point">－ 移除節點</button>
+      <button type="button" id="arrow-delete">刪除路線</button>
+      <button type="button" id="arrow-undo">路線復原</button>
+    </div>
+    <h2>場上項目 <span id="item-count">0 個</span></h2>
+    <div class="rename"><input id="rename-input" maxlength="24" placeholder="重新命名選取項目"><button type="button" id="rename">改名</button></div>
+    <div class="item-list" id="item-list"></div>
+    <div class="actions">
+      <button type="button" id="undo">復原</button><button type="button" id="delete">刪除選取</button>
+      <button type="button" id="export">另存新檔</button><button type="button" id="import">開啟舊檔</button>
+      <button type="button" id="clear" class="wide">清空全部</button>
+    </div>
+    <input class="import-input" id="import-file" type="file" accept="application/json,.json">
+    <div class="legend"><span><i class="swatch enemy"></i>敵方區域與塔</span><span><i class="swatch"></i>我方區域與塔</span><span><i class="swatch road"></i>主要道路</span><span><i class="swatch wild"></i>野區可活動腹地</span></div>
+    <ul class="checklist"><li>家中 3–9 點為長邊，樓梯在外側。</li><li>上野連上路與中路，下野連中路與下路。</li><li>中央大道只從上路接點延伸到下路接點。</li><li>大道兩側六條短路分別接六座外塔。</li><li>新增路線後單擊增加節點，雙擊加入終點並完成；點線段只會選取，新增節點須先按工具按鈕。</li></ul>
+    <p class="note">底圖只確認相對位置、道路連通與區域功能；距離、轉角及山壁輪廓仍是示意比例。棋子、標記與路線全是手動推演，不是實際戰況觀測。</p>
+  </aside>
+</div>
+<script src="unsaved-guard.js"></script>
+<script src="tactical-map.js"></script>
+<script src="tactical-editor.js"></script>
+</body>
+</html>

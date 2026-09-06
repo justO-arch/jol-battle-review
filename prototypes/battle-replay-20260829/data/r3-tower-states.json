@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "match_id": "20260829_205556_驟雨初歇_vs_臥龍殿",
+  "purpose": "Only emit a point when either side remaining-tower count changes.",
+  "ratio_order": "ally/enemy",
+  "source_file": "data/r3-hud-merged.json",
+  "review": "All ten count transitions were visually checked against adjacent V06 frames on 2026-09-06.",
+  "state_changes": [
+    {
+      "battle_remaining_seconds": 1370,
+      "battle_countdown": "22:50",
+      "ally_remaining_towers": 9,
+      "enemy_remaining_towers": 9,
+      "evidence_file": "../assets/p2-timeline/V06/V06-22m50s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 1010,
+      "battle_countdown": "16:50",
+      "ally_remaining_towers": 9,
+      "enemy_remaining_towers": 8,
+      "evidence_file": "../assets/p2-timeline/V06/V06-16m50s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 960,
+      "battle_countdown": "16:00",
+      "ally_remaining_towers": 8,
+      "enemy_remaining_towers": 8,
+      "evidence_file": "../assets/p2-timeline/V06/V06-16m00s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 950,
+      "battle_countdown": "15:50",
+      "ally_remaining_towers": 8,
+      "enemy_remaining_towers": 7,
+      "evidence_file": "../assets/p2-timeline/V06/V06-15m50s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 940,
+      "battle_countdown": "15:40",
+      "ally_remaining_towers": 7,
+      "enemy_remaining_towers": 7,
+      "evidence_file": "../assets/p2-timeline/V06/V06-15m40s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 690,
+      "battle_countdown": "11:30",
+      "ally_remaining_towers": 7,
+      "enemy_remaining_towers": 6,
+      "evidence_file": "../assets/p2-timeline/V06/V06-11m30s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 670,
+      "battle_countdown": "11:10",
+      "ally_remaining_towers": 6,
+      "enemy_remaining_towers": 6,
+      "evidence_file": "../assets/p2-timeline/V06/V06-11m10s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 560,
+      "battle_countdown": "09:20",
+      "ally_remaining_towers": 6,
+      "enemy_remaining_towers": 5,
+      "evidence_file": "../assets/p2-timeline/V06/V06-09m20s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 250,
+      "battle_countdown": "04:10",
+      "ally_remaining_towers": 5,
+      "enemy_remaining_towers": 5,
+      "evidence_file": "../assets/p2-timeline/V06/V06-04m10s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 220,
+      "battle_countdown": "03:40",
+      "ally_remaining_towers": 5,
+      "enemy_remaining_towers": 4,
+      "evidence_file": "../assets/p2-timeline/V06/V06-03m40s.jpg"
+    },
+    {
+      "battle_remaining_seconds": 90,
+      "battle_countdown": "01:30",
+      "ally_remaining_towers": 5,
+      "enemy_remaining_towers": 3,
+      "evidence_file": "../assets/p2-timeline/V06/V06-01m30s.jpg"
+    }
+  ]
+}

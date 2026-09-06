@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "eventId": "E01-upper-second-tower",
+  "status": "manual_semantic_layout_v1",
+  "coordinateSystem": "tower center is (0,0); +z is 12 o’clock toward enemy base; -x is 3 o’clock toward upper-lane side; y is up",
+  "activeSnapshot": "11:10",
+  "terrain": {
+    "platformRadius": 12,
+    "towerSide": "enemy",
+    "tower": {
+      "x": 0,
+      "z": 0,
+      "width": 3.6,
+      "depth": 3.6,
+      "approximateHeight": 6.2
+    },
+    "roads": {
+      "front": {
+        "from": [
+          0,
+          -12
+        ],
+        "to": [
+          0,
+          -22
+        ],
+        "width": 7,
+        "destination": "中央河道"
+      },
+      "rear": {
+        "from": [
+          0,
+          12
+        ],
+        "to": [
+          0,
+          22
+        ],
+        "width": 7,
+        "destination": "敵方大本營"
+      }
+    },
+    "note": "塔心、圓盤、左右山壁與前後道路拓撲已確認；尺寸、岩壁高度和人物共同座標仍是人工草模。"
+  },
+  "actors": [
+    {
+      "id": "OBS_V04",
+      "label": "V04 言柒",
+      "side": "ally",
+      "profession": "素問",
+      "roleClass": "support",
+      "kind": "observer",
+      "confidence": "low_position",
+      "evidence": "錄影者身份與職業為高信心；共同 x/z 尚未完成相機配準。"
+    },
+    {
+      "id": "OBS_V05",
+      "label": "V05 權威",
+      "side": "ally",
+      "profession": "龍吟",
+      "roleClass": "melee",
+      "kind": "observer",
+      "confidence": "low_position",
+      "evidence": "錄影者身份與職業為高信心；畫面顯示持續貼近塔內圈，共同 x/z 仍是草模。"
+    },
+    {
+      "id": "OBS_V06",
+      "label": "V06 飯飯",
+      "side": "ally",
+      "profession": "潮光",
+      "roleClass": "ranged_support",
+      "kind": "observer",
+      "confidence": "low_position",
+      "evidence": "錄影者身份與職業為高信心；畫面顯示在塔盤與內圈間移動，共同 x/z 仍是草模。"
+    },
+    {
+      "id": "OBS_V08",
+      "label": "V08 劍閣望龍",
+      "side": "ally",
+      "profession": "龍吟",
+      "roleClass": "melee_bodyguard",
+      "kind": "observer",
+      "confidence": "low_position",
+      "evidence": "身份為中等信心。11:35 明確仍在峽谷入口，11:30 已進塔盤；共同 x/z 仍是草模。"
+    },
+    {
+      "id": "ALLY_MELEE_CORE",
+      "label": "我方塔內圈人群",
+      "side": "ally",
+      "profession": "未辨識",
+      "roleClass": "unidentified_group",
+      "kind": "group",
+      "confidence": "medium_group",
+      "evidence": "四個來源都可見塔內圈我方人群；未以站位推定職業或戰術角色，群組不代表逐人去重。"
+    },
+    {
+      "id": "ALLY_OUTER_SUPPORT",
+      "label": "我方塔外圈人群",
+      "side": "ally",
+      "profession": "未辨識",
+      "roleClass": "unidentified_group",
+      "kind": "group",
+      "confidence": "medium_group",
+      "evidence": "V04、V06 可見塔外圈我方人員；未以站位推定職業或戰術角色。"
+    },
+    {
+      "id": "ENEMY_TOWER_CONTACT",
+      "label": "敵方塔邊接觸群",
+      "side": "enemy",
+      "profession": "混合未辨識",
+      "roleClass": "mixed_group",
+      "kind": "group",
+      "confidence": "medium_group",
+      "evidence": "V05、V06、V08 可見塔邊紅方人形／名牌；不指定個人姓名。"
+    },
+    {
+      "id": "ENEMY_OUTER_LINE",
+      "label": "敵方外圈戰線",
+      "side": "enemy",
+      "profession": "混合未辨識",
+      "roleClass": "mixed_group",
+      "kind": "group",
+      "confidence": "low_group",
+      "evidence": "V04、V08 可見外圈敵方戰線；遮擋與跨視角重複尚未排除。"
+    }
+  ],
+  "snapshots": [
+    {
+      "battleCountdown": "11:35",
+      "clipOffsetSeconds": -5,
+      "positions": {
+        "OBS_V04": [
+          -7.8,
+          -6
+        ],
+        "OBS_V05": [
+          -2.4,
+          -2.2
+        ],
+        "OBS_V06": [
+          5.8,
+          -4.8
+        ],
+        "OBS_V08": [
+          0.8,
+          -18
+        ],
+        "ALLY_MELEE_CORE": [
+          -4,
+          -1
+        ],
+        "ALLY_OUTER_SUPPORT": [
+          7.6,
+          -5.6
+        ],
+        "ENEMY_TOWER_CONTACT": [
+          3.2,
+          1.8
+        ],
+        "ENEMY_OUTER_LINE": [
+          -7.5,
+          5.8
+        ]
+      }
+    },
+    {
+      "battleCountdown": "11:30",
+      "clipOffsetSeconds": 0,
+      "positions": {
+        "OBS_V04": [
+          -7.2,
+          -5.4
+        ],
+        "OBS_V05": [
+          -2,
+          -1.8
+        ],
+        "OBS_V06": [
+          6.2,
+          -3.8
+        ],
+        "OBS_V08": [
+          1.4,
+          -8.8
+        ],
+        "ALLY_MELEE_CORE": [
+          -4.1,
+          -1
+        ],
+        "ALLY_OUTER_SUPPORT": [
+          7.4,
+          -5.2
+        ],
+        "ENEMY_TOWER_CONTACT": [
+          3.1,
+          1.7
+        ],
+        "ENEMY_OUTER_LINE": [
+          -7.2,
+          5.5
+        ]
+      }
+    },
+    {
+      "battleCountdown": "11:10",
+      "clipOffsetSeconds": 20,
+      "positions": {
+        "OBS_V04": [
+          -5.8,
+          -3.5
+        ],
+        "OBS_V05": [
+          -1.4,
+          2
+        ],
+        "OBS_V06": [
+          3.4,
+          -2.4
+        ],
+        "OBS_V08": [
+          7.7,
+          1.8
+        ],
+        "ALLY_MELEE_CORE": [
+          -4,
+          -0.8
+        ],
+        "ALLY_OUTER_SUPPORT": [
+          7.8,
+          -5
+        ],
+        "ENEMY_TOWER_CONTACT": [
+          3.3,
+          1.8
+        ],
+        "ENEMY_OUTER_LINE": [
+          -6.8,
+          5.2
+        ]
+      }
+    },
+    {
+      "battleCountdown": "10:50",
+      "clipOffsetSeconds": 40,
+      "positions": {
+        "OBS_V04": [
+          -4.8,
+          -4
+        ],
+        "OBS_V05": [
+          -2,
+          1.4
+        ],
+        "OBS_V06": [
+          7.2,
+          -2.8
+        ],
+        "OBS_V08": [
+          8,
+          3.2
+        ],
+        "ALLY_MELEE_CORE": [
+          -3.8,
+          -0.5
+        ],
+        "ALLY_OUTER_SUPPORT": [
+          7.8,
+          -4.2
+        ],
+        "ENEMY_TOWER_CONTACT": [
+          3.2,
+          1.5
+        ],
+        "ENEMY_OUTER_LINE": [
+          -6.2,
+          5.8
+        ]
+      }
+    },
+    {
+      "battleCountdown": "10:35",
+      "clipOffsetSeconds": 55,
+      "positions": {
+        "OBS_V04": [
+          -4.5,
+          -4.2
+        ],
+        "OBS_V05": [
+          -1.8,
+          1.2
+        ],
+        "OBS_V06": [
+          3,
+          -1.6
+        ],
+        "OBS_V08": [
+          5.8,
+          2.8
+        ],
+        "ALLY_MELEE_CORE": [
+          -3.8,
+          -0.4
+        ],
+        "ALLY_OUTER_SUPPORT": [
+          7.2,
+          -4.5
+        ],
+        "ENEMY_TOWER_CONTACT": [
+          3.1,
+          1.5
+        ],
+        "ENEMY_OUTER_LINE": [
+          -6,
+          5.4
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    "人物 x/z 是依塔內圈、外圈與入口語意排列的待配準草模，不是攝影測量結果。",
+    "切換快照只顯示五個人工檢查點；不在快照間插值，避免把未知路徑畫成連續移動。",
+    "教學位移另存，不會覆寫上述原始草模。"
+  ]
+}

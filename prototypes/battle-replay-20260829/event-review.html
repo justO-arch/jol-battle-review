@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>P4-C02 敵方上路第二哨塔・多視角事件沙盤</title>
+<style>
+:root{color-scheme:dark;--bg:#081018;--panel:#101d27;--panel2:#152633;--line:#294150;--ink:#edf3f6;--muted:#91a6b5;--gold:#efc979;--ally:#65caed;--enemy:#f17873;--warn:#db9d66}*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#071018,#111c24 65%,#08121a);color:var(--ink);font:14px/1.5 system-ui,"Microsoft JhengHei",sans-serif}button,input,select{font:inherit}button{color:inherit;background:#192a37;border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer}button:hover,button[aria-pressed=true]{border-color:var(--gold);background:#39301f;color:#ffe2a3}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 22px;border-bottom:1px solid var(--line)}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:700}h1{margin:1px 0 0;font-size:22px}header p{margin:0;color:var(--muted);text-align:right;max-width:600px;font-size:12px}header a{color:#b7cad6}.workspace{display:grid;grid-template-columns:minmax(620px,1fr) 360px;gap:12px;padding:12px}.panel{background:#0e1a24e8;border:1px solid var(--line);border-radius:9px;overflow:hidden}.toolbar{padding:9px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}.toolbar span{font-size:11px;color:var(--muted);margin-left:5px}.stage{height:590px;position:relative;background:radial-gradient(ellipse at 50% 52%,#263844,#0a131b 75%);overflow:hidden}.stage.editing canvas{cursor:crosshair}canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}.stage-info{position:absolute;top:14px;left:15px;pointer-events:none;background:#0b151dc9;border:1px solid #304552;border-radius:7px;padding:8px 10px}.stage-info b{display:block;color:var(--gold)}.stage-info small{color:var(--muted)}.legend{position:absolute;right:14px;top:14px;display:grid;gap:3px;padding:7px 9px;border-radius:6px;background:#0b151dcc;font-size:10px;color:#b9c8d1;pointer-events:none}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--ally)}.dot.enemy{background:var(--enemy)}.dot.gold{background:var(--gold)}.labels{position:absolute;inset:0;pointer-events:none}.scene-label{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;padding:2px 5px;border-bottom:1px solid var(--ally);border-radius:3px;background:#09141dcf;color:#afe8fb;font-size:10px;filter:drop-shadow(0 1px 2px #000)}.scene-label.enemy{border-color:var(--enemy);color:#ffc0ba}.scene-label.group{font-weight:700}.scene-label.selected{border-color:var(--gold);color:#ffe2a1;background:#3b311f}.direction-label{position:absolute;transform:translate(-50%,-50%);padding:4px 7px;border:1px solid #9f8755;border-radius:5px;background:#17140edb;color:#ffe0a0;font-size:9px;line-height:1.25;text-align:center;white-space:pre-line;filter:drop-shadow(0 2px 3px #000)}.direction-label.lateral{color:#d4e5ee;border-color:#667d8a}.stage-note{position:absolute;left:15px;right:15px;bottom:12px;color:#a9bac5;font-size:10px;pointer-events:none;display:flex;justify-content:space-between;gap:20px}.stage-note span:last-child{text-align:right}.side{padding:13px;max-height:650px;overflow:auto}.side h2{font-size:13px;margin:0 0 8px}.snapshot-summary{padding:10px;border:1px solid #584a32;background:#251f17;border-radius:7px;margin-bottom:12px}.snapshot-summary strong{color:#f4d18b}.snapshot-summary small{display:block;color:#bcae94}.actor-list{display:grid;gap:6px}.actor{width:100%;text-align:left;border-left:3px solid var(--ally);padding:7px 9px}.actor.enemy{border-left-color:var(--enemy)}.actor small{display:block;color:var(--muted);font-size:10px}.evidence{margin-top:9px;min-height:91px;padding:10px;border:1px solid var(--line);border-radius:7px;background:#09141c;color:#b9c9d2;font-size:11px}.evidence strong{display:block;color:#e8eff2}.warnings{margin:12px 0 0;padding-left:18px;color:#b7a99a;font-size:10px}.video-panel{margin:0 12px 12px}.video-head{display:grid;grid-template-columns:auto auto 1fr 64px;gap:8px;align-items:center;padding:11px 12px;border-bottom:1px solid var(--line)}.video-head input{width:100%;accent-color:var(--gold)}.clock{font:650 18px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);text-align:right}.videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px}.video-card{margin:0;background:#071018;border:1px solid var(--line);border-radius:7px;overflow:hidden}.video-card img{display:block;width:100%;aspect-ratio:16/9;background:#020507}.video-card figcaption{padding:6px 8px;font-size:11px}.video-card small{display:block;color:var(--muted)}.video-status{padding:0 12px 10px;color:#a5b6c0;font-size:10px}.bottom-actions{display:flex;gap:6px;margin:9px 0 11px}.bottom-actions button{flex:1}.import-input{display:none}@media(max-width:1000px){.workspace{grid-template-columns:1fr}.side{max-height:none}.stage{height:520px}}@media(max-width:620px){header{display:block}header p{text-align:left;margin-top:6px}.workspace{padding:7px;display:block}.panel{margin-bottom:7px}.stage{height:480px}.videos{grid-template-columns:1fr}.video-head{grid-template-columns:auto 1fr 58px}.video-head button:nth-child(2){display:none}.toolbar span{width:100%;margin:3px 0 0}.stage-note span:last-child{display:none}}
+
+.video-card a,.keyframe-card a{display:inline-block;color:#85d4f5;padding:5px 0}
+</style>
+<style>
+.keyframe-panel{margin:0 12px 12px}.keyframe-head{display:flex;align-items:center;gap:6px;padding:9px 12px;border-bottom:1px solid var(--line)}.keyframe-head h2{font-size:12px;margin:0 8px 0 0}.keyframe-head button{padding:4px 8px;font-size:10px}.keyframe-head small{margin-left:auto;color:var(--muted)}.keyframe-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:9px}.keyframe-card{margin:0;background:#071018;border:1px solid var(--line);border-radius:7px;overflow:hidden}.keyframe-card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#020507}.keyframe-card figcaption{padding:5px 7px;font-size:10px}.keyframe-note{padding:0 11px 9px;color:#a8b8c1;font-size:10px}@media(max-width:900px){.keyframe-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.keyframe-head{flex-wrap:wrap}.keyframe-head small{width:100%;margin-left:0}}@media(max-width:520px){.keyframe-grid{grid-template-columns:1fr}}
+</style>
+<style>
+.page-nav{display:flex;justify-content:flex-end;gap:5px;margin-bottom:5px}.page-nav a{padding:4px 8px;border:1px solid var(--line);border-radius:6px;color:#b7cad6;text-decoration:none}.page-nav a[aria-current=page]{border-color:var(--gold);color:#ffe2a3}.route-row{display:grid;grid-template-columns:1fr auto;gap:5px;margin-bottom:5px}.route-row button:first-child{flex:1;text-align:left;border-left:3px solid var(--ally)}.route-color{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--muted);font-size:11px}.route-color select{flex:1;color:var(--ink);background:#192a37;border:1px solid var(--line);border-radius:7px;padding:6px}.route-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.route-list small{color:var(--muted);font-size:10px}
+</style>
+<link rel="stylesheet" href="tactical-notes.css">
+<link rel="stylesheet" href="match-shell.css"></head>
+<body>
+<header><div><div class="eyebrow">JUSTICEOL / EVENT REVIEW · P4-C02</div><h1>敵方上路第二哨塔・兩分鐘局部覆盤</h1></div><div><nav class="page-nav" aria-label="主要頁面"><a href="overview.html">大局概覽</a><a href="event-review.html" aria-current="page">局部覆盤</a><a href="scenario-editor.html">空白劇本</a></nav><p>候選窗口 12:10 → 10:10，進攻二團四視角。<br>塔盤、塔心與前後道路依固定戰場方位顯示。</p></div></header>
+<div class="workspace">
+  <main class="panel">
+    <nav class="toolbar" aria-label="事件沙盤工具">
+      <button id="original" aria-pressed="true">觀察草模</button><button id="teaching" aria-pressed="false">教學分支</button>
+      <span>快照</span><span id="snapshot-buttons"></span>
+      <span>視角</span><button data-camera="overview">我方視角</button><button data-camera="source">近似主視角</button><button data-camera="top">俯視</button><button data-camera="reverse">敵方反向</button>
+    </nav>
+    <div class="stage" id="stage">
+      <canvas id="scene" aria-label="可旋轉的上路第二哨塔三維草模"></canvas><div class="labels" id="labels"></div>
+      <div class="stage-info"><b id="scene-time">11:10・觀察草模</b><small>敵方塔：12 點是塔後，6 點是塔前</small></div>
+      <div class="legend"><span><i class="dot"></i>我方</span><span><i class="dot enemy"></i>敵方</span><span><i class="dot gold"></i>教學位移</span></div>
+      <div class="stage-note"><span>拖曳旋轉・滾輪縮放・右鍵平移<br>教學分支可拖曳棋子</span><span>五個離散檢查點，不在快照間插值<br>座標不是遊戲公尺</span></div>
+    </div>
+    <section class="tactical-notes" id="tactical-notes-panel"><label for="tactical-notes">戰術說明</label><textarea id="tactical-notes" maxlength="10000" placeholder="記錄調兵順序、進攻條件、撤退時機與各隊任務。"></textarea><small>隨目前快照的教學分支另存新檔；開啟舊檔可還原。</small></section>
+  </main>
+  <aside class="panel side">
+    <div class="snapshot-summary" id="snapshot-summary"></div>
+    <h2>人物／戰線棋子</h2><div class="actor-list" id="actor-list"></div>
+    <div class="evidence" id="evidence"><strong>請選取棋子</strong>會顯示身份、職業與位置證據邊界。</div>
+    <h2>教學路線</h2><label class="route-color">路線顏色<select id="route-color"><option value="red">紅色</option><option value="green">綠色</option><option value="blue" selected>藍色</option><option value="yellow">黃色</option></select></label><div class="route-tools"><button id="route-start">＋ 新增路線</button><button id="route-cancel">取消繪製</button><button id="route-add-node">＋ 新增節點</button><button id="route-remove-node">－ 移除節點</button><button id="route-delete">刪除路線</button><button id="route-undo">路線復原</button></div><div class="route-list" id="route-list"></div>
+    <div class="bottom-actions"><button id="reset">清除教學修改</button><button id="export">另存新檔</button><button id="import">開啟舊檔</button></div>
+    <input class="import-input" id="import-file" type="file" accept="application/json,.json">
+    <h2>目前限制</h2><ul class="warnings" id="warnings"></ul>
+  </aside>
+</div>
+<section class="panel keyframe-panel">
+  <div class="keyframe-head"><h2>兩分鐘四視角證據</h2><span id="keyframe-buttons"></span><small>每 20 秒一格；與 3D 草模分開判讀</small></div>
+  <div class="keyframe-grid" id="keyframe-grid"></div>
+  <div class="keyframe-note" id="keyframe-note">P4-C02 由全場掉塔與拆塔進度選出；局部畫面證明本隊在此交戰，不能把全場掉塔直接歸因於此塔。</div>
+</section>
+<section class="panel video-panel">
+  <div class="video-head" style="grid-template-columns:1fr auto"><b>目前 3D 快照的四視角證據與原片連結</b><output class="clock" id="video-clock">11:10</output></div>
+  <div class="videos" id="videos"></div><div class="video-status" id="video-status">選擇上方 3D 快照後，可由截圖開啟原片對應時間；不做同步播放。</div>
+</section>
+<script src="unsaved-guard.js"></script><script src="match-shell.js"></script>
+</body>
+</html>

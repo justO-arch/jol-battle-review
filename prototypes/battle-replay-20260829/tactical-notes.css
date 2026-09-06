@@ -1,0 +1,6 @@
+.tactical-notes{padding:12px;border-top:1px solid var(--line);background:#0e1b25;color:#edf4f7}
+.tactical-notes label{display:block;font-weight:700;margin-bottom:6px}
+.tactical-notes textarea{box-sizing:border-box;display:block;width:100%;min-height:110px;resize:vertical;padding:10px;border:1px solid var(--line);border-radius:7px;background:#192a37;color:inherit;font:14px/1.5 system-ui,sans-serif}
+.tactical-notes small{display:block;margin-top:5px;color:#91a8b7}
+.tactical-notes [hidden]{display:none!important}
+body.full-map #local-notes{display:none}

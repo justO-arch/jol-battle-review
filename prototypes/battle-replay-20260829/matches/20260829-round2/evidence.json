@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "eventId": "E01-upper-second-tower",
+  "status": "manual_multiview_draft",
+  "focusWindow": {
+    "start": "11:30",
+    "end": "10:40"
+  },
+  "contextWindow": {
+    "start": "11:35",
+    "end": "10:35"
+  },
+  "objective": {
+    "rawLabel": "上路第二哨塔",
+    "displayName": "敵方上路第二哨塔",
+    "objectiveId": "enemy_upper_middle",
+    "identityConfidence": "high",
+    "geometry": {
+      "coordinateSystem": "tower center is (0,0); +z is 12 o’clock toward enemy base; -x is 3 o’clock toward upper-lane side; y is up",
+      "platformRadius": 12,
+      "tower": {
+        "x": 0,
+        "z": 0
+      },
+      "confidence": "low_metric_high_topology",
+      "note": "四個視角都顯示塔位於圓盤中央；目標為敵方上路第二哨塔，因此 12 點是塔後、6 點是塔前。半徑與高度尚未以遊戲尺度校準。"
+    }
+  },
+  "terrainEvidence": [
+    {
+      "id": "circular_platform",
+      "label": "圓形石板塔盤",
+      "status": "direct",
+      "sources": [
+        "V04",
+        "V05",
+        "V06",
+        "V08"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "center_tower",
+      "label": "圓盤中央塔體",
+      "status": "direct",
+      "sources": [
+        "V04",
+        "V05",
+        "V06",
+        "V08"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "rock_walls",
+      "label": "塔盤外圍岩壁／峽谷",
+      "status": "direct_partial",
+      "sources": [
+        "V04",
+        "V05",
+        "V06",
+        "V08"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "orange_tree",
+      "label": "橙紅樹木地標",
+      "status": "direct_partial",
+      "sources": [
+        "V04",
+        "V05",
+        "V06",
+        "V08"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "perimeter_braziers",
+      "label": "塔盤邊緣火盆／木架",
+      "status": "direct_partial",
+      "sources": [
+        "V04",
+        "V05",
+        "V06",
+        "V08"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "hidden_backside",
+      "label": "岩壁與建物背面",
+      "status": "unknown",
+      "sources": [],
+      "confidence": "unknown"
+    }
+  ],
+  "sourceObservers": [
+    {
+      "id": "OBS_V04",
+      "sourceId": "V04",
+      "playerName": "言柒",
+      "side": "ally",
+      "profession": "素問",
+      "roleClass": "support",
+      "assignment": "進攻二-2隊",
+      "identityConfidence": "high",
+      "semanticTrack": [
+        {
+          "battleCountdown": "11:35",
+          "area": "tower_rim",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:30",
+          "area": "tower_rim",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:10",
+          "area": "tower_disc",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:50",
+          "area": "tower_disc",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:35",
+          "area": "tower_disc",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "OBS_V05",
+      "sourceId": "V05",
+      "playerName": "權威",
+      "side": "ally",
+      "profession": "龍吟",
+      "roleClass": "melee",
+      "assignment": "進攻二-2隊",
+      "identityConfidence": "high",
+      "semanticTrack": [
+        {
+          "battleCountdown": "11:35",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:30",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:10",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:50",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:35",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "OBS_V06",
+      "sourceId": "V06",
+      "playerName": "飯飯",
+      "side": "ally",
+      "profession": "潮光",
+      "roleClass": "ranged_support",
+      "assignment": "進攻二-1隊",
+      "identityConfidence": "high",
+      "semanticTrack": [
+        {
+          "battleCountdown": "11:35",
+          "area": "tower_disc",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:30",
+          "area": "tower_rim",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:10",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:50",
+          "area": "tower_rim",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:35",
+          "area": "tower_inner_ring",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "OBS_V08",
+      "sourceId": "V08",
+      "playerName": "劍閣望龍",
+      "side": "ally",
+      "profession": "龍吟",
+      "roleClass": "melee_bodyguard",
+      "assignment": "進攻二-3隊（保鑣隊）",
+      "identityConfidence": "medium",
+      "semanticTrack": [
+        {
+          "battleCountdown": "11:35",
+          "area": "approach_canyon",
+          "confidence": "high"
+        },
+        {
+          "battleCountdown": "11:30",
+          "area": "tower_disc",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "11:10",
+          "area": "tower_rim",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:50",
+          "area": "tower_rim",
+          "confidence": "medium"
+        },
+        {
+          "battleCountdown": "10:35",
+          "area": "tower_disc",
+          "confidence": "medium"
+        }
+      ]
+    }
+  ],
+  "snapshots": [
+    {
+      "battleCountdown": "11:35",
+      "phase": "context_before",
+      "towerHp": [
+        {
+          "sourceId": "V05",
+          "percent": 29.8
+        },
+        {
+          "sourceId": "V06",
+          "percent": 29.8
+        }
+      ],
+      "crowdLowerBound": {
+        "allies": 6,
+        "enemies": 3,
+        "rule": "只計清楚可見人形／名牌，不跨視角相加。"
+      },
+      "summary": "主團已在塔盤交戰；V08 尚沿峽谷入口接近。"
+    },
+    {
+      "battleCountdown": "11:30",
+      "phase": "focus_start",
+      "towerHp": [
+        {
+          "sourceId": "V05",
+          "percent": 29.1
+        },
+        {
+          "sourceId": "V06",
+          "percent": 29.1
+        }
+      ],
+      "crowdLowerBound": {
+        "allies": 6,
+        "enemies": 3,
+        "rule": "只計清楚可見人形／名牌，不跨視角相加。"
+      },
+      "summary": "四個來源都已覆蓋同一塔盤；近塔與外圈同時交戰。"
+    },
+    {
+      "battleCountdown": "11:10",
+      "phase": "focus_middle",
+      "towerHp": [
+        {
+          "sourceId": "V05",
+          "percent": 27.6
+        },
+        {
+          "sourceId": "V06",
+          "percent": 27.4
+        }
+      ],
+      "crowdLowerBound": {
+        "allies": 6,
+        "enemies": 4,
+        "rule": "只計清楚可見人形／名牌，不跨視角相加。"
+      },
+      "summary": "塔邊接觸持續；兩個獨立 HUD 塔血相差 0.2 個百分點。"
+    },
+    {
+      "battleCountdown": "10:50",
+      "phase": "focus_late",
+      "towerHp": [
+        {
+          "sourceId": "V05",
+          "percent": 23.3
+        },
+        {
+          "sourceId": "V06",
+          "percent": 23.4
+        }
+      ],
+      "crowdLowerBound": {
+        "allies": 6,
+        "enemies": 3,
+        "rule": "只計清楚可見人形／名牌，不跨視角相加。"
+      },
+      "summary": "進攻仍在塔盤內外延續，塔血繼續下降。"
+    },
+    {
+      "battleCountdown": "10:35",
+      "phase": "context_after",
+      "towerHp": [
+        {
+          "sourceId": "V05",
+          "percent": 20.6
+        },
+        {
+          "sourceId": "V06",
+          "percent": 20.3
+        }
+      ],
+      "crowdLowerBound": {
+        "allies": 6,
+        "enemies": 3,
+        "rule": "只計清楚可見人形／名牌，不跨視角相加。"
+      },
+      "summary": "事件片段結束後戰鬥仍在延續；10:40 不是倒塔或交戰結束點。"
+    }
+  ],
+  "reconstructionDraft": {
+    "status": "semantic_before_metric_registration",
+    "actorTokens": [
+      {
+        "id": "ALLY_MELEE_CORE",
+        "side": "ally",
+        "profession": "未辨識",
+        "area": "tower_inner_ring",
+        "countType": "group",
+        "confidence": "medium",
+        "sourceRefs": [
+          "V04@11:30",
+          "V05@11:30",
+          "V06@11:30",
+          "V08@11:30"
+        ]
+      },
+      {
+        "id": "ALLY_OUTER_SUPPORT",
+        "side": "ally",
+        "profession": "未辨識",
+        "area": "tower_rim",
+        "countType": "group",
+        "confidence": "medium",
+        "sourceRefs": [
+          "V04@11:30",
+          "V06@11:30"
+        ]
+      },
+      {
+        "id": "ENEMY_TOWER_CONTACT",
+        "side": "enemy",
+        "profession": "混合未辨識",
+        "area": "tower_inner_ring",
+        "countType": "group",
+        "confidence": "medium",
+        "sourceRefs": [
+          "V05@11:30",
+          "V06@11:30",
+          "V08@11:30"
+        ]
+      },
+      {
+        "id": "ENEMY_OUTER_LINE",
+        "side": "enemy",
+        "profession": "混合未辨識",
+        "area": "far_rim_and_approach",
+        "countType": "group",
+        "confidence": "low",
+        "sourceRefs": [
+          "V04@11:30",
+          "V08@11:30"
+        ]
+      }
+    ],
+    "rule": "群組棋子只呈現可見人群所在區域，不依靠近或遠離塔體推定職業及戰術角色，也不代表已完成個人去重；四名錄影者另保留來源軌跡。"
+  },
+  "limitations": [
+    "目前尚未解出四個鏡頭的共同公制座標，因此 semanticTrack 只描述區域，不是假裝精確的 x/z 軌跡。",
+    "畫面中的名字、敵我顏色與技能特效不直接跨視角合併；除四名錄影者外，其餘先用群組棋子。",
+    "事件片段在 10:40 截止，但 10:35 上下文顯示交戰仍持續；本事件是覆盤窗口，不是完整攻塔起訖。"
+  ]
+}

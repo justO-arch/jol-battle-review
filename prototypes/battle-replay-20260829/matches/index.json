@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "defaultMatch": "20260829-round2",
+  "matches": [
+    {
+      "id": "20260829-round2",
+      "label": "2026/08/29・第 2 場・驟雨初歇 vs 臥龍殿",
+      "manifest": "20260829-round2/manifest.json"
+    }
+  ]
+}
