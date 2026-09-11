@@ -235,10 +235,10 @@
             "death": 14,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "defense",
-            "subgroup": "防守一隊(優先清塔下)",
+            "groupType": "attack",
+            "subgroup": "進攻一-1隊",
             "specialRoles": [],
-            "assignmentNote": "戰報替補，隊伍推定：原分工圖為黎恩",
+            "assignmentNote": "戰報替補，隊伍推定：原分工圖為救救我啦",
             "assignmentConfidence": "medium"
           },
           {
@@ -926,8 +926,8 @@
             "groupType": "attack",
             "subgroup": "進攻一-1隊",
             "specialRoles": [],
-            "assignmentNote": "御拆 (主塔仇)；戰報替補，隊伍推定：原分工圖為救救我啦",
-            "assignmentConfidence": "medium"
+            "assignmentNote": "御拆 (主塔仇)",
+            "assignmentConfidence": "high"
           },
           {
             "name": "元樨",
@@ -961,10 +961,10 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 16,
-            "groupType": "attack",
-            "subgroup": "進攻一-1隊",
+            "groupType": "defense",
+            "subgroup": "防守一隊(優先清塔下)",
             "specialRoles": [],
-            "assignmentNote": "御拆 (主塔仇)",
+            "assignmentNote": "燒屍體",
             "assignmentConfidence": "high"
           },
           {
@@ -2874,10 +2874,10 @@
             "death": 12,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "defense",
-            "subgroup": "防守一隊(優先清塔下)",
+            "groupType": "attack",
+            "subgroup": "進攻一-1隊",
             "specialRoles": [],
-            "assignmentNote": "戰報替補，隊伍推定：原分工圖為黎恩",
+            "assignmentNote": "戰報替補，隊伍推定：原分工圖為救救我啦",
             "assignmentConfidence": "medium"
           },
           {
@@ -3219,8 +3219,8 @@
             "groupType": "attack",
             "subgroup": "進攻一-1隊",
             "specialRoles": [],
-            "assignmentNote": "御拆 (主塔仇)；戰報替補，隊伍推定：原分工圖為救救我啦",
-            "assignmentConfidence": "medium"
+            "assignmentNote": "御拆 (主塔仇)",
+            "assignmentConfidence": "high"
           },
           {
             "name": "紫嚶",
@@ -3235,10 +3235,10 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 23,
-            "groupType": "attack",
-            "subgroup": "進攻一-1隊",
+            "groupType": "defense",
+            "subgroup": "防守一隊(優先清塔下)",
             "specialRoles": [],
-            "assignmentNote": "御拆 (主塔仇)",
+            "assignmentNote": "燒屍體",
             "assignmentConfidence": "high"
           },
           {
