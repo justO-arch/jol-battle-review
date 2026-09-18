@@ -4636,7 +4636,7 @@ function squadSortValue(squadName) {
 function buildSquadRoleScoreMap(battleIds, cohortFilter = 'same_job') {
   const scoreMap = new Map();
   ['attack', 'defense', 'bodyguard'].forEach(groupKey => {
-    const rows = lookupPlayerRows(battleIds, groupKey);
+    const rows = lookupPlayerRows(battleIds, groupKey, { assignmentRoster: true });
     rows.forEach(row => {
       const cohort = filterPlayerCohortRows(rows, row, cohortFilter);
       const score = computeRoleScoreFromRow(row, cohort.length ? cohort : [row], groupKey);
@@ -4700,7 +4700,7 @@ function buildSquadPerformanceRows(battles = [], options = {}) {
   const scoreMap = options.scoreMap instanceof Map ? options.scoreMap : new Map();
   const buckets = new Map();
   (battles || []).forEach(battle => {
-    (battle?.players || []).forEach(rawPlayer => {
+    assignmentPlayers(battle).forEach(rawPlayer => {
       const player = derivePlayer(rawPlayer);
       const squad = squadNameForPlayer(player);
       if (!buckets.has(squad)) {
@@ -4824,11 +4824,12 @@ function buildPlayerSummary(player, primaryMetric, hits, primaryPct, deathPct) {
   return lines.join('｜');
 }
 
-function aggregatePlayers(battleIds = null, { splitByJob = false } = {}) {
+function aggregatePlayers(battleIds = null, { splitByJob = false, assignmentRoster = false } = {}) {
   const bucket = new Map();
   const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
   battles.forEach(battle => {
-    const review = computeBattleReview(battle);
+    // 小隊依分工名單跨側取樣；只建立統計視圖，不改寫原始戰場兩側。
+    const review = computeBattleReview(assignmentRoster ? { ...battle, players: assignmentPlayers(battle) } : battle);
     (review?.summaries || []).forEach(player => {
       const canonicalName = canonicalPlayerName(player.name);
       const key = splitByJob ? `${canonicalName}\u0000${player.job || ''}` : canonicalName;
@@ -5105,8 +5106,8 @@ function summarizeLookupHistory(item, history, groupFilter) {
   };
 }
 
-function lookupPlayerRows(battleIds, groupFilter = 'all') {
-  return aggregatePlayers(battleIds)
+function lookupPlayerRows(battleIds, groupFilter = 'all', options = {}) {
+  return aggregatePlayers(battleIds, options)
     .map(item => {
       const history = item.history.filter(entry => historyMatchesPlayerGroupFilter(groupFilter, entry.groupType));
       if (!history.length) return null;
@@ -7275,8 +7276,11 @@ function openProfessionPlayerRadarModal(playerName, options = {}) {
   const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = filters;
   const groupFilter = options.groupFilter || document.getElementById('profession_group_filter')?.value || 'all';
   const battleIds = Array.isArray(options.battleIds) ? options.battleIds : selectedProfessionBattleIds();
-  const rows = professionLookupRows(battleIds, groupFilter);
-  const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => professionLookupRows(battleIds, key));
+  const lookupRows = options.assignmentRoster
+    ? (ids, group) => lookupPlayerRows(ids, group, { assignmentRoster: true, splitByJob: true })
+    : professionLookupRows;
+  const rows = lookupRows(battleIds, groupFilter);
+  const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => lookupRows(battleIds, key));
   const player = rows.find(item => item.name === playerName);
   if (!player) {
     window.alert('找不到該玩家目前可用的統計資料。');
@@ -8125,6 +8129,7 @@ function renderSquadPerformanceTable() {
   body.querySelectorAll?.('.squad-player-btn[data-squad-player-name]')?.forEach(button => {
     button.addEventListener('click', () => openProfessionPlayerRadarModal(button.dataset.squadPlayerName || '', {
       sourceLabel: '小隊表現',
+      assignmentRoster: true,
       filters: currentSquadReviewFilters(),
       groupFilter: 'all',
       battleIds,
