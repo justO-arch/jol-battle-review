@@ -1518,9 +1518,9 @@
             "saveCount": 10,
             "burnCount": 0,
             "groupType": "attack",
-            "subgroup": "進攻補師(小隊未確認)",
+            "subgroup": "進攻一-1隊",
             "specialRoles": [],
-            "assignmentNote": "推定進攻補師；原圖進攻一-1金包銀與進攻二-1空白補師兩席無法唯一對應；0911在攻一-1僅為歷史線索，不沿用作確認；小隊及技能未確認",
+            "assignmentNote": "依使用者授權將兩名補師各暫配進攻一及進攻二；本場暫配進攻一-1隊，非原圖確認；與金包銀或空白補師席的對應及技能仍未確認",
             "assignmentConfidence": "medium"
           },
           {
@@ -2121,9 +2121,9 @@
             "saveCount": 10,
             "burnCount": 0,
             "groupType": "attack",
-            "subgroup": "進攻補師(小隊未確認)",
+            "subgroup": "進攻二-1隊",
             "specialRoles": [],
-            "assignmentNote": "推定進攻補師；原圖進攻一-1金包銀與進攻二-1空白補師兩席無法唯一對應；小隊及技能未確認",
+            "assignmentNote": "依使用者授權將兩名補師各暫配進攻一及進攻二；本場暫配進攻二-1隊，非原圖確認；與金包銀或空白補師席的對應及技能仍未確認",
             "assignmentConfidence": "medium"
           },
           {
