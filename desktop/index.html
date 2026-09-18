@@ -6727,33 +6727,8 @@ function filteredBattlesByIds(ids) {
 
 function latestBattleIdFromIds(ids) {
   const idSet = new Set((ids || []).filter(Boolean));
-  let bestBattle = null;
-  let bestIndex = -1;
-  state.battles.forEach((battle, index) => {
-    if (!idSet.has(battle.id)) return;
-    if (!bestBattle) {
-      bestBattle = battle;
-      bestIndex = index;
-      return;
-    }
-    const date = battleDateValue(battle);
-    const bestDate = battleDateValue(bestBattle);
-    if (date !== bestDate) {
-      if (date > bestDate) {
-        bestBattle = battle;
-        bestIndex = index;
-      }
-      return;
-    }
-    const label = String(battle.sourceLabel || '');
-    const bestLabel = String(bestBattle.sourceLabel || '');
-    const labelOrder = label.localeCompare(bestLabel, 'zh-Hant', { numeric: true });
-    if (labelOrder > 0 || (labelOrder === 0 && index > bestIndex)) {
-      bestBattle = battle;
-      bestIndex = index;
-    }
-  });
-  return bestBattle?.id || '';
+  // 同日沿用場次清單順序；原始時間碼未補零，不能當整數判定先後。
+  return sortBattlesByDateDescending(state.battles).find(battle => idSet.has(battle.id))?.id || '';
 }
 
 function ownTeamMatchesFilter(teamName, filterKey = 'all') {
