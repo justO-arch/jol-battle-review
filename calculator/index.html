@@ -1543,6 +1543,7 @@
         <div class="section-body">
           <div class="preset-group">
             <button class="preset-btn active" id="pve_preset_0" onclick="setPVEBoss(0)">南海亂墟·普通</button>
+            <button class="preset-btn" id="pve_preset_4" onclick="setPVEBoss(4)">南海亂墟·淺海·英雄</button>
             <button class="preset-btn" id="pve_preset_1" onclick="setPVEBoss(1)">天機迷城</button>
             <button class="preset-btn" id="pve_preset_2" onclick="setPVEBoss(2)">天機英雄</button>
             <button class="preset-btn" id="pve_preset_3" onclick="setPVEBoss(3)">幫會外塔</button>
@@ -1868,6 +1869,7 @@
     <div class="section-body">
       <div class="preset-group">
         <button class="preset-btn active" id="cmp_preset_0" onclick="setCmpBoss(0)">南海亂墟·普通</button>
+        <button class="preset-btn" id="cmp_preset_4" onclick="setCmpBoss(4)">南海亂墟·淺海·英雄</button>
         <button class="preset-btn" id="cmp_preset_1" onclick="setCmpBoss(1)">天機迷城</button>
         <button class="preset-btn" id="cmp_preset_2" onclick="setCmpBoss(2)">天機英雄</button>
         <button class="preset-btn" id="cmp_preset_3" onclick="setCmpBoss(3)">幫會外塔</button>
@@ -3395,16 +3397,16 @@
       <div class="section-title">PVE 計算係數</div>
       <div class="section-body">
         <div class="form-grid">
-          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pve_aPen" value="24895" step="1"></div>
+          <div class="field"><label>A_防　防禦係數</label><input type="number" id="set_pve_aPen" value="28030" step="1"></div>
           <div class="field"><label>B_防　穿透修正</label><input type="number" id="set_pve_bPen" value="0.1" step="0.01"></div>
-          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pve_aElem" value="6205" step="1"></div>
+          <div class="field"><label>A_元　元素抗性係數</label><input type="number" id="set_pve_aElem" value="7013" step="1"></div>
           <div class="field"><label>A_會　會心斜率</label><input type="number" id="set_pve_aCrit" value="115" step="1"></div>
           <div class="field"><label>B_會　會心截距</label><input type="number" id="set_pve_bCrit" value="0" step="1"></div>
-          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pve_cCrit" value="3575" step="1"></div>
+          <div class="field"><label>C_會　會心分母</label><input type="number" id="set_pve_cCrit" value="4033" step="1"></div>
           <div class="field"><label>基礎會心率 ★</label><input type="number" id="set_pve_baseCrit" value="0.05" step="0.01"></div>
           <div class="field"><label>A_命　命中基底</label><input type="number" id="set_pve_aHit" value="0.95" step="0.01"></div>
           <div class="field"><label>B_命　命中斜率</label><input type="number" id="set_pve_bHit" value="1.43" step="0.01"></div>
-          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pve_cHit" value="13990" step="1"></div>
+          <div class="field"><label>C_命　命中分母</label><input type="number" id="set_pve_cHit" value="15741" step="1"></div>
           <div class="field"><label>攻克基礎 k₁</label><input type="number" id="set_pve_k1" value="0" step="1"></div>
           <div class="field"><label>攻克係數 k₂</label><input type="number" id="set_pve_k2" value="1" step="0.01"></div>
           <div class="field"><label>元素傷害係數 k₃</label><input type="number" id="set_pve_k3" value="1" step="0.01"></div>
@@ -3464,6 +3466,15 @@
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_qiShield" value="0" style="width:60px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_elemRes" value="5439" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_bossRes" value="27400" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+            </tr>
+            <tr>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_4_name" value="南海亂墟·淺海·英雄" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_def" value="31556" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_block" value="6310" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_critRes" value="6133" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_qiShield" value="0" style="width:60px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_elemRes" value="6130" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_bossRes" value="27400" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
               <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_1_name" value="天機迷城" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
@@ -3601,16 +3612,16 @@ const STORAGE_KEY = 'jol'; // 複本改成 'jol2', 'jol3' 等，避免存檔互�
 
 // ===================== CONSTANTS =====================
 const PVE_CONST = {
-  aPen: 24895,   // A_防 防禦係數
+  aPen: 28030,   // A_防 防禦係數
   bPen: 0.1,     // B_防 穿透修正（公式為 - B_防）
-  aElem: 6205,   // A_元 元素抗性係數
+  aElem: 7013,   // A_元 元素抗性係數
   aCrit: 115,    // A_會 會心斜率
   bCrit: 0,      // B_會 會心截距
-  cCrit: 3575,   // C_會 會心分母
+  cCrit: 4033,   // C_會 會心分母
   baseCrit: 0.05,// 基礎會心率
   aHit: 0.95,    // A_命 命中基底
   bHit: 1.43,    // B_命 命中斜率
-  cHit: 13990,   // C_命 命中分母
+  cHit: 15741,   // C_命 命中分母
   k1: 0,
   k2: 1,
   k3: 1          // k₃ 元素傷害係數
@@ -3637,7 +3648,8 @@ const PVE_BOSSES = [
   { name: '南海亂墟·普通', def: 27985, block: 5439, critRes: 5439, qiShield: 0, elemRes: 5439, bossRes: 27400 },
   { name: '天機迷城',   def: 12017, block: 2560, critRes: 2325, qiShield: 0, elemRes: 2672, bossRes: 9000 },
   { name: '天機英雄',   def: 17182, block: 3568, critRes: 3280, qiShield: 0, elemRes: 3310, bossRes: 14040 },
-  { name: '幫會外塔',   def: 1100,  block: 300,  critRes: 150,  qiShield: 0, elemRes: 0,    bossRes: 0 }
+  { name: '幫會外塔',   def: 1100,  block: 300,  critRes: 150,  qiShield: 0, elemRes: 0,    bossRes: 0 },
+  { name: '南海亂墟·淺海·英雄', def: 31556, block: 6310, critRes: 6133, qiShield: 0, elemRes: 6130, bossRes: 27400 }
 ];
 
 const PVE_BREACH_BASE = 4000;
@@ -5886,8 +5898,16 @@ function isLegacyJiuGuangBoss(b) {
     (oldBoss || fittedBoss || verifiedBoss);
 }
 
+function isLegacyNanHaiNormalConst(c) {
+  if (!c) return false;
+  return c.aPen === 24895 && c.bPen === 0.1 && c.aElem === 6205 &&
+    c.aCrit === 115 && c.bCrit === 0 && c.cCrit === 3575 && c.baseCrit === 0.05 &&
+    c.aHit === 0.95 && c.bHit === 1.43 && c.cHit === 13990 &&
+    c.k1 === 0 && c.k2 === 1 && c.k3 === 1;
+}
+
 function migrateLegacyJiuGuangSettings() {
-  if (isLegacyJiuGuangConst(PVE_CONST)) Object.assign(PVE_CONST, DEFAULT_PVE_CONST);
+  if (isLegacyJiuGuangConst(PVE_CONST) || isLegacyNanHaiNormalConst(PVE_CONST)) Object.assign(PVE_CONST, DEFAULT_PVE_CONST);
   if (isLegacyJiuGuangConst(PVP_CONST)) Object.assign(PVP_CONST, DEFAULT_PVP_CONST);
   if (isLegacyJiuGuangBoss(PVE_BOSSES[0])) Object.assign(PVE_BOSSES[0], DEFAULT_PVE_BOSSES[0]);
 }
