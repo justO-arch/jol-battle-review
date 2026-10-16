@@ -5902,9 +5902,15 @@ function isLegacyNanHaiNormalConst(c) {
     c.k1 === 0 && c.k2 === 1 && c.k3 === 1;
 }
 
+// 2026-07 起部分存檔的 PVP 欄被存成南海普通 PVE 係數（B_會 保留 165）；PVP 從未使用這組值。
+function isNanHaiPveConstSavedAsPvp(c) {
+  if (!c) return false;
+  return (c.bCrit === 0 || c.bCrit === 165) && isLegacyNanHaiNormalConst({ ...c, bCrit: 0 });
+}
+
 function migrateLegacyJiuGuangSettings() {
   if (isLegacyJiuGuangConst(PVE_CONST) || isLegacyNanHaiNormalConst(PVE_CONST)) Object.assign(PVE_CONST, DEFAULT_PVE_CONST);
-  if (isLegacyJiuGuangConst(PVP_CONST)) Object.assign(PVP_CONST, DEFAULT_PVP_CONST);
+  if (isLegacyJiuGuangConst(PVP_CONST) || isNanHaiPveConstSavedAsPvp(PVP_CONST)) Object.assign(PVP_CONST, DEFAULT_PVP_CONST);
   if (isLegacyJiuGuangBoss(PVE_BOSSES[0])) Object.assign(PVE_BOSSES[0], DEFAULT_PVE_BOSSES[0]);
 }
 
