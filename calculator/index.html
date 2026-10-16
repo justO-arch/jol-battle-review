@@ -6101,6 +6101,7 @@ function restoreOptimizeResultData(resultMap) {
   optimizeLastUpperResults = hydrateOptimizeStoredResults('upper', resultMap.upper);
   optimizeLastJointResults = hydrateOptimizeStoredResults('joint', resultMap.joint);
   optimizeLastNgResults = hydrateOptimizeStoredResults('ng', resultMap.ng);
+  optimizeLastNgPool = null;
   optimizeLastFinalResults = hydrateOptimizeStoredResults('final', resultMap.final);
   let restored = false;
   if (hasOptimizeSnapshotResults(optimizeLastLowerResults)) {
@@ -7281,6 +7282,7 @@ const UPPER_OPT_SLOTS = ['head', 'body', 'waist', 'hand', 'foot', 'wrist'];
 const FINAL_OPT_JOINT_LIMIT = 500;
 const FINAL_OPT_NG_LIMIT = 1000;
 const FINAL_OPT_RESULT_LIMIT = 1000;
+const NG_OPT_RESULT_LIMIT = 1000;
 const GEAR_SLOT_SORT_ORDER = { head:1, body:2, waist:3, hand:4, foot:5, wrist:6, ring:7, bracelet:8, necklace:9 };
 const OPTIMIZE_GEAR_SLOT_LABELS = { head:'頭', body:'身', waist:'腰', hand:'手', foot:'鞋', wrist:'臂', ring:'戒', bracelet:'手鐲', necklace:'項鍊' };
 const OPTIMIZE_GEAR_CATEGORY_LABELS = { pvp_gear:'PVP', pve_gear:'PVE', unique_gear:'獨珍', set_build:'套裝' };
@@ -7303,6 +7305,8 @@ let optimizeLastLowerResults = [];
 let optimizeLastUpperResults = [];
 let optimizeLastJointResults = [];
 let optimizeLastNgResults = [];
+// 本次頁面跑內功最佳化時的全部合法組合（精簡格式），供最終最佳化重排；不存進快照。
+let optimizeLastNgPool = null;
 let optimizeLastFinalResults = [];
 const optimizeIgnoredResults = {
   lower: new Set(),
@@ -8159,6 +8163,14 @@ function addOptimizeNgAppliedTotals(base, add) {
   return out;
 }
 
+// 與 addOptimizeNgAppliedTotals(addOptimizeNgAppliedTotals(base, add), adjustment) 相同的加總順序，但寫進既有物件。
+function setNgAppliedTotalsSum(out, base, add, adjustment) {
+  for (const key in base) out[key] = base[key];
+  for (const key in add) out[key] = (out[key] || 0) + (add[key] || 0);
+  for (const key in adjustment) out[key] = (out[key] || 0) + (adjustment[key] || 0);
+  return out;
+}
+
 function getNgCoreAdjustment(coreName) {
   const raw = optimizeNgCoreAdjustments?.[coreName] || {};
   return {
@@ -8646,6 +8658,18 @@ function getEmptyNgAppliedTotal() {
 }
 
 function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTotal) {
+  return {
+    items,
+    elementCounts,
+    zhoutianCounts: getNgZhoutianCounts(elementCounts),
+    appliedTotal: { ...appliedTotal },
+    adjustedTraitAtk: appliedTotal.traitAtk || 0,
+    adjustedTraitDef: appliedTotal.traitDef || 0,
+    ...getNgOptimizeMetrics(mode, bases, appliedTotal),
+  };
+}
+
+function getNgOptimizeMetrics(mode, bases, appliedTotal) {
   const adjustedTraitAtk = appliedTotal.traitAtk || 0;
   const adjustedTraitDef = appliedTotal.traitDef || 0;
   if (mode === 'pvp') {
@@ -8679,12 +8703,6 @@ function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTota
     const enemyHits = myExpected > 0 && pvpBase.enemyHp > 0 ? pvpBase.enemyHp / myExpected : Infinity;
     const myHits = oppExpected > 0 && (pvpBase.myHp + appliedTotal.hp) > 0 ? (pvpBase.myHp + appliedTotal.hp) / oppExpected : Infinity;
     return {
-      items,
-      elementCounts,
-      zhoutianCounts: getNgZhoutianCounts(elementCounts),
-      appliedTotal: { ...appliedTotal },
-      adjustedTraitAtk,
-      adjustedTraitDef,
       myExpected,
       oppExpected,
       damageRatio: oppExpected > 0 ? (myExpected / oppExpected) * 100 : Infinity,
@@ -8710,12 +8728,6 @@ function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTota
   const baseResult = calcPVEExpected(params);
   const expected = baseResult.expected * (1 + adjustedTraitAtk);
   return {
-    items,
-    elementCounts,
-    zhoutianCounts: getNgZhoutianCounts(elementCounts),
-    appliedTotal: { ...appliedTotal },
-    adjustedTraitAtk,
-    adjustedTraitDef,
     expected,
     expectedDeltaPct: pveBase._baseExpected > 0 ? (expected / pveBase._baseExpected - 1) * 100 : 0,
   };
@@ -9436,8 +9448,10 @@ function buildNgOptimizeResults(mode, sort) {
     suffixCoreSets[i].add(candidates[i].coreName);
   }
 
-  const results = [];
   let legalCount = 0;
+  const heap = [];
+  const adjustments = candidates.map(item => getNgCoreAdjustment(item.coreName));
+  const poolIndexes = [];
 
   const meetsReqs = countsObj => requirements.every(req => (countsObj[req.element] || 0) >= req.min);
   const canStillMeetReqs = (startIdx, countsObj) => requirements.every(req => ((countsObj[req.element] || 0) + (suffixCounts[startIdx]?.[req.element] || 0)) >= req.min);
@@ -9447,41 +9461,71 @@ function buildNgOptimizeResults(mode, sort) {
     return Array.from(requiredCores).every(coreName => usedCores.has(coreName) || suffixCoreSets[startIdx]?.has(coreName));
   };
 
-  function dfs(startIdx, selected, usedCores, elementCounts, appliedTotal) {
-    if (selected.length === 6) {
+  // 每層重用同一個加總物件，避免每個節點複製物件；加總順序與逐層相加相同，數值不變。
+  const countsByDepth = Array.from({ length: 7 }, () => ({ metal:0, wood:0, water:0, fire:0, earth:0 }));
+  const totalsByDepth = Array.from({ length: 7 }, () => getEmptyNgAppliedTotal());
+  const selected = [];
+  const selectedIdx = [];
+  const usedCores = new Set();
+
+  function dfs(startIdx) {
+    const depth = selected.length;
+    const elementCounts = countsByDepth[depth];
+    if (depth === 6) {
       if (!meetsReqs(elementCounts)) return;
       if (Array.from(requiredCores).some(coreName => !usedCores.has(coreName))) return;
       legalCount++;
-      results.push(evaluateNgOptimizeResult(mode, bases, selected.slice(), elementCounts, appliedTotal));
+      const appliedTotal = totalsByDepth[depth];
+      selectedIdx.forEach(idx => poolIndexes.push(idx));
+      const rank = {
+        effect2: false,
+        score: getOptimizeScore(mode, sort, getNgOptimizeMetrics(mode, bases, appliedTotal)),
+        seq: legalCount,
+      };
+      if (canKeepOptimizeRank(heap, rank, NG_OPT_RESULT_LIMIT)) {
+        rank.items = selected.slice();
+        rank.elementCounts = { ...elementCounts };
+        rank.appliedTotal = { ...appliedTotal };
+        keepTopOptimizeRanks(heap, rank, NG_OPT_RESULT_LIMIT);
+      }
       return;
     }
     if (startIdx >= candidates.length) return;
-    if (selected.length + (candidates.length - startIdx) < 6) return;
+    if (depth + (candidates.length - startIdx) < 6) return;
     if (!canStillMeetReqs(startIdx, elementCounts)) return;
-    if (!canStillMeetRequiredCores(startIdx, usedCores, selected.length)) return;
+    if (!canStillMeetRequiredCores(startIdx, usedCores, depth)) return;
 
     for (let i = startIdx; i < candidates.length; i++) {
       const remaining = candidates.length - i;
-      const need = 6 - selected.length;
+      const need = 6 - depth;
       if (remaining < need) break;
       const candidate = candidates[i];
       if (usedCores.has(candidate.coreName)) continue;
-      const nextCounts = { ...elementCounts };
-      NG_ELEMENT_KEYS.forEach(key => { nextCounts[key] += candidate.tagCounts[key] || 0; });
-      const nextApplied = addOptimizeNgAppliedTotals(
-        addOptimizeNgAppliedTotals(appliedTotal, candidate.applied),
-        getNgCoreAdjustment(candidate.coreName)
-      );
+      const nextCounts = countsByDepth[depth + 1];
+      NG_ELEMENT_KEYS.forEach(key => { nextCounts[key] = elementCounts[key] + (candidate.tagCounts[key] || 0); });
+      setNgAppliedTotalsSum(totalsByDepth[depth + 1], totalsByDepth[depth], candidate.applied, adjustments[i]);
       selected.push(candidate);
+      selectedIdx.push(i);
       usedCores.add(candidate.coreName);
-      dfs(i + 1, selected, usedCores, nextCounts, nextApplied);
+      dfs(i + 1);
       usedCores.delete(candidate.coreName);
+      selectedIdx.pop();
       selected.pop();
     }
   }
 
-  dfs(0, [], new Set(), { metal:0, wood:0, water:0, fire:0, earth:0 }, getEmptyNgAppliedTotal());
-  results.sort((a, b) => getOptimizeScore(mode, sort, b) - getOptimizeScore(mode, sort, a));
+  dfs(0);
+  const results = heap.sort(compareOptimizeRank).map(rank =>
+    evaluateNgOptimizeResult(mode, bases, rank.items, rank.elementCounts, rank.appliedTotal));
+  const keys = Object.keys(getEmptyNgAppliedTotal());
+  const pool = {
+    candidates,
+    keys,
+    applied: Float64Array.from(candidates.flatMap(item => keys.map(key => item.applied[key] || 0))),
+    adjustments: Float64Array.from(adjustments.flatMap(adjustment => keys.map(key => adjustment[key] || 0))),
+    itemIndexes: poolIndexes,
+    count: legalCount,
+  };
   const reqText = requirements.length
     ? requirements.map(req => `${NG_ELEMENT_LABELS[req.element]} >= ${req.min}`).join('、')
     : '未指定元素門檻';
@@ -9495,6 +9539,7 @@ function buildNgOptimizeResults(mode, sort) {
     uniqueCores,
     legalCount,
     results,
+    pool,
     requirements,
     requiredCores,
     excludedCores,
@@ -9653,6 +9698,7 @@ function runNgOptimize() {
   const sort = document.getElementById('opt_ng_sort')?.value || (mode === 'pvp' ? 'damageRatio' : 'expected');
   resetOptimizeIgnoredResults('ng');
   optimizeLastNgResults = [];
+  optimizeLastNgPool = null;
   const counts = {
     candidate: document.getElementById('opt_ng_candidate_count'),
     core: document.getElementById('opt_ng_core_count'),
@@ -9673,6 +9719,7 @@ function runNgOptimize() {
     return;
   }
   optimizeLastNgResults = built.results.slice();
+  optimizeLastNgPool = built.pool || null;
   if (counts.combo) counts.combo.textContent = String(built.legalCount);
   if (noteEl) noteEl.textContent = built.note;
   renderNgOptimizeResults(mode, built.results);
@@ -9808,16 +9855,20 @@ function getFinalOptimizeMetrics(mode, bases, delta) {
   };
 }
 
-function compareFinalOptimizeRank(a, b) {
+function compareOptimizeRank(a, b) {
   if (a.effect2 !== b.effect2) return a.effect2 ? -1 : 1;
   const scoreDiff = b.score - a.score;
   if (scoreDiff) return scoreDiff;
   return a.seq - b.seq;
 }
 
+function canKeepOptimizeRank(heap, entry, limit) {
+  return heap.length < limit || compareOptimizeRank(entry, heap[0]) < 0;
+}
+
 // 等同完整排序後取前 limit 名：同分以先出現者在前，與 Array.prototype.sort 的穩定排序一致。
-function keepTopFinalOptimizeRanks(heap, entry, limit) {
-  const worseThan = (i, j) => compareFinalOptimizeRank(heap[i], heap[j]) > 0;
+function keepTopOptimizeRanks(heap, entry, limit) {
+  const worseThan = (i, j) => compareOptimizeRank(heap[i], heap[j]) > 0;
   const swap = (i, j) => { const t = heap[i]; heap[i] = heap[j]; heap[j] = t; };
   if (heap.length < limit) {
     heap.push(entry);
@@ -9830,7 +9881,7 @@ function keepTopFinalOptimizeRanks(heap, entry, limit) {
     }
     return;
   }
-  if (compareFinalOptimizeRank(entry, heap[0]) >= 0) return;
+  if (!canKeepOptimizeRank(heap, entry, limit)) return;
   heap[0] = entry;
   let i = 0;
   while (true) {
@@ -9847,39 +9898,72 @@ function keepTopFinalOptimizeRanks(heap, entry, limit) {
 
 // 內功最佳化是在未加裝備的基底上排名；裝備加上去後各屬性邊際收益會變，
 // 所以截斷前先以「基底 + 聯合第一名裝備」重新排序全部內功候選。
-function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults) {
+function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults, pool = null) {
   const source = Array.isArray(storedResults) ? storedResults : [];
+  const count = pool ? pool.count : source.length;
   const refGear = sumOptimizeGearDeltas(refJoint.items);
   const hydratedCache = new Map();
-  const scores = new Float64Array(source.length);
+  const scores = new Float64Array(count);
   const order = [];
-  source.forEach((result, index) => {
-    let appliedTotal = result?.appliedTotal && typeof result.appliedTotal === 'object'
-      ? { ...getEmptyNgAppliedTotal(), ...result.appliedTotal }
-      : null;
+  for (let index = 0; index < count; index++) {
+    const result = pool ? null : source[index];
+    let appliedTotal = pool
+      ? getNgOptimizePoolAppliedTotal(pool, index)
+      : (result?.appliedTotal && typeof result.appliedTotal === 'object'
+        ? { ...getEmptyNgAppliedTotal(), ...result.appliedTotal }
+        : null);
     if (!appliedTotal) {
       const hydrated = hydrateOptimizeNgResult(result);
-      if (!hydrated) return;
+      if (!hydrated) continue;
       hydratedCache.set(index, hydrated);
       appliedTotal = hydrated.appliedTotal;
     }
     const metrics = getFinalOptimizeMetrics(mode, bases, combineFinalOptimizeDelta(refGear, appliedTotal));
     scores[index] = getOptimizeScore(mode, sort, metrics);
     order.push(index);
-  });
+  }
   order.sort((a, b) => (scores[b] - scores[a]) || (a - b));
   const top = [];
   for (const index of order) {
     if (top.length >= FINAL_OPT_NG_LIMIT) break;
-    const hydrated = hydratedCache.get(index) || hydrateOptimizeNgResult(source[index]);
+    const hydrated = hydratedCache.get(index)
+      || hydrateOptimizeNgResult(pool ? getNgOptimizePoolResult(pool, index) : source[index]);
     if (hydrated) top.push(hydrated);
   }
   return top;
 }
 
+// 依內功最佳化當下凍結的屬性與微調值重算，加總順序與 DFS 逐層相同。
+function getNgOptimizePoolAppliedTotal(pool, index) {
+  const keyCount = pool.keys.length;
+  const total = {};
+  for (let k = 0; k < keyCount; k++) {
+    let sum = 0;
+    for (let j = 0; j < 6; j++) {
+      const offset = pool.itemIndexes[index * 6 + j] * keyCount + k;
+      sum = (sum + pool.applied[offset]) + pool.adjustments[offset];
+    }
+    total[pool.keys[k]] = sum;
+  }
+  return total;
+}
+
+function getNgOptimizePoolResult(pool, index) {
+  const items = [];
+  const elementCounts = { metal:0, wood:0, water:0, fire:0, earth:0 };
+  for (let j = 0; j < 6; j++) {
+    const item = pool.candidates[pool.itemIndexes[index * 6 + j]];
+    items.push(item);
+    NG_ELEMENT_KEYS.forEach(key => { elementCounts[key] += item.tagCounts[key] || 0; });
+  }
+  return { items, elementCounts, appliedTotal: getNgOptimizePoolAppliedTotal(pool, index) };
+}
+
 function buildFinalOptimizeResults(mode, sort) {
   const jointCandidateCount = Array.isArray(optimizeLastJointResults) ? optimizeLastJointResults.length : 0;
-  const ngCandidateCount = Array.isArray(optimizeLastNgResults) ? optimizeLastNgResults.length : 0;
+  const ngCandidateCount = optimizeLastNgPool
+    ? optimizeLastNgPool.count
+    : (Array.isArray(optimizeLastNgResults) ? optimizeLastNgResults.length : 0);
   const requiredGear = getOptimizeRequiredGearItems([...UPPER_OPT_SLOTS, ...LOWER_OPT_SLOTS]);
   const rawJointTop = hydrateOptimizeStoredResults('joint', optimizeLastJointResults, FINAL_OPT_JOINT_LIMIT);
   const jointTop = rawJointTop.filter(result => optimizeResultHasRequiredGear(result.items, requiredGear));
@@ -9888,7 +9972,7 @@ function buildFinalOptimizeResults(mode, sort) {
   const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
   const bases = { pveBase, pvpBase };
   const ngTop = jointTop.length
-    ? getFinalOptimizeNgTop(mode, sort, bases, jointTop[0], optimizeLastNgResults)
+    ? getFinalOptimizeNgTop(mode, sort, bases, jointTop[0], optimizeLastNgResults, optimizeLastNgPool)
     : hydrateOptimizeStoredResults('ng', optimizeLastNgResults, FINAL_OPT_NG_LIMIT);
   if (!jointTop.length || !ngTop.length) {
     const missing = [];
@@ -9919,7 +10003,7 @@ function buildFinalOptimizeResults(mode, sort) {
     const effect2 = !!jointResult.effect2;
     ngTotals.forEach((ngTotal, ngIndex) => {
       const metrics = getFinalOptimizeMetrics(mode, bases, combineFinalOptimizeDelta(gearDeltas[jointIndex], ngTotal));
-      keepTopFinalOptimizeRanks(heap, {
+      keepTopOptimizeRanks(heap, {
         effect2,
         score: getOptimizeScore(mode, sort, metrics),
         seq: jointIndex * ngTop.length + ngIndex,
@@ -9928,7 +10012,7 @@ function buildFinalOptimizeResults(mode, sort) {
       }, FINAL_OPT_RESULT_LIMIT);
     });
   });
-  const results = heap.sort(compareFinalOptimizeRank).map(rank => evaluateFinalOptimizeResult(
+  const results = heap.sort(compareOptimizeRank).map(rank => evaluateFinalOptimizeResult(
     mode,
     bases,
     jointTop[rank.jointIndex],
