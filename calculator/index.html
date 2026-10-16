@@ -1665,7 +1665,6 @@
             <div class="field"><label>元素抗性</label><input type="number" id="atk_belemres" value="2500" oninput="calcPVP()"></div>
             <div class="field"><label>流派抵禦</label><input type="number" id="atk_styleRes" value="7406" oninput="calcPVP()"></div>
             <div class="field"><label>抗會傷 (倍率)</label><input type="number" id="atk_antiCrit" value="0.1" step="0.01" oninput="calcPVP()"></div>
-            <div class="field"><label>技巧克制 (守)</label><input type="number" id="atk_techOver2" value="0" oninput="calcPVP()"></div>
             <div class="field"><label>流派抵禦 (%)</label><input type="number" id="atk_styleResPct" value="0" step="0.1" oninput="calcPVP()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="atk_hp" value="150000" oninput="calcPVP()"></div>
           </div>
@@ -1737,7 +1736,6 @@
             <div class="field"><label>元素抗性</label><input type="number" id="def_belemres" value="2500" oninput="calcPVP()"></div>
             <div class="field"><label>流派抵禦</label><input type="number" id="def_styleRes" value="7406" oninput="calcPVP()"></div>
             <div class="field"><label>抗會傷 (倍率)</label><input type="number" id="def_antiCrit" value="0.1" step="0.01" oninput="calcPVP()"></div>
-            <div class="field"><label>技巧克制 (守)</label><input type="number" id="def_techOver2" value="0" oninput="calcPVP()"></div>
             <div class="field"><label>流派抵禦 (%)</label><input type="number" id="def_styleResPct" value="0" step="0.1" oninput="calcPVP()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="def_hp" value="150000" oninput="calcPVP()"></div>
           </div>
@@ -1972,7 +1970,6 @@
         <div class="field"><label>元素抗性</label><input type="number" id="pvpcmp_belemres" value="2500" oninput="calcPVPCmp()"></div>
         <div class="field"><label>流派抵禦</label><input type="number" id="pvpcmp_bstyleres" value="9000" oninput="calcPVPCmp()"></div>
         <div class="field"><label>抗會傷（倍率）</label><input type="number" id="pvpcmp_anticrit" value="0.1" step="0.01" oninput="calcPVPCmp()"></div>
-        <div class="field"><label>技巧克制（守）</label><input type="number" id="pvpcmp_techover" value="0" oninput="calcPVPCmp()"></div>
         <div class="field"><label>流派抵禦 (%)</label><input type="number" id="pvpcmp_bstyleresPct" value="0" step="0.1" oninput="calcPVPCmp()"></div>
         <div class="field"><label>氣血上限</label><input type="number" id="pvpcmp_ohp" value="150000" oninput="calcPVPCmp()"></div>
       </div>
@@ -2044,7 +2041,7 @@
             <div class="field"><label>元素抗性</label><input type="number" id="sw_a_elemRes" value="2500" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>流派抵禦</label><input type="number" id="sw_a_styleRes" value="7406" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>抗會傷 (倍率)</label><input type="number" id="sw_a_antiCrit" value="0.1" step="0.01" oninput="calcSuWenCompare()"></div>
-            <div class="field"><label>技巧克制 (守)</label><input type="number" id="sw_a_techOver" value="0" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技巧克制</label><input type="number" id="sw_a_techOver" value="0" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>流派抵禦 (%)</label><input type="number" id="sw_a_styleResPct" value="0" step="0.1" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="sw_a_hp" value="150000" oninput="calcSuWenCompare()"></div>
           </div>
@@ -2084,7 +2081,7 @@
             <div class="field"><label>元素抗性</label><input type="number" id="sw_b_elemRes" value="2500" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>流派抵禦</label><input type="number" id="sw_b_styleRes" value="7406" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>抗會傷 (倍率)</label><input type="number" id="sw_b_antiCrit" value="0.1" step="0.01" oninput="calcSuWenCompare()"></div>
-            <div class="field"><label>技巧克制 (守)</label><input type="number" id="sw_b_techOver" value="0" oninput="calcSuWenCompare()"></div>
+            <div class="field"><label>技巧克制</label><input type="number" id="sw_b_techOver" value="0" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>流派抵禦 (%)</label><input type="number" id="sw_b_styleResPct" value="0" step="0.1" oninput="calcSuWenCompare()"></div>
             <div class="field"><label>氣血上限</label><input type="number" id="sw_b_hp" value="150000" oninput="calcSuWenCompare()"></div>
           </div>
@@ -5010,7 +5007,7 @@ function defaultAttacker(id, idx) {
     elemAtk:6187, elemBonus:0, styleOver:6610, ignoreElem:2922, breakDef:5540,
     techOver:0, lei:0, xinsui:0, stylePct:-8.2,
     bDef:12030, bBlock:2556, bCritRes:2325, bQiShield:500,
-    bElemRes:2500, bStyleRes:7406, antiCrit:0.1, techOver2:0, styleResPct:0, hp:150000 };
+    bElemRes:2500, bStyleRes:7406, antiCrit:0.1, styleResPct:0, hp:150000 };
 }
 
 let pvpCmpAttackers = [defaultAttacker(1,0), defaultAttacker(2,1)];
@@ -5071,7 +5068,7 @@ function renderPVPCmpAttackers() {
           ${fld('bDef','防禦力',a.bDef)} ${fld('bBlock','格檔',a.bBlock)}
           ${fld('bCritRes','會心抗性',a.bCritRes)} ${fld('bQiShield','氣盾',a.bQiShield)}
           ${fld('bElemRes','元素抗性',a.bElemRes)} ${fld('bStyleRes','流派抵禦',a.bStyleRes)}
-          ${fld('antiCrit','抗會傷(倍率)',a.antiCrit,'0.01')} ${fld('techOver2','技巧克制(守)',a.techOver2)}
+          ${fld('antiCrit','抗會傷(倍率)',a.antiCrit,'0.01')}
           ${fld('styleResPct','流派抵禦(%)',a.styleResPct??0,'0.1')}
           ${fld('hp','氣血上限',a.hp)}
         </div>
@@ -5147,7 +5144,6 @@ function loadPVPtoAttacker(id, side) {
   a.bElemRes  = n(p+'_belemres');
   a.bStyleRes = n(p+'_styleRes');
   a.antiCrit    = n(p+'_antiCrit');
-  a.techOver2   = n(p+'_techOver2');
   a.styleResPct = n(p+'_styleResPct');
   a.hp          = n(p+'_hp');
   renderPVPCmpAttackers();
@@ -5166,7 +5162,7 @@ function loadPVPtoOpponent(side) {
     pvpcmp_bdef: p+'_bdef', pvpcmp_bblock: p+'_bblock', pvpcmp_bcritres: p+'_bcritres',
     pvpcmp_bqishield: p+'_bqishield', pvpcmp_belemres: p+'_belemres',
     pvpcmp_bstyleres: p+'_styleRes', pvpcmp_anticrit: p+'_antiCrit',
-    pvpcmp_techover: p+'_techOver2', pvpcmp_bstyleresPct: p+'_styleResPct'
+    pvpcmp_bstyleresPct: p+'_styleResPct'
   };
   Object.entries(map).forEach(([dst, src]) => {
     const srcEl = document.getElementById(src);
@@ -5189,7 +5185,7 @@ function loadAttackerToOpponent(id) {
     pvpcmp_bdef: a.bDef, pvpcmp_bblock: a.bBlock, pvpcmp_bcritres: a.bCritRes,
     pvpcmp_bqishield: a.bQiShield, pvpcmp_belemres: a.bElemRes,
     pvpcmp_bstyleres: a.bStyleRes, pvpcmp_anticrit: a.antiCrit,
-    pvpcmp_techover: a.techOver2, pvpcmp_bstyleresPct: a.styleResPct||0, pvpcmp_ohp: a.hp
+    pvpcmp_bstyleresPct: a.styleResPct||0, pvpcmp_ohp: a.hp
   };
   Object.entries(map).forEach(([dst, val]) => {
     const el = document.getElementById(dst); if (el) el.value = val;
@@ -5209,7 +5205,7 @@ function loadOpponentToAttacker(id) {
   a.bDef = n('pvpcmp_bdef'); a.bBlock = n('pvpcmp_bblock'); a.bCritRes = n('pvpcmp_bcritres');
   a.bQiShield = n('pvpcmp_bqishield'); a.bElemRes = n('pvpcmp_belemres');
   a.bStyleRes = n('pvpcmp_bstyleres'); a.antiCrit = n('pvpcmp_anticrit');
-  a.techOver2 = n('pvpcmp_techover'); a.styleResPct = n('pvpcmp_bstyleresPct'); a.hp = n('pvpcmp_ohp');
+  a.styleResPct = n('pvpcmp_bstyleresPct'); a.hp = n('pvpcmp_ohp');
   renderPVPCmpAttackers();
 }
 
@@ -5936,11 +5932,11 @@ const TAB_INPUT_IDS = {
         'atk_styleOver','atk_ignoreElem','atk_breakDef','atk_techOver',
         'atk_lei','atk_xinsui','atk_stylePct',
         'atk_bdef','atk_bblock','atk_bcritres','atk_bqishield','atk_belemres',
-        'atk_styleRes','atk_antiCrit','atk_techOver2','atk_styleResPct','atk_hp',
+        'atk_styleRes','atk_antiCrit','atk_styleResPct','atk_hp',
         'def_atk','def_hit','def_crit','def_critdmg','def_breakshield','def_elemAtk','def_elemBonus',
         'def_styleOver','def_ignoreElem','def_breakDef','def_techOver',
         'def_bdef','def_bblock','def_bcritres','def_bqishield','def_belemres',
-        'def_styleRes','def_antiCrit','def_techOver2','def_styleResPct','def_hp',
+        'def_styleRes','def_antiCrit','def_styleResPct','def_hp',
         'def_lei','def_xinsui','def_stylePct'],
   cmp: ['cmp_a_atk','cmp_a_hit','cmp_a_crit','cmp_a_critdmg','cmp_a_breakshield',
         'cmp_a_elemAtk','cmp_a_elemBonus','cmp_a_bossOver','cmp_a_ignoreElem','cmp_a_breakDef','cmp_a_techOver',
@@ -5950,7 +5946,7 @@ const TAB_INPUT_IDS = {
         'cmp_b_lei','cmp_b_xinsui','cmp_b_bossOverPct',
         'cmp_bdef','cmp_bblock','cmp_bcritres','cmp_bqishield','cmp_belemres','cmp_bbossdef'],
   pvpcmp: ['pvpcmp_bdef','pvpcmp_bblock','pvpcmp_bcritres','pvpcmp_bqishield',
-           'pvpcmp_belemres','pvpcmp_bstyleres','pvpcmp_anticrit','pvpcmp_techover','pvpcmp_bstyleresPct',
+           'pvpcmp_belemres','pvpcmp_bstyleres','pvpcmp_anticrit','pvpcmp_bstyleresPct',
            'pvpcmp_oatk','pvpcmp_ohit','pvpcmp_ocrit','pvpcmp_ocritdmg','pvpcmp_obreakshield',
            'pvpcmp_oelemAtk','pvpcmp_oelemBonus','pvpcmp_ostyleOver','pvpcmp_oignoreElem','pvpcmp_obreakDef',
            'pvpcmp_otechOver','pvpcmp_olei','pvpcmp_oxinsui','pvpcmp_ostylePct','pvpcmp_ohp',
@@ -6348,6 +6344,7 @@ function limitDBStorageArray(type, arr) {
   return Array.isArray(arr) ? arr.slice(0, getDBStorageTypeLimit(type)) : [];
 }
 
+// techOver2 是已移除的「技巧克制(守)」，保留在鍵表只為讀寫既有套裝存檔時不丟欄位。
 const DB_SET_KEYS = ['atk','hit','crit','critDmg','breakShield','elemAtk','elemBonus','styleOver','ignoreElem','breakDef','techOver','lei','xinsui','stylePct','bDef','bBlock','bCritRes','bQiShield','bElemRes','bStyleRes','antiCrit','techOver2','styleResPct','hp'];
 const DB_HEALER_KEYS = ['atk','healPower','crit','critDmg','skillFlat','skillPct','extraCritRate','def','block','critRes','qiShield','elemRes','styleRes','antiCrit','techOver','styleResPct','hp'];
 
@@ -6362,13 +6359,13 @@ const DB_SET_SUBSET_ID_MAPS = {
   mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_estyleover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef' },
 };
 const DB_SET_FULL_ID_MAPS = {
-  atk: { atk:'atk_atk', hit:'atk_hit', crit:'atk_crit', critDmg:'atk_critdmg', breakShield:'atk_breakshield', elemAtk:'atk_elemAtk', elemBonus:'atk_elemBonus', styleOver:'atk_styleOver', ignoreElem:'atk_ignoreElem', breakDef:'atk_breakDef', techOver:'atk_techOver', lei:'atk_lei', xinsui:'atk_xinsui', stylePct:'atk_stylePct', bDef:'atk_bdef', bBlock:'atk_bblock', bCritRes:'atk_bcritres', bQiShield:'atk_bqishield', bElemRes:'atk_belemres', bStyleRes:'atk_styleRes', antiCrit:'atk_antiCrit', techOver2:'atk_techOver2', styleResPct:'atk_styleResPct', hp:'atk_hp' },
-  def: { atk:'def_atk', hit:'def_hit', crit:'def_crit', critDmg:'def_critdmg', breakShield:'def_breakshield', elemAtk:'def_elemAtk', elemBonus:'def_elemBonus', styleOver:'def_styleOver', ignoreElem:'def_ignoreElem', breakDef:'def_breakDef', techOver:'def_techOver', lei:'def_lei', xinsui:'def_xinsui', stylePct:'def_stylePct', bDef:'def_bdef', bBlock:'def_bblock', bCritRes:'def_bcritres', bQiShield:'def_bqishield', bElemRes:'def_belemres', bStyleRes:'def_styleRes', antiCrit:'def_antiCrit', techOver2:'def_techOver2', styleResPct:'def_styleResPct', hp:'def_hp' },
-  pvpcmp_opp: { atk:'pvpcmp_oatk', hit:'pvpcmp_ohit', crit:'pvpcmp_ocrit', critDmg:'pvpcmp_ocritdmg', breakShield:'pvpcmp_obreakshield', elemAtk:'pvpcmp_oelemAtk', elemBonus:'pvpcmp_oelemBonus', styleOver:'pvpcmp_ostyleOver', ignoreElem:'pvpcmp_oignoreElem', breakDef:'pvpcmp_obreakDef', techOver:'pvpcmp_otechOver', lei:'pvpcmp_olei', xinsui:'pvpcmp_oxinsui', stylePct:'pvpcmp_ostylePct', hp:'pvpcmp_ohp', bDef:'pvpcmp_bdef', bBlock:'pvpcmp_bblock', bCritRes:'pvpcmp_bcritres', bQiShield:'pvpcmp_bqishield', bElemRes:'pvpcmp_belemres', bStyleRes:'pvpcmp_bstyleres', antiCrit:'pvpcmp_anticrit', techOver2:'pvpcmp_techover', styleResPct:'pvpcmp_bstyleresPct' },
+  atk: { atk:'atk_atk', hit:'atk_hit', crit:'atk_crit', critDmg:'atk_critdmg', breakShield:'atk_breakshield', elemAtk:'atk_elemAtk', elemBonus:'atk_elemBonus', styleOver:'atk_styleOver', ignoreElem:'atk_ignoreElem', breakDef:'atk_breakDef', techOver:'atk_techOver', lei:'atk_lei', xinsui:'atk_xinsui', stylePct:'atk_stylePct', bDef:'atk_bdef', bBlock:'atk_bblock', bCritRes:'atk_bcritres', bQiShield:'atk_bqishield', bElemRes:'atk_belemres', bStyleRes:'atk_styleRes', antiCrit:'atk_antiCrit', styleResPct:'atk_styleResPct', hp:'atk_hp' },
+  def: { atk:'def_atk', hit:'def_hit', crit:'def_crit', critDmg:'def_critdmg', breakShield:'def_breakshield', elemAtk:'def_elemAtk', elemBonus:'def_elemBonus', styleOver:'def_styleOver', ignoreElem:'def_ignoreElem', breakDef:'def_breakDef', techOver:'def_techOver', lei:'def_lei', xinsui:'def_xinsui', stylePct:'def_stylePct', bDef:'def_bdef', bBlock:'def_bblock', bCritRes:'def_bcritres', bQiShield:'def_bqishield', bElemRes:'def_belemres', bStyleRes:'def_styleRes', antiCrit:'def_antiCrit', styleResPct:'def_styleResPct', hp:'def_hp' },
+  pvpcmp_opp: { atk:'pvpcmp_oatk', hit:'pvpcmp_ohit', crit:'pvpcmp_ocrit', critDmg:'pvpcmp_ocritdmg', breakShield:'pvpcmp_obreakshield', elemAtk:'pvpcmp_oelemAtk', elemBonus:'pvpcmp_oelemBonus', styleOver:'pvpcmp_ostyleOver', ignoreElem:'pvpcmp_oignoreElem', breakDef:'pvpcmp_obreakDef', techOver:'pvpcmp_otechOver', lei:'pvpcmp_olei', xinsui:'pvpcmp_oxinsui', stylePct:'pvpcmp_ostylePct', hp:'pvpcmp_ohp', bDef:'pvpcmp_bdef', bBlock:'pvpcmp_bblock', bCritRes:'pvpcmp_bcritres', bQiShield:'pvpcmp_bqishield', bElemRes:'pvpcmp_belemres', bStyleRes:'pvpcmp_bstyleres', antiCrit:'pvpcmp_anticrit', styleResPct:'pvpcmp_bstyleresPct' },
   ng_my:  { atk:'ng_atk', hit:'ng_hit', crit:'ng_crit', critDmg:'ng_critdmg', breakShield:'ng_breakshield', elemAtk:'ng_elementatk', elemBonus:'ng_elemBonus', styleOver:'ng_styleover', ignoreElem:'ng_ignoreelem', breakDef:'ng_breakdef', techOver:'ng_techover', stylePct:'ng_stylePct', bDef:'ng_mydef', bBlock:'ng_myblock', bCritRes:'ng_mycritres', bQiShield:'ng_myqishield', bElemRes:'ng_myelemres', bStyleRes:'ng_mystyleres', antiCrit:'ng_myanticrit', styleResPct:'ng_myStyleResPct', hp:'ng_myhp' },
   ng_opp: { atk:'ng_eatk', hit:'ng_ehit', crit:'ng_ecrit', critDmg:'ng_ecritdmg', breakShield:'ng_ebreakshield', elemAtk:'ng_eelemAtk', elemBonus:'ng_eelemBonus', styleOver:'ng_estyleover', ignoreElem:'ng_eignoreelem', breakDef:'ng_ebreakdef', techOver:'ng_etechover', stylePct:'ng_eStylePct', bDef:'ng_bdef', bBlock:'ng_bblock', bCritRes:'ng_bcritres', bQiShield:'ng_bqishield', bElemRes:'ng_belemres', bStyleRes:'ng_bstyleres', antiCrit:'ng_banticrit', styleResPct:'ng_bStyleResPct', hp:'ng_bhp' },
-  mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_styleover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef', techOver:'mgn_techover', bDef:'mgn_mydef', bBlock:'mgn_myblock', bCritRes:'mgn_mycritres', bQiShield:'mgn_myqishield', bElemRes:'mgn_myelemres', bStyleRes:'mgn_mystyleres', antiCrit:'mgn_myanticrit', techOver2:'mgn_mytechover', hp:'mgn_myhp' },
-  mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_estyleover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef', techOver:'mgn_etechover', bDef:'mgn_bdef', bBlock:'mgn_bblock', bCritRes:'mgn_bcritres', bQiShield:'mgn_bqishield', bElemRes:'mgn_belemres', bStyleRes:'mgn_bstyleres', antiCrit:'mgn_banticrit', techOver2:'mgn_btechover', hp:'mgn_bhp' },
+  mgn_my:  { atk:'mgn_atk', hit:'mgn_hit', crit:'mgn_crit', critDmg:'mgn_critdmg', breakShield:'mgn_breakshield', elemAtk:'mgn_elementatk', elemBonus:'mgn_elemBonus', styleOver:'mgn_styleover', ignoreElem:'mgn_ignoreelem', breakDef:'mgn_breakdef', techOver:'mgn_techover', bDef:'mgn_mydef', bBlock:'mgn_myblock', bCritRes:'mgn_mycritres', bQiShield:'mgn_myqishield', bElemRes:'mgn_myelemres', bStyleRes:'mgn_mystyleres', antiCrit:'mgn_myanticrit', hp:'mgn_myhp' },
+  mgn_opp: { atk:'mgn_eatk', hit:'mgn_ehit', crit:'mgn_ecrit', critDmg:'mgn_ecritdmg', breakShield:'mgn_ebreakshield', elemAtk:'mgn_eelemAtk', elemBonus:'mgn_eelemBonus', styleOver:'mgn_estyleover', ignoreElem:'mgn_eignoreelem', breakDef:'mgn_ebreakdef', techOver:'mgn_etechover', bDef:'mgn_bdef', bBlock:'mgn_bblock', bCritRes:'mgn_bcritres', bQiShield:'mgn_bqishield', bElemRes:'mgn_belemres', bStyleRes:'mgn_bstyleres', antiCrit:'mgn_banticrit', hp:'mgn_bhp' },
 };
 const DB_HEALER_ID_MAPS = {
   a: { atk:'sw_a_atk', healPower:'sw_a_healPower', crit:'sw_a_crit', critDmg:'sw_a_critDmg', skillFlat:'sw_a_skillFlat', skillPct:'sw_a_skillPct', extraCritRate:'sw_a_extraCritRate', def:'sw_a_def', block:'sw_a_block', critRes:'sw_a_critRes', qiShield:'sw_a_qiShield', elemRes:'sw_a_elemRes', styleRes:'sw_a_styleRes', antiCrit:'sw_a_antiCrit', techOver:'sw_a_techOver', styleResPct:'sw_a_styleResPct', hp:'sw_a_hp' },
@@ -6849,8 +6846,7 @@ function isEditableOptimizeGearItem(item) {
 }
 
 function getOptimizeGearEditRows() {
-  const defenderTechRow = { key: 'techover2', label: '技巧克制（守）', step: '1' };
-  return NG_ATTR_ROWS.flatMap(row => row.key === 'anticrit' ? [row, defenderTechRow] : [row]);
+  return NG_ATTR_ROWS;
 }
 
 function withOptimizeGearValues(entry, values) {
@@ -7284,6 +7280,7 @@ const LOWER_OPT_SLOTS = ['ring', 'bracelet', 'necklace'];
 const UPPER_OPT_SLOTS = ['head', 'body', 'waist', 'hand', 'foot', 'wrist'];
 const FINAL_OPT_JOINT_LIMIT = 500;
 const FINAL_OPT_NG_LIMIT = 1000;
+const FINAL_OPT_RESULT_LIMIT = 1000;
 const GEAR_SLOT_SORT_ORDER = { head:1, body:2, waist:3, hand:4, foot:5, wrist:6, ring:7, bracelet:8, necklace:9 };
 const OPTIMIZE_GEAR_SLOT_LABELS = { head:'頭', body:'身', waist:'腰', hand:'手', foot:'鞋', wrist:'臂', ring:'戒', bracelet:'手鐲', necklace:'項鍊' };
 const OPTIMIZE_GEAR_CATEGORY_LABELS = { pvp_gear:'PVP', pve_gear:'PVE', unique_gear:'獨珍', set_build:'套裝' };
@@ -7946,7 +7943,7 @@ function updateFinalOptimizeSearchControls() {
         ['expected', '輸出期望最高'],
       ];
   sortEl.innerHTML = options.map(([v, label]) => `<option value="${v}">${label}</option>`).join('');
-  noteEl.textContent = `沿用已跑出的聯合裝備前 ${FINAL_OPT_JOINT_LIMIT} 組與內功前 ${FINAL_OPT_NG_LIMIT} 組，交叉後用目前基底重新計算完整裝備 + 內功結果。`;
+  noteEl.textContent = `沿用已跑出的聯合裝備前 ${FINAL_OPT_JOINT_LIMIT} 組；內功候選先以「目前基底 + 聯合第一名裝備」重新排序後取前 ${FINAL_OPT_NG_LIMIT} 組，交叉後用目前基底重新計算完整裝備 + 內功結果。`;
 }
 
 function getOptimizeClassFlags() {
@@ -7990,7 +7987,6 @@ function getNgAppliedValuesFromVals(vals, cls = getOptimizeClassFlags()) {
     bBossRes:   parseFloat(vals?.bossres) || 0,
     bStyleRes:  parseFloat(vals?.styleres) || 0,
     antiCrit:   parseFloat(vals?.anticrit) || 0,
-    techOver2:  parseFloat(vals?.techover2) || 0,
     hp:         (parseFloat(vals?.hp) || 0) + converted.hp,
     traitAtk:   parseFloat(vals?.trait_atk) || 0,
     traitDef:   parseFloat(vals?.trait_def) || 0,
@@ -8645,7 +8641,7 @@ function calcOptimizeHitGap(myHits, enemyHits) {
 function getEmptyNgAppliedTotal() {
   return {
     atk:0, hit:0, crit:0, critDmg:0, elemAtk:0, bossOver:0, styleOver:0, ignoreElem:0, breakDef:0, techOver:0, breakShield:0,
-    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, bStyleRes:0, antiCrit:0, techOver2:0, hp:0, traitAtk:0, traitDef:0
+    bDef:0, bBlock:0, bCritRes:0, bQiShield:0, bElemRes:0, bBossRes:0, bStyleRes:0, antiCrit:0, hp:0, traitAtk:0, traitDef:0
   };
 }
 
@@ -9695,8 +9691,13 @@ function getFinalNgAppliedTotal(ngResult) {
 }
 
 function getFinalOptimizeDelta(gearItems, ngResult) {
-  const gear = sumOptimizeGearDeltas(Array.isArray(gearItems) ? gearItems : []);
-  const ng = getFinalNgAppliedTotal(ngResult);
+  return combineFinalOptimizeDelta(
+    sumOptimizeGearDeltas(Array.isArray(gearItems) ? gearItems : []),
+    getFinalNgAppliedTotal(ngResult)
+  );
+}
+
+function combineFinalOptimizeDelta(gear, ng) {
   return {
     atk: gear.atk + (ng.atk || 0),
     hit: gear.hit + (ng.hit || 0),
@@ -9723,10 +9724,10 @@ function getFinalOptimizeDelta(gearItems, ngResult) {
   };
 }
 
-function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult) {
+function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult, precomputedDelta = null) {
   const gearItems = Array.isArray(jointResult?.items) ? jointResult.items : [];
   const ngItems = Array.isArray(ngResult?.items) ? ngResult.items : [];
-  const delta = getFinalOptimizeDelta(gearItems, ngResult);
+  const delta = precomputedDelta || getFinalOptimizeDelta(gearItems, ngResult);
   const common = {
     items: [...gearItems, ...ngItems],
     gearItems,
@@ -9742,6 +9743,10 @@ function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult) {
     upperCount: jointResult?.upperCount,
     lowerCount: jointResult?.lowerCount,
   };
+  return { ...common, ...getFinalOptimizeMetrics(mode, bases, delta) };
+}
+
+function getFinalOptimizeMetrics(mode, bases, delta) {
   if (mode === 'pvp') {
     const pvpBase = bases.pvpBase;
     const myAtk = {
@@ -9773,7 +9778,6 @@ function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult) {
     const enemyHits = myExpected > 0 && pvpBase.enemyHp > 0 ? pvpBase.enemyHp / myExpected : Infinity;
     const myHits = oppExpected > 0 && (pvpBase.myHp + delta.hp) > 0 ? (pvpBase.myHp + delta.hp) / oppExpected : Infinity;
     return {
-      ...common,
       myExpected,
       oppExpected,
       damageRatio: oppExpected > 0 ? (myExpected / oppExpected) * 100 : Infinity,
@@ -9799,10 +9803,78 @@ function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult) {
   const baseResult = calcPVEExpected(params);
   const expected = baseResult.expected * (1 + delta.traitAtk);
   return {
-    ...common,
     expected,
     expectedDeltaPct: pveBase._baseExpected > 0 ? (expected / pveBase._baseExpected - 1) * 100 : 0,
   };
+}
+
+function compareFinalOptimizeRank(a, b) {
+  if (a.effect2 !== b.effect2) return a.effect2 ? -1 : 1;
+  const scoreDiff = b.score - a.score;
+  if (scoreDiff) return scoreDiff;
+  return a.seq - b.seq;
+}
+
+// 等同完整排序後取前 limit 名：同分以先出現者在前，與 Array.prototype.sort 的穩定排序一致。
+function keepTopFinalOptimizeRanks(heap, entry, limit) {
+  const worseThan = (i, j) => compareFinalOptimizeRank(heap[i], heap[j]) > 0;
+  const swap = (i, j) => { const t = heap[i]; heap[i] = heap[j]; heap[j] = t; };
+  if (heap.length < limit) {
+    heap.push(entry);
+    let i = heap.length - 1;
+    while (i > 0) {
+      const parent = (i - 1) >> 1;
+      if (!worseThan(i, parent)) break;
+      swap(i, parent);
+      i = parent;
+    }
+    return;
+  }
+  if (compareFinalOptimizeRank(entry, heap[0]) >= 0) return;
+  heap[0] = entry;
+  let i = 0;
+  while (true) {
+    const left = i * 2 + 1;
+    const right = left + 1;
+    let worst = i;
+    if (left < heap.length && worseThan(left, worst)) worst = left;
+    if (right < heap.length && worseThan(right, worst)) worst = right;
+    if (worst === i) break;
+    swap(i, worst);
+    i = worst;
+  }
+}
+
+// 內功最佳化是在未加裝備的基底上排名；裝備加上去後各屬性邊際收益會變，
+// 所以截斷前先以「基底 + 聯合第一名裝備」重新排序全部內功候選。
+function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults) {
+  const source = Array.isArray(storedResults) ? storedResults : [];
+  const refGear = sumOptimizeGearDeltas(refJoint.items);
+  const hydratedCache = new Map();
+  const scores = new Float64Array(source.length);
+  const order = [];
+  source.forEach((result, index) => {
+    let appliedTotal = result?.appliedTotal && typeof result.appliedTotal === 'object'
+      ? { ...getEmptyNgAppliedTotal(), ...result.appliedTotal }
+      : null;
+    if (!appliedTotal) {
+      const hydrated = hydrateOptimizeNgResult(result);
+      if (!hydrated) return;
+      hydratedCache.set(index, hydrated);
+      appliedTotal = hydrated.appliedTotal;
+    }
+    const metrics = getFinalOptimizeMetrics(mode, bases, combineFinalOptimizeDelta(refGear, appliedTotal));
+    scores[index] = getOptimizeScore(mode, sort, metrics);
+    order.push(index);
+  });
+  order.sort((a, b) => (scores[b] - scores[a]) || (a - b));
+  const top = [];
+  for (const index of order) {
+    if (top.length >= FINAL_OPT_NG_LIMIT) break;
+    const hydrated = hydratedCache.get(index) || hydrateOptimizeNgResult(source[index]);
+    if (hydrated) top.push(hydrated);
+  }
+  return top;
 }
 
 function buildFinalOptimizeResults(mode, sort) {
@@ -9811,7 +9883,13 @@ function buildFinalOptimizeResults(mode, sort) {
   const requiredGear = getOptimizeRequiredGearItems([...UPPER_OPT_SLOTS, ...LOWER_OPT_SLOTS]);
   const rawJointTop = hydrateOptimizeStoredResults('joint', optimizeLastJointResults, FINAL_OPT_JOINT_LIMIT);
   const jointTop = rawJointTop.filter(result => optimizeResultHasRequiredGear(result.items, requiredGear));
-  const ngTop = hydrateOptimizeStoredResults('ng', optimizeLastNgResults, FINAL_OPT_NG_LIMIT);
+  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const bases = { pveBase, pvpBase };
+  const ngTop = jointTop.length
+    ? getFinalOptimizeNgTop(mode, sort, bases, jointTop[0], optimizeLastNgResults)
+    : hydrateOptimizeStoredResults('ng', optimizeLastNgResults, FINAL_OPT_NG_LIMIT);
   if (!jointTop.length || !ngTop.length) {
     const missing = [];
     if (!jointTop.length) {
@@ -9834,20 +9912,29 @@ function buildFinalOptimizeResults(mode, sort) {
     };
   }
   const combinedCount = jointTop.length * ngTop.length;
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
-  if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
-  const bases = { pveBase, pvpBase };
-  const results = [];
-  jointTop.forEach(jointResult => {
-    ngTop.forEach(ngResult => {
-      results.push(evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult));
+  const gearDeltas = jointTop.map(jointResult => sumOptimizeGearDeltas(jointResult.items));
+  const ngTotals = ngTop.map(getFinalNgAppliedTotal);
+  const heap = [];
+  jointTop.forEach((jointResult, jointIndex) => {
+    const effect2 = !!jointResult.effect2;
+    ngTotals.forEach((ngTotal, ngIndex) => {
+      const metrics = getFinalOptimizeMetrics(mode, bases, combineFinalOptimizeDelta(gearDeltas[jointIndex], ngTotal));
+      keepTopFinalOptimizeRanks(heap, {
+        effect2,
+        score: getOptimizeScore(mode, sort, metrics),
+        seq: jointIndex * ngTop.length + ngIndex,
+        jointIndex,
+        ngIndex,
+      }, FINAL_OPT_RESULT_LIMIT);
     });
   });
-  results.sort((a, b) => {
-    if (a.effect2 !== b.effect2) return (b.effect2 ? 1 : 0) - (a.effect2 ? 1 : 0);
-    return getOptimizeScore(mode, sort, b) - getOptimizeScore(mode, sort, a);
-  });
+  const results = heap.sort(compareFinalOptimizeRank).map(rank => evaluateFinalOptimizeResult(
+    mode,
+    bases,
+    jointTop[rank.jointIndex],
+    ngTop[rank.ngIndex],
+    combineFinalOptimizeDelta(gearDeltas[rank.jointIndex], ngTotals[rank.ngIndex])
+  ));
   return {
     jointBuilt: { legalCount: jointCandidateCount, results: jointTop },
     ngBuilt: { legalCount: ngCandidateCount, results: ngTop },
@@ -9856,7 +9943,7 @@ function buildFinalOptimizeResults(mode, sort) {
     combinedCount,
     results,
     error: false,
-    note: `已沿用聯合裝備已存 ${jointCandidateCount} 組、內功已存 ${ngCandidateCount} 組，各取前 ${jointTop.length} / ${ngTop.length} 候選，共重算 ${combinedCount} 組完整裝備 + 內功。必選裝備：${getOptimizeRequiredGearText(requiredGear)}。請確認目前比較頁欄位值為全裸機體。`,
+    note: `已沿用聯合裝備已存 ${jointCandidateCount} 組、內功已存 ${ngCandidateCount} 組；內功依「基底 + 聯合第一名裝備」重新排序後，各取前 ${jointTop.length} / ${ngTop.length} 候選，共重算 ${combinedCount} 組完整裝備 + 內功，保留前 ${results.length} 名。必選裝備：${getOptimizeRequiredGearText(requiredGear)}。請確認目前比較頁欄位值為全裸機體。`,
     emptyText: '',
   };
 }
@@ -10932,11 +11019,18 @@ function loadNeigongFromPVP() {
 }
 
 // ===================== 匯出/匯入 =====================
+// 'jol' 前綴也會比對到 'jol2_*' 等其他複本；匯入前備份本身不放進備份，避免每次匯入層層巢狀變大。
+function isCalculatorBackupKey(key) {
+  return typeof key === 'string'
+    && key.startsWith(`${STORAGE_KEY}_`)
+    && key !== `${STORAGE_KEY}_pre_import_backup`;
+}
+
 function exportData() {
   const data = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key.startsWith(STORAGE_KEY)) data[key] = localStorage.getItem(key);
+    if (isCalculatorBackupKey(key)) data[key] = localStorage.getItem(key);
   }
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -10960,12 +11054,12 @@ function importData() {
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result);
-        const importEntries = Object.entries(data).filter(([key, val]) => key.startsWith(STORAGE_KEY) && typeof val === 'string');
+        const importEntries = Object.entries(data).filter(([key, val]) => isCalculatorBackupKey(key) && typeof val === 'string');
         // Keep a recovery snapshot before import so an older backup won't silently destroy newer local data.
         const currentSnapshot = {};
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.startsWith(STORAGE_KEY)) currentSnapshot[key] = localStorage.getItem(key);
+          if (isCalculatorBackupKey(key)) currentSnapshot[key] = localStorage.getItem(key);
         }
         let backupWarning = '';
         // Drop an older pre-import backup first so it doesn't keep consuming quota.
@@ -11024,7 +11118,7 @@ function createPreImportBackup() {
   const currentSnapshot = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && key.startsWith(STORAGE_KEY)) currentSnapshot[key] = localStorage.getItem(key);
+    if (isCalculatorBackupKey(key)) currentSnapshot[key] = localStorage.getItem(key);
   }
   let backupWarning = '';
   // Drop an older pre-import backup first so it doesn't keep consuming quota.
@@ -11050,8 +11144,7 @@ function importDataReplace() {
       try {
         const data = JSON.parse(ev.target.result);
         const importEntries = Object.entries(data).filter(([key, val]) =>
-          key.startsWith(STORAGE_KEY) &&
-          key !== `${STORAGE_KEY}_pre_import_backup` &&
+          isCalculatorBackupKey(key) &&
           typeof val === 'string'
         );
         if (!importEntries.length) {
