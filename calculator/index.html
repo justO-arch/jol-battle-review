@@ -8141,8 +8141,13 @@ function getNgCoreName(name) {
   return String(name || '')
     .replace(/[（(][^()（）]*[）)]$/u, '')
     .replace(/\d+(?:PVE|[PE])?$/iu, '')
-    .replace(/^[金木水火土]/u, '')
+    .replace(/^(靈韻)?[金木水火土]/u, '$1')
     .trim();
+}
+
+// 靈韻版與一般版核心效果不同、可分開必選／排除，但遊戲不允許同時裝備。
+function getNgConflictName(coreName) {
+  return String(coreName || '').replace(/^靈韻/u, '');
 }
 
 function getNgTagCounts(tags) {
@@ -8192,11 +8197,13 @@ function getNgOptimizeCandidates() {
     if (meta.category !== 'inner_skill' || !Array.isArray(meta.tags) || meta.tags.length !== 5 || meta.tags.some(tag => !tag)) return null;
     const raw = getNgDBData(normalized);
     const applied = getNgAppliedValuesFromVals(raw);
+    const coreName = getNgCoreName(normalized.name || `內功${index + 1}`);
     return {
       index,
       entry: normalized,
       name: normalized.name || `內功${index + 1}`,
-      coreName: getNgCoreName(normalized.name || `內功${index + 1}`),
+      coreName,
+      conflictName: getNgConflictName(coreName),
       tags: meta.tags.slice(),
       tagCounts: getNgTagCounts(meta.tags),
       applied,
@@ -9383,6 +9390,27 @@ function buildNgOptimizeResults(mode, sort) {
       emptyText: '必選與排除衝突，無法執行最佳化。',
     };
   }
+  const requiredByConflict = new Map();
+  Array.from(requiredCores).forEach(coreName => {
+    const key = getNgConflictName(coreName);
+    if (!requiredByConflict.has(key)) requiredByConflict.set(key, []);
+    requiredByConflict.get(key).push(coreName);
+  });
+  const sameSkillRequired = Array.from(requiredByConflict.values()).filter(names => names.length > 1);
+  if (sameSkillRequired.length) {
+    return {
+      candidates: [],
+      uniqueCores: new Set(),
+      legalCount: 0,
+      results: [],
+      requirements,
+      requiredCores,
+      excludedCores,
+      error: true,
+      note: `條件衝突：靈韻版與一般版不能同時裝備，不能同時必選：${sameSkillRequired.map(names => names.join(' 與 ')).join('、')}。`,
+      emptyText: '必選類型互相衝突，無法執行最佳化。',
+    };
+  }
   if (requiredCores.size > 6) {
     return {
       candidates: [],
@@ -9400,7 +9428,7 @@ function buildNgOptimizeResults(mode, sort) {
 
   const allCandidates = getNgOptimizeCandidates().filter(item => !excludedCores.has(item.coreName));
   const allUniqueCores = new Set(allCandidates.map(item => item.coreName));
-  if (allUniqueCores.size < 6) {
+  if (new Set(allCandidates.map(item => item.conflictName)).size < 6) {
     return {
       candidates: allCandidates,
       uniqueCores: allUniqueCores,
@@ -9410,7 +9438,7 @@ function buildNgOptimizeResults(mode, sort) {
       requiredCores,
       excludedCores,
       error: true,
-      note: '候選不足：至少需要 6 個不同核心名稱的內功。',
+      note: '候選不足：至少需要 6 個不同核心名稱的內功（靈韻版與一般版算同一種）。',
       emptyText: '候選不足，無法執行最佳化。',
     };
   }
@@ -9473,6 +9501,7 @@ function buildNgOptimizeResults(mode, sort) {
   const selected = [];
   const selectedIdx = [];
   const usedCores = new Set();
+  const usedConflicts = new Set();
 
   function dfs(startIdx) {
     const depth = selected.length;
@@ -9506,14 +9535,16 @@ function buildNgOptimizeResults(mode, sort) {
       const need = 6 - depth;
       if (remaining < need) break;
       const candidate = candidates[i];
-      if (usedCores.has(candidate.coreName)) continue;
+      if (usedConflicts.has(candidate.conflictName)) continue;
       const nextCounts = countsByDepth[depth + 1];
       NG_ELEMENT_KEYS.forEach(key => { nextCounts[key] = elementCounts[key] + (candidate.tagCounts[key] || 0); });
       setNgAppliedTotalsSum(totalsByDepth[depth + 1], totalsByDepth[depth], candidate.applied, adjustments[i]);
       selected.push(candidate);
       selectedIdx.push(i);
       usedCores.add(candidate.coreName);
+      usedConflicts.add(candidate.conflictName);
       dfs(i + 1);
+      usedConflicts.delete(candidate.conflictName);
       usedCores.delete(candidate.coreName);
       selectedIdx.pop();
       selected.pop();
