@@ -2946,7 +2946,7 @@
         第一版固定搜尋 `6` 個已補登完成的內功。玩家可指定最多 `2` 種元素最低顆數門檻，例如 `金 >= 12`、`火 >= 12`。
       </div>
       <div class="formula-note">
-        周天規則為：每 `4` 個同元素算 `1` 周天、同元素最多 `3` 周天、整套最多 `7` 周天；同核心名稱內功不可重複，且可指定必選核心類型，但結果會顯示完整名稱。
+        周天規則為：每 `4` 個同元素算 `1` 周天、同元素最多 `3` 周天、整套最多 `7` 周天；土元素合計 `4` 顆以上時受到傷害降低 `1%`（只影響 PVP 承傷）；同核心名稱內功不可重複，且可指定必選核心類型，但結果會顯示完整名稱。
       </div>
     </div>
   </div>
@@ -8168,6 +8168,19 @@ function getNgZhoutianCounts(counts) {
   return { ...zhoutian, total: Math.min(total, 7) };
 }
 
+// 6 顆內功組合的土元素合計 4 顆以上：受到傷害降低 1%。已存的屬性加總不含這項，計算時依元素顆數另外加。
+const NG_EARTH_TRAIT_DEF_BONUS = 0.01;
+
+function getNgElementTraitDefBonus(counts) {
+  return (counts?.earth || 0) >= 4 ? NG_EARTH_TRAIT_DEF_BONUS : 0;
+}
+
+function getNgElementTraitDefBonusText(counts) {
+  return getNgElementTraitDefBonus(counts)
+    ? `土 4 顆以上：受到傷害降低 ${NG_EARTH_TRAIT_DEF_BONUS * 100}%<br>`
+    : '';
+}
+
 function addOptimizeNgAppliedTotals(base, add) {
   const out = { ...base };
   Object.keys(add).forEach(key => { out[key] = (out[key] || 0) + (add[key] || 0); });
@@ -8671,6 +8684,8 @@ function getEmptyNgAppliedTotal() {
 }
 
 function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTotal) {
+  // 預篩逐顆評分時不算組合的土元素加成
+  const traitDefBonus = items.length === 6 ? getNgElementTraitDefBonus(elementCounts) : 0;
   return {
     items,
     elementCounts,
@@ -8678,13 +8693,13 @@ function evaluateNgOptimizeResult(mode, bases, items, elementCounts, appliedTota
     appliedTotal: { ...appliedTotal },
     adjustedTraitAtk: appliedTotal.traitAtk || 0,
     adjustedTraitDef: appliedTotal.traitDef || 0,
-    ...getNgOptimizeMetrics(mode, bases, appliedTotal),
+    ...getNgOptimizeMetrics(mode, bases, appliedTotal, traitDefBonus),
   };
 }
 
-function getNgOptimizeMetrics(mode, bases, appliedTotal) {
+function getNgOptimizeMetrics(mode, bases, appliedTotal, traitDefBonus = 0) {
   const adjustedTraitAtk = appliedTotal.traitAtk || 0;
-  const adjustedTraitDef = appliedTotal.traitDef || 0;
+  const adjustedTraitDef = (appliedTotal.traitDef || 0) + traitDefBonus;
   if (mode === 'pvp') {
     const pvpBase = bases.pvpBase;
     const myAtk = {
@@ -9514,7 +9529,7 @@ function buildNgOptimizeResults(mode, sort) {
       selectedIdx.forEach(idx => poolIndexes.push(idx));
       const rank = {
         effect2: false,
-        score: getOptimizeScore(mode, sort, getNgOptimizeMetrics(mode, bases, appliedTotal)),
+        score: getOptimizeScore(mode, sort, getNgOptimizeMetrics(mode, bases, appliedTotal, getNgElementTraitDefBonus(elementCounts))),
         seq: legalCount,
       };
       if (canKeepOptimizeRank(heap, rank, NG_OPT_RESULT_LIMIT)) {
@@ -9634,6 +9649,7 @@ function renderNgOptimizeResults(mode, results) {
         <div style="font-size:12px;line-height:1.9;color:#333333;">
           元素顆數：${elemCountsText}<br>
           周天結果：${ztText} / 合計 ${result.zhoutianCounts.total}<br>
+          ${getNgElementTraitDefBonusText(result.elementCounts)}
           ${adjustText}
           ${summary}
         </div>
@@ -9827,10 +9843,10 @@ function evaluateFinalOptimizeResult(mode, bases, jointResult, ngResult, precomp
     upperCount: jointResult?.upperCount,
     lowerCount: jointResult?.lowerCount,
   };
-  return { ...common, ...getFinalOptimizeMetrics(mode, bases, delta) };
+  return { ...common, ...getFinalOptimizeMetrics(mode, bases, delta, getNgElementTraitDefBonus(common.elementCounts)) };
 }
 
-function getFinalOptimizeMetrics(mode, bases, delta) {
+function getFinalOptimizeMetrics(mode, bases, delta, traitDefBonus = 0) {
   if (mode === 'pvp') {
     const pvpBase = bases.pvpBase;
     const myAtk = {
@@ -9858,7 +9874,7 @@ function getFinalOptimizeMetrics(mode, bases, delta) {
       oppTechOver: pvpBase.myDef.oppTechOver + delta.techOver,
     };
     const myExpected = calcPVPSideExpected(myAtk, pvpBase.oppDef).expected * (1 + delta.traitAtk);
-    const oppExpected = calcPVPSideExpected(pvpBase.oppAtk, myDef).expected * (1 - delta.traitDef);
+    const oppExpected = calcPVPSideExpected(pvpBase.oppAtk, myDef).expected * (1 - (delta.traitDef + traitDefBonus));
     const enemyHits = myExpected > 0 && pvpBase.enemyHp > 0 ? pvpBase.enemyHp / myExpected : Infinity;
     const myHits = oppExpected > 0 && (pvpBase.myHp + delta.hp) > 0 ? (pvpBase.myHp + delta.hp) / oppExpected : Infinity;
     return {
@@ -9955,7 +9971,11 @@ function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults, pool 
       hydratedCache.set(index, hydrated);
       appliedTotal = hydrated.appliedTotal;
     }
-    const metrics = getFinalOptimizeMetrics(mode, bases, combineFinalOptimizeDelta(refGear, appliedTotal));
+    const elementCounts = pool
+      ? getNgOptimizePoolElementCounts(pool, index)
+      : (hydratedCache.get(index)?.elementCounts || result?.elementCounts);
+    const metrics = getFinalOptimizeMetrics(
+      mode, bases, combineFinalOptimizeDelta(refGear, appliedTotal), getNgElementTraitDefBonus(elementCounts));
     scores[index] = getOptimizeScore(mode, sort, metrics);
     order.push(index);
   }
@@ -9985,15 +10005,23 @@ function getNgOptimizePoolAppliedTotal(pool, index) {
   return total;
 }
 
-function getNgOptimizePoolResult(pool, index) {
-  const items = [];
+function getNgOptimizePoolElementCounts(pool, index) {
   const elementCounts = { metal:0, wood:0, water:0, fire:0, earth:0 };
   for (let j = 0; j < 6; j++) {
-    const item = pool.candidates[pool.itemIndexes[index * 6 + j]];
-    items.push(item);
-    NG_ELEMENT_KEYS.forEach(key => { elementCounts[key] += item.tagCounts[key] || 0; });
+    const tagCounts = pool.candidates[pool.itemIndexes[index * 6 + j]].tagCounts;
+    NG_ELEMENT_KEYS.forEach(key => { elementCounts[key] += tagCounts[key] || 0; });
   }
-  return { items, elementCounts, appliedTotal: getNgOptimizePoolAppliedTotal(pool, index) };
+  return elementCounts;
+}
+
+function getNgOptimizePoolResult(pool, index) {
+  const items = [];
+  for (let j = 0; j < 6; j++) items.push(pool.candidates[pool.itemIndexes[index * 6 + j]]);
+  return {
+    items,
+    elementCounts: getNgOptimizePoolElementCounts(pool, index),
+    appliedTotal: getNgOptimizePoolAppliedTotal(pool, index),
+  };
 }
 
 function buildFinalOptimizeResults(mode, sort) {
@@ -10035,11 +10063,13 @@ function buildFinalOptimizeResults(mode, sort) {
   const combinedCount = jointTop.length * ngTop.length;
   const gearDeltas = jointTop.map(jointResult => sumOptimizeGearDeltas(jointResult.items));
   const ngTotals = ngTop.map(getFinalNgAppliedTotal);
+  const ngTraitDefBonuses = ngTop.map(ngResult => getNgElementTraitDefBonus(ngResult.elementCounts));
   const heap = [];
   jointTop.forEach((jointResult, jointIndex) => {
     const effect2 = !!jointResult.effect2;
     ngTotals.forEach((ngTotal, ngIndex) => {
-      const metrics = getFinalOptimizeMetrics(mode, bases, combineFinalOptimizeDelta(gearDeltas[jointIndex], ngTotal));
+      const metrics = getFinalOptimizeMetrics(
+        mode, bases, combineFinalOptimizeDelta(gearDeltas[jointIndex], ngTotal), ngTraitDefBonuses[ngIndex]);
       keepTopOptimizeRanks(heap, {
         effect2,
         score: getOptimizeScore(mode, sort, metrics),
@@ -10129,6 +10159,7 @@ function renderFinalOptimizeResults(mode, results) {
         <div style="font-size:12px;line-height:1.9;color:#333333;">
           元素顆數：${elemCountsText}<br>
           周天結果：${ztText} / 合計 ${result.zhoutianCounts?.total || 0}<br>
+          ${getNgElementTraitDefBonusText(result.elementCounts)}
           ${traitText}
           ${summary}
         </div>
