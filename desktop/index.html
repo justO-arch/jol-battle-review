@@ -7,21 +7,22 @@
 <style>
   * { box-sizing: border-box; }
   :root {
-    --bg: #0a0c13;
-    --panel: #11141f;
-    --line: #2a2e3b;
-    --text: #ece5d6;
-    --muted: #a9a18e;
-    --accent: #f1d58f;
-    --accent-soft: #2a2416;
-    --accent-2: #6fcfbf;
-    --accent-2-soft: #13302c;
-    --warn: #f39a86;
-    --warn-soft: #2e1a17;
-    --mid: #e3c271;
-    --mid-soft: #2c2410;
-    --obs: #a9c0e3;
-    --obs-soft: #172235;
+    --accent-rgb: 155, 77, 29;
+    --bg: #f4f0e8;
+    --panel: #fffdf8;
+    --line: #d8cfc1;
+    --text: #2b241d;
+    --muted: #6e6356;
+    --accent: #9b4d1d;
+    --accent-soft: #f4e5d8;
+    --accent-2: #0f6b61;
+    --accent-2-soft: #dff1ee;
+    --warn: #b23a2b;
+    --warn-soft: #fde4de;
+    --mid: #c88c28;
+    --mid-soft: #fff1d8;
+    --obs: #346a95;
+    --obs-soft: #e1eef9;
   }
   body {
     margin: 0;
@@ -2412,149 +2413,149 @@
   }
   /* 深夜金主題：畫面用 :root 深色值；列印與 PDF 匯出（body.print-export、.export-stage、@media print）沿用原本淺色值。 */
   :root {
-    color-scheme: dark;
-    --chart-1: #f0a676;
-    --chart-2: #8cc2f5;
-    --chart-3: #6fcfbf;
-    --chart-attack: #f0a676;
-    --chart-axis: #3a3f50;
-    --chart-bodyguard: #e3c271;
-    --chart-defense: #6fcfbf;
-    --chart-grid: #2c3142;
-    --chart-plot: #0d1019;
-    --chart-plot-line: #34302b;
-    --chart-point-ring: #11141f;
-    --chart-threshold: #f0a676;
-    --chart-tick: #1f2433;
+    color-scheme: light;
+    --chart-1: #9b4d1d;
+    --chart-2: #346a95;
+    --chart-3: #0f6b61;
+    --chart-attack: #b4571f;
+    --chart-axis: #d9cebf;
+    --chart-bodyguard: #d6a21d;
+    --chart-defense: #0f6b61;
+    --chart-grid: #e5dacd;
+    --chart-plot: #fff;
+    --chart-plot-line: #eadfce;
+    --chart-point-ring: #fffaf4;
+    --chart-threshold: #b4571f;
+    --chart-tick: #efe5d7;
     --chart-unknown: #6ec9f5;
-    --tk-bg-0f6b61a008: rgba(165, 242, 234, 0.08);
-    --tk-bg-0f6b61a016: rgba(165, 242, 234, 0.16);
-    --tk-bg-1d4ed8: #25386e;
-    --tk-bg-1e40af: #1f2d5c;
-    --tk-bg-201812a042: rgba(0, 0, 0, 0.672);
-    --tk-bg-211910a042: rgba(0, 0, 0, 0.672);
-    --tk-bg-9b4d1da008: rgba(233, 175, 140, 0.08);
-    --tk-bg-b89d83: #6e563f;
-    --tk-bg-dfeefb: #101e29;
-    --tk-bg-dff1e5: #102416;
-    --tk-bg-dff1ee: #102420;
-    --tk-bg-e4f5ef: #102920;
-    --tk-bg-e4f8ff: #11262d;
-    --tk-bg-e7e5f9: #13102b;
-    --tk-bg-eaf6ff: #122330;
-    --tk-bg-efd9c6: #1a110a;
-    --tk-bg-efe6d8: #0c0f17;
-    --tk-bg-f1e7f8: #21112c;
-    --tk-bg-f1ece4: #0f121d;
-    --tk-bg-f2e8da: #0d1019;
-    --tk-bg-f4eadc: #0e111b;
-    --tk-bg-f4ede1: #0f121d;
-    --tk-bg-f5ecdf: #0f121c;
-    --tk-bg-f6d5cc: #1f100c;
-    --tk-bg-f6ede0: #10121d;
-    --tk-bg-f6ede2: #10131e;
-    --tk-bg-f6fbfa: #151928;
-    --tk-bg-f7f1df: #10121d;
-    --tk-bg-f7f4ed: #131622;
-    --tk-bg-f8f1e8: #121521;
-    --tk-bg-f9e7e1: #291610;
-    --tk-bg-fae8f0: #2d111d;
-    --tk-bg-faf3e7: #121521;
-    --tk-bg-faf3e7a098: rgba(18, 21, 33, 0.98);
-    --tk-bg-faf4eb: #131623;
-    --tk-bg-fbf4d9: #27220f;
-    --tk-bg-fbf7f0: #141725;
-    --tk-bg-fbf7f1: #141826;
-    --tk-bg-fce2d5: #26160e;
-    --tk-bg-fde4de: #2a1510;
-    --tk-bg-fff1f0: #331513;
-    --tk-bg-fff4e8: #131724;
-    --tk-bg-fff5ea: #141724;
-    --tk-bg-fff7ef: #151826;
-    --tk-bg-fff8ef: #151826;
-    --tk-bg-fff9f1: #151927;
-    --tk-bg-fffaf1: #151927;
-    --tk-bg-fffaf2: #151928;
-    --tk-bg-fffaf3: #161928;
-    --tk-bg-fffaf4: #161928;
-    --tk-bg-fffaf4a096: rgba(22, 25, 40, 0.96);
-    --tk-bg-fffcf7: #161a2a;
-    --tk-bg-fffdf8: #171a2a;
-    --tk-bg-fffdf8a096: rgba(23, 26, 42, 0.96);
-    --tk-bg-fffdf9: #171b2a;
-    --tk-bg-fffdfa: #171b2b;
-    --tk-bg-ffffff: #181c2d;
-    --tk-bg-ffffffa06: rgba(24, 28, 45, 0.6);
-    --tk-bg-ffffffa07: rgba(24, 28, 45, 0.7);
-    --tk-fg-0f6b61: #a5f2ea;
-    --tk-fg-17603c: #adebcd;
-    --tk-fg-1a7c2a: #9debaa;
-    --tk-fg-23738c: #95d2e5;
-    --tk-fg-2f6397: #91b7dd;
-    --tk-fg-2f78aa: #86badd;
-    --tk-fg-2f8571: #9bdccd;
-    --tk-fg-3a2b18: #e7d9c6;
-    --tk-fg-51473d: #cec6be;
-    --tk-fg-5b4cb2: #8e84cb;
-    --tk-fg-67584a: #c7bcb2;
-    --tk-fg-6e6356: #c0b8ae;
-    --tk-fg-71431f: #e6c2a5;
-    --tk-fg-7a52a0: #ab8fc6;
-    --tk-fg-7c6956: #c1b3a6;
-    --tk-fg-7f3512: #f1b69a;
-    --tk-fg-8b5d12: #f0cd94;
-    --tk-fg-8b6842: #cfb69a;
-    --tk-fg-8d6a17: #edd293;
-    --tk-fg-8f1f16: #ee9891;
-    --tk-fg-9a4d3a: #d59e90;
-    --tk-fg-9a8220: #e7d58d;
-    --tk-fg-9b4d1d: #e9af8c;
-    --tk-fg-a53b2a: #e19488;
-    --tk-fg-b25d86: #c382a1;
-    --tk-fg-b42318: #ed857e;
+    --tk-bg-0f6b61a008: rgba(15, 107, 97, 0.08);
+    --tk-bg-0f6b61a016: rgba(15, 107, 97, 0.16);
+    --tk-bg-1d4ed8: #1d4ed8;
+    --tk-bg-1e40af: #1e40af;
+    --tk-bg-201812a042: rgba(32, 24, 18, 0.42);
+    --tk-bg-211910a042: rgba(33, 25, 16, 0.42);
+    --tk-bg-9b4d1da008: rgba(155, 77, 29, 0.08);
+    --tk-bg-b89d83: #b89d83;
+    --tk-bg-dfeefb: #dfeefb;
+    --tk-bg-dff1e5: #dff1e5;
+    --tk-bg-dff1ee: #dff1ee;
+    --tk-bg-e4f5ef: #e4f5ef;
+    --tk-bg-e4f8ff: #e4f8ff;
+    --tk-bg-e7e5f9: #e7e5f9;
+    --tk-bg-eaf6ff: #eaf6ff;
+    --tk-bg-efd9c6: #efd9c6;
+    --tk-bg-efe6d8: #efe6d8;
+    --tk-bg-f1e7f8: #f1e7f8;
+    --tk-bg-f1ece4: #f1ece4;
+    --tk-bg-f2e8da: #f2e8da;
+    --tk-bg-f4eadc: #f4eadc;
+    --tk-bg-f4ede1: #f4ede1;
+    --tk-bg-f5ecdf: #f5ecdf;
+    --tk-bg-f6d5cc: #f6d5cc;
+    --tk-bg-f6ede0: #f6ede0;
+    --tk-bg-f6ede2: #f6ede2;
+    --tk-bg-f6fbfa: #f6fbfa;
+    --tk-bg-f7f1df: #f7f1df;
+    --tk-bg-f7f4ed: #f7f4ed;
+    --tk-bg-f8f1e8: #f8f1e8;
+    --tk-bg-f9e7e1: #f9e7e1;
+    --tk-bg-fae8f0: #fae8f0;
+    --tk-bg-faf3e7: #faf3e7;
+    --tk-bg-faf3e7a098: rgba(250, 243, 231, 0.98);
+    --tk-bg-faf4eb: #faf4eb;
+    --tk-bg-fbf4d9: #fbf4d9;
+    --tk-bg-fbf7f0: #fbf7f0;
+    --tk-bg-fbf7f1: #fbf7f1;
+    --tk-bg-fce2d5: #fce2d5;
+    --tk-bg-fde4de: #fde4de;
+    --tk-bg-fff1f0: #fff1f0;
+    --tk-bg-fff4e8: #fff4e8;
+    --tk-bg-fff5ea: #fff5ea;
+    --tk-bg-fff7ef: #fff7ef;
+    --tk-bg-fff8ef: #fff8ef;
+    --tk-bg-fff9f1: #fff9f1;
+    --tk-bg-fffaf1: #fffaf1;
+    --tk-bg-fffaf2: #fffaf2;
+    --tk-bg-fffaf3: #fffaf3;
+    --tk-bg-fffaf4: #fffaf4;
+    --tk-bg-fffaf4a096: rgba(255, 250, 244, 0.96);
+    --tk-bg-fffcf7: #fffcf7;
+    --tk-bg-fffdf8: #fffdf8;
+    --tk-bg-fffdf8a096: rgba(255, 253, 248, 0.96);
+    --tk-bg-fffdf9: #fffdf9;
+    --tk-bg-fffdfa: #fffdfa;
+    --tk-bg-ffffff: #ffffff;
+    --tk-bg-ffffffa06: rgba(255, 255, 255, 0.6);
+    --tk-bg-ffffffa07: rgba(255, 255, 255, 0.7);
+    --tk-fg-0f6b61: #0f6b61;
+    --tk-fg-17603c: #17603c;
+    --tk-fg-1a7c2a: #1a7c2a;
+    --tk-fg-23738c: #23738c;
+    --tk-fg-2f6397: #2f6397;
+    --tk-fg-2f78aa: #2f78aa;
+    --tk-fg-2f8571: #2f8571;
+    --tk-fg-3a2b18: #3a2b18;
+    --tk-fg-51473d: #51473d;
+    --tk-fg-5b4cb2: #5b4cb2;
+    --tk-fg-67584a: #67584a;
+    --tk-fg-6e6356: #6e6356;
+    --tk-fg-71431f: #71431f;
+    --tk-fg-7a52a0: #7a52a0;
+    --tk-fg-7c6956: #7c6956;
+    --tk-fg-7f3512: #7f3512;
+    --tk-fg-8b5d12: #8b5d12;
+    --tk-fg-8b6842: #8b6842;
+    --tk-fg-8d6a17: #8d6a17;
+    --tk-fg-8f1f16: #8f1f16;
+    --tk-fg-9a4d3a: #9a4d3a;
+    --tk-fg-9a8220: #9a8220;
+    --tk-fg-9b4d1d: #9b4d1d;
+    --tk-fg-a53b2a: #a53b2a;
+    --tk-fg-b25d86: #b25d86;
+    --tk-fg-b42318: #b42318;
     --tk-fg-ffffff: #ffffff;
-    --tk-line-1d4ed8: #4b6fd2;
-    --tk-line-1e40af: #4b6bd2;
-    --tk-line-a9dff0: #295361;
-    --tk-line-b6d0e8: #29455f;
-    --tk-line-b89d83: #ad8e70;
-    --tk-line-bbdccf: #2f5c4a;
-    --tk-line-bddcf2: #27455b;
-    --tk-line-c67733: #d18a4d;
-    --tk-line-cbbfac: #49433a;
-    --tk-line-cde4e0: #2d544d;
-    --tk-line-d3bddf: #4b2d5c;
-    --tk-line-d5c7b6: #453f36;
-    --tk-line-d5cabd: #433e35;
-    --tk-line-d78a43: #d28c4b;
-    --tk-line-d7c7b6: #443f36;
-    --tk-line-d9c5aa: #654d2d;
-    --tk-line-d9cdbd: #433d34;
-    --tk-line-dacfc2: #413c33;
-    --tk-line-ddd2c6: #403a32;
-    --tk-line-dfc9b2: #63472a;
-    --tk-line-e0b9ab: #643a2b;
-    --tk-line-e0d4c6: #3f3a32;
-    --tk-line-e2c8b3: #62432a;
-    --tk-line-e3d9cd: #3d3830;
-    --tk-line-e5d79b: #675c2c;
-    --tk-line-e6bfd0: #5d283f;
-    --tk-line-e6d8af: #62542a;
-    --tk-line-e6dbcf: #3c372f;
-    --tk-line-e8b6aa: #63352a;
-    --tk-line-e8ddd1: #3b362e;
-    --tk-line-eadfce: #3b362f;
-    --tk-line-eee4d8: #38332c;
-    --tk-line-eee5da: #38332c;
-    --tk-line-f0e7dc: #37322b;
-    --tk-line-f4c7c3: #592a26;
-    --tk-shadow-1d4ed8a024: rgba(106, 139, 234, 0.24);
-    --tk-shadow-3c2c14a005: rgba(0, 0, 0, 0.15);
-    --tk-shadow-3c2c14a012: rgba(0, 0, 0, 0.36);
-    --tk-shadow-3c2c14a022: rgba(0, 0, 0, 0.6);
-    --tk-shadow-7a4921a008: rgba(229, 191, 160, 0.08);
-    --tk-shadow-9b4d1da008: rgba(233, 175, 140, 0.08);
-    --tk-shadow-c67733a008: rgba(220, 165, 118, 0.08);
+    --tk-line-1d4ed8: #1d4ed8;
+    --tk-line-1e40af: #1e40af;
+    --tk-line-a9dff0: #a9dff0;
+    --tk-line-b6d0e8: #b6d0e8;
+    --tk-line-b89d83: #b89d83;
+    --tk-line-bbdccf: #bbdccf;
+    --tk-line-bddcf2: #bddcf2;
+    --tk-line-c67733: #c67733;
+    --tk-line-cbbfac: #cbbfac;
+    --tk-line-cde4e0: #cde4e0;
+    --tk-line-d3bddf: #d3bddf;
+    --tk-line-d5c7b6: #d5c7b6;
+    --tk-line-d5cabd: #d5cabd;
+    --tk-line-d78a43: #d78a43;
+    --tk-line-d7c7b6: #d7c7b6;
+    --tk-line-d9c5aa: #d9c5aa;
+    --tk-line-d9cdbd: #d9cdbd;
+    --tk-line-dacfc2: #dacfc2;
+    --tk-line-ddd2c6: #ddd2c6;
+    --tk-line-dfc9b2: #dfc9b2;
+    --tk-line-e0b9ab: #e0b9ab;
+    --tk-line-e0d4c6: #e0d4c6;
+    --tk-line-e2c8b3: #e2c8b3;
+    --tk-line-e3d9cd: #e3d9cd;
+    --tk-line-e5d79b: #e5d79b;
+    --tk-line-e6bfd0: #e6bfd0;
+    --tk-line-e6d8af: #e6d8af;
+    --tk-line-e6dbcf: #e6dbcf;
+    --tk-line-e8b6aa: #e8b6aa;
+    --tk-line-e8ddd1: #e8ddd1;
+    --tk-line-eadfce: #eadfce;
+    --tk-line-eee4d8: #eee4d8;
+    --tk-line-eee5da: #eee5da;
+    --tk-line-f0e7dc: #f0e7dc;
+    --tk-line-f4c7c3: #f4c7c3;
+    --tk-shadow-1d4ed8a024: rgba(29, 78, 216, 0.24);
+    --tk-shadow-3c2c14a005: rgba(60, 44, 20, 0.05);
+    --tk-shadow-3c2c14a012: rgba(60, 44, 20, 0.12);
+    --tk-shadow-3c2c14a022: rgba(60, 44, 20, 0.22);
+    --tk-shadow-7a4921a008: rgba(122, 73, 33, 0.08);
+    --tk-shadow-9b4d1da008: rgba(155, 77, 29, 0.08);
+    --tk-shadow-c67733a008: rgba(198, 119, 51, 0.08);
   }
   body.print-export,
   .export-stage {
@@ -2881,103 +2882,19 @@
     }
   }
   @media screen {
-    body:not(.print-export) {
-      background:
-        radial-gradient(circle at 10% -8%, rgba(214, 178, 98, 0.10), transparent 32%),
-        radial-gradient(circle at 92% -6%, rgba(79, 147, 216, 0.08), transparent 28%),
-        var(--bg);
-      scrollbar-color: #4a4433 #0d1019;
-    }
-    body:not(.print-export) .hero {
-      background: linear-gradient(135deg, #141828 0%, #10131e 58%, #0d1019 100%);
-      border-color: rgba(214, 178, 98, 0.22);
-    }
-    body:not(.print-export) .hero::after {
-      background: radial-gradient(circle, rgba(214, 178, 98, 0.12) 0%, transparent 68%);
-    }
     body:not(.print-export) .hero h1 {
       letter-spacing: 0.12em;
-    }
-    body:not(.print-export) .hero h1 > span {
-      letter-spacing: 0;
-    }
-    body:not(.print-export) .panel {
-      border-color: rgba(214, 178, 98, 0.16);
-    }
-    body:not(.print-export) .panel-title {
-      background: linear-gradient(90deg, #141826 0%, #11141f 100%);
-      border-bottom-color: rgba(214, 178, 98, 0.16);
-    }
-    body:not(.print-export) input,
-    body:not(.print-export) select,
-    body:not(.print-export) textarea {
-      background: #0d1019;
-      border-color: rgba(214, 178, 98, 0.28);
     }
     body:not(.print-export) input:focus-visible,
     body:not(.print-export) select:focus-visible,
     body:not(.print-export) textarea:focus-visible,
     body:not(.print-export) button:focus-visible {
-      outline: 2px solid rgba(214, 178, 98, 0.7);
+      outline: 2px solid rgba(var(--accent-rgb), 0.6);
       outline-offset: 2px;
-    }
-    body:not(.print-export) input[type="checkbox"],
-    body:not(.print-export) input[type="radio"] {
-      accent-color: #d6b262;
-    }
-    body:not(.print-export) .btn-primary {
-      background: #d6b262;
-      border-color: #d6b262;
-      color: #1a1408;
-    }
-    body:not(.print-export) .btn-primary:hover {
-      background: #e3c271;
-      border-color: #e3c271;
-      filter: none;
-    }
-    body:not(.print-export) .btn-secondary {
-      background: transparent;
-      border-color: rgba(214, 178, 98, 0.45);
-      color: var(--accent);
-    }
-    body:not(.print-export) .btn-secondary:hover {
-      background: rgba(214, 178, 98, 0.10);
-      border-color: #d6b262;
-    }
-    body:not(.print-export) .btn-ghost {
-      background: transparent;
-      border-color: var(--line);
-      color: var(--text);
-    }
-    body:not(.print-export) .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    body:not(.print-export) #btn_view_public_mode,
-    body:not(.print-export) #btn_back_to_personal_tool {
-      background: transparent;
-      border-color: rgba(214, 178, 98, 0.45);
-      color: var(--accent);
-      box-shadow: none;
-    }
-    body:not(.print-export) #btn_view_public_mode:hover,
-    body:not(.print-export) #btn_back_to_personal_tool:hover {
-      background: rgba(214, 178, 98, 0.10);
-      border-color: #d6b262;
-    }
-    body:not(.print-export) #btn_toggle_public_landscape {
-      background: transparent;
-      border-color: transparent;
-      color: #c9c1ad;
-      box-shadow: none;
-    }
-    body:not(.print-export) #btn_toggle_public_landscape:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: transparent;
-      color: var(--text);
     }
     body:not(.print-export) .tab-bar {
       gap: 2px;
-      border-bottom: 1px solid rgba(214, 178, 98, 0.16);
+      border-bottom: 1px solid var(--line);
       padding-bottom: 0;
     }
     body:not(.print-export) .tab-btn {
@@ -2985,16 +2902,16 @@
       border: 0;
       border-bottom: 2px solid transparent;
       border-radius: 0;
-      color: #b3ab97;
+      color: var(--muted);
       padding: 10px 14px 11px;
     }
     body:not(.print-export) .tab-btn:hover {
       color: var(--text);
-      background: rgba(214, 178, 98, 0.06);
+      background: rgba(var(--accent-rgb), 0.06);
     }
     body:not(.print-export) .tab-btn.active {
       background: transparent;
-      border-bottom-color: #d6b262;
+      border-bottom-color: var(--accent);
       color: var(--accent);
     }
   }
@@ -3103,7 +3020,7 @@
     border: 1px solid var(--line);
     border-radius: 12px;
     background: var(--panel);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 18px 40px rgba(43, 36, 29, 0.14);
   }
   .data-menu-panel[hidden] {
     display: none;
@@ -3161,12 +3078,6 @@
       left: auto;
     }
   }
-  @media screen {
-    body:not(.print-export) .hero.app-bar {
-      background: #0d1019;
-      border-color: rgba(214, 178, 98, 0.18);
-    }
-  }
   .layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -3179,7 +3090,7 @@
     position: fixed;
     inset: 0;
     z-index: 59;
-    background: rgba(5, 6, 10, 0.55);
+    background: rgba(43, 36, 29, 0.28);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
@@ -3198,7 +3109,7 @@
     overflow-y: auto;
     background: var(--bg);
     border-left: 1px solid var(--line);
-    box-shadow: -24px 0 48px rgba(0, 0, 0, 0.45);
+    box-shadow: -24px 0 48px rgba(43, 36, 29, 0.18);
     transform: translateX(100%);
     visibility: hidden;
     transition: transform 0.24s ease, visibility 0s linear 0.24s;
@@ -3253,7 +3164,7 @@
     color: var(--text);
     font-size: 13px;
     line-height: 1.6;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 18px 40px rgba(43, 36, 29, 0.14);
   }
   .import-toast[hidden] {
     display: none;
@@ -3296,14 +3207,14 @@
   }
   @media screen {
     body:not(.print-export) .import-drawer {
-      border-left-color: rgba(214, 178, 98, 0.22);
+      border-left-color: rgba(var(--accent-rgb), 0.22);
     }
     body:not(.print-export) .first-battle-cta {
-      border-color: rgba(214, 178, 98, 0.35);
-      background: rgba(214, 178, 98, 0.05);
+      border-color: rgba(var(--accent-rgb), 0.35);
+      background: rgba(var(--accent-rgb), 0.05);
     }
     body:not(.print-export) .import-toast {
-      border-color: rgba(214, 178, 98, 0.35);
+      border-color: rgba(var(--accent-rgb), 0.35);
     }
   }
   #battle_summary .vs-card {
@@ -3467,6 +3378,187 @@
   .review-columns {
     align-items: start;
   }
+  body [data-tab-panel="opponents"] {
+    --focus-name-font: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    --focus-number-font: "Bahnschrift", "DIN Alternate", "DIN Condensed", "Roboto Condensed", sans-serif-condensed, "Arial Narrow", sans-serif;
+  }
+  body [data-tab-panel="opponents"] > .panel-title {
+    margin: 4px 0 0 !important;
+    padding: 0 0 8px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    font-size: 17px;
+    font-weight: 900;
+    color: var(--text);
+  }
+  body [data-tab-panel="opponents"] .summary-grid {
+    gap: 0 14px;
+    border-top: 2px solid var(--accent);
+  }
+  body [data-tab-panel="opponents"] .focus-pair-fields {
+    display: none;
+  }
+  .focus-battle-picker {
+    margin-bottom: 4px;
+  }
+  .focus-battle-picker-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-bottom: 8px;
+  }
+  .focus-battle-picker-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--text);
+  }
+  .focus-battle-picker-hint {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .focus-battle-count {
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .focus-battle-box {
+    max-height: 300px;
+    overflow: auto;
+  }
+  .focus-battle-table {
+    width: auto;
+    min-width: min(560px, 100%);
+    border-collapse: collapse;
+  }
+  .focus-battle-table th,
+  .focus-battle-table td {
+    padding-right: 28px;
+  }
+  .focus-battle-table th {
+    background: var(--panel);
+    color: var(--muted);
+    font-weight: 700;
+    border-bottom: 1px solid var(--line);
+  }
+  .focus-battle-table td {
+    vertical-align: middle;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(var(--accent-rgb), 0.12);
+  }
+  .focus-battle-table tr.is-current td {
+    background: rgba(var(--accent-rgb), 0.05);
+  }
+  .focus-battle-table input[type="checkbox"] {
+    width: auto;
+  }
+  .focus-current-tag {
+    margin-left: 8px;
+    padding: 0 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  body [data-tab-panel="opponents"] .summary-grid > .empty {
+    grid-column: 1 / -1;
+  }
+  .focus-leader {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    padding: 12px 0 14px;
+  }
+  .focus-leader-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  .focus-leader-name {
+    font-family: var(--focus-name-font);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+  .focus-leader-job {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .focus-leader-value {
+    font-family: var(--focus-number-font);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--accent-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  body [data-tab-panel="opponents"] .focus-detail-grid {
+    gap: 0 28px;
+  }
+  body [data-tab-panel="opponents"] .opponent-card,
+  body [data-tab-panel="opponents"] .detail-box {
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+  body [data-tab-panel="opponents"] .opponent-card summary {
+    padding: 12px 0;
+    border-bottom: 0;
+    background: transparent;
+  }
+  body [data-tab-panel="opponents"] .opponent-card[open] summary {
+    padding-bottom: 4px;
+  }
+  body [data-tab-panel="opponents"] .detail-box > .panel-title {
+    margin: 0 !important;
+    padding: 12px 0 4px;
+    border: 0;
+    border-radius: 0 !important;
+    background: none;
+    font-size: 15px;
+    color: var(--accent);
+  }
+  body [data-tab-panel="opponents"] .opponent-card-body {
+    padding: 0 0 10px;
+  }
+  body [data-tab-panel="opponents"] .opponent-card-body .note-box,
+  body [data-tab-panel="opponents"] .detail-box .note-box {
+    margin-bottom: 0 !important;
+    padding: 9px 0;
+    border: 0;
+    border-bottom: 1px solid rgba(var(--accent-rgb), 0.14);
+    border-radius: 0;
+    background: transparent;
+  }
+  body [data-tab-panel="opponents"] .opponent-card-body .note-box:last-child,
+  body [data-tab-panel="opponents"] .detail-box .note-box:last-child {
+    border-bottom: 0;
+  }
+  @media (max-width: 640px) {
+    body [data-tab-panel="opponents"] .summary-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0 10px;
+    }
+    .focus-leader-name { font-size: 16px; }
+    .focus-leader-value { font-size: 15px; }
+  }
   .review-head-meta:empty {
     display: none;
   }
@@ -3536,14 +3628,14 @@
     body:not(.print-export) .mode-status.public {
       display: inline-block;
       padding: 3px 12px;
-      border: 1px solid rgba(214, 178, 98, 0.35);
+      border: 1px solid rgba(var(--accent-rgb), 0.35);
       border-radius: 12px;
-      color: #d6b262;
+      color: var(--accent);
       text-align: left;
     }
     body:not(.print-export) .review-topbar {
       padding: 14px 18px;
-      border: 1px solid rgba(214, 178, 98, 0.18);
+      border: 1px solid rgba(var(--accent-rgb), 0.18);
       border-radius: 14px;
       background: var(--panel);
     }
@@ -3554,9 +3646,9 @@
       align-items: flex-start;
       margin-top: 0;
       padding: 12px 16px;
-      border: 1px solid rgba(214, 178, 98, 0.35);
+      border: 1px solid rgba(var(--accent-rgb), 0.35);
       border-radius: 12px;
-      background: rgba(214, 178, 98, 0.07);
+      background: rgba(var(--accent-rgb), 0.07);
       color: var(--text);
       font-size: 14px;
       font-weight: 500;
@@ -3571,10 +3663,10 @@
       width: 18px;
       height: 18px;
       margin-top: 2px;
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23d6b262' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='8'/%3E%3Cpath d='M10 9v5M10 6v.2'/%3E%3C/svg%3E") center / contain no-repeat;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%239b4d1d' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='8'/%3E%3Cpath d='M10 9v5M10 6v.2'/%3E%3C/svg%3E") center / contain no-repeat;
     }
     body:not(.print-export) .review-box {
-      border-color: rgba(214, 178, 98, 0.18);
+      border-color: rgba(var(--accent-rgb), 0.18);
       background: var(--panel);
     }
     body:not(.print-export) .review-box .review-head {
@@ -3619,12 +3711,6 @@
     }
     body:not(.print-export) .review-item.review-card {
       padding: 14px 16px;
-      border-color: rgba(255, 255, 255, 0.06);
-      background: #161a28;
-    }
-    body:not(.print-export) .review-chip {
-      background: #232a3d;
-      color: #c9c1ad;
     }
     body:not(.print-export) .check-item {
       align-items: center;
@@ -3633,8 +3719,8 @@
       border-radius: 10px;
     }
     body:not(.print-export) .check-item:has(input:checked) {
-      border-color: rgba(214, 178, 98, 0.55);
-      background: rgba(214, 178, 98, 0.08);
+      border-color: rgba(var(--accent-rgb), 0.55);
+      background: rgba(var(--accent-rgb), 0.08);
     }
   }
   .squad-highlights {
@@ -3706,7 +3792,7 @@
   .squad-bar.build > span { background: var(--mid); }
   @media screen {
     body:not(.print-export) .squad-highlight {
-      border-color: rgba(214, 178, 98, 0.18);
+      border-color: rgba(var(--accent-rgb), 0.18);
     }
   }
 </style>
@@ -4309,7 +4395,7 @@
             </div>
 
             <div class="tab-panel" data-tab-panel="opponents">
-              <div class="grid-4">
+              <div class="focus-pair-fields">
                 <div class="field">
                   <label>己方</label>
                   <select id="team_focus_select"></select>
@@ -4318,14 +4404,19 @@
                   <label>對手</label>
                   <select id="opponent_focus_select"></select>
                 </div>
-                <div class="field" style="grid-column: span 2;">
-                  <label>勾選要納入統計的場次</label>
+              </div>
+              <div class="focus-battle-picker">
+                <div class="focus-battle-picker-head">
+                  <div>
+                    <div class="focus-battle-picker-title">這組對局的場次</div>
+                    <div class="focus-battle-picker-hint">用上方「切換場次」選對局，預設只看那一場；同組合的其他場次可以勾選一起平均（都不勾時視為全部）。</div>
+                  </div>
                   <div class="inline-actions" style="margin-top:0;">
                     <button class="btn-secondary" type="button" id="btn_focus_check_all">全勾</button>
                     <button class="btn-ghost" type="button" id="btn_focus_uncheck_all">全不勾</button>
                   </div>
-                  <div id="focus_battle_select" class="checklist-box"></div>
                 </div>
+                <div id="focus_battle_select" class="focus-battle-box"></div>
               </div>
               <div style="height:12px;"></div>
               <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
@@ -4469,6 +4560,17 @@ function battleResultChipHtml(battle) {
   if (battle?.result === 'win') return '<span class="check-result win">勝</span>';
   if (battle?.result === 'loss') return '<span class="check-result loss">敗</span>';
   return '';
+}
+
+function focusLeaderHtml(label, row, valueText) {
+  return `
+    <div class="focus-leader">
+      <span class="focus-leader-label">${escHtml(label)}</span>
+      <span class="focus-leader-name">${row ? escHtml(row.name) : '-'}</span>
+      ${row ? `<span class="focus-leader-job">${jobIconHtml(row.job)}${escHtml(row.job || '')}</span>` : ''}
+      <span class="focus-leader-value">${row ? escHtml(valueText) : ''}</span>
+    </div>
+  `;
 }
 
 function reviewShareRatio(own, opp) {
@@ -9879,6 +9981,15 @@ function focusMatchBattles(teamName, opponentName) {
   );
 }
 
+function syncFocusSelectsToActiveBattle() {
+  const battle = activeBattle();
+  if (!battle) return;
+  const team = document.getElementById('team_focus_select');
+  const opponent = document.getElementById('opponent_focus_select');
+  if (team && battle.teamName) team.value = battle.teamName;
+  if (opponent && battle.opponent) opponent.value = battle.opponent;
+}
+
 function renderFocusBattleOptions() {
   const box = document.getElementById('focus_battle_select');
   const teamName = document.getElementById('team_focus_select')?.value || '';
@@ -9886,20 +9997,36 @@ function renderFocusBattleOptions() {
   if (!box) return;
   const battles = focusMatchBattles(teamName, opponentName);
   if (!teamName || !opponentName) {
-    box.innerHTML = '<div class="subtle">請先選擇己方與對手。</div>';
+    box.innerHTML = '<div class="subtle">請先用上方「切換場次」選擇一場對局。</div>';
     return;
   }
   if (!battles.length) {
     box.innerHTML = '<div class="subtle">目前沒有符合這組己方 vs 對手的場次。</div>';
     return;
   }
-  box.innerHTML = battles.map(battle => {
-    const label = battleDisplayLabel(battle, { includePlayers: false, includeResult: true });
-    return `<label class="check-item">
-      <input type="checkbox" value="${escHtml(battle.id)}" checked>
-      <span>${escHtml(label)}</span>
-    </label>`;
-  }).join('');
+  const activeId = state.activeBattleId || '';
+  const previous = new Set([...(box.querySelectorAll?.('input[type="checkbox"]:checked') || [])].map(input => input.value));
+  const keepPrevious = box.dataset?.anchor === activeId && previous.size > 0;
+  const defaultId = battles.some(battle => battle.id === activeId) ? activeId : battles[0].id;
+  const checkedIds = keepPrevious ? previous : new Set([defaultId]);
+  if (box.dataset) box.dataset.anchor = activeId;
+  box.innerHTML = `
+    <div class="focus-battle-count">${escHtml(teamName)} vs ${escHtml(opponentName)}：共 ${fmtNumber(battles.length)} 場對局</div>
+    <table class="focus-battle-table">
+      <thead><tr><th>選</th><th>日期</th><th>場次</th><th>結果</th><th>人數</th></tr></thead>
+      <tbody>
+        ${battles.map(battle => `
+          <tr class="${battle.id === activeId ? 'is-current' : ''}">
+            <td><input type="checkbox" value="${escHtml(battle.id)}" ${checkedIds.has(battle.id) ? 'checked' : ''} aria-label="納入 ${escHtml(battle.date || '未填日期')} ${escHtml(battle.sourceLabel || '')}"></td>
+            <td>${escHtml(battle.date || '未填日期')}${battle.id === activeId ? '<span class="focus-current-tag">目前場次</span>' : ''}</td>
+            <td>${escHtml(battle.sourceLabel || '-')}</td>
+            <td>${battleResultChipHtml(battle) || '<span class="subtle">未填</span>'}</td>
+            <td>${fmtNumber(battle.players?.length || 0)} vs ${fmtNumber(battle.opponentPlayers?.length || 0)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
 }
 
 function selectedFocusBattleIds() {
@@ -10926,13 +11053,13 @@ function renderOpponentFocus() {
     const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave)[0];
     const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal)[0];
     cards.innerHTML = data.battleCount ? `
-      <div class="stat"><div class="stat-label">拆塔最強</div><div class="stat-value" style="font-size:18px;">${topBuild ? escHtml(topBuild.name) : '-'}</div><div class="subtle">${topBuild ? fmtLarge(topBuild.avgBuildDamage) : ''}</div></div>
-      <div class="stat"><div class="stat-label">打人最強</div><div class="stat-value" style="font-size:18px;">${topPvp ? escHtml(topPvp.name) : '-'}</div><div class="subtle">${topPvp ? fmtLarge(topPvp.avgPvpDamage) : ''}</div></div>
-      <div class="stat"><div class="stat-label">擊殺最多</div><div class="stat-value" style="font-size:18px;">${topKill ? escHtml(topKill.name) : '-'}</div><div class="subtle">${topKill ? fmtAvg(topKill.avgKill) : ''}</div></div>
-      <div class="stat"><div class="stat-label">鐵衣最扛</div><div class="stat-value" style="font-size:18px;">${topIronTaken ? escHtml(topIronTaken.name) : '-'}</div><div class="subtle">${topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : ''}</div></div>
-      <div class="stat"><div class="stat-label">鐵衣最硬</div><div class="stat-value" style="font-size:18px;">${topIronRatio ? escHtml(topIronRatio.name) : '-'}</div><div class="subtle">${topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : ''}</div></div>
-      <div class="stat"><div class="stat-label">化羽最強</div><div class="stat-value" style="font-size:18px;">${topHealerSave ? escHtml(topHealerSave.name) : '-'}</div><div class="subtle">${topHealerSave ? fmtAvg(topHealerSave.avgSave) : ''}</div></div>
-      <div class="stat"><div class="stat-label">淨治療最高</div><div class="stat-value" style="font-size:18px;">${topHealerNet ? escHtml(topHealerNet.name) : '-'}</div><div class="subtle">${topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : ''}</div></div>
+      ${focusLeaderHtml('拆塔最強', topBuild, topBuild ? fmtLarge(topBuild.avgBuildDamage) : '')}
+      ${focusLeaderHtml('打人最強', topPvp, topPvp ? fmtLarge(topPvp.avgPvpDamage) : '')}
+      ${focusLeaderHtml('擊殺最多', topKill, topKill ? fmtAvg(topKill.avgKill) : '')}
+      ${focusLeaderHtml('鐵衣最扛', topIronTaken, topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : '')}
+      ${focusLeaderHtml('鐵衣最硬', topIronRatio, topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : '')}
+      ${focusLeaderHtml('化羽最強', topHealerSave, topHealerSave ? fmtAvg(topHealerSave.avgSave) : '')}
+      ${focusLeaderHtml('淨治療最高', topHealerNet, topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : '')}
     ` : '<div class="empty">目前沒有可用的對手原始名單資料。舊場次若未保存 opponentPlayers，需重新加入場次後才會顯示。</div>';
   }
   renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { title: '拆塔前 5', limit: 5 });
@@ -10982,13 +11109,13 @@ function renderTeamFocus() {
     const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave)[0];
     const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal)[0];
     cards.innerHTML = data.battleCount ? `
-      <div class="stat"><div class="stat-label">拆塔最強</div><div class="stat-value" style="font-size:18px;">${topBuild ? escHtml(topBuild.name) : '-'}</div><div class="subtle">${topBuild ? fmtLarge(topBuild.avgBuildDamage) : ''}</div></div>
-      <div class="stat"><div class="stat-label">打人最強</div><div class="stat-value" style="font-size:18px;">${topPvp ? escHtml(topPvp.name) : '-'}</div><div class="subtle">${topPvp ? fmtLarge(topPvp.avgPvpDamage) : ''}</div></div>
-      <div class="stat"><div class="stat-label">擊殺最多</div><div class="stat-value" style="font-size:18px;">${topKill ? escHtml(topKill.name) : '-'}</div><div class="subtle">${topKill ? fmtAvg(topKill.avgKill) : ''}</div></div>
-      <div class="stat"><div class="stat-label">鐵衣最扛</div><div class="stat-value" style="font-size:18px;">${topIronTaken ? escHtml(topIronTaken.name) : '-'}</div><div class="subtle">${topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : ''}</div></div>
-      <div class="stat"><div class="stat-label">鐵衣最硬</div><div class="stat-value" style="font-size:18px;">${topIronRatio ? escHtml(topIronRatio.name) : '-'}</div><div class="subtle">${topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : ''}</div></div>
-      <div class="stat"><div class="stat-label">化羽最強</div><div class="stat-value" style="font-size:18px;">${topHealerSave ? escHtml(topHealerSave.name) : '-'}</div><div class="subtle">${topHealerSave ? fmtAvg(topHealerSave.avgSave) : ''}</div></div>
-      <div class="stat"><div class="stat-label">淨治療最高</div><div class="stat-value" style="font-size:18px;">${topHealerNet ? escHtml(topHealerNet.name) : '-'}</div><div class="subtle">${topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : ''}</div></div>
+      ${focusLeaderHtml('拆塔最強', topBuild, topBuild ? fmtLarge(topBuild.avgBuildDamage) : '')}
+      ${focusLeaderHtml('打人最強', topPvp, topPvp ? fmtLarge(topPvp.avgPvpDamage) : '')}
+      ${focusLeaderHtml('擊殺最多', topKill, topKill ? fmtAvg(topKill.avgKill) : '')}
+      ${focusLeaderHtml('鐵衣最扛', topIronTaken, topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : '')}
+      ${focusLeaderHtml('鐵衣最硬', topIronRatio, topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : '')}
+      ${focusLeaderHtml('化羽最強', topHealerSave, topHealerSave ? fmtAvg(topHealerSave.avgSave) : '')}
+      ${focusLeaderHtml('淨治療最高', topHealerNet, topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : '')}
     ` : '<div class="empty">目前沒有可用的己方名單資料。</div>';
   }
   renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { title: '拆塔前 5', limit: 5 });
@@ -11430,6 +11557,7 @@ function refreshAll() {
   renderProfessionTable();
   renderOpponentFocusOptions();
   renderTeamFocusOptions();
+  syncFocusSelectsToActiveBattle();
   renderFocusBattleOptions();
   renderOpponentFocus();
   renderTeamFocus();
@@ -11448,7 +11576,7 @@ function switchTab(tab) {
   });
   const tools = document.querySelector('.current-battle-tools');
   if (tools) {
-    const show = tab === 'assignment' || tab === 'review' || tab === 'matchup';
+    const show = tab === 'assignment' || tab === 'review' || tab === 'matchup' || tab === 'opponents';
     tools.hidden = !show;
     tools.style.display = show ? 'flex' : 'none';
   }
