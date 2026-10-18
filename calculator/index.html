@@ -6768,6 +6768,11 @@ function dbLoadSet(ctx, selId) {
     : (ctx === 'ng_my' || ctx === 'ng_opp') ? calcNeigong
     : (ctx === 'mgn_my' || ctx === 'mgn_opp') ? calcMarginal
     : (ctx === 'pve' ? calcPVE : ctx === 'cmp_a' || ctx === 'cmp_b' ? calcCompare : calcPVP);
+  // PVP 裝備比較的對手只有備註一個文字欄，載入套裝時把套裝名稱寫進去
+  if (ctx === 'pvpcmp_opp') {
+    const note = document.getElementById('pvpcmp_opponent_note');
+    if (note) note.value = entry.name;
+  }
   _dbWriteDOM(fullMap || subsetMap, normalizeSetData(entry.data), fn);
 }
 
@@ -6797,6 +6802,7 @@ function dbLoadPVPCmpAtt(id, selId) {
   const entry = DB.set.find(e => e.name === name); if (!entry) return;
   const a = pvpCmpAttackers.find(x => x.id === id); if (!a) return;
   DB_SET_KEYS.forEach(k => { if (entry.data[k] !== undefined) a[k] = entry.data[k]; });
+  a.name = entry.name;
   renderPVPCmpAttackers(); calcPVPCmp();
 }
 
