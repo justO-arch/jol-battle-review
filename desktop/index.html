@@ -3725,7 +3725,7 @@
   }
   .squad-highlights {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
     margin-bottom: 12px;
   }
@@ -3757,6 +3757,8 @@
   }
   .squad-highlight.build .squad-highlight-value { color: var(--mid); }
   .squad-highlight.pvp .squad-highlight-value { color: var(--chart-2); }
+  .squad-highlight.kill .squad-highlight-value { color: var(--chart-1); }
+  .squad-highlight.death .squad-highlight-value { color: var(--accent-2); }
   .squad-group-row > td {
     padding: 14px 12px 6px;
     font-size: 13px;
@@ -9605,18 +9607,27 @@ function squadBarCell(value, max, kind) {
 function renderSquadHighlights(rows) {
   const box = document.getElementById('squad_highlights');
   if (!box) return;
-  const topRow = key => rows.reduce((best, row) => (!best || Number(row[key] || 0) > Number(best[key] || 0) ? row : best), null);
+  // 同數值並列的小隊一起列出；全部小隊都同值時這張卡沒有比較意義，不顯示
+  const bestRows = (key, lowest) => {
+    const values = rows.map(row => Number(row[key] || 0));
+    const target = lowest ? Math.min(...values) : Math.max(...values);
+    return rows.filter((row, index) => values[index] === target);
+  };
   box.innerHTML = [
-    ['build', '塔傷最高', 'buildDamage'],
-    ['pvp', '人傷最高', 'pvpDamage'],
-  ].map(([kind, label, key]) => {
-    const row = topRow(key);
-    if (!row || Number(row[key] || 0) <= 0) return '';
+    ['build', '塔傷最高', 'buildDamage', false, fmtLarge],
+    ['pvp', '人傷最高', 'pvpDamage', false, fmtLarge],
+    ['kill', '擊殺最多', 'kill', false, fmtNumber],
+    ['death', '重傷最少', 'death', true, fmtNumber],
+  ].map(([kind, label, key, lowest, format]) => {
+    if (!rows.length) return '';
+    const best = bestRows(key, lowest);
+    if (!lowest && Number(best[0][key] || 0) <= 0) return '';
+    if (rows.length > 1 && best.length === rows.length) return '';
     return `
       <div class="squad-highlight ${kind}">
         <span class="squad-highlight-label">${label}</span>
-        <span class="squad-highlight-name">${escHtml(row.squad)}</span>
-        <span class="squad-highlight-value">${fmtLarge(row[key])}</span>
+        <span class="squad-highlight-name">${best.map(row => escHtml(row.squad)).join('、')}</span>
+        <span class="squad-highlight-value">${format(best[0][key])}</span>
       </div>
     `;
   }).join('');
