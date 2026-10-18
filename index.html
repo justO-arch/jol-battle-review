@@ -1184,12 +1184,6 @@
       border-bottom-color: #d6b262;
       color: var(--accent);
     }
-    body:not(.print-export) #battle_summary > div:not(.stat) ~ .stat .stat-value {
-      color: #8cc2f5;
-    }
-    body:not(.print-export) #battle_summary > div:not(.stat) ~ div:not(.stat) ~ .stat .stat-value {
-      color: #f0a676;
-    }
   }
   .job-icon {
     width: 1.25em;
@@ -1201,24 +1195,518 @@
   td:has(> .job-icon) {
     white-space: nowrap;
   }
+  .hero-logo {
+    width: 1.05em;
+    height: 1.05em;
+    margin-right: 0.3em;
+    vertical-align: -0.14em;
+    color: var(--accent);
+  }
+  .hero-subtitle {
+    color: var(--warn);
+    font-weight: 900;
+  }
+  .review-topbar .settings-strip {
+    grid-template-columns: repeat(2, minmax(130px, 180px));
+  }
+  .check-result {
+    flex: none;
+    margin-left: auto;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .check-result.win { color: var(--accent-2); background: var(--accent-2-soft); }
+  .check-result.loss { color: var(--warn); background: var(--warn-soft); }
+  .review-topbar {
+    align-items: center;
+  }
+  .hero.app-bar {
+    padding: 12px 20px;
+    border-radius: 16px;
+    overflow: visible;
+  }
+  .hero.app-bar::after {
+    display: none;
+  }
+  .app-bar .hero-top {
+    align-items: center;
+    gap: 16px;
+  }
+  .app-bar h1 {
+    font-size: 22px;
+    line-height: 1.3;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    margin-top: 2px;
+    font-size: 13px;
+  }
+  .hero-meta .mode-status {
+    max-width: none;
+    text-align: left;
+  }
+  .app-bar .hero-tools {
+    flex-direction: row;
+    align-items: center;
+  }
+  .app-bar .hero-tools .inline-actions {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .data-menu {
+    position: relative;
+    display: inline-flex;
+  }
+  .data-menu[hidden] {
+    display: none;
+  }
+  .data-menu-toggle::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin: -3px 0 0 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+  }
+  .data-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+  }
+  .data-menu-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 45;
+    display: grid;
+    gap: 8px;
+    min-width: 240px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  }
+  .data-menu-panel[hidden] {
+    display: none;
+  }
+  .data-menu-panel button {
+    width: 100%;
+  }
+  .data-menu-panel .hero-tools-note {
+    text-align: left;
+  }
+  .tool-intro {
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .tool-intro p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .tool-intro-note {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  @media (max-width: 1100px) {
+    .data-menu-panel {
+      right: auto;
+      left: 0;
+    }
+  }
+  @media (max-width: 640px) {
+    body .hero.app-bar {
+      padding: 10px 14px;
+    }
+    .hero.app-bar .hero-top {
+      flex-direction: row;
+      align-items: center;
+    }
+    body .hero.app-bar h1 {
+      font-size: 18px;
+    }
+    .hero-meta {
+      font-size: 12px;
+    }
+    .hero.app-bar .hero-tools {
+      width: auto;
+      margin-left: auto;
+    }
+    .data-menu-panel {
+      right: 0;
+      left: auto;
+    }
+  }
+  @media screen {
+    body:not(.print-export) .hero.app-bar {
+      background: #0d1019;
+      border-color: rgba(214, 178, 98, 0.18);
+    }
+  }
+  #battle_summary .vs-card {
+    grid-column: 1 / -1;
+  }
+  .vs-card {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+  }
+  .vs-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--muted);
+  }
+  .vs-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+  }
+  .vs-side {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .vs-side.opp {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .vs-tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+  }
+  .vs-name {
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .vs-side.own .vs-tag,
+  .vs-side.own .vs-name,
+  .vs-val.own {
+    color: var(--chart-2);
+  }
+  .vs-side.opp .vs-tag,
+  .vs-side.opp .vs-name,
+  .vs-val.opp {
+    color: var(--chart-1);
+  }
+  .vs-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .vs-mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+  .vs-result {
+    padding: 4px 16px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .vs-result.win { color: var(--accent-2); background: var(--accent-2-soft); }
+  .vs-result.loss { color: var(--warn); background: var(--warn-soft); }
+  .vs-result.unknown { color: var(--muted); }
+  .vs-vs {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+  }
+  .vs-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .vs-row {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) 110px;
+    grid-template-areas: "own label opp" "own bar opp";
+    align-items: center;
+    column-gap: 18px;
+    row-gap: 6px;
+  }
+  .vs-val {
+    font-size: 17px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .vs-val.own {
+    grid-area: own;
+    text-align: right;
+  }
+  .vs-val.opp {
+    grid-area: opp;
+  }
+  .vs-label {
+    grid-area: label;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .vs-bar {
+    grid-area: bar;
+    display: flex;
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--line);
+  }
+  .vs-bar-own { background: var(--chart-2); }
+  .vs-bar-opp { flex: 1; background: var(--chart-1); }
+  @media (max-width: 640px) {
+    .review-topbar { flex-direction: column; align-items: stretch; }
+    .review-topbar .settings-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .review-note { margin-left: 0; white-space: normal; text-align: left; }
+    .vs-card { padding: 16px; gap: 16px; }
+    .vs-head { gap: 8px; }
+    .vs-name { font-size: 20px; }
+    .vs-sub { font-size: 11px; }
+    .vs-result { padding: 2px 10px; font-size: 13px; }
+    .vs-vs { font-size: 14px; letter-spacing: 0.2em; }
+    .vs-row {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: "own label opp" "bar bar bar";
+      column-gap: 8px;
+      row-gap: 4px;
+    }
+    .vs-val { font-size: 14px; }
+    .vs-val.own { text-align: left; }
+    .vs-val.opp { text-align: right; }
+    .vs-label { justify-content: center; font-size: 13px; }
+    .vs-share { display: none; }
+  }
+  .review-box.priority { --review-tone: var(--warn); --review-tone-soft: var(--warn-soft); }
+  .review-box.secondary { --review-tone: var(--mid); --review-tone-soft: var(--mid-soft); }
+  .review-box.observation { --review-tone: var(--obs); --review-tone-soft: var(--obs-soft); }
+  .review-box.commander { --review-tone: var(--accent-2); --review-tone-soft: var(--accent-2-soft); }
+  .review-box.unknown-group { --review-tone: var(--muted); --review-tone-soft: var(--tk-bg-f1ece4); }
+  .review-columns {
+    align-items: start;
+  }
+  .review-head-meta:empty {
+    display: none;
+  }
+  .review-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .review-item h5.review-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin: 0;
+  }
+  .review-card-name {
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .review-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border-radius: 6px;
+    background: var(--tk-bg-f1ece4);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .review-card .flag-row {
+    margin-top: 0;
+  }
+  .review-box .review-card .flag {
+    border: 1px solid var(--review-tone, var(--line));
+    background: transparent;
+    color: var(--review-tone, var(--text));
+    font-size: 12px;
+  }
+  .review-card-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin: 0;
+  }
+  .review-card-stats dt {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .review-card-stats dd {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .review-item.review-card p {
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  @media screen {
+    body:not(.print-export) .hero-subtitle {
+      font-weight: 700;
+    }
+    body:not(.print-export) .mode-status.public {
+      display: inline-block;
+      padding: 3px 12px;
+      border: 1px solid rgba(214, 178, 98, 0.35);
+      border-radius: 12px;
+      color: #d6b262;
+      text-align: left;
+    }
+    body:not(.print-export) .review-topbar {
+      padding: 14px 18px;
+      border: 1px solid rgba(214, 178, 98, 0.18);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+    body:not(.print-export) .review-note,
+    body:not(.print-export) #screening_grid .alert-note {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 0;
+      padding: 12px 16px;
+      border: 1px solid rgba(214, 178, 98, 0.35);
+      border-radius: 12px;
+      background: rgba(214, 178, 98, 0.07);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.6;
+      text-align: left;
+      white-space: normal;
+    }
+    body:not(.print-export) .review-note::before,
+    body:not(.print-export) #screening_grid .alert-note::before {
+      content: "";
+      flex: none;
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23d6b262' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='8'/%3E%3Cpath d='M10 9v5M10 6v.2'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+    body:not(.print-export) .review-box {
+      border-color: rgba(214, 178, 98, 0.18);
+      background: var(--panel);
+    }
+    body:not(.print-export) .review-box .review-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+    }
+    body:not(.print-export) .review-box .review-head::before {
+      content: "";
+      flex: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--review-tone, var(--accent));
+    }
+    body:not(.print-export) .review-box .review-head-meta {
+      margin-left: auto;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--review-tone-soft, transparent);
+      color: var(--review-tone, var(--text));
+      font-size: 12px;
+      font-weight: 800;
+      opacity: 1;
+    }
+    body:not(.print-export) .review-box summary.review-head::after {
+      content: "展開";
+      flex: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    body:not(.print-export) .review-box details[open] > summary.review-head::after {
+      content: "收合";
+    }
+    body:not(.print-export) .review-box details[open] > summary.review-head {
+      border-bottom: 1px solid var(--line);
+    }
+    body:not(.print-export) .review-item.review-card {
+      padding: 14px 16px;
+      border-color: rgba(255, 255, 255, 0.06);
+      background: #161a28;
+    }
+    body:not(.print-export) .review-chip {
+      background: #232a3d;
+      color: #c9c1ad;
+    }
+    body:not(.print-export) .check-item {
+      align-items: center;
+      padding: 6px 10px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+    }
+    body:not(.print-export) .check-item:has(input:checked) {
+      border-color: rgba(214, 178, 98, 0.55);
+      background: rgba(214, 178, 98, 0.08);
+    }
+  }
 </style>
 </head>
 <body class="mobile-app">
   <div class="page">
-    <section class="hero">
+    <section class="hero app-bar">
       <div class="hero-top">
         <div class="hero-main">
-          <h1>幫戰覆盤工具手機版 <span style="color:var(--warn); font-size:0.72em; font-weight:900;">（不能單憑數據直接判定誰打不好）</span></h1>
-          <p>這一頁獨立處理幫戰戰報。核心流程固定依照覆盤規則：先切資料、再分工、再跑第一輪門檻篩選，最後用交集名單與特殊職責做人工判讀。</p>
-          <div class="hero-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、別名合併、能力六邊形。手機版優先優化查詢與閱讀。</div>
+          <h1><svg class="hero-logo" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3 L31 8 V17 C31 25 25 30.5 18 33 C11 30.5 5 25 5 17 V8 Z"></path><path d="M12 12 L24 24"></path><path d="M24 12 L12 24"></path></svg>幫戰覆盤工具手機版</h1>
+          <div class="hero-meta"><span class="hero-subtitle">（不能單憑數據直接判定誰打不好）</span></div>
         </div>
         <div class="hero-tools">
           <div class="inline-actions">
-            <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
-            <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
+            <div class="data-menu">
+              <button class="btn-ghost data-menu-toggle" id="btn_data_menu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="data_menu_panel">資料</button>
+              <div class="data-menu-panel" id="data_menu_panel" hidden>
+                <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
+                <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
+                <div class="hero-tools-note">提醒：匯入覆盤資料會覆蓋現有資料。</div>
+              </div>
+            </div>
             <input id="snapshot_file" type="file" accept=".json,application/json" hidden>
           </div>
-          <div class="hero-tools-note">提醒：匯入覆盤資料會覆蓋現有資料。</div>
         </div>
       </div>
     </section>
@@ -1357,7 +1845,6 @@
                     <input id="death_pct" type="number" min="1" max="50" step="1" value="30">
                   </div>
                 </div>
-                <div class="review-note">重要提醒：數據很多時候無法體現戰術價值，系統規則是寫死的，實際狀況還要結合錄像和人員覆盤判斷。</div>
               </div>
               <div class="summary-grid" id="battle_summary"></div>
               <div style="height:14px;"></div>
@@ -1365,15 +1852,15 @@
               <div style="height:14px;"></div>
               <div class="review-columns">
                 <div class="review-box priority">
-                  <div class="review-head">優先找幹部覆盤</div>
+                  <div class="review-head">優先找幹部覆盤 <span class="review-head-meta" id="priority_meta"></span></div>
                   <div class="review-list" id="priority_list"></div>
                 </div>
                 <div class="review-box secondary">
-                  <div class="review-head">歡迎找幹部覆盤</div>
+                  <div class="review-head">歡迎找幹部覆盤 <span class="review-head-meta" id="secondary_meta"></span></div>
                   <div class="review-list" id="secondary_list"></div>
                 </div>
                 <div class="review-box observation">
-                  <div class="review-head">系統難以判定</div>
+                  <div class="review-head">系統難以判定 <span class="review-head-meta" id="observation_meta"></span></div>
                   <div class="review-list" id="observation_list"></div>
                 </div>
               </div>
@@ -1583,6 +2070,10 @@
             </div>
 
             <div class="tab-panel" data-tab-panel="rules">
+              <div class="tool-intro">
+                <p>這一頁獨立處理幫戰戰報。核心流程固定依照覆盤規則：先切資料、再分工、再跑第一輪門檻篩選，最後用交集名單與特殊職責做人工判讀。</p>
+                <div class="tool-intro-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、別名合併、能力六邊形。手機版優先優化查詢與閱讀。</div>
+              </div>
               <div class="explain-list" id="rules_explain_box"></div>
             </div>
           </div>
@@ -1607,6 +2098,135 @@ const JOB_ICON_SRC = {
 function jobIconHtml(job) {
   const src = JOB_ICON_SRC[String(job || '').trim()];
   return src ? `<img class="job-icon" src="${src}" alt="" aria-hidden="true">` : '';
+}
+
+function battleResultChipHtml(battle) {
+  if (battle?.result === 'win') return '<span class="check-result win">勝</span>';
+  if (battle?.result === 'loss') return '<span class="check-result loss">敗</span>';
+  return '';
+}
+
+function reviewShareRatio(own, opp) {
+  const a = Math.max(Number(own || 0), 0);
+  const b = Math.max(Number(opp || 0), 0);
+  return a + b > 0 ? a / (a + b) : 0.5;
+}
+
+function renderBattleVsCard(review, actionsHtml = '') {
+  const battle = review.battle || activeBattle();
+  const own = review.teamSummary;
+  const foe = battle?.opponentSummary;
+  const groupCounts = { attack: 0, bodyguard: 0, defense: 0, unknown: 0 };
+  (review.players || []).forEach(player => {
+    const key = Object.prototype.hasOwnProperty.call(groupCounts, player.groupType) ? player.groupType : 'unknown';
+    groupCounts[key] += 1;
+  });
+  const split = [
+    `進攻 ${fmtNumber(groupCounts.attack)}`,
+    `保鑣 ${fmtNumber(groupCounts.bodyguard)}`,
+    `防守 ${fmtNumber(groupCounts.defense)}`,
+    ...(groupCounts.unknown ? [`未定 ${fmtNumber(groupCounts.unknown)}`] : []),
+  ].join('／');
+  const result = battle?.result === 'win' || battle?.result === 'loss' ? battle.result : 'unknown';
+  const resultText = result === 'unknown' ? '未填結果' : `${battle?.teamName || '己方'} ${result === 'win' ? '勝' : '敗'}`;
+  const meta = [battle?.date, battle?.sourceLabel].filter(Boolean).join('・');
+  const rows = [
+    ['擊敗', 'totalKill', fmtNumber],
+    ['助攻', 'totalAssist', fmtNumber],
+    ['資源', 'totalResource', fmtNumber],
+    ['人傷', 'totalPvp', fmtLarge],
+    ['塔傷', 'totalBuild', fmtLarge],
+    ['治療', 'totalHeal', fmtLarge],
+    ['承傷', 'totalTaken', fmtLarge],
+  ].map(([label, key, fmt]) => {
+    const pct = foe ? (Math.round(reviewShareRatio(own[key], foe[key]) * 1000) / 10).toFixed(1) : '';
+    return `
+      <div class="vs-row">
+        <span class="vs-val own">${escHtml(fmt(own[key]))}</span>
+        <span class="vs-label"><span>${escHtml(label)}</span>${foe ? `<span class="vs-share">己方占 ${pct}%</span>` : ''}</span>
+        ${foe ? `<span class="vs-bar" aria-hidden="true"><span class="vs-bar-own" style="width: ${pct}%"></span><span class="vs-bar-opp"></span></span>` : ''}
+        <span class="vs-val opp">${foe ? escHtml(fmt(foe[key])) : '—'}</span>
+      </div>
+    `;
+  }).join('');
+  return `
+    <div class="vs-card">
+      <div class="vs-card-head"><span>本場概況</span>${actionsHtml}</div>
+      <div class="vs-head">
+        <div class="vs-side own">
+          <span class="vs-tag">己方</span>
+          <span class="vs-name">${escHtml(battle?.teamName || '己方')}</span>
+          <span class="vs-sub">上場 ${fmtNumber(own.totalPlayers)} 人・${escHtml(split)}</span>
+        </div>
+        <div class="vs-mid">
+          <span class="vs-result ${result}">${escHtml(resultText)}</span>
+          <span class="vs-vs">VS</span>
+          ${meta ? `<span class="vs-sub">${escHtml(meta)}</span>` : ''}
+        </div>
+        <div class="vs-side opp">
+          <span class="vs-tag">對手</span>
+          <span class="vs-name">${escHtml(battle?.opponent || '未填對手')}</span>
+          <span class="vs-sub">${foe ? `上場 ${fmtNumber(foe.totalPlayers)} 人` : '沒有對手數據'}</span>
+        </div>
+      </div>
+      <div class="vs-rows">${rows}</div>
+    </div>
+  `;
+}
+
+function reviewHitLabel(hit) {
+  const text = String(hit || '');
+  return text.slice(text.lastIndexOf('・') + 1) || text;
+}
+
+function reviewPlayerStats(player) {
+  if (player.job === '素問') {
+    return [
+      ['化羽', fmtNumber(player.saveCount)],
+      ['淨奶', fmtLarge(player.netHeal)],
+      ['治療', fmtLarge(player.heal)],
+      ['承傷', fmtLarge(player.takenDamage)],
+      ['助攻', fmtNumber(player.assist)],
+      ['重傷', fmtNumber(player.death)],
+    ];
+  }
+  return [
+    ['塔傷', fmtLarge(player.buildDamage)],
+    ['人傷', fmtLarge(player.pvpDamage)],
+    ['擊殺', fmtNumber(player.kill)],
+    ['助攻', fmtNumber(player.assist)],
+    ['承傷', fmtLarge(player.takenDamage)],
+    ['重傷', fmtNumber(player.death)],
+    ...(player.job === '九靈' ? [['焚骨', fmtNumber(player.burnCount)]] : []),
+    ...(player.job === '潮光' ? [['清泉', fmtNumber(player.saveCount)]] : []),
+    ...(player.job === '鐵衣' ? [['承傷/重傷', fmtLarge(player.takenPerDeath)]] : []),
+  ];
+}
+
+function reviewPlayerRankText(player) {
+  const metric = getPrimaryMetric(player);
+  const parts = [];
+  if (player.primaryPct !== null && player.primaryPct !== undefined && metric?.label) {
+    parts.push(`${metric.label}：${pctDesc(player.primaryPct)}`);
+  }
+  parts.push(`重傷 ${fmtNumber(player.death)}（${deathSideLabel(player.groupType)}：${pctDesc(player.deathPct)}）`);
+  return parts.join('｜');
+}
+
+function reviewPlayerCardHtml(player, { note = '', showHits = true, showStats = true } = {}) {
+  const hits = showHits ? (player.hits || []) : [];
+  return `
+    <div class="review-item review-card">
+      <h5 class="review-card-head">
+        <span class="review-card-name">${escHtml(player.name)}</span>
+        <span class="review-chip">${jobIconHtml(player.job)}${escHtml(player.job || '未知職業')}</span>
+        <span class="review-chip">${escHtml(GROUP_LABELS[player.groupType] || '未定')}</span>
+      </h5>
+      ${hits.length ? `<div class="flag-row">${hits.map(hit => `<span class="flag" title="${escHtml(hit)}">${escHtml(reviewHitLabel(hit))}</span>`).join('')}</div>` : ''}
+      ${showStats ? `<dl class="review-card-stats">${reviewPlayerStats(player).map(([label, value]) => `<div><dt>${escHtml(label)}</dt><dd>${escHtml(value)}</dd></div>`).join('')}</dl>` : ''}
+      <p>${escHtml(note)}</p>
+    </div>
+  `;
 }
 const JOB_ORDER = ['碎夢', '血河', '龍吟', '九靈', '神相', '玄機', '鐵衣', '素問'];
 const GROUP_LABELS = {
@@ -3100,40 +3720,7 @@ function renderBattleSummary(review) {
     container.innerHTML = '<div class="empty">若沒有分工，則無法提供本頁覆盤數據。請先匯入分工 CSV 或在分工頁完成分組。</div>';
     return;
   }
-  const s = review.teamSummary;
-  const items = [
-    ['人數', s.totalPlayers],
-    ['總擊敗', s.totalKill],
-    ['總助攻', s.totalAssist],
-    ['總資源', s.totalResource],
-    ['總人傷', fmtLarge(s.totalPvp)],
-    ['總塔傷', fmtLarge(s.totalBuild)],
-    ['總治療', fmtLarge(s.totalHeal)],
-    ['總承傷', fmtLarge(s.totalTaken)],
-  ];
-  const battle = review.battle || activeBattle();
-  const foe = battle?.opponentSummary;
-  const renderItems = rows => rows.map(([label, value]) => `
-    <div class="stat">
-      <div class="stat-label">${escHtml(label)}</div>
-      <div class="stat-value">${typeof value === 'number' ? fmtNumber(value) : escHtml(value)}</div>
-    </div>
-  `).join('');
-  container.innerHTML = `
-    <div style="grid-column: 1 / -1; font-weight:800; color:var(--accent); margin-bottom:4px;">己方整體數據</div>
-    ${renderItems(items)}
-    ${foe ? `<div style="grid-column: 1 / -1; font-weight:800; color:var(--accent); margin:10px 0 4px;">對手整體數據</div>
-      ${renderItems([
-        ['人數', foe.totalPlayers],
-        ['總擊敗', foe.totalKill],
-        ['總助攻', foe.totalAssist],
-        ['總資源', foe.totalResource],
-        ['總人傷', fmtLarge(foe.totalPvp)],
-        ['總塔傷', fmtLarge(foe.totalBuild)],
-        ['總治療', fmtLarge(foe.totalHeal)],
-        ['總承傷', fmtLarge(foe.totalTaken)],
-      ])}` : ''}
-  `;
+  container.innerHTML = renderBattleVsCard(review);
 }
 
 function renderScreenings(review) {
@@ -3156,6 +3743,10 @@ function renderReviewLists(review) {
     observation: document.getElementById('observation_list'),
   };
   Object.values(map).forEach(el => { el.innerHTML = ''; });
+  Object.keys(map).forEach(key => {
+    const meta = document.getElementById(`${key}_meta`);
+    if (meta) meta.textContent = '';
+  });
   if (!review) {
     Object.values(map).forEach(el => { el.innerHTML = '<div class="empty">尚未選取場次。</div>'; });
     return;
@@ -3170,13 +3761,11 @@ function renderReviewLists(review) {
     observation: review.summaries.filter(player => player.level === 'observation'),
   };
   Object.entries(buckets).forEach(([key, list]) => {
-    map[key].innerHTML = list.length ? list.map(player => `
-      <div class="review-item">
-        <h5>${escHtml(player.name)}｜${jobIconHtml(player.job)}${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}</h5>
-        <div class="flag-row">${(player.hits || []).map(hit => `<span class="flag">${escHtml(hit)}</span>`).join('')}</div>
-        <p>數據：${escHtml(player.summary)}</p>
-      </div>
-    `).join('') : '<div class="empty">目前沒有對應名單。</div>';
+    const meta = document.getElementById(`${key}_meta`);
+    if (meta) meta.textContent = `${fmtNumber(list.length)} 人`;
+    map[key].innerHTML = list.length ? list.map(player => reviewPlayerCardHtml(player, {
+      note: reviewPlayerRankText(player),
+    })).join('') : '<div class="empty">目前沒有對應名單。</div>';
   });
 }
 
@@ -3444,7 +4033,7 @@ function renderBattleFilterOptions(selectId) {
     const label = battleDisplayLabel(battle, { includePlayers: false });
     return `<label class="check-item">
       <input type="checkbox" value="${escHtml(battle.id)}" ${index === 0 ? '' : ''}>
-      <span>${escHtml(label)}</span>
+      <span>${escHtml(label)}</span>${battleResultChipHtml(battle)}
     </label>`;
   }).join('');
 }
@@ -3736,6 +4325,24 @@ document.getElementById('btn_parse_role_csv').addEventListener('click', handlePa
 document.getElementById('btn_add_battle').addEventListener('click', handleAddBattle);
 document.getElementById('btn_apply_roles').addEventListener('click', handleApplyRolesToActiveBattle);
 document.getElementById('btn_export_snapshot').addEventListener('click', exportReviewSnapshot);
+function setDataMenuOpen(open) {
+  const panel = document.getElementById('data_menu_panel');
+  if (panel) panel.hidden = !open;
+  document.getElementById('btn_data_menu')?.setAttribute?.('aria-expanded', open ? 'true' : 'false');
+}
+document.getElementById('btn_data_menu')?.addEventListener('click', event => {
+  event.stopPropagation();
+  setDataMenuOpen(document.getElementById('data_menu_panel')?.hidden !== false);
+});
+document.getElementById('data_menu_panel')?.addEventListener('click', event => {
+  if (event.target?.closest?.('button')) setDataMenuOpen(false);
+});
+window.addEventListener('click', event => {
+  if (!event.target?.closest?.('.data-menu')) setDataMenuOpen(false);
+});
+window.addEventListener('keydown', event => {
+  if (event.key === 'Escape') setDataMenuOpen(false);
+});
 document.getElementById('btn_import_snapshot').addEventListener('click', () => {
   document.getElementById('snapshot_file').click();
 });
