@@ -3348,6 +3348,56 @@
   }
   .vs-bar-own { background: var(--chart-2); }
   .vs-bar-opp { flex: 1; background: var(--chart-1); }
+  .matchup-count-card {
+    margin-bottom: 12px;
+  }
+  .matchup-count-sections {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 28px;
+  }
+  @media (max-width: 1100px) {
+    .matchup-count-sections { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .matchup-count-section:first-child { grid-row: span 2; }
+  }
+  @media (max-width: 640px) {
+    .matchup-count-sections { grid-template-columns: 1fr; }
+    .matchup-count-section:first-child { grid-row: auto; }
+  }
+  .matchup-count-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .matchup-count-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .matchup-count-title-meta {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .matchup-count-card .vs-rows {
+    gap: 8px;
+  }
+  .matchup-count-card .vs-row {
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    column-gap: 12px;
+  }
+  .matchup-count-job {
+    font-weight: 700;
+    color: var(--text);
+  }
   @media (max-width: 640px) {
     .review-topbar { flex-direction: column; align-items: stretch; }
     .review-topbar .settings-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -10860,6 +10910,69 @@ async function exportMatchupPdf(options = {}) {
   }
 }
 
+function matchupJobCountRows(jobs, myList, foeList) {
+  const rows = jobs.map(job => {
+    const own = myList.filter(player => player.job === job).length;
+    const opp = foeList.filter(player => player.job === job).length;
+    if (!own && !opp) return '';
+    const pct = (Math.round(reviewShareRatio(own, opp) * 1000) / 10).toFixed(1);
+    const diff = own - opp;
+    const diffText = diff > 0 ? `己方多 ${fmtNumber(diff)}` : diff < 0 ? `對方多 ${fmtNumber(-diff)}` : '人數相同';
+    return `
+      <div class="vs-row">
+        <span class="vs-val own">${fmtNumber(own)}</span>
+        <span class="vs-label"><span class="matchup-count-job">${jobIconHtml(job)}${escHtml(job)}</span><span class="vs-share">${diffText}</span></span>
+        <span class="vs-bar" aria-hidden="true"><span class="vs-bar-own" style="width: ${pct}%"></span><span class="vs-bar-opp"></span></span>
+        <span class="vs-val opp">${fmtNumber(opp)}</span>
+      </div>
+    `;
+  }).join('');
+  return rows || '<div class="vs-sub">沒有玩家。</div>';
+}
+
+function renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs) {
+  const groupOptions = { mergeBodyguardWithAttack: true };
+  const isDps = player => player.job !== '素問' && player.job !== '鐵衣';
+  const dpsJobs = jobs.filter(job => job !== '素問' && job !== '鐵衣');
+  const myDps = myPlayers.filter(isDps);
+  const foeDps = foePlayers.filter(isDps);
+  const pickGroup = (list, side, group) => list.filter(player => matchupPlayerGroupForSide(player, side, groupOptions) === group);
+  const myUngrouped = myDps.filter(player => !matchupPlayerGroupForSide(player, 'self', groupOptions)).length;
+  const foeUngrouped = foeDps.filter(player => !matchupPlayerGroupForSide(player, 'foe', groupOptions)).length;
+  const sections = [
+    ['雙方職業數量', jobs, myPlayers, foePlayers],
+    ['進攻+保鑣組 DPS', dpsJobs, pickGroup(myDps, 'self', 'attack'), pickGroup(foeDps, 'foe', 'attack')],
+    ['防守組 DPS', dpsJobs, pickGroup(myDps, 'self', 'defense'), pickGroup(foeDps, 'foe', 'defense')],
+  ];
+  return `
+    <div class="vs-card matchup-count-card">
+      <div class="vs-card-head"><span>職業配置</span></div>
+      <div class="vs-head">
+        <div class="vs-side own">
+          <span class="vs-tag">己方</span>
+          <span class="vs-name">${escHtml(battle?.teamName || '己方')}</span>
+          <span class="vs-sub">上場 ${fmtNumber(myPlayers.length)} 人</span>
+        </div>
+        <div class="vs-mid"><span class="vs-vs">VS</span></div>
+        <div class="vs-side opp">
+          <span class="vs-tag">對手</span>
+          <span class="vs-name">${escHtml(battle?.opponent || '未填對手')}</span>
+          <span class="vs-sub">上場 ${fmtNumber(foePlayers.length)} 人</span>
+        </div>
+      </div>
+      <div class="matchup-count-sections">
+        ${sections.map(([title, rowJobs, myList, foeList]) => `
+          <div class="matchup-count-section">
+            <div class="matchup-count-title"><span>${escHtml(title)}</span><span class="matchup-count-title-meta">己方 ${fmtNumber(myList.length)}／對方 ${fmtNumber(foeList.length)} 人</span></div>
+            <div class="vs-rows">${matchupJobCountRows(rowJobs, myList, foeList)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，對方分組依塔傷推測（規則見最下方說明）。${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
+    </div>
+  `;
+}
+
 function renderSingleBattleMatchup() {
   const box = document.getElementById('single_battle_matchup_box');
   if (!box) return;
@@ -10897,6 +11010,21 @@ function renderSingleBattleMatchup() {
       <div style="font-weight:800; color:var(--accent);">單場對位比較</div>
       <button class="btn-primary" type="button" id="btn_export_matchup_pdf">匯出 PDF</button>
     </div>
+    ${renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs)}
+    <div class="matchup-grid">
+      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, { hideOverallRoster: true, mergeBodyguardWithAttack: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
+      ${dpsJobs.map(job => {
+        const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+        const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+        return renderDpsBundleCard(job, myList, foeList, { metricRows: matchupMetricRows(job), isDpsJob: true, hideOverallRoster: true, mergeBodyguardWithAttack: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct });
+      }).join('')}
+      ${supportJobs.map(job => {
+        const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+        const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
+        return renderDpsBundleCard(job, myList, foeList, { metricRows: matchupMetricRows(job), isDpsJob: job === '鐵衣', hideOverallRoster: true, mergeBodyguardWithAttack: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct });
+      }).join('')}
+    </div>
+    <div style="font-weight:800; color:var(--accent); margin:20px 0 8px;">門檻設定與說明</div>
     <div class="matchup-setting-stack">
       <div class="note-box">對手分工採假設性規則：塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併比較，防守獨立比較。</div>
       <div class="matchup-setting-row">
@@ -10924,19 +11052,6 @@ function renderSingleBattleMatchup() {
     <div class="matchup-notes">
       <div class="note-box">主要用於觀察這場同職對位差異。</div>
       <div class="note-box">若雙方人數差異大，結果僅供參考。</div>
-    </div>
-    <div class="matchup-grid">
-      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, { hideOverallRoster: true, mergeBodyguardWithAttack: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
-      ${dpsJobs.map(job => {
-        const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-        const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-        return renderDpsBundleCard(job, myList, foeList, { metricRows: matchupMetricRows(job), isDpsJob: true, hideOverallRoster: true, mergeBodyguardWithAttack: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct });
-      }).join('')}
-      ${supportJobs.map(job => {
-        const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-        const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
-        return renderDpsBundleCard(job, myList, foeList, { metricRows: matchupMetricRows(job), isDpsJob: job === '鐵衣', hideOverallRoster: true, mergeBodyguardWithAttack: true, allowOverallTotalKillBuild: false, weakPct, strongPct, bottomPct: rosterBottomPct });
-      }).join('')}
     </div>
   `;
   document.getElementById('matchup_weak_pct')?.addEventListener('change', renderSingleBattleMatchup);
