@@ -1187,6 +1187,16 @@
     text-align: left;
     font-weight: 800;
   }
+  .profession-all-dps-row td {
+    background: rgba(var(--accent-rgb), 0.06);
+    font-weight: 700;
+  }
+  .profession-all-dps-row .profession-job-btn {
+    white-space: nowrap;
+  }
+  .profession-all-dps-row + tr:not(.profession-all-dps-row) td {
+    border-top: 2px solid var(--line);
+  }
   .profession-job-btn:hover {
     color: var(--accent);
     text-decoration: underline;
@@ -1196,6 +1206,9 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+  .quadrant-grid.quadrant-grid-single {
+    grid-template-columns: minmax(0, 1fr);
   }
   .quadrant-card {
     border: 1px solid var(--tk-line-e6dbcf);
@@ -3991,7 +4004,6 @@
             <button class="btn-primary" id="btn_first_battle_import" type="button">＋ 新增第一場</button>
           </div>
           <div class="tab-bar">
-            <button class="btn-secondary tab-btn active" data-tab="assignment">分工</button>
             <button class="btn-secondary tab-btn" data-tab="review">單場覆盤</button>
             <button class="btn-secondary tab-btn" data-tab="matchup">單場對位</button>
             <button class="btn-secondary tab-btn" data-tab="opponents">重點人物</button>
@@ -3999,6 +4011,7 @@
             <button class="btn-secondary tab-btn" data-tab="squad">小隊表現</button>
             <button class="btn-secondary tab-btn" data-tab="players">玩家查詢</button>
             <button class="btn-secondary tab-btn" data-tab="rules">判讀說明</button>
+            <button class="btn-secondary tab-btn active" data-tab="assignment">分工</button>
             <div class="tab-bar-spacer"></div>
             <div class="current-battle-tools">
               <label for="current_battle_select">切換場次</label>
@@ -4189,10 +4202,10 @@
                   <label>己方</label>
                   <select id="player_own_team_filter">
                     <option value="all">全部</option>
-                    <option value="chenyan">塵煙如夢</option>
                     <option value="chensi">塵煙似夢</option>
                     <option value="jianzhao">劍照霜寒</option>
                     <option value="zouyu">驟雨初歇</option>
+                    <option value="daruniu">大汝牛</option>
                     <option value="flower_other">花舞或其他</option>
                   </select>
                 </div>
@@ -4256,10 +4269,10 @@
                   <label>己方</label>
                   <select id="profession_own_team_filter">
                     <option value="all">全部</option>
-                    <option value="chenyan">塵煙如夢</option>
                     <option value="chensi">塵煙似夢</option>
                     <option value="jianzhao">劍照霜寒</option>
                     <option value="zouyu">驟雨初歇</option>
+                    <option value="daruniu">大汝牛</option>
                     <option value="flower_other">花舞或其他</option>
                   </select>
                 </div>
@@ -4384,10 +4397,10 @@
                   <label>己方</label>
                   <select id="squad_own_team_filter">
                     <option value="all">全部</option>
-                    <option value="chenyan">塵煙如夢</option>
                     <option value="chensi">塵煙似夢</option>
                     <option value="jianzhao">劍照霜寒</option>
                     <option value="zouyu">驟雨初歇</option>
+                    <option value="daruniu">大汝牛</option>
                     <option value="flower_other">花舞或其他</option>
                   </select>
                 </div>
@@ -4576,6 +4589,14 @@
 const STORAGE_KEY = 'jol_battle_review_v1';
 const JOB_ORDER = ['碎夢', '血河', '龍吟', '九靈', '神相', '玄機', '潮光', '鐵衣', '素問'];
 const DPS_COMPARE_JOBS = JOB_ORDER.filter(job => job !== '鐵衣' && job !== '素問');
+const ALL_DPS_QUADRANT_VIEWS = {
+  '所有DPS・進攻（含保鑣）': { chartKey: 'attack', groups: ['attack', 'bodyguard'], groupText: '進攻與保鑣', yText: '塔傷' },
+  '所有DPS・防守（含保鑣）': { chartKey: 'defense', groups: ['defense', 'bodyguard'], groupText: '防守與保鑣', yText: '擊敗' },
+};
+function allDpsQuadrantView(job) {
+  return Object.prototype.hasOwnProperty.call(ALL_DPS_QUADRANT_VIEWS, job) ? ALL_DPS_QUADRANT_VIEWS[job] : null;
+}
+const ALL_DPS_QUADRANT_BATTLE_LIMIT = 5;
 const DPS_SPECIAL_METRICS = {
   '九靈': { rawKey: 'burnCount', avgKey: 'avgBurn', label: '焚骨' },
   '潮光': { rawKey: 'saveCount', avgKey: 'avgSpring', label: '清泉' },
@@ -4758,11 +4779,19 @@ const PLAYER_GROUP_FILTER_LABELS = {
 };
 const OWN_TEAM_FILTER_LABELS = {
   all: '全部',
-  chenyan: '塵煙如夢',
   chensi: '塵煙似夢',
   jianzhao: '劍照霜寒',
   zouyu: '驟雨初歇',
+  daruniu: '大汝牛',
   flower_other: '花舞或其他',
+};
+// 頁面一載入就會讀存檔並套用對照（loadState），必須宣告在 `let state` 之前
+// 同一幫會在不同戰報的名稱寫法（2026-10-19 使用者確認）；永夜與永夜星河⛱劍照維持分開
+const TEAM_NAME_ALIASES = {
+  '涅槃': '℘涅槃༄',
+  '落雨梨花': '落雨梨花ꕥ',
+  '緣心云醉': '緣心雲醉',
+  '緣心': '緣心雲醉',
 };
 const PLAYER_COHORT_LABELS = {
   all: '所有職業',
@@ -4944,8 +4973,18 @@ function sortBattlesByDateDescending(battles = []) {
     .map(item => item.battle);
 }
 
+function canonicalTeamName(name) {
+  const key = String(name || '').trim();
+  return Object.prototype.hasOwnProperty.call(TEAM_NAME_ALIASES, key) ? TEAM_NAME_ALIASES[key] : name;
+}
+
 function normalizeStatePayload(next = {}) {
-  const battles = sortBattlesByDateDescending(Array.isArray(next.battles) ? next.battles : []);
+  const battles = sortBattlesByDateDescending(Array.isArray(next.battles) ? next.battles : [])
+    .map(battle => {
+      const teamName = canonicalTeamName(battle.teamName);
+      const opponent = canonicalTeamName(battle.opponent);
+      return teamName === battle.teamName && opponent === battle.opponent ? battle : { ...battle, teamName, opponent };
+    });
   return {
     battles,
     activeBattleId: next.activeBattleId || battles[0]?.id || '',
@@ -5258,6 +5297,10 @@ function renderPublicModeUi() {
   ].forEach(id => setDisabled(id, publicMode));
 }
 
+function restoredOwnTeamFilter(value) {
+  return Object.prototype.hasOwnProperty.call(OWN_TEAM_FILTER_LABELS, value) ? value : 'all';
+}
+
 function activeTabName() {
   return document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment';
 }
@@ -5306,17 +5349,17 @@ function restoreBattleCheckboxes(selectId, ids) {
 function restoreUiState(uiState = {}) {
   if (!uiState || typeof uiState !== 'object') return;
   if (document.getElementById('player_search')) document.getElementById('player_search').value = uiState.playerSearch || '';
-  if (document.getElementById('player_own_team_filter')) document.getElementById('player_own_team_filter').value = uiState.playerOwnTeamFilter || 'all';
+  if (document.getElementById('player_own_team_filter')) document.getElementById('player_own_team_filter').value = restoredOwnTeamFilter(uiState.playerOwnTeamFilter || 'all');
   if (document.getElementById('player_opponent_filter')) document.getElementById('player_opponent_filter').value = uiState.playerOpponentFilter || 'all';
   if (document.getElementById('player_date_from_filter')) document.getElementById('player_date_from_filter').value = uiState.playerDateFromFilter || '';
   if (document.getElementById('player_date_to_filter')) document.getElementById('player_date_to_filter').value = uiState.playerDateToFilter || '';
   if (document.getElementById('player_group_filter')) document.getElementById('player_group_filter').value = uiState.playerGroupFilter || 'all';
   if (document.getElementById('player_cohort_filter')) document.getElementById('player_cohort_filter').value = uiState.playerCohortFilter || 'same_job';
-  if (document.getElementById('squad_own_team_filter')) document.getElementById('squad_own_team_filter').value = uiState.squadOwnTeamFilter || 'all';
+  if (document.getElementById('squad_own_team_filter')) document.getElementById('squad_own_team_filter').value = restoredOwnTeamFilter(uiState.squadOwnTeamFilter || 'all');
   if (document.getElementById('squad_opponent_filter')) document.getElementById('squad_opponent_filter').value = uiState.squadOpponentFilter || 'all';
   if (document.getElementById('squad_date_from_filter')) document.getElementById('squad_date_from_filter').value = uiState.squadDateFromFilter || '';
   if (document.getElementById('squad_date_to_filter')) document.getElementById('squad_date_to_filter').value = uiState.squadDateToFilter || '';
-  if (document.getElementById('profession_own_team_filter')) document.getElementById('profession_own_team_filter').value = uiState.professionOwnTeamFilter || 'all';
+  if (document.getElementById('profession_own_team_filter')) document.getElementById('profession_own_team_filter').value = restoredOwnTeamFilter(uiState.professionOwnTeamFilter || 'all');
   if (document.getElementById('profession_opponent_filter')) document.getElementById('profession_opponent_filter').value = uiState.professionOpponentFilter || 'all';
   if (document.getElementById('profession_date_from_filter')) document.getElementById('profession_date_from_filter').value = uiState.professionDateFromFilter || '';
   if (document.getElementById('profession_date_to_filter')) document.getElementById('profession_date_to_filter').value = uiState.professionDateToFilter || '';
@@ -7320,8 +7363,9 @@ function renderQuadrantChartCard(title, chartData) {
       </div>
     `;
   }
-  const width = 540;
-  const height = 360;
+  const allDpsView = allDpsQuadrantView(chartData.job);
+  const width = allDpsView ? 1040 : 540;
+  const height = allDpsView ? 560 : 360;
   const padding = { top: 26, right: 18, bottom: 46, left: 62 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
@@ -7342,7 +7386,7 @@ function renderQuadrantChartCard(title, chartData) {
     const color = PROFESSION_QUADRANT_COLORS[row.groupType] || '#8b5fb0';
     const dx = index % 2 === 0 ? 6 : -6;
     const anchor = index % 2 === 0 ? 'start' : 'end';
-    const detail = `${row.name}｜${GROUP_LABELS[row.groupType] || row.groupType}｜重傷 ${fmtRadarDecimal(row.avgDeath)}｜${chartData.yLabel} ${formatQuadrantAxisValue('y', row.yValue)}｜${fmtNumber(row.battles)} 場`;
+    const detail = `${row.name}｜${allDpsView ? `${row.job}｜` : ''}${GROUP_LABELS[row.groupType] || row.groupType}｜重傷 ${fmtRadarDecimal(row.avgDeath)}｜${chartData.yLabel} ${formatQuadrantAxisValue('y', row.yValue)}｜${fmtNumber(row.battles)} 場`;
     return `
       <g>
         <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" style="fill: ${color}; stroke: var(--chart-point-ring)" stroke-width="1.4">
@@ -7378,19 +7422,27 @@ function renderQuadrantChartCard(title, chartData) {
         ${chartData.chartKey === 'attack' ? `
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.attack};"></span>進攻</span>
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.bodyguard};"></span>保鑣</span>
-          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
+          ${allDpsView ? '' : `<span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>`}
         ` : `
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.defense};"></span>防守</span>
           <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.bodyguard};"></span>保鑣</span>
-          <span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>
+          ${allDpsView ? '' : `<span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>`}
         `}
       </div>
-      <div class="quadrant-note">橫線與直線分別使用目前職業樣本下的後段門檻與重傷門檻對應百分位。未知與保鑣分工會同時出現在兩張圖。</div>
+      <div class="quadrant-note">${allDpsView ? `橫線與直線分別使用所有 DPS（${allDpsView.groupText}）樣本下的後段門檻與重傷門檻對應百分位。未知分工不列入。` : '橫線與直線分別使用目前職業樣本下的後段門檻與重傷門檻對應百分位。未知與保鑣分工會同時出現在兩張圖。'}</div>
     </div>
   `;
 }
 
 function renderProfessionQuadrantModalBody(job, metricMode = 'default') {
+  const allDpsView = allDpsQuadrantView(job);
+  if (allDpsView) {
+    return `
+      <div class="quadrant-grid quadrant-grid-single">
+        ${renderQuadrantChartCard(`${job} 象限圖`, professionQuadrantChartData(job, allDpsView.chartKey, metricMode))}
+      </div>
+    `;
+  }
   const attackData = professionQuadrantChartData(job, 'attack', metricMode);
   const defenseData = professionQuadrantChartData(job, 'defense', metricMode);
   const options = professionQuadrantMetricOptions(job);
@@ -7727,6 +7779,8 @@ function dpsProfessionAverageRows(sortConfig = dpsProfessionTableSort) {
 
 function professionAverageSummaryRow(targetJob) {
   const groupType = document.getElementById('profession_group_filter').value || 'all';
+  const allDpsView = allDpsQuadrantView(targetJob);
+  const matchesJob = allDpsView ? job => DPS_COMPARE_JOBS.includes(job) : job => job === targetJob;
   const battleIds = selectedProfessionBattleIds();
   const battles = filteredBattlesByIds(battleIds);
   const bucket = {
@@ -7747,8 +7801,9 @@ function professionAverageSummaryRow(targetJob) {
   };
   battles.forEach(battle => {
     professionSourcePlayersForBattle(battle).forEach(player => {
-      if (player.job !== targetJob) return;
+      if (!matchesJob(player.job)) return;
       if (!historyMatchesPlayerGroupFilter(groupType, player.groupType || 'unknown')) return;
+      if (allDpsView && !allDpsView.groups.includes(player.groupType)) return;
       bucket.entries += 1;
       bucket.battleIds.add(battle.id);
       bucket.players.add(canonicalPlayerName(player.name));
@@ -7852,11 +7907,20 @@ function professionQuadrantMetricValue(job, chartKey, row, metricMode = 'default
   return chartKey === 'attack' ? Number(row.avgBuildDamage || 0) : Number(row.avgKill || 0);
 }
 
+function allDpsQuadrantBattles() {
+  const idSet = new Set(selectedProfessionBattleIds());
+  return sortBattlesByDateDescending(state.battles)
+    .filter(battle => idSet.has(battle.id))
+    .slice(0, ALL_DPS_QUADRANT_BATTLE_LIMIT);
+}
+
 function professionQuadrantPointRows(job) {
   const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
-  const battleIds = selectedProfessionBattleIds();
+  const battleIds = allDpsQuadrantView(job)
+    ? allDpsQuadrantBattles().map(battle => battle.id)
+    : selectedProfessionBattleIds();
   return aggregateProfessionPlayers(battleIds)
-    .filter(item => item.job === job)
+    .filter(item => (allDpsQuadrantView(job) ? DPS_COMPARE_JOBS.includes(item.job) : item.job === job))
     .flatMap(item => {
       const histories = {
         attack: item.history.filter(entry => entry.groupType === 'attack'),
@@ -7874,9 +7938,8 @@ function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
   const sourceRows = professionQuadrantPointRows(job);
   const deathPct = Math.max(1, Math.min(99, Number(currentSettings().deathPct || 30)));
   const weakPct = Math.max(1, Math.min(99, Number(currentSettings().weakPct || 30)));
-  const allowedGroups = chartKey === 'attack'
-    ? ['attack', 'bodyguard', 'unknown']
-    : ['defense', 'bodyguard', 'unknown'];
+  const allowedGroups = allDpsQuadrantView(job)?.groups
+    || (chartKey === 'attack' ? ['attack', 'bodyguard', 'unknown'] : ['defense', 'bodyguard', 'unknown']);
   const rows = sourceRows
     .filter(row => allowedGroups.includes(row.groupType))
     .map(row => ({
@@ -8305,11 +8368,11 @@ function latestBattleIdFromIds(ids) {
 function ownTeamMatchesFilter(teamName, filterKey = 'all') {
   const value = String(teamName || '').trim();
   if (filterKey === 'all') return true;
-  if (filterKey === 'chenyan') return value === '塵煙如夢';
   if (filterKey === 'chensi') return value === '塵煙似夢';
   if (filterKey === 'jianzhao') return value === '劍照霜寒';
   if (filterKey === 'zouyu') return value === '驟雨初歇';
-  if (filterKey === 'flower_other') return value !== '塵煙如夢' && value !== '塵煙似夢' && value !== '劍照霜寒' && value !== '驟雨初歇';
+  if (filterKey === 'daruniu') return value === '大汝牛';
+  if (filterKey === 'flower_other') return value !== '塵煙似夢' && value !== '劍照霜寒' && value !== '驟雨初歇' && value !== '大汝牛';
   return true;
 }
 
@@ -8870,11 +8933,14 @@ function openProfessionJobQuadrantModal(job) {
   }
   const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = currentProfessionReviewFilters();
   const battleIds = selectedProfessionBattleIds();
+  const allDpsView = allDpsQuadrantView(job);
+  const allDpsBattles = allDpsView ? allDpsQuadrantBattles() : null;
   title.innerHTML = `
     <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(job)}｜職業象限圖</div>
-    <div class="subtle" style="margin-top:4px;">依目前職業表現頁的已選場次、己方與對手篩選繪製。進攻圖看主責進攻指標，防守圖合併防守與保鑣，未知分工會同時出現在兩張圖。</div>
+    <div class="subtle" style="margin-top:4px;">依目前職業表現頁的已選場次、己方與對手篩選繪製。${allDpsView ? '' : '進攻圖看主責進攻指標，防守圖合併防守與保鑣，未知分工會同時出現在兩張圖。'}</div>
+    ${allDpsBattles ? `<div class="subtle" style="margin-top:4px;">所有DPS：合併鐵衣、素問以外的職業，只看${allDpsView.groupText}（未知分工不列入），縱軸為${allDpsView.yText}，門檻線依這些樣本計算。最多只取 ${fmtNumber(ALL_DPS_QUADRANT_BATTLE_LIMIT)} 場：已選 ${fmtNumber(battleIds.length)} 場，使用日期最新的 ${fmtNumber(allDpsBattles.length)} 場。</div><div class="subtle" style="margin-top:4px;">${allDpsBattles.map(battle => escHtml(battleDisplayLabel(battle, { includePlayers: false }))).join('<br>')}</div>` : ''}
     <div class="subtle" style="margin-top:4px;">己方：${escHtml(OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部')}；對手：${escHtml(opponentFilterLabel(opponentFilter))}；日期：${escHtml(dateRangeFilterLabel(dateFrom, dateTo))}。</div>
-    <div class="subtle" style="margin-top:4px;">對照樣本共 ${fmtNumber(battleIds.length)} 場。</div>
+    <div class="subtle" style="margin-top:4px;">對照樣本共 ${fmtNumber(allDpsBattles ? allDpsBattles.length : battleIds.length)} 場。</div>
   `;
   body.innerHTML = renderProfessionQuadrantModalBody(job, professionQuadrantMode.metric);
   body.querySelectorAll('[data-profession-quadrant-metric]').forEach(button => {
@@ -9805,8 +9871,9 @@ function renderDpsProfessionAverageTable() {
     body.innerHTML = `<tr><td colspan="${DPS_PROFESSION_TABLE_COLUMNS.length}" class="empty">目前沒有符合條件的 DPS 職業平均資料。</td></tr>`;
     return;
   }
-  body.innerHTML = rows.map(row => `
-    <tr>
+  const allDpsRows = Object.keys(ALL_DPS_QUADRANT_VIEWS).map(key => professionAverageSummaryRow(key)).filter(Boolean);
+  body.innerHTML = [...allDpsRows, ...rows].map(row => `
+    <tr${allDpsQuadrantView(row.job) ? ' class="profession-all-dps-row"' : ''}>
       <td><button type="button" class="profession-job-btn" data-profession-job="${escHtml(row.job)}">${jobIconHtml(row.job)}${escHtml(row.job)}</button></td>
       <td><span class="nowrap">${fmtNumber(row.entries)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
@@ -12088,8 +12155,8 @@ function handleAddBattle() {
     id: makeBattleId(),
     date: document.getElementById('import_date').value || '',
     sourceLabel: importedBattleFileLabel || '',
-    opponent: opponentName,
-    teamName: document.getElementById('import_team_name').value.trim() || section.teamName,
+    opponent: canonicalTeamName(opponentName),
+    teamName: canonicalTeamName(document.getElementById('import_team_name').value.trim() || section.teamName),
     note: document.getElementById('import_note').value.trim(),
     result: document.getElementById('import_result').value || 'unknown',
     players: section.players.map(player => ({ ...player })),
