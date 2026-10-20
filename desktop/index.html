@@ -86,6 +86,9 @@
   .mode-status.public {
     color: var(--tk-fg-b42318);
   }
+  .mode-status.load-error {
+    color: var(--tk-fg-b42318);
+  }
   .hero::after {
     content: "";
     position: absolute;
@@ -4908,6 +4911,10 @@ const PUBLIC_DATA_DIR = 'public-data';
 let publicSharePayload = null;
 let publicShareUiState = null;
 let publicShareLoadError = '';
+// 讀取本機存檔失敗時記下原因；之後不再存檔，避免用空資料蓋掉讀不出來的原始存檔。
+// loadState 在下一行就會執行，這兩個變數必須宣告在 let state 之前。
+let stateLoadError = '';
+let stateLoadErrorNotified = false;
 let state = isPublicReadOnlyMode() ? emptyState() : loadState();
 let importedSections = [];
 let importedRoleRows = [];
@@ -5107,22 +5114,35 @@ function loadState() {
     return normalizeStatePayload(parsed);
   } catch (err) {
     console.error(err);
+    stateLoadError = String(err?.message || err);
     return emptyState();
   }
 }
 
+function notifyStateLoadError() {
+  if (stateLoadErrorNotified) return;
+  stateLoadErrorNotified = true;
+  window.alert('讀取本機存檔時發生錯誤。為了不蓋掉原本的資料，這頁不會儲存任何修改。請重新整理頁面；若仍然失敗，請先不要操作，或用「批量匯入目前所有資料」從備份還原。');
+}
+
 function persistState(nextState) {
+  if (stateLoadError) {
+    notifyStateLoadError();
+    return false;
+  }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    return true;
   } catch (err) {
     console.error(err);
-    alert('儲存失敗：瀏覽器儲存空間可能已滿。建議先「批量匯出目前所有資料」備份，再刪除舊場次後重試。');
+    window.alert('儲存失敗：瀏覽器儲存空間可能已滿。建議先「批量匯出目前所有資料」備份，再刪除舊場次後重試。');
+    return false;
   }
 }
 
 function saveState() {
-  if (isPublicReadOnlyMode()) return;
-  persistState(state);
+  if (isPublicReadOnlyMode()) return true;
+  return persistState(state);
 }
 
 function preventPublicWrite(actionLabel = '這個操作') {
@@ -5215,14 +5235,14 @@ function copyPublicShareToLocal(mode) {
   }
   const publicState = normalizeStatePayload(publicSharePayload.state);
   if (mode === 'overwrite') {
-    persistState(publicState);
+    if (!persistState(publicState)) return;
     window.alert(`已覆蓋本機資料，寫入公開資料 ${fmtNumber(publicState.battles.length)} 場。接下來會回到你的本機工具。`);
     window.location.href = personalToolUrl();
     return;
   }
   if (mode === 'merge') {
     const result = mergePublicStateIntoLocal(publicState, loadState());
-    persistState(result.state);
+    if (!persistState(result.state)) return;
     window.alert(`已合併公開資料：新增 ${fmtNumber(result.added)} 場，略過重複 ${fmtNumber(result.skipped)} 場。接下來會回到你的本機工具。`);
     window.location.href = personalToolUrl();
   }
@@ -5283,11 +5303,14 @@ function renderPublicModeUi() {
   const status = document.getElementById('mode_status');
   if (status) {
     status.classList?.toggle?.('public', publicMode);
+    status.classList?.toggle?.('load-error', !publicMode && !!stateLoadError);
     status.textContent = publicMode
       ? (publicShareLoadError
         ? `公開唯讀模式：${publicShareLoadError}`
         : `公開唯讀模式${landscapeMode ? '（手機橫版檢視）' : ''}：資料來源 ${publicShareDataUrl()}，不會寫入你的瀏覽器。`)
-      : '個人工具模式：資料保存在你的瀏覽器，可自行匯入、編輯與匯出 JSON。';
+      : (stateLoadError
+        ? '讀取本機存檔失敗：這頁不會儲存任何修改，以免蓋掉原本的資料。請重新整理；仍失敗時先不要操作，或用「批量匯入目前所有資料」從備份還原。'
+        : '個人工具模式：資料保存在你的瀏覽器，可自行匯入、編輯與匯出 JSON。');
   }
   [
     'btn_group_attack', 'btn_group_defense', 'btn_group_bodyguard', 'btn_group_unknown',
@@ -5445,12 +5468,21 @@ async function importReviewSnapshot(file) {
   if (parsed?.app !== 'battle_review' || !parsed?.state) {
     throw new Error('不是有效的覆盤資料 JSON。');
   }
+  const previousState = state;
+  const previousLoadError = stateLoadError;
   state = normalizeStatePayload(parsed.state || {});
+  // 匯入是讀取存檔失敗時的還原出口，所以這裡允許蓋掉讀不出來的原始存檔
+  stateLoadError = '';
+  if (!saveState()) {
+    state = previousState;
+    stateLoadError = previousLoadError;
+    return;
+  }
   importedSections = [];
   importedRoleRows = [];
-  saveState();
   refreshAll();
   restoreUiState(parsed.ui_state || {});
+  if (previousLoadError) renderPublicModeUi();
 }
 
 function resolveAliasName(name, map = state.aliasMap || {}) {
@@ -11800,6 +11832,9 @@ function setActiveBattle(id) {
 
 function deleteBattle(id) {
   if (preventPublicWrite('刪除目前場次')) return;
+  const target = state.battles.find(battle => battle.id === id);
+  if (!target) return;
+  if (!window.confirm(`確定刪除這一場？\n${battleDisplayLabel(target)}\n\n此操作無法復原，建議先用「批量匯出目前所有資料」備份。`)) return;
   state.battles = state.battles.filter(battle => battle.id !== id);
   if (state.activeBattleId === id) {
     state.activeBattleId = state.battles[0]?.id || '';
@@ -11870,6 +11905,7 @@ function deleteBattlePlayer(battleId, playerName) {
   const currentPlayers = battle[playerSide] || [];
   const nextPlayers = currentPlayers.filter(player => player.name !== playerName);
   if (nextPlayers.length === currentPlayers.length) return;
+  if (!window.confirm(`確定從這一場刪除玩家「${playerName}」？此操作無法復原。`)) return;
   battle[playerSide] = nextPlayers;
   if (Array.isArray(battle.assignmentRosterNames)) {
     battle.assignmentRosterNames = battle.assignmentRosterNames.filter(name => name !== playerName);
@@ -12173,9 +12209,16 @@ function handleAddBattle() {
     const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
     resultText = ` 分工跨兩側對上 ${applyResult.matched} 人，分工表未出場 ${applyResult.unmatchedRoles} 人；另有 ${applyResult.battleOnly} 人保留為非分工戰場資料。`;
   }
+  const previousBattles = state.battles;
+  const previousActiveBattleId = state.activeBattleId;
   state.battles = sortBattlesByDateDescending([battle, ...state.battles]);
   state.activeBattleId = battle.id;
-  saveState();
+  if (!saveState()) {
+    state.battles = previousBattles;
+    state.activeBattleId = previousActiveBattleId;
+    noteBox.textContent = '這場沒有加入：瀏覽器沒有成功儲存（原因見剛才的提示）。';
+    return;
+  }
   refreshAll();
   noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText}`;
 }
@@ -12531,6 +12574,7 @@ async function bootstrapBattleReviewApp() {
     switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
   }
   renderPublicModeUi();
+  if (stateLoadError && !isPublicReadOnlyMode()) notifyStateLoadError();
 }
 
 bootstrapBattleReviewApp();

@@ -1941,7 +1941,7 @@
                   <div class="inline-actions" style="margin-top:0;">
                     <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
                     <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
-                    <button class="btn-danger" type="button" id="btn_player_delete_checked">刪除勾選場次</button>
+                    <button class="btn-danger" type="button" id="btn_player_delete_checked" style="margin-left:auto;">刪除勾選場次</button>
                   </div>
                   <div id="player_battle_select" class="checklist-box"></div>
                 </div>
@@ -2017,7 +2017,7 @@
                   <div class="inline-actions" style="margin-top:0;">
                     <button class="btn-secondary" type="button" id="btn_prof_check_all">全勾</button>
                     <button class="btn-ghost" type="button" id="btn_prof_uncheck_all">全不勾</button>
-                    <button class="btn-danger" type="button" id="btn_prof_delete_checked">刪除勾選場次</button>
+                    <button class="btn-danger" type="button" id="btn_prof_delete_checked" style="margin-left:auto;">刪除勾選場次</button>
                   </div>
                   <div id="profession_battle_select" class="checklist-box"></div>
                 </div>
@@ -2300,6 +2300,10 @@ const PLAYER_COMPARE_METRICS = [
   { key: 'avgBurn', label: '平均焚骨', better: 'high', format: value => fmtAvg(value), applicable: player => player.job === '九靈' },
 ];
 
+// 讀取本機存檔失敗時記下原因；之後不再存檔，避免用空資料蓋掉讀不出來的原始存檔。
+// loadState 在下一行就會執行，這兩個變數必須宣告在 let state 之前。
+let stateLoadError = '';
+let stateLoadErrorNotified = false;
 let state = loadState();
 let importedSections = [];
 let importedRoleRows = [];
@@ -2338,12 +2342,34 @@ function loadState() {
     };
   } catch (err) {
     console.error(err);
+    stateLoadError = String(err?.message || err);
     return { battles: [], activeBattleId: '', importDraft: {}, aliasMap: {}, settings: { weakPct: 30, deathPct: 30 } };
   }
 }
 
+function notifyStateLoadError() {
+  if (stateLoadErrorNotified) return;
+  stateLoadErrorNotified = true;
+  window.alert('讀取本機存檔時發生錯誤。為了不蓋掉原本的資料，這頁不會儲存任何修改。請重新整理頁面；若仍然失敗，請先不要操作，或用「批量匯入目前所有資料」從備份還原。');
+}
+
+function persistState(nextState) {
+  if (stateLoadError) {
+    notifyStateLoadError();
+    return false;
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    return true;
+  } catch (err) {
+    console.error(err);
+    window.alert('儲存失敗：瀏覽器儲存空間可能已滿。建議先「批量匯出目前所有資料」備份，再刪除舊場次後重試。');
+    return false;
+  }
+}
+
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  return persistState(state);
 }
 
 function activeTabName() {
@@ -2445,6 +2471,8 @@ async function importReviewSnapshot(file) {
     throw new Error('不是有效的覆盤資料 JSON。');
   }
   const next = parsed.state || {};
+  const previousState = state;
+  const previousLoadError = stateLoadError;
   state = {
     battles: Array.isArray(next.battles) ? canonicalBattleNames(next.battles) : [],
     activeBattleId: next.activeBattleId || (Array.isArray(next.battles) && next.battles[0]?.id) || '',
@@ -2455,11 +2483,18 @@ async function importReviewSnapshot(file) {
       deathPct: Number(next.settings?.deathPct || 30),
     },
   };
+  // 匯入是讀取存檔失敗時的還原出口，所以這裡允許蓋掉讀不出來的原始存檔
+  stateLoadError = '';
+  if (!saveState()) {
+    state = previousState;
+    stateLoadError = previousLoadError;
+    return;
+  }
   importedSections = [];
   importedRoleRows = [];
-  saveState();
   refreshAll();
   restoreUiState(parsed.ui_state || {});
+  if (previousLoadError) document.getElementById('state_load_error_banner')?.remove();
 }
 
 function resolveAliasName(name, map = state.aliasMap || {}) {
@@ -4165,6 +4200,9 @@ function deleteCheckedBattles(selectId) {
     .filter(Boolean);
   if (!ids.length) return;
   const set = new Set(ids);
+  const dates = state.battles.filter(battle => set.has(battle.id)).map(battle => battle.date).filter(Boolean).sort();
+  const range = dates.length ? `（${dates[0]}～${dates[dates.length - 1]}）` : '';
+  if (!window.confirm(`確定刪除勾選的 ${ids.length} 場${range}？此操作無法復原，建議先用「批量匯出目前所有資料」備份。`)) return;
   state.battles = state.battles.filter(battle => !set.has(battle.id));
   if (!state.battles.some(battle => battle.id === state.activeBattleId)) {
     state.activeBattleId = state.battles[0]?.id || '';
@@ -4281,6 +4319,9 @@ function setActiveBattle(id) {
 }
 
 function deleteBattle(id) {
+  const target = state.battles.find(battle => battle.id === id);
+  if (!target) return;
+  if (!window.confirm(`確定刪除這一場？\n${battleDisplayLabel(target)}\n\n此操作無法復原，建議先用「批量匯出目前所有資料」備份。`)) return;
   state.battles = state.battles.filter(battle => battle.id !== id);
   if (state.activeBattleId === id) {
     state.activeBattleId = state.battles[0]?.id || '';
@@ -4310,6 +4351,7 @@ function deleteBattlePlayer(battleId, playerName) {
   const currentPlayers = battle[playerSide] || [];
   const nextPlayers = currentPlayers.filter(player => player.name !== playerName);
   if (nextPlayers.length === currentPlayers.length) return;
+  if (!window.confirm(`確定從這一場刪除玩家「${playerName}」？此操作無法復原。`)) return;
   battle[playerSide] = nextPlayers;
   if (Array.isArray(battle.assignmentRosterNames)) {
     battle.assignmentRosterNames = battle.assignmentRosterNames.filter(name => name !== playerName);
@@ -4428,9 +4470,15 @@ function handleAddBattle() {
     opponentSummary: opponentSection ? summarizePlayers(opponentSection.players) : null,
   };
   const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
+  const previousActiveBattleId = state.activeBattleId;
   state.battles.unshift(battle);
   state.activeBattleId = battle.id;
-  saveState();
+  if (!saveState()) {
+    state.battles.shift();
+    state.activeBattleId = previousActiveBattleId;
+    document.getElementById('import_note_box').textContent = '這場沒有加入：瀏覽器沒有成功儲存（原因見剛才的提示）。';
+    return;
+  }
   refreshAll();
   document.getElementById('import_note_box').textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${importedRoleRows.length ? ` 分工跨兩側對上 ${applyResult.matched} 人，分工表未出場 ${applyResult.unmatchedRoles} 人；另有 ${applyResult.battleOnly} 人保留為非分工戰場資料。` : ' 目前尚未套入分工 CSV。'}`;
 }
@@ -4576,6 +4624,10 @@ document.getElementById('battle_manual_note').addEventListener('input', event =>
 
 refreshAll();
 switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'players');
+if (stateLoadError) {
+  document.body.insertAdjacentHTML('afterbegin', '<div id="state_load_error_banner" style="margin:12px; padding:10px 12px; border:1px solid var(--warn); border-radius:10px; background:var(--panel); color:var(--warn); font-weight:800; line-height:1.5;">讀取本機存檔失敗：這頁不會儲存任何修改，以免蓋掉原本的資料。請重新整理；仍失敗時先不要操作，或用「資料」選單的「批量匯入目前所有資料」從備份還原。</div>');
+  notifyStateLoadError();
+}
 </script>
 </body>
 </html>

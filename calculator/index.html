@@ -3404,6 +3404,7 @@
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
         <button onclick="exportData()" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">⬇ 匯出 JSON</button>
         <button onclick="importData()" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">⬆ 匯入 JSON</button>
+        <button onclick="deletePreImportBackup()" style="background:#ffffff;border:1px solid #8a8a8a;color:#555555;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">刪除匯入前備份</button>
         <span style="font-size:12px;color:#666666;">匯入後頁面會自動重新整理</span>
       </div>
     </div>
@@ -5199,6 +5200,8 @@ function addPVPCmpAttacker() {
 
 function removePVPCmpAttacker(id) {
   if (pvpCmpAttackers.length <= 1) return;
+  const target = pvpCmpAttackers.find(a => a.id === id);
+  if (!confirm(`確定移除「${target?.name || '這組套裝'}」？`)) return;
   pvpCmpAttackers = pvpCmpAttackers.filter(a => a.id !== id);
   renderPVPCmpAttackers();
 }
@@ -5925,15 +5928,17 @@ function applySettings() {
 
 function saveSettings() {
   applySettings();
-  localStorage.setItem(`${STORAGE_KEY}_calc_settings`, JSON.stringify({
+  const saved = trySetItem(`${STORAGE_KEY}_calc_settings`, JSON.stringify({
     pve: Object.assign({}, PVE_CONST), pvp: Object.assign({}, PVP_CONST),
     pveBosses: PVE_BOSSES.map(b => Object.assign({}, b)),
   }));
+  if (!saved) { alertStorageFull('公式設定'); return; }
   const msg = document.getElementById('settings_saved_msg');
   if (msg) { msg.style.opacity = '1'; setTimeout(() => msg.style.opacity = '0', 2500); }
 }
 
 function resetSettings() {
+  if (!confirm('確定恢復公式預設值？係數與首領會回到內建值（改過名的首領也會還原），並清除公式存檔。')) return;
   Object.assign(PVE_CONST, DEFAULT_PVE_CONST);
   Object.assign(PVP_CONST, DEFAULT_PVP_CONST);
   DEFAULT_PVE_BOSSES.forEach((b,i) => Object.assign(PVE_BOSSES[i], b));
@@ -6100,13 +6105,18 @@ function saveTabInputs(tab) {
       const el = document.getElementById(id); if (!el) return;
       data[id] = el.type === 'checkbox' ? el.checked : el.value;
     });
-    localStorage.setItem(`${STORAGE_KEY}_tab_${tab}`, JSON.stringify(data));
+    let saved = trySetItem(`${STORAGE_KEY}_tab_${tab}`, JSON.stringify(data));
     // PVP裝備比較：額外儲存攻方陣列（動態渲染，不在 TAB_INPUT_IDS 內）
-    if (tab === 'pvpcmp') {
-      localStorage.setItem(`${STORAGE_KEY}_tab_pvpcmp_attackers`, JSON.stringify(pvpCmpAttackers));
+    if (saved && tab === 'pvpcmp') {
+      saved = trySetItem(`${STORAGE_KEY}_tab_pvpcmp_attackers`, JSON.stringify(pvpCmpAttackers));
+    }
+    if (!saved) {
+      alertStorageFull('本頁輸入');
+      return false;
     }
     const msg = document.getElementById(tab + '_saved_msg');
     if (msg) { msg.style.opacity = '1'; setTimeout(() => msg.style.opacity = '0', 2000); }
+    return true;
   } finally {
     if (restoreCombatBuff) restoreCombatBuff();
   }
@@ -6301,10 +6311,12 @@ function restoreOptimizeTabInputs() {
 }
 
 function saveOptimizePage() {
-  saveTabInputs('optimize');
-  try {
-    localStorage.setItem(getOptimizeSnapshotStorageKey(), JSON.stringify(collectOptimizeSnapshot()));
-  } catch(e) {}
+  if (!saveTabInputs('optimize')) return;
+  if (!trySetItem(getOptimizeSnapshotStorageKey(), JSON.stringify(collectOptimizeSnapshot()))) {
+    const msg = document.getElementById('optimize_saved_msg');
+    if (msg) msg.style.opacity = '0';
+    alert('最佳化結果沒有存進瀏覽器：結果太大或儲存空間已滿（搜尋條件已儲存）。重新整理後要重新執行最佳化。');
+  }
 }
 
 function restoreOptimizePage() {
@@ -6327,6 +6339,10 @@ function restoreOptimizePage() {
 
 function resetTabInputs(tab, recalcFn) {
   const ids = TAB_INPUT_IDS[tab]; if (!ids) return;
+  const resetNote = tab === 'neigong'
+    ? '內功 A–D 的數值、欄名與疊加清單也會清空。'
+    : (tab === 'pvpcmp' ? '套裝 A–D 也會重設。' : '');
+  if (!confirm(`確定恢復預設？本頁輸入會回到預設值，並清除本頁存檔。${resetNote}`)) return;
   clearCombatBuffAppliedDelta(tab);
   ids.forEach(id => {
     const el = document.getElementById(id); if (!el) return;
@@ -6697,15 +6713,34 @@ function dbLoad() {
   }
 }
 
+function trySetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.warn('localStorage write failed:', key, e);
+    return false;
+  }
+}
+
+function alertStorageFull(what) {
+  alert(`${what}沒有存進瀏覽器：儲存空間可能已滿。請先到公式設定頁匯出備份，再刪除不需要的資料（例如匯入前備份）後重試。`);
+}
+
 function dbPersist(type) {
-  localStorage.setItem(`${STORAGE_KEY}_db_${type}`, JSON.stringify(DB[type]));
+  if (trySetItem(`${STORAGE_KEY}_db_${type}`, JSON.stringify(DB[type]))) return true;
+  alertStorageFull('資料庫的變更');
+  return false;
 }
 
 function dbAdd(type, name, data, meta = null) {
   const limit = getDBStorageTypeLimit(type);
   if (DB[type].length >= limit) { alert(`已達 ${limit} 筆上限，請先刪除不需要的項目。`); return; }
   DB[type].push(normalizeDBEntryMeta({ name, data, ...(meta ? { meta } : {}) }));
-  dbPersist(type);
+  if (!dbPersist(type)) {
+    DB[type].pop();
+    return;
+  }
   renderDB();
   refreshDBDropdowns();
   renderOptimizePage();
@@ -6713,6 +6748,8 @@ function dbAdd(type, name, data, meta = null) {
 
 function dbDelete(type, idx) {
   const entry = DB[type][idx];
+  if (!entry) return;
+  if (!confirm(`確定刪除「${entry.name || '未命名'}」？此操作無法復原。`)) return;
   if (type === 'set' && entry && typeof entry.name === 'string') {
     ['pve', 'pvp'].forEach(legacyType => {
       let legacy = [];
@@ -6726,7 +6763,10 @@ function dbDelete(type, idx) {
     });
   }
   DB[type].splice(idx, 1);
-  dbPersist(type);
+  if (!dbPersist(type)) {
+    DB[type].splice(idx, 0, entry);
+    return;
+  }
   renderDB();
   refreshDBDropdowns();
   renderOptimizePage();
@@ -6827,7 +6867,7 @@ function dbLoadNG(set, selId) {
   const data = getNgDBData(entry);
   NG_ATTR_ROWS.forEach(row => { ng_vals[set][row.key] = data[row.key] || 0; });
   ng_db_stacks[set] = getNgDBExpandedStackItems(entry);
-  localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
+  if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   persistNeigongUiState();
   renderNeigongInputTable(); calcNeigong();
 }
@@ -7015,7 +7055,7 @@ function renameOptimizeGearReferences(oldName, newName) {
     activeStacksChanged = true;
   });
   if (activeStacksChanged) {
-    localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
+    if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   }
   return changedTypes;
 }
@@ -10505,7 +10545,7 @@ function restoreNeigongUiState() {
 
 function clearNgStackSelection(set, shouldRender = true) {
   ng_db_stacks[set] = [];
-  localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
+  if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   persistNeigongUiState();
   if (shouldRender) renderNeigongInputTable();
 }
@@ -10621,7 +10661,7 @@ function confirmNgStackSelection() {
   });
   DB_NG_KEYS.forEach(key => { ng_vals[set][key] = totals[key]; });
   ng_db_stacks[set] = selectedStackItems;
-  localStorage.setItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks));
+  if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   syncNgActiveSets();
   persistNeigongUiState();
   closeNgStackModal();
@@ -10785,6 +10825,8 @@ function ngAddSet(set) {
 }
 
 function ngRemoveSet(set) {
+  const alsoD = set === 'c' && ng_active.includes('d');
+  if (!confirm(`確定移除「${ng_names[set]}」${alsoD ? `與「${ng_names.d}」` : ''}欄？`)) return;
   ngSaveCurrentVals();
   if (set === 'c') ng_active = ng_active.filter(s => s !== 'c' && s !== 'd');
   else ng_active = ng_active.filter(s => s !== set);
@@ -11405,6 +11447,16 @@ function importData() {
     reader.readAsText(file);
   };
   input.click();
+}
+
+function deletePreImportBackup() {
+  const key = `${STORAGE_KEY}_pre_import_backup`;
+  const raw = localStorage.getItem(key);
+  if (!raw) { alert('目前沒有匯入前備份。'); return; }
+  const size = raw.length >= 10000 ? `約 ${Math.round(raw.length / 10000)} 萬字元` : `${raw.length} 字元`;
+  if (!confirm(`匯入前備份是上次匯入前自動留下的救援資料（${size}）。刪除後就不能再用它找回那次匯入前的狀態。確定刪除？`)) return;
+  localStorage.removeItem(key);
+  alert('已刪除匯入前備份。');
 }
 
 function createPreImportBackup() {
