@@ -333,7 +333,7 @@
     transition: all 0.2s;
     letter-spacing: 0.5px;
   }
-  .preset-btn:hover { background: #8b6230; border-color: #8b6230; color: #fffaf1; }
+  .preset-btn:hover { background: linear-gradient(180deg, #fffaf1, #ecdcbc); border-color: #8b6230; color: #6b4519; }
   .preset-btn.active { background: #8b6230; border-color: #8b6230; color: #fffaf1; }
 
   /* Results */
@@ -782,6 +782,8 @@
   /* Responsive */
   @media (max-width: 768px) {
     .pvp-columns { grid-template-columns: 1fr; }
+    .form-grid-2 { grid-template-columns: 1fr; }
+    .form-grid-2 .form-grid-2 { grid-template-columns: repeat(2, 1fr); }
     .form-grid-3 { grid-template-columns: repeat(2, 1fr); }
     .tab-btn { padding: 10px 14px; font-size: 12px; }
     .header h1 { font-size: 18px; }
@@ -1474,6 +1476,7 @@
     #tab-artifact-tree .artifact-tool-layout {
       grid-template-columns: 1fr;
     }
+    .artifact-tree-board { min-height: 0; }
   }
   </style>
 </head>
@@ -1514,7 +1517,7 @@
       <div class="section">
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
           <span>我方屬性</span>
-          <div style="display:flex;gap:5px;align-items:center;">
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
             <button onclick="dbSaveSet('pve')" class="db-btn">存入資料庫</button>
             <select class="db-sel-set db-sel" id="db_sel_set_pve"></select>
             <button onclick="dbLoadSet('pve','db_sel_set_pve')" class="db-btn">← 載入</button>
@@ -1644,7 +1647,7 @@
       <div class="section result-stage">
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
           <span>攻方屬性</span>
-          <div style="display:flex;gap:5px;align-items:center;">
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
             <button onclick="dbSaveSet('atk')" class="db-btn">存入資料庫</button>
             <select class="db-sel-set db-sel" id="db_sel_set_atk"></select>
             <button onclick="dbLoadSet('atk','db_sel_set_atk')" class="db-btn">← 載入</button>
@@ -1719,7 +1722,7 @@
       <div class="section">
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
           <span>守方屬性</span>
-          <div style="display:flex;gap:5px;align-items:center;">
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
             <button onclick="dbSaveSet('def')" class="db-btn">存入資料庫</button>
             <select class="db-sel-set db-sel" id="db_sel_set_def"></select>
             <button onclick="dbLoadSet('def','db_sel_set_def')" class="db-btn">← 載入</button>
@@ -2221,7 +2224,7 @@
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <span style="font-size:12px;color:#0066cc;letter-spacing:1px;">我方屬性</span>
-            <div style="display:flex;gap:5px;align-items:center;">
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
               <button onclick="dbSaveSet('mgn_my')" class="db-btn">存入資料庫</button>
               <select class="db-sel-set db-sel" id="db_sel_set_mgn_my"></select>
               <button onclick="dbLoadSet('mgn_my','db_sel_set_mgn_my')" class="db-btn">← 載入</button>
@@ -2262,7 +2265,7 @@
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <span style="font-size:12px;color:#0066cc;letter-spacing:1px;">對手屬性</span>
-            <div style="display:flex;gap:5px;align-items:center;">
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
               <button onclick="dbSaveSet('mgn_opp')" class="db-btn">存入資料庫</button>
               <select class="db-sel-set db-sel" id="db_sel_set_mgn_opp"></select>
               <button onclick="dbLoadSet('mgn_opp','db_sel_set_mgn_opp')" class="db-btn">← 載入</button>
@@ -2466,7 +2469,7 @@
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <span style="font-size:12px;color:#0066cc;letter-spacing:1px;">我方屬性</span>
-            <div style="display:flex;gap:5px;align-items:center;">
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
               <button onclick="dbSaveSet('ng_my')" class="db-btn">存入資料庫</button>
               <select class="db-sel-set db-sel" id="db_sel_set_ng_my"></select>
               <button onclick="dbLoadSet('ng_my','db_sel_set_ng_my')" class="db-btn">← 載入</button>
@@ -2513,7 +2516,7 @@
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <span style="font-size:12px;color:#0066cc;letter-spacing:1px;">對手屬性</span>
-            <div style="display:flex;gap:5px;align-items:center;">
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
               <button onclick="dbSaveSet('ng_opp')" class="db-btn">存入資料庫</button>
               <select class="db-sel-set db-sel" id="db_sel_set_ng_opp"></select>
               <button onclick="dbLoadSet('ng_opp','db_sel_set_ng_opp')" class="db-btn">← 載入</button>
@@ -4205,6 +4208,16 @@ function calcPVE() {
 }
 
 const PVE_BOSS_FIELDS = ['pve_bdef','pve_bblock','pve_bcritres','pve_bqishield','pve_belemres','pve_bbossdef'];
+// 欄位數值和某個首領預設完全相同時亮那顆按鈕，否則亮「自訂」；還原存檔、恢復預設或改公式設定後都要重新比對
+function syncBossPresetButtons(prefix) {
+  const fields = prefix === 'cmp' ? CMP_BOSS_FIELDS : PVE_BOSS_FIELDS;
+  const values = fields.map(id => n(id));
+  const matchIdx = PVE_BOSSES.findIndex(b =>
+    [b.def, b.block, b.critRes, b.qiShield, b.elemRes, b.bossRes].every((v, i) => (parseFloat(v) || 0) === values[i]));
+  document.querySelectorAll(`[id^="${prefix}_preset"]`).forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(matchIdx >= 0 ? `${prefix}_preset_${matchIdx}` : `${prefix}_preset_custom`);
+  if (activeBtn) activeBtn.classList.add('active');
+}
 function setPVEBoss(idx) {
   const btns = document.querySelectorAll('[id^="pve_preset"]');
   btns.forEach(b => b.classList.remove('active'));
@@ -5120,7 +5133,7 @@ function renderPVPCmpAttackers() {
         <span class="pvpcmp-title-main"><span class="pvpcmp-badge">${lbl}</span><span>攻方 <input type="text" value="${escHtml(a.name)}"
           class="pvpcmp-name-input"
           oninput="pvpCmpUpdate(${a.id},'name',this.value)"></span></span>
-        <div style="display:flex;gap:6px;align-items:center;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
           <button onclick="loadOpponentToAttacker(${a.id})" style="${btnStyle}">← 從對手帶入</button>
           <button onclick="loadPVPtoAttacker(${a.id},'atk')" style="${btnStyle}">← 從PVP攻方帶入</button>
           <button onclick="loadPVPtoAttacker(${a.id},'def')" style="${btnStyle}">← 從PVP守方帶入</button>
@@ -5132,7 +5145,7 @@ function renderPVPCmpAttackers() {
       </div>
       <div class="section-body">
         <div style="margin-bottom:10px;">
-          <input type="text" value="${a.note}" placeholder="備註（如：天英套裝，換了龍吟特效...）"
+          <input type="text" value="${escHtml(a.note || '')}" placeholder="備註（如：天英套裝，換了龍吟特效...）"
             class="pvpcmp-note"
             oninput="pvpCmpUpdate(${a.id},'note',this.value)">
         </div>
@@ -5386,7 +5399,7 @@ function calcPVPCmp() {
     <th>輸出期望</th>
     <th>承傷期望</th>
     <th style="line-height:1.8;">擊敗所需次數<br>可承受次數</th>
-    <th>vs ${baseName}</th>
+    <th>vs ${escHtml(baseName)}</th>
   </tr>`;
   const trs = results.map((r, i) => {
     const isMax = Math.abs(scores[i] - maxScore) < 0.0001;
@@ -5395,7 +5408,7 @@ function calcPVPCmp() {
       `輸出 ${fmtDiffHits(r.expected, baseExp)}<br>承傷 ${fmtDiffHits(r.hitsCanTake, baseHits)}`;
     const expStyle = isMax ? 'color:#0055aa;font-weight:bold;font-size:16px;' : 'font-weight:bold;';
     return `<tr class="${isMax ? 'pvpcmp-best-row' : ''}">
-      <td style="color:${isMax?'#0055aa':'inherit'}">${r.name}${isMax?' ★':''}</td>
+      <td style="color:${isMax?'#0055aa':'inherit'}">${escHtml(r.name)}${isMax?' ★':''}</td>
       <td>${pct(r.pen*100)}</td>
       <td>${pct(r.hitRate*100)}</td>
       <td>${pct(r.critRate*100)}</td>
@@ -5615,18 +5628,18 @@ function calcMarginal() {
 
   function deltaInput(key) {
     const d = MGN_DELTAS[key];
-    return `<td style="padding:4px 8px;border-bottom:1px solid #21262d;text-align:right;">` +
+    return `<td style="padding:4px 8px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;">` +
       `<input type="number" value="${d}" step="any" onchange="setMgnDelta('${key}',this.value)" ` +
-      `style="width:68px;background:#0d1117;border:1px solid #30363d;border-radius:3px;color:#e6edf3;` +
+      `style="width:68px;background:rgba(255,252,247,0.95);border:1px solid rgba(124,98,60,0.24);border-radius:6px;color:var(--ink-900);` +
       `padding:2px 5px;font-size:11px;text-align:right;"></td>`;
   }
   function staticDelta(val) {
-    return `<td style="padding:4px 8px;border-bottom:1px solid #21262d;text-align:right;color:#6e7681;font-size:11px;">${fmtF(val,0)}</td>`;
+    return `<td style="padding:4px 8px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;color:#7b6a4e;font-size:11px;">${fmtF(val,0)}</td>`;
   }
   function cell(v, decimals, suffix) {
-    if (v === null || v === undefined) return `<td style="padding:7px 10px;border-bottom:1px solid #21262d;text-align:right;color:#484f58;">—</td>`;
-    const color = v > 0 ? '#79c0ff' : v < 0 ? '#f85149' : '#8b949e';
-    return `<td style="padding:7px 10px;border-bottom:1px solid #21262d;text-align:right;color:${color};font-weight:bold;">${fmtF(v,decimals)}${suffix}</td>`;
+    if (v === null || v === undefined) return `<td style="padding:7px 10px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;color:#8a7a63;">—</td>`;
+    const color = v > 0 ? '#2e6d8f' : v < 0 ? '#b24842' : '#8a7a63';
+    return `<td style="padding:7px 10px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;color:${color};font-weight:bold;">${fmtF(v,decimals)}${suffix}</td>`;
   }
 
   function atkRow(label, key, amod) {
@@ -5735,8 +5748,8 @@ function calcMarginal() {
   });
 
   document.getElementById('mgn_results').innerHTML = rows.map(r =>
-    `<tr style="${r.isBase ? 'background:#0f1620;' : ''}">
-      <td style="padding:7px 10px;border-bottom:1px solid #21262d;color:${r.isBase?'#79c0ff':'#8b949e'};font-size:12px;">${r.label}</td>
+    `<tr style="${r.isBase ? 'background:rgba(249,241,224,0.7);' : ''}">
+      <td style="padding:7px 10px;border-bottom:1px solid rgba(168,122,47,0.12);color:${r.isBase?'#2e6d8f':'#4f4538'};font-size:12px;">${r.label}</td>
       ${r.dc}
       ${cell(r.outPct, 2, '%')}
       ${cell(r.atkEq, 1, '')}
@@ -5753,13 +5766,13 @@ function calcMarginal() {
     if (r.hpEq   != null) sumHp  += r.hpEq;
   });
   function totalCell(v, decimals, suffix) {
-    const color = v > 0 ? '#f0c060' : v < 0 ? '#f85149' : '#8b949e';
-    return `<td style="padding:7px 10px;border-top:2px solid #30363d;text-align:right;color:${color};font-weight:bold;">${fmtF(v,decimals)}${suffix}</td>`;
+    const color = v > 0 ? '#7a5320' : v < 0 ? '#b24842' : '#8a7a63';
+    return `<td style="padding:7px 10px;border-top:2px solid rgba(168,122,47,0.26);text-align:right;color:${color};font-weight:bold;">${fmtF(v,decimals)}${suffix}</td>`;
   }
   document.getElementById('mgn_totals').innerHTML =
-    `<tr style="background:#111920;">
-      <td style="padding:7px 10px;border-top:2px solid #30363d;color:#f0c060;font-size:12px;font-weight:bold;">合計</td>
-      <td style="padding:7px 10px;border-top:2px solid #30363d;"></td>
+    `<tr style="background:linear-gradient(180deg, rgba(249,241,224,0.98), rgba(243,232,210,0.94));">
+      <td style="padding:7px 10px;border-top:2px solid rgba(168,122,47,0.26);color:#7a5320;font-size:12px;font-weight:bold;">合計</td>
+      <td style="padding:7px 10px;border-top:2px solid rgba(168,122,47,0.26);"></td>
       ${totalCell(sumOut, 2, '%')}
       ${totalCell(sumAtk, 1, '')}
       ${totalCell(sumDef, 2, '%')}
@@ -5901,26 +5914,31 @@ function calcBaseAttr() {
   const tbody = document.getElementById('base_attr_results');
   if (!tbody) return;
   tbody.innerHTML = rows.map(row => `
-    <tr style="border-bottom:1px solid #21262d;">
-      <td style="padding:8px 12px;color:#8b949e;font-size:13px;">${row.name}</td>
-      <td style="padding:8px 12px;text-align:right;font-size:15px;font-weight:bold;color:${row.val > 0 ? '#79c0ff' : '#484f58'};">${row.val > 0 ? fmtF(row.val, 1) : '—'}</td>
-      <td style="padding:8px 12px;color:#6e7681;font-size:11px;">${row.src || '—'}</td>
+    <tr style="border-bottom:1px solid rgba(168,122,47,0.12);">
+      <td style="padding:8px 12px;color:#4f4538;font-size:13px;">${row.name}</td>
+      <td style="padding:8px 12px;text-align:right;font-size:15px;font-weight:bold;color:${row.val > 0 ? '#2e6d8f' : '#8a7a63'};">${row.val > 0 ? fmtF(row.val, 1) : '—'}</td>
+      <td style="padding:8px 12px;color:#7b6a4e;font-size:11px;">${row.src || '—'}</td>
     </tr>`).join('');
 }
 
 // ===================== TAB 6: 公式設定 =====================
 const COEF_KEYS = ['aPen','bPen','aElem','aCrit','bCrit','cCrit','baseCrit','aHit','bHit','cHit','k1','k2','k3'];
 
+function settingsNumber(el, fallback) {
+  const v = parseFloat(el.value);
+  return Number.isFinite(v) ? v : fallback;
+}
+
 function applySettings() {
   COEF_KEYS.forEach(k => {
-    const ep = document.getElementById('set_pve_'+k); if (ep) PVE_CONST[k] = parseFloat(ep.value) || PVE_CONST[k];
-    const ev = document.getElementById('set_pvp_'+k); if (ev) PVP_CONST[k] = parseFloat(ev.value) || PVP_CONST[k];
+    const ep = document.getElementById('set_pve_'+k); if (ep) PVE_CONST[k] = settingsNumber(ep, PVE_CONST[k]);
+    const ev = document.getElementById('set_pvp_'+k); if (ev) PVP_CONST[k] = settingsNumber(ev, PVP_CONST[k]);
   });
   const bossFlds = ['def','block','critRes','qiShield','elemRes','bossRes'];
   PVE_BOSSES.forEach((b, i) => {
     const nameEl = document.getElementById(`set_boss_pve_${i}_name`);
     if (nameEl && nameEl.value.trim()) b.name = nameEl.value.trim();
-    bossFlds.forEach(k => { const el = document.getElementById(`set_boss_pve_${i}_${k}`); if (el) b[k] = parseFloat(el.value) || b[k]; });
+    bossFlds.forEach(k => { const el = document.getElementById(`set_boss_pve_${i}_${k}`); if (el) b[k] = settingsNumber(el, b[k]); });
   });
   updatePresetButtonLabels();
   calcPVE(); calcPVP(); calcCompare(); calcPVPCmp();
@@ -5966,6 +5984,8 @@ function updatePresetButtonLabels() {
       const btn = document.getElementById(pfx + i); if (btn) btn.textContent = b.name;
     });
   });
+  syncBossPresetButtons('pve');
+  syncBossPresetButtons('cmp');
 }
 
 function isLegacyJiuGuangConst(c) {
@@ -6368,6 +6388,7 @@ function resetTabInputs(tab, recalcFn) {
     renderNeigongInputTable();
   }
   refreshCombatBuffFields(tab);
+  if (tab === 'pve' || tab === 'cmp') syncBossPresetButtons(tab);
   if (recalcFn) recalcFn();
 }
 
@@ -6448,6 +6469,8 @@ function loadAllTabInputs() {
       if (recalcs[tab]) recalcs[tab]();
     } catch(e) {}
   });
+  syncBossPresetButtons('pve');
+  syncBossPresetButtons('cmp');
 }
 
 // ===================== 資料庫 =====================
@@ -6492,9 +6515,6 @@ const DB_HEALER_ID_MAPS = {
   b: { atk:'sw_b_atk', healPower:'sw_b_healPower', crit:'sw_b_crit', critDmg:'sw_b_critDmg', skillFlat:'sw_b_skillFlat', skillPct:'sw_b_skillPct', extraCritRate:'sw_b_extraCritRate', def:'sw_b_def', block:'sw_b_block', critRes:'sw_b_critRes', qiShield:'sw_b_qiShield', elemRes:'sw_b_elemRes', styleRes:'sw_b_styleRes', antiCrit:'sw_b_antiCrit', techOver:'sw_b_techOver', styleResPct:'sw_b_styleResPct', hp:'sw_b_hp' },
 };
 
-const _dbBtn = 'background:#1c2128;border:1px solid #30363d;color:#8b949e;padding:3px 8px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;white-space:nowrap;';
-const _dbSel = 'background:#1c2128;border:1px solid #30363d;color:#8b949e;padding:3px 5px;border-radius:3px;font-family:inherit;font-size:11px;max-width:130px;';
-const _dbWrap = 'display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:8px;';
 
 function isInnerSkillName(name) {
   return /\d{4}/.test(String(name || ''));
@@ -10608,7 +10628,7 @@ function refreshNgStackModalList() {
     const checked = selected.has(name) ? 'checked' : '';
     return `<label class="ng-stack-option">
       <input type="checkbox" class="ng-stack-check" value="${escHtml(name)}" ${checked} onchange="handleNgStackCheckbox(this)">
-      <span>${escHtml(name)} <span style="color:#8b949e;font-size:11px;">(${typeLabel})</span></span>
+      <span>${escHtml(name)} <span style="color:#8a7a63;font-size:11px;">(${typeLabel})</span></span>
     </label>`;
   }).join('');
 }
@@ -10721,7 +10741,7 @@ function renderNeigongInputTable() {
       <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
         <input type="text" id="ng_name_${s}" value="${escHtml(ng_names[s])}" onchange="ng_names['${s}']=this.value;calcNeigong()" style="${nmS}">
         <button type="button" onclick="openNgStackModal('${s}')" class="db-btn" title="從 DB 選取多筆資料後加總覆蓋此欄">+ DB疊加</button>
-        ${removable ? `<button onclick="ngRemoveSet('${s}')" style="background:none;border:none;color:#f85149;cursor:pointer;font-size:15px;padding:0 2px;line-height:1;" title="移除">×</button>` : ''}
+        ${removable ? `<button onclick="ngRemoveSet('${s}')" style="background:none;border:none;color:#b24842;cursor:pointer;font-size:15px;padding:0 2px;line-height:1;" title="移除">×</button>` : ''}
       </div>
       ${getNgStackSummaryHtml(s)}
     </div></th>`;
@@ -11288,9 +11308,12 @@ function calcNeigong() {
         takenPct: baseOppExpected > 0 ? (oppExpected / baseOppExpected - 1) * 100 : 0,
       };
       const v = vals[row.key];
+      // 期望傷害、比值與次數是絕對值，用中性色；只有相對變化才分好壞
       const color = (row.key === 'takenPct')
-        ? (v < 0 ? '#79c0ff' : v > 0 ? '#f85149' : '#8b949e')
-        : (v > 0 ? '#79c0ff' : v < 0 ? '#f85149' : '#8b949e');
+        ? (v < 0 ? '#2e6d8f' : v > 0 ? '#b24842' : '#8a7a63')
+        : (row.key === 'hitGap' || row.key === 'outPct')
+          ? (v > 0 ? '#2e6d8f' : v < 0 ? '#b24842' : '#8a7a63')
+          : '#4f4538';
       fullHtml += `<td style="${tdS}color:${color};font-weight:bold;">${fmtF(v,row.dec)}${row.sfx}</td>`;
     });
     fullHtml += `</tr>`;
