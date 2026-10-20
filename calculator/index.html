@@ -3399,7 +3399,7 @@
     </div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:12px;">
-        將所有儲存的套裝、設定資料打包為 JSON 檔案，可帶到另一台電腦匯入還原。
+        將計算機儲存的套裝、設定資料打包為 JSON 檔案，可帶到另一台電腦匯入還原。幫戰覆盤的資料不在這份備份裡，請在覆盤頁用「批量匯出目前所有資料」另外備份。
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
         <button onclick="exportData()" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">⬇ 匯出 JSON</button>
@@ -11303,10 +11303,17 @@ function loadNeigongFromPVP() {
 
 // ===================== 匯出/匯入 =====================
 // 'jol' 前綴也會比對到 'jol2_*' 等其他複本；匯入前備份本身不放進備份，避免每次匯入層層巢狀變大。
+// 幫戰覆盤和計算機共用同一個瀏覽器儲存空間；覆盤資料由覆盤頁的批量匯出／匯入備份，計算機的匯出入不碰它，
+// 否則用舊的計算機備份做取代式匯入，會把覆盤倒回備份當天的場次。
 function isCalculatorBackupKey(key) {
   return typeof key === 'string'
     && key.startsWith(`${STORAGE_KEY}_`)
-    && key !== `${STORAGE_KEY}_pre_import_backup`;
+    && key !== `${STORAGE_KEY}_pre_import_backup`
+    && !isBattleReviewStorageKey(key);
+}
+
+function isBattleReviewStorageKey(key) {
+  return typeof key === 'string' && key.startsWith('jol_battle_review');
 }
 
 function exportData() {
@@ -11338,6 +11345,9 @@ function importData() {
       try {
         const data = JSON.parse(ev.target.result);
         const importEntries = Object.entries(data).filter(([key, val]) => isCalculatorBackupKey(key) && typeof val === 'string');
+        const reviewNote = Object.keys(data).some(isBattleReviewStorageKey)
+          ? '檔案裡的幫戰覆盤資料沒有匯入，覆盤請在覆盤頁用「批量匯入目前所有資料」。'
+          : '';
         // Keep a recovery snapshot before import so an older backup won't silently destroy newer local data.
         const currentSnapshot = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -11386,7 +11396,7 @@ function importData() {
           }
           count++;
         });
-        alert(`匯入成功（共 ${count} 筆）。本次為保留現有資料的合併匯入${backupWarning || '，並已建立匯入前備份。'}頁面即將重新整理。`);
+        alert(`匯入成功（共 ${count} 筆）。本次為保留現有資料的合併匯入${backupWarning || '，並已建立匯入前備份。'}${reviewNote}頁面即將重新整理。`);
         location.reload();
       } catch (err) {
         alert('匯入失敗：' + err.message);
@@ -11433,6 +11443,7 @@ function importDataReplace() {
         if (!importEntries.length) {
           throw new Error('檔案中沒有可匯入的 jol_* 資料。');
         }
+        const hasReviewData = Object.keys(data).some(isBattleReviewStorageKey);
         const dbTypes = importEntries
           .map(([key]) => key.match(new RegExp(`^${STORAGE_KEY}_db_(set|healer|pve|pvp|gear|ng)$`))?.[1])
           .filter(Boolean)
@@ -11441,7 +11452,9 @@ function importDataReplace() {
           `取代式匯入會用檔案中的 ${importEntries.length} 個 jol_* 儲存區塊覆蓋本機同名 key。` +
           `\n這不是 ${importEntries.length} 筆裝備或內功名稱；例如 jol_db_ng 會整包取代目前內功資料。` +
           `\n\n會被取代的資料庫類型：${dbTypes}` +
-          `\n\n檔案沒有包含的本機資料不會刪除；匯入前會先建立救援備份。是否繼續？`
+          `\n\n檔案沒有包含的本機資料不會刪除；匯入前會先建立救援備份。` +
+          (hasReviewData ? '\n檔案裡的幫戰覆盤資料不會匯入，覆盤請在覆盤頁用「批量匯入目前所有資料」。' : '') +
+          `\n\n是否繼續？`
         );
         if (!ok) return;
         const backupWarning = createPreImportBackup();
@@ -11460,7 +11473,7 @@ function importDataReplace() {
             throw new Error(`寫入 ${key} 失敗，原因可能是瀏覽器本地儲存空間已滿`);
           }
         });
-        alert(`取代式匯入成功（共 ${importEntries.length} 筆）。${backupWarning || '已建立匯入前備份。'}頁面即將重新整理。`);
+        alert(`取代式匯入成功（共 ${importEntries.length} 筆）。${backupWarning || '已建立匯入前備份。'}${hasReviewData ? '檔案裡的幫戰覆盤資料沒有匯入，覆盤請在覆盤頁用「批量匯入目前所有資料」。' : ''}頁面即將重新整理。`);
         location.reload();
       } catch (err) {
         alert('取代式匯入失敗：' + err.message);
