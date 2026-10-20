@@ -134,6 +134,11 @@
   body.public-readonly .assignment-alert-detail {
     display: none;
   }
+  body.public-readonly .tab-btn[data-tab="assignment"],
+  body.public-readonly .alias-edit-row,
+  body.public-readonly .manual-note-field {
+    display: none;
+  }
   .stack {
     display: grid;
     gap: 18px;
@@ -4007,14 +4012,14 @@
             <button class="btn-primary" id="btn_first_battle_import" type="button">＋ 新增第一場</button>
           </div>
           <div class="tab-bar">
-            <button class="btn-secondary tab-btn" data-tab="review">單場覆盤</button>
+            <button class="btn-secondary tab-btn active" data-tab="review">單場覆盤</button>
             <button class="btn-secondary tab-btn" data-tab="matchup">單場對位</button>
             <button class="btn-secondary tab-btn" data-tab="opponents">重點人物</button>
             <button class="btn-secondary tab-btn" data-tab="profession">職業表現</button>
             <button class="btn-secondary tab-btn" data-tab="squad">小隊表現</button>
             <button class="btn-secondary tab-btn" data-tab="players">玩家查詢</button>
             <button class="btn-secondary tab-btn" data-tab="rules">判讀說明</button>
-            <button class="btn-secondary tab-btn active" data-tab="assignment">分工</button>
+            <button class="btn-secondary tab-btn" data-tab="assignment">分工</button>
             <div class="tab-bar-spacer"></div>
             <div class="current-battle-tools">
               <label for="current_battle_select">切換場次</label>
@@ -4027,7 +4032,7 @@
           </div>
           <div id="battle_meta_editor" class="battle-meta-editor" hidden></div>
           <div class="panel-body">
-            <div class="tab-panel active" data-tab-panel="assignment">
+            <div class="tab-panel" data-tab-panel="assignment">
               <div class="readonly-note" id="public_readonly_note" hidden>公開唯讀模式：可查看分工與報表，但不能修改分工、metadata、刪除場次或匯入 CSV。若要編輯，請先建立本機副本。</div>
               <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮；輸入 lag 則不列入自動覆盤觀察名單）</span></div>
               <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
@@ -4090,7 +4095,7 @@
               </div>
             </div>
 
-            <div class="tab-panel" data-tab-panel="review">
+            <div class="tab-panel active" data-tab-panel="review">
               <div class="review-topbar">
                 <div class="settings-strip">
                   <div class="field">
@@ -4157,7 +4162,7 @@
                 </div>
               </div>
               <div style="height:14px;"></div>
-              <div class="field">
+              <div class="field manual-note-field">
                 <label>人工觀察 / 備註（單場保存）</label>
                 <textarea id="battle_manual_note" placeholder="可補充：指揮判斷、臨時分工、特殊站位、手動觀察結果。"></textarea>
               </div>
@@ -4172,8 +4177,8 @@
             <div class="tab-panel" data-tab-panel="players">
               <div class="panel" style="margin-bottom:12px;">
                 <div class="panel-title">玩家別名合併</div>
-                <div class="subtle" style="margin-bottom:10px;">只影響累積統計，不會改單場原始戰報名字。設定後會記住，下次打開頁面仍會自動套用。</div>
-                <div class="grid-4">
+                <div class="subtle alias-edit-row" style="margin-bottom:10px;">只影響累積統計，不會改單場原始戰報名字。設定後會記住，下次打開頁面仍會自動套用。</div>
+                <div class="grid-4 alias-edit-row">
                   <div class="field">
                     <label>原始名字</label>
                     <input id="alias_source" type="text" placeholder="例如：小王">
@@ -5270,6 +5275,25 @@ function setDisabled(id, disabled) {
   if (el) el.disabled = disabled;
 }
 
+function formatTaipeiDateTime(value) {
+  const time = Date.parse(String(value || ''));
+  if (!Number.isFinite(time)) return '';
+  const taipei = new Date(time + 8 * 60 * 60 * 1000);
+  const pad = number => String(number).padStart(2, '0');
+  return `${taipei.getUTCFullYear()}-${pad(taipei.getUTCMonth() + 1)}-${pad(taipei.getUTCDate())} ${pad(taipei.getUTCHours())}:${pad(taipei.getUTCMinutes())}`;
+}
+
+// exported_at 是在本機按匯出的時間，不是部署到 Pages 的時間，所以寫「資料匯出」而不是「更新」。
+function publicShareSummaryText(exportedAt, battles = []) {
+  const list = Array.isArray(battles) ? battles : [];
+  const dates = list.map(normalizedBattleDateValue).filter(Boolean).sort();
+  const parts = [];
+  const exportedText = formatTaipeiDateTime(exportedAt);
+  if (exportedText) parts.push(`資料匯出於 ${exportedText}`);
+  if (list.length) parts.push(`共 ${fmtNumber(list.length)} 場${dates.length ? `（${dates[0]}～${dates[dates.length - 1]}）` : ''}`);
+  return parts.join('，');
+}
+
 function renderPublicModeUi() {
   const publicMode = isPublicReadOnlyMode();
   const landscapeMode = isPublicLandscapeMode();
@@ -5307,7 +5331,7 @@ function renderPublicModeUi() {
     status.textContent = publicMode
       ? (publicShareLoadError
         ? `公開唯讀模式：${publicShareLoadError}`
-        : `公開唯讀模式${landscapeMode ? '（手機橫版檢視）' : ''}：資料來源 ${publicShareDataUrl()}，不會寫入你的瀏覽器。`)
+        : `公開唯讀模式${landscapeMode ? '（手機橫版檢視）' : ''}：${publicShareSummaryText(publicSharePayload?.exported_at, state?.battles) || `資料來源 ${publicShareDataUrl()}`}，不會寫入你的瀏覽器。`)
       : (stateLoadError
         ? '讀取本機存檔失敗：這頁不會儲存任何修改，以免蓋掉原本的資料。請重新整理；仍失敗時先不要操作，或用「批量匯入目前所有資料」從備份還原。'
         : '個人工具模式：資料保存在你的瀏覽器，可自行匯入、編輯與匯出 JSON。');
@@ -5325,7 +5349,7 @@ function restoredOwnTeamFilter(value) {
 }
 
 function activeTabName() {
-  return document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment';
+  return document.querySelector('.tab-btn.active')?.dataset.tab || 'review';
 }
 
 function collectUiState() {
@@ -5412,7 +5436,7 @@ function restoreUiState(uiState = {}) {
   if (typeof renderSquadPerformanceTable === 'function') renderSquadPerformanceTable();
   renderProfessionTable();
   if (typeof renderRulesExplain === 'function') renderRulesExplain();
-  switchTab(uiState.activeTab || 'assignment');
+  switchTab(uiState.activeTab || 'review');
 }
 
 function exportReviewSnapshot() {
@@ -11794,6 +11818,7 @@ function refreshAll() {
 }
 
 function switchTab(tab) {
+  if (tab === 'assignment' && isPublicReadOnlyMode()) tab = 'review';
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
@@ -12567,11 +12592,11 @@ async function bootstrapBattleReviewApp() {
   refreshAll();
   if (isPublicReadOnlyMode()) {
     // Public data should open in a predictable state instead of replaying the publisher's private filters.
-    switchTab('assignment');
+    switchTab('review');
   } else if (publicShareUiState) {
     restoreUiState(publicShareUiState);
   } else {
-    switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'assignment');
+    switchTab(document.querySelector('.tab-btn.active')?.dataset.tab || 'review');
   }
   renderPublicModeUi();
   if (stateLoadError && !isPublicReadOnlyMode()) notifyStateLoadError();
