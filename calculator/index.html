@@ -1128,6 +1128,81 @@
     font-size: 12px;
     font-weight: bold;
   }
+  /* select.db-sel 設了 width:100%，要寫到同樣的特異度才蓋得過 */
+  .tplcmp-warning {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border: 1px solid #e3bcb8;
+    border-radius: 8px;
+    background: #fbeeec;
+    color: #b24842;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  select.tplcmp-select {
+    width: auto;
+    max-width: none;
+    min-width: 120px;
+    font-size: 12px;
+  }
+  .tplcmp-summary-item {
+    font-size: 13px;
+    color: #333333;
+    line-height: 1.9;
+  }
+  .tplcmp-table-wrap {
+    overflow-x: auto;
+  }
+  .tplcmp-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .tplcmp-table th {
+    padding: 7px 8px;
+    border-bottom: 1px solid rgba(168, 122, 47, 0.3);
+    background: rgba(246, 235, 208, 0.6);
+    color: #4f4538;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .tplcmp-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(168, 122, 47, 0.12);
+    vertical-align: top;
+  }
+  .tplcmp-table td.tplcmp-num {
+    white-space: nowrap;
+    font-weight: bold;
+  }
+  .tplcmp-group-row td {
+    background: rgba(246, 235, 208, 0.35);
+    color: #7a5320;
+    font-weight: bold;
+  }
+  .tplcmp-equipped td {
+    background: rgba(255, 250, 235, 0.9);
+  }
+  .tplcmp-small {
+    font-size: 12px;
+    color: #555555;
+  }
+  .tplcmp-label {
+    display: inline-block;
+    margin: 0 4px 2px 0;
+    padding: 1px 7px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .tplcmp-label-on { background: #8b6230; color: #fffaf1; }
+  .tplcmp-label-good { background: #e3eff6; color: #2e6d8f; border-color: #b6d0e0; }
+  .tplcmp-label-mixed { background: #fbf1dc; color: #8a5a12; border-color: #e6cfa0; }
+  .tplcmp-label-bad { background: #f6e4e2; color: #b24842; border-color: #e3bcb8; }
+  .tplcmp-label-drop { background: #b24842; color: #ffffff; }
+  .tplcmp-label-note { background: #f1ede6; color: #6b5d48; border-color: #ddd3c3; }
   .result-stage {
     position: relative;
     overflow: hidden;
@@ -1596,6 +1671,7 @@
   <button class="tab-btn" onclick="switchTab('database')">📦 資料庫</button>
   <button class="tab-btn" onclick="switchTab('metadata')">補登</button>
   <button class="tab-btn" onclick="switchTab('template')">模板</button>
+  <button class="tab-btn" onclick="switchTab('template-compare')">模板比較</button>
   <button class="tab-btn" onclick="switchTab('optimize')">最佳化</button>
   <button class="tab-btn" onclick="switchTab('artifact-tree')">神器樹標註</button>
   <button class="tab-btn" onclick="switchTab('settings')">⚙ 公式設定</button>
@@ -2830,6 +2906,11 @@
   <div id="tpl_pve_box"></div>
 </div>
 
+<!-- ==================== TAB: 模板比較 ==================== -->
+<div id="tab-template-compare" class="tab-pane">
+  <div id="tplcmp_box"></div>
+</div>
+
 <!-- ==================== TAB: 最佳化 ==================== -->
 <div id="tab-optimize" class="tab-pane">
 
@@ -4024,7 +4105,11 @@ function isZeroCombatBuffDelta(delta) {
 }
 
 function getCombatBuffDelta(pageKey) {
-  const page = combatBuffState.pages[pageKey] || {};
+  return getCombatBuffDeltaForToggles(combatBuffState.pages[pageKey] || {});
+}
+
+// 模板有自己的藥與同心一力勾選，數值和各頁共用
+function getCombatBuffDeltaForToggles(page) {
   const delta = zeroCombatBuffDelta();
   if (page.buff) {
     const base = combatBuffState.values.base || 0;
@@ -4562,6 +4647,7 @@ function switchTab(tab, evt) {
     document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
   if (activeBtn) activeBtn.classList.add('active');
   if (tab === 'template') renderTemplatePage();
+  if (tab === 'template-compare') renderTemplateComparePage();
 }
 
 // ===================== TAB: 神器樹標註 =====================
@@ -11887,7 +11973,9 @@ function getTemplateState() {
   return templateState;
 }
 
-function saveTemplates() {
+function saveTemplates({ keepSwapHistory = false } = {}) {
+  // 模板頁手動改過之後，模板比較的「復原」不能再倒回改之前的快照，否則會連手動改的一起倒回去
+  if (!keepSwapHistory) templateSwapHistory = [];
   if (trySetItem(TEMPLATE_STORAGE_KEY, JSON.stringify(getTemplateState()))) {
     templateSaveFailed = false;
     return true;
@@ -11913,8 +12001,36 @@ function templateClassFlags(cls) {
   return flags;
 }
 
-// 扣法和最佳化把裝備加回面板時相同（evaluateLowerOptimizePVP／evaluateLowerOptimizePVE）：
-// PVP 扣流派克制、PVE 扣首領克制；本身特性是小數，面板的特性欄是百分比
+// 把一件裝備或一顆內功加進（sign = 1）或扣出（sign = -1）套裝格式的面板。欄位對應和最佳化把裝備加回面板時相同
+// （evaluateLowerOptimizePVP／evaluateLowerOptimizePVE）：PVP 用流派克制、PVE 用首領克制；本身特性是小數，面板的特性欄是百分比
+function addTemplateItemToPanel(panel, mode, entry, cls, sign) {
+  const raw = getNgDBData(entry);
+  const d = getNgAppliedValuesFromVals(raw, cls);
+  const skillEnh = parseFloat(raw.skillenh) || 0;
+  panel.skillEnh += sign * skillEnh;
+  panel.atk += sign * (d.atk - skillEnh);
+  panel.hit += sign * d.hit;
+  panel.crit += sign * d.crit;
+  panel.critDmg += sign * d.critDmg;
+  panel.breakShield += sign * d.breakShield;
+  panel.elemAtk += sign * d.elemAtk;
+  panel.styleOver += sign * (mode === 'pve' ? d.bossOver : d.styleOver);
+  panel.ignoreElem += sign * d.ignoreElem;
+  panel.breakDef += sign * d.breakDef;
+  panel.techOver += sign * d.techOver;
+  panel.traitAtkPct += sign * d.traitAtk * 100;
+  panel.bDef += sign * d.bDef;
+  panel.bBlock += sign * d.bBlock;
+  panel.bCritRes += sign * d.bCritRes;
+  panel.bQiShield += sign * d.bQiShield;
+  panel.bElemRes += sign * d.bElemRes;
+  panel.bStyleRes += sign * d.bStyleRes;
+  panel.antiCrit += sign * d.antiCrit;
+  panel.traitDefPct += sign * d.traitDef * 100;
+  panel.hp += sign * d.hp;
+  return panel;
+}
+
 function computeTemplateBare(mode, tpl) {
   const cls = templateClassFlags(tpl.cls);
   const bare = templateSetPanel(tpl.self);
@@ -11930,30 +12046,7 @@ function computeTemplateBare(mode, tpl) {
       routines.push(name);
       return;
     }
-    const raw = getNgDBData(entry);
-    const d = getNgAppliedValuesFromVals(raw, cls);
-    const skillEnh = parseFloat(raw.skillenh) || 0;
-    bare.skillEnh -= skillEnh;
-    bare.atk -= d.atk - skillEnh;
-    bare.hit -= d.hit;
-    bare.crit -= d.crit;
-    bare.critDmg -= d.critDmg;
-    bare.breakShield -= d.breakShield;
-    bare.elemAtk -= d.elemAtk;
-    bare.styleOver -= mode === 'pve' ? d.bossOver : d.styleOver;
-    bare.ignoreElem -= d.ignoreElem;
-    bare.breakDef -= d.breakDef;
-    bare.techOver -= d.techOver;
-    bare.traitAtkPct -= d.traitAtk * 100;
-    bare.bDef -= d.bDef;
-    bare.bBlock -= d.bBlock;
-    bare.bCritRes -= d.bCritRes;
-    bare.bQiShield -= d.bQiShield;
-    bare.bElemRes -= d.bElemRes;
-    bare.bStyleRes -= d.bStyleRes;
-    bare.antiCrit -= d.antiCrit;
-    bare.traitDefPct -= d.traitDef * 100;
-    bare.hp -= d.hp;
+    addTemplateItemToPanel(bare, mode, entry, cls, -1);
   });
   const negative = TEMPLATE_PANEL_FIELDS.map(([key]) => key).filter(key => bare[key] < -1e-9);
   return { bare, missing, routines, negative };
@@ -12376,6 +12469,501 @@ function confirmTemplatePicker() {
   saveTemplates();
   closeTemplatePicker();
   renderTemplateDerived(mode);
+}
+
+// ===================== TAB: 模板比較 =====================
+// 依模板比較每件內功與裝備：換上後 PVP 攻擊、PVP 防禦（可承受次數）、PVE 攻擊的變化。只算詞條，
+// 欄位對應和最佳化的整套重算相同；土 4 顆的 1% 依換上後的顆數計算，周天與套裝件數只顯示（規格第 5 節）
+const TEMPLATE_COMPARE_EPS = 0.005;
+const TEMPLATE_COMPARE_SORTS = { both: 'PVP 攻＋防', pvpAtk: 'PVP 攻擊', pvpDef: 'PVP 防禦', pveAtk: 'PVE 攻擊' };
+let templateCompareFilter = { kind: 'ng', view: 'all', group: 'all', sort: 'both' };
+const TEMPLATE_COMPARE_VIEWS = { all: 'PVP＋PVE', pvp: '只看 PVP', pve: '只看 PVE' };
+const TEMPLATE_COMPARE_VIEW_SORTS = { all: ['both', 'pvpAtk', 'pvpDef', 'pveAtk'], pvp: ['both', 'pvpAtk', 'pvpDef'], pve: ['pveAtk'] };
+let templateSwapHistory = [];
+
+function evaluateTemplatePanel(mode, tpl, panel, counts) {
+  const buff = getCombatBuffDeltaForToggles(tpl.buffs);
+  const attack = (p, delta) => ({
+    atk: p.atk + p.skillEnh + delta.atk, hit: p.hit + delta.hit, crit: p.crit + delta.crit, critDmg: p.critDmg,
+    breakShield: p.breakShield, elemAtk: p.elemAtk + delta.elemAtk, elemBonus: p.elemBonus,
+    ignoreElem: p.ignoreElem, breakDef: p.breakDef + delta.breakDef, techOver: p.techOver,
+    lei: p.lei, xinsui: p.xinsui, traitAtk: p.traitAtkPct / 100,
+  });
+  if (mode === 'pve') {
+    const boss = tpl.enemy;
+    const params = {
+      ...attack(panel, buff), bossOver: panel.styleOver, bossOverPct: 0,
+      bDef: boss.bDef, bBlock: boss.bBlock, bCritRes: boss.bCritRes, bQiShield: boss.bQiShield, bElemRes: boss.bElemRes, bBossRes: boss.bBossRes,
+    };
+    return { expected: calcPVEExpected(params).expected };
+  }
+  // PVP 的藥與同心一力敵我雙方都加（和 PVP 攻防等頁相同）
+  const enemy = tpl.enemy;
+  // oppTechOver 是被打方自己的技巧克制（calcPVPSideExpected 用它算技巧差）
+  const defense = (p, delta, ownTechOver, extraTraitDef) => ({
+    bDef: p.bDef + delta.bDef, bBlock: p.bBlock + delta.bBlock, bCritRes: p.bCritRes + delta.bCritRes,
+    bQiShield: p.bQiShield, bElemRes: p.bElemRes + delta.bElemRes, bStyleRes: p.bStyleRes, antiCrit: p.antiCrit,
+    oppTechOver: ownTechOver, bStyleResPct: p.styleResPct, traitDef: p.traitDefPct / 100 + extraTraitDef,
+  });
+  const myAtk = { ...attack(panel, buff), styleOver: panel.styleOver, stylePct: panel.stylePct };
+  const oppAtk = { ...attack(enemy, buff), styleOver: enemy.styleOver, stylePct: enemy.stylePct };
+  const myExpected = calcPVPSideExpected(myAtk, defense(enemy, buff, enemy.techOver, 0)).expected;
+  const oppExpected = calcPVPSideExpected(oppAtk, defense(panel, buff, panel.techOver, getNgElementTraitDefBonus(counts))).expected;
+  const myHp = panel.hp + buff.hp;
+  return { myExpected, oppExpected, myHits: oppExpected > 0 && myHp > 0 ? myHp / oppExpected : Infinity };
+}
+
+function templatePct(after, before) {
+  if (!Number.isFinite(after) || !Number.isFinite(before) || before <= 0) return null;
+  return (after / before - 1) * 100;
+}
+
+function templateMetricsChange(mode, after, before) {
+  if (mode === 'pve') return { atk: templatePct(after.expected, before.expected), def: null };
+  return { atk: templatePct(after.myExpected, before.myExpected), def: templatePct(after.myHits, before.myHits) };
+}
+
+function templateCountsAdd(counts, tags, sign) {
+  const out = { ...counts };
+  const add = getNgTagCounts(tags);
+  NG_ELEMENT_KEYS.forEach(key => { out[key] += sign * add[key]; });
+  return out;
+}
+
+function templateContributionScore(mode, metrics) {
+  if (!metrics) return Infinity;
+  return mode === 'pvp' ? (metrics.atk || 0) + (metrics.def || 0) : (metrics.atk || 0);
+}
+
+function templatePieceCounts(mode, gearItems) {
+  const category = mode === 'pvp' ? 'pvp_gear' : 'pve_gear';
+  let upper = 0;
+  let lower = 0;
+  gearItems.forEach(item => {
+    if (item.meta.category !== category) return;
+    if (UPPER_OPT_SLOTS.includes(item.meta.slot)) upper += 1;
+    else if (LOWER_OPT_SLOTS.includes(item.meta.slot)) lower += 1;
+  });
+  return { upper, lower, effect1: upper >= 2, effect2: upper >= 4, effect3: lower >= 2 };
+}
+
+function buildTemplateCompareContext(mode) {
+  const tpl = getTemplateState()[mode];
+  const cls = templateClassFlags(tpl.cls);
+  const resolve = names => names
+    .map(name => ({ name, entry: findNgDBEntry(name) }))
+    .filter(item => item.entry && !isTemplateRoutineEntry(item.entry))
+    .map(item => ({ ...item, meta: normalizeDBEntryMeta(item.entry).meta || {}, tags: templateNgTags(item.name) }));
+  const gear = resolve(tpl.gear);
+  const ng = resolve(tpl.ng);
+  const panel = templateSetPanel(tpl.self);
+  const counts = ng.reduce((acc, item) => templateCountsAdd(acc, item.tags, 1), { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 });
+  const before = evaluateTemplatePanel(mode, tpl, panel, counts);
+  const ctx = { mode, tpl, cls, gear, ng, panel, counts, before, contribution: new Map() };
+  [...gear, ...ng].forEach(item => {
+    const without = addTemplateItemToPanel(templateSetPanel(panel), mode, item.entry, cls, -1);
+    const withoutCounts = item.tags ? templateCountsAdd(counts, item.tags, -1) : counts;
+    ctx.contribution.set(item.name, templateMetricsChange(mode, before, evaluateTemplatePanel(mode, tpl, without, withoutCounts)));
+  });
+  return ctx;
+}
+
+function templateWeakest(ctx, items) {
+  return items.reduce((weakest, item) =>
+    (!weakest || templateContributionScore(ctx.mode, ctx.contribution.get(item.name)) < templateContributionScore(ctx.mode, ctx.contribution.get(weakest.name)) ? item : weakest), null);
+}
+
+// 換掉誰：內功換身上同核心的（靈韻版與一般版互斥），沒有就換身上貢獻最小的；裝備換同部位的，戒、手鐲換兩件裡貢獻較小的。還有空位就直接加上
+function templateSwapTarget(ctx, kind, entry, name) {
+  if (kind === 'ng') {
+    const conflict = getNgConflictName(getNgCoreName(name));
+    const same = ctx.ng.find(item => getNgConflictName(getNgCoreName(item.name)) === conflict);
+    if (same) return same;
+    return ctx.ng.length < 6 ? null : templateWeakest(ctx, ctx.ng);
+  }
+  const slot = normalizeDBEntryMeta(entry).meta?.slot;
+  const inSlot = ctx.gear.filter(item => item.meta.slot === slot);
+  return inSlot.length < (OPTIMIZE_GEAR_SLOT_CAPACITY[slot] || 1) ? null : templateWeakest(ctx, inSlot);
+}
+
+function evaluateTemplateCandidate(ctx, kind, names, name, entry) {
+  const list = kind === 'ng' ? ctx.ng : ctx.gear;
+  const equipped = list.find(item => names.includes(item.name));
+  if (equipped) {
+    return { name: equipped.name, entry: equipped.entry, equipped: true, target: null, metrics: ctx.contribution.get(equipped.name), cmp: { atk: 0, def: 0 } };
+  }
+  const target = templateSwapTarget(ctx, kind, entry, name);
+  const after = templateSetPanel(ctx.panel);
+  if (target) addTemplateItemToPanel(after, ctx.mode, target.entry, ctx.cls, -1);
+  addTemplateItemToPanel(after, ctx.mode, entry, ctx.cls, 1);
+  let counts = ctx.counts;
+  let pieces = null;
+  if (kind === 'ng') {
+    counts = templateCountsAdd(templateCountsAdd(counts, target?.tags, -1), templateNgTags(name), 1);
+  } else {
+    const afterGear = ctx.gear.filter(item => item !== target).concat([{ name, entry, meta: normalizeDBEntryMeta(entry).meta || {} }]);
+    pieces = { before: templatePieceCounts(ctx.mode, ctx.gear), after: templatePieceCounts(ctx.mode, afterGear) };
+  }
+  const metrics = templateMetricsChange(ctx.mode, evaluateTemplatePanel(ctx.mode, ctx.tpl, after, counts), ctx.before);
+  return { name, entry, equipped: false, target, metrics, cmp: metrics, counts, pieces };
+}
+
+function templateCompareCandidates(kind) {
+  if (kind === 'gear') {
+    return DB.gear.map((entry, index) => ({ entry, index, meta: normalizeDBEntryMeta(entry).meta || {} }))
+      .filter(({ entry, meta }) => entry?.name && !getNgDBStackItems(entry).length
+        && ['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot])
+      .map(({ entry, index, meta }) => ({
+        key: `gear:${entry.name}`, kind, group: meta.slot, groupLabel: OPTIMIZE_GEAR_SLOT_LABELS[meta.slot], label: entry.name,
+        names: [entry.name], pvp: entry, pve: entry, detail: OPTIMIZE_GEAR_CATEGORY_LABELS[meta.category] || '',
+        similarKey: meta.category, excluded: isOptimizeItemExcluded('gear', index),
+      }));
+  }
+  // 同一顆內功拆成 P、E 兩筆的合成一列：PVP 用 P 版，PVE 用 E 版
+  const byBase = new Map();
+  DB.ng.forEach((entry, index) => {
+    if (!entry?.name || getNgDBStackItems(entry).length) return;
+    const meta = normalizeDBEntryMeta(entry).meta || {};
+    if (meta.category !== 'inner_skill' || !templateNgTags(entry.name)) return;
+    const match = entry.name.match(/^(.*\d)(PVE|P|E)$/u);
+    const base = match ? match[1] : entry.name;
+    if (!byBase.has(base)) byBase.set(base, []);
+    byBase.get(base).push({ entry, index, suffix: match ? match[2] : '' });
+  });
+  return [...byBase.entries()].map(([base, list]) => {
+    const pvpItem = list.find(item => item.suffix === 'P') || list.find(item => !item.suffix) || list[0];
+    const pveItem = list.find(item => item.suffix === 'E' || item.suffix === 'PVE') || list.find(item => !item.suffix) || list[0];
+    const tags = templateNgTags(pvpItem.entry.name);
+    const core = getNgCoreName(base) || base;
+    return {
+      key: `ng:${base}`, kind: 'ng', group: core, groupLabel: core,
+      label: list.length > 1 ? `${base}（${list.map(item => item.suffix || '無後綴').join('／')}）` : list[0].entry.name,
+      names: list.map(item => item.entry.name), pvp: pvpItem.entry, pve: pveItem.entry,
+      detail: templateTagText(tags), similarKey: tags.slice().sort().join(','),
+      excluded: list.some(item => isOptimizeItemExcluded('ng', item.index)),
+    };
+  });
+}
+
+function templateCompareUnregisteredCount(kind) {
+  const list = kind === 'gear' ? DB.gear : DB.ng;
+  return list.filter(entry => {
+    if (!entry?.name || getNgDBStackItems(entry).length) return false;
+    const meta = normalizeDBEntryMeta(entry).meta || {};
+    return kind === 'gear'
+      ? !(['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot])
+      : !(meta.category === 'inner_skill' && templateNgTags(entry.name));
+  }).length;
+}
+
+function templateCompareVector(row) {
+  return [row.pvp.cmp.atk, row.pvp.cmp.def, row.pve.cmp.atk].map(v => (v == null ? 0 : v));
+}
+
+// 模板沒設定好時數字沒有意義：數值面板是空的、PVP 敵方是空的，或身上穿戴沒填滿（沒填的那一格只能算「直接加上」）
+function templateCompareProblems(ctx) {
+  const problems = [];
+  if (!templatePanelHasValues(ctx.tpl.self)) problems.push('數值面板是空的');
+  if (ctx.mode === 'pvp' && !templatePanelHasValues(ctx.tpl.enemy)) problems.push('敵方面板是空的');
+  if (ctx.ng.length < 6) problems.push(`身上內功 ${ctx.ng.length}／6 顆`);
+  const slotCount = slot => ctx.gear.filter(item => item.meta.slot === slot).length;
+  const missing = Object.keys(OPTIMIZE_GEAR_SLOT_CAPACITY)
+    .sort((a, b) => GEAR_SLOT_SORT_ORDER[a] - GEAR_SLOT_SORT_ORDER[b])
+    .filter(slot => slotCount(slot) < OPTIMIZE_GEAR_SLOT_CAPACITY[slot])
+    .map(slot => `${OPTIMIZE_GEAR_SLOT_LABELS[slot]}${OPTIMIZE_GEAR_SLOT_CAPACITY[slot] > 1 ? ` ${slotCount(slot)}／${OPTIMIZE_GEAR_SLOT_CAPACITY[slot]}` : ''}`);
+  if (missing.length) problems.push(`身上裝備缺：${missing.join('、')}`);
+  return problems;
+}
+
+function templateCompareDominators(row, groupRows) {
+  const values = templateCompareVector(row);
+  return groupRows.filter(other => other !== row && (() => {
+    const o = templateCompareVector(other);
+    return o.every((v, i) => v >= values[i] - TEMPLATE_COMPARE_EPS) && o.some((v, i) => v > values[i] + TEMPLATE_COMPARE_EPS);
+  })());
+}
+
+// 每個模式各自判斷：身上那件標「身上」；面板是空的，或這件是直接加上（沒有換掉任何一件）時，加詞條一定變好，不判斷較好較差
+function templateCompareModeLabels(row, mode, panelOk) {
+  const side = row[mode];
+  if (side.equipped) return [`${TEMPLATE_MODE_LABELS[mode]} 身上`];
+  if (!panelOk[mode] || !side.target) return [];
+  const better = v => v != null && v > TEMPLATE_COMPARE_EPS;
+  const worse = v => v != null && v < -TEMPLATE_COMPARE_EPS;
+  const { atk, def } = side.cmp;
+  if (mode === 'pve') return better(atk) ? ['PVE 較好'] : worse(atk) ? ['PVE 較差'] : [];
+  // PVP 與 PVE 分開判斷：同一顆常常 PVP 差、PVE 好（E 版有首領克制），三項合在一起看，實際資料近九成都會變成取捨
+  if ((better(atk) || better(def)) && !worse(atk) && !worse(def)) return ['PVP 較好'];
+  if ((worse(atk) || worse(def)) && !better(atk) && !better(def)) return ['PVP 較差'];
+  return better(atk) || better(def) ? ['PVP 取捨'] : [];
+}
+
+function templateCompareLabels(row, groupRows, panelOk = { pvp: true, pve: true }) {
+  row.dominatedBy = [];
+  row.modeLabels = { pvp: templateCompareModeLabels(row, 'pvp', panelOk), pve: templateCompareModeLabels(row, 'pve', panelOk) };
+  row.overallLabels = [];
+  // 可拆決定要不要拆，PVP、PVE 三項一起看，和同組其他件比（不是和身上那件比），所以可以同時是「較好」又「可拆」；
+  // 內功要五行相同、裝備要類別相同，否則只標出來
+  if (!row.pvp.equipped && !row.pve.equipped && panelOk.pvp && panelOk.pve) {
+    const dominators = templateCompareDominators(row, groupRows);
+    const similar = dominators.filter(other => other.similarKey === row.similarKey);
+    if (similar.length) {
+      row.overallLabels = ['可拆'];
+      row.dominatedBy = similar.map(other => other.label);
+    } else if (dominators.length) {
+      row.overallLabels = [row.kind === 'ng' ? '五行不同' : '類別不同'];
+      row.dominatedBy = dominators.map(other => other.label);
+    }
+  }
+  return templateCompareViewLabels(row, 'all');
+}
+
+function templateCompareViewLabels(row, view) {
+  if (view === 'pvp' || view === 'pve') {
+    return [...row.modeLabels[view].map(label => (label.endsWith('身上') ? '身上' : label)), ...row.overallLabels];
+  }
+  if (row.pvp.equipped && row.pve.equipped) return ['身上'];
+  return [...row.modeLabels.pvp, ...row.modeLabels.pve, ...row.overallLabels];
+}
+
+function computeTemplateCompareRows(kind) {
+  const contexts = { pvp: buildTemplateCompareContext('pvp'), pve: buildTemplateCompareContext('pve') };
+  const rows = templateCompareCandidates(kind).map(candidate => ({
+    ...candidate,
+    pvp: evaluateTemplateCandidate(contexts.pvp, kind, candidate.names, candidate.pvp.name, candidate.pvp),
+    pve: evaluateTemplateCandidate(contexts.pve, kind, candidate.names, candidate.pve.name, candidate.pve),
+  }));
+  const groups = new Map();
+  rows.forEach(row => {
+    if (!groups.has(row.group)) groups.set(row.group, []);
+    groups.get(row.group).push(row);
+  });
+  const panelOk = {
+    pvp: templatePanelHasValues(contexts.pvp.tpl.self) && templatePanelHasValues(contexts.pvp.tpl.enemy),
+    pve: templatePanelHasValues(contexts.pve.tpl.self),
+  };
+  rows.forEach(row => { row.labels = templateCompareLabels(row, groups.get(row.group), panelOk); });
+  return { rows, contexts, panelOk };
+}
+
+function templateCompareSortValue(row, sort) {
+  const v = templateCompareVector(row);
+  if (sort === 'pvpAtk') return v[0];
+  if (sort === 'pvpDef') return v[1];
+  if (sort === 'pveAtk') return v[2];
+  return v[0] + v[1];
+}
+
+function fmtTemplatePct(value) {
+  if (value == null) return '<span class="neutral">—</span>';
+  const cls = value > TEMPLATE_COMPARE_EPS ? 'positive' : value < -TEMPLATE_COMPARE_EPS ? 'negative' : 'neutral';
+  return `<span class="${cls}">${value > 0 ? '+' : ''}${value.toFixed(2)}%</span>`;
+}
+
+function templateCompareSideText(side) {
+  if (side.equipped) return '身上（數字是本身的貢獻）';
+  return side.target ? `換掉 ${escHtml(side.target.name)}` : '加上（還有空位）';
+}
+
+// 兩個模板的結果相同時只寫一次，不同時才分 PVP、PVE 各寫一行
+function templateCompareBothModes(pvpLines, pveLines) {
+  if (JSON.stringify(pvpLines) === JSON.stringify(pveLines)) return pvpLines;
+  return [...pvpLines.map(line => line.replace(/^(<span[^>]*>)?/, `$1PVP `)), ...pveLines.map(line => line.replace(/^(<span[^>]*>)?/, `$1PVE `))];
+}
+
+function templateCompareTargetText(row) {
+  return templateCompareBothModes([templateCompareSideText(row.pvp)], [templateCompareSideText(row.pve)]).join('<br>');
+}
+
+function templateCompareChangeLines(row, contexts, mode) {
+  const side = row[mode];
+  if (side.equipped) return [];
+  const lines = [];
+  if (row.kind === 'ng') {
+    const before = getNgZhoutianCounts(contexts[mode].counts);
+    const after = getNgZhoutianCounts(side.counts);
+    NG_ELEMENT_KEYS.forEach(key => {
+      if (before[key] === after[key]) return;
+      lines.push(`<span class="${after[key] < before[key] ? 'negative' : 'positive'}">${NG_ELEMENT_LABELS[key]}周天 ${before[key]}→${after[key]}</span>`);
+    });
+  } else if (side.pieces) {
+    const { before, after } = side.pieces;
+    const lost = ['effect1', 'effect2', 'effect3'].filter(key => before[key] && !after[key]);
+    const gained = ['effect1', 'effect2', 'effect3'].filter(key => !before[key] && after[key]);
+    const names = { effect1: '效果一', effect2: '效果二', effect3: '效果三' };
+    if (before.upper !== after.upper || before.lower !== after.lower) {
+      lines.push(`<span class="${lost.length ? 'negative' : gained.length ? 'positive' : 'neutral'}">件數 上半 ${before.upper}→${after.upper}、下半 ${before.lower}→${after.lower}${lost.length ? `（${lost.map(k => names[k]).join('、')}消失）` : ''}${gained.length ? `（${gained.map(k => names[k]).join('、')}成立）` : ''}</span>`);
+    }
+  }
+  return lines;
+}
+
+function templateCompareChangeText(row, contexts, view = 'all') {
+  const pvpLines = view === 'pve' ? [] : templateCompareChangeLines(row, contexts, 'pvp');
+  const pveLines = view === 'pvp' ? [] : templateCompareChangeLines(row, contexts, 'pve');
+  const lines = view === 'all' ? templateCompareBothModes(pvpLines, pveLines) : [...pvpLines, ...pveLines];
+  // 土 4 顆的 1% 只影響 PVP 的承傷
+  if (view !== 'pve' && row.kind === 'ng' && !row.pvp.equipped) {
+    const earthBefore = getNgElementTraitDefBonus(contexts.pvp.counts) > 0;
+    const earthAfter = getNgElementTraitDefBonus(row.pvp.counts) > 0;
+    if (earthBefore !== earthAfter) lines.push(`<span class="${earthAfter ? 'positive' : 'negative'}">土 4 顆加成${earthAfter ? '生效' : '消失'}${view === 'all' ? '（PVP）' : ''}</span>`);
+  }
+  return lines.join('<br>') || '<span class="neutral">—</span>';
+}
+
+function renderTemplateCompareSummary(contexts) {
+  return TEMPLATE_MODES.map(mode => {
+    const ctx = contexts[mode];
+    const { bare, missing, negative } = computeTemplateBare(mode, ctx.tpl);
+    const status = computeTemplateStatus(mode, ctx.tpl);
+    const warnings = missing.length + negative.length + status.gear.messages.length + status.ng.messages.length;
+    const buffs = [ctx.tpl.buffs.buff && '藥', ctx.tpl.buffs.tongxin && '同心一力'].filter(Boolean).join('、') || '無';
+    const pvpEmpty = mode === 'pvp' && !templatePanelHasValues(ctx.tpl.enemy);
+    return `<div class="tplcmp-summary-item">
+      <b>${TEMPLATE_MODE_LABELS[mode]} 模板</b>：身上裝備 ${ctx.gear.length} 件、內功 ${ctx.ng.length} 顆；裸面板 攻擊 ${fmtTemplateValue(bare.atk + bare.skillEnh)}、氣血 ${fmtTemplateValue(bare.hp)}；增益 ${buffs}
+      ${warnings ? `<span class="tpl-warn">（模板頁有 ${warnings} 項提醒）</span>` : ''}
+      ${pvpEmpty ? '<span class="tpl-warn">（敵方面板是空的，防禦算不出來）</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderTemplateCompareWarning(contexts, view = 'all') {
+  const lines = TEMPLATE_MODES.filter(mode => view === 'all' || view === mode)
+    .map(mode => ({ mode, problems: templateCompareProblems(contexts[mode]) }))
+    .filter(item => item.problems.length)
+    .map(item => `<div>${TEMPLATE_MODE_LABELS[item.mode]} 模板：${item.problems.map(escHtml).join('；')}</div>`);
+  if (!lines.length) return '';
+  return `<div class="tplcmp-warning">${lines.join('')}<div>模板還沒設定好：身上沒填的那一格只能算「直接加上」，不顯示較好、較差；數值面板或 PVP 敵方是空的時，數字沒有意義，也不判斷可拆。請先到模板頁設定。</div></div>`;
+}
+
+function renderTemplateComparePage() {
+  const box = document.getElementById('tplcmp_box');
+  if (!box) return;
+  const filter = templateCompareFilter;
+  if (!TEMPLATE_COMPARE_VIEWS[filter.view]) filter.view = 'all';
+  const view = filter.view;
+  const modes = view === 'all' ? ['pvp', 'pve'] : [view];
+  const sorts = TEMPLATE_COMPARE_VIEW_SORTS[view];
+  if (!sorts.includes(filter.sort)) filter.sort = sorts[0];
+  const { rows, contexts } = computeTemplateCompareRows(filter.kind);
+  const groupOrder = filter.kind === 'gear'
+    ? (a, b) => (GEAR_SLOT_SORT_ORDER[a] || 99) - (GEAR_SLOT_SORT_ORDER[b] || 99)
+    : (a, b) => a.localeCompare(b, 'zh-Hant');
+  const groupKeys = [...new Set(rows.map(row => row.group))].sort(groupOrder);
+  if (filter.group !== 'all' && !groupKeys.includes(filter.group)) filter.group = 'all';
+  const groupLabel = key => rows.find(row => row.group === key)?.groupLabel || key;
+  const count = key => rows.filter(row => row.group === key).length;
+  const shownGroups = filter.group === 'all' ? groupKeys : [filter.group];
+  const unregistered = templateCompareUnregisteredCount(filter.kind);
+  // 只看 PVP 或 PVE 時，欄位、判讀、換掉誰、周天／件數變化與換上按鈕都只顯示那一邊
+  const metricColumns = [
+    ...(modes.includes('pvp') ? [['PVP 攻擊', row => row.pvp.metrics?.atk], ['PVP 防禦', row => row.pvp.metrics?.def]] : []),
+    ...(modes.includes('pve') ? [['PVE 攻擊', row => row.pve.metrics?.atk]] : []),
+  ];
+  const columnCount = metricColumns.length + 5;
+  const equippedHere = row => modes.some(mode => row[mode].equipped);
+  const labelClass = { 身上: 'on', 'PVP 身上': 'on', 'PVE 身上': 'on', 'PVP 較好': 'good', 'PVE 較好': 'good', 'PVP 取捨': 'mixed', 'PVP 較差': 'bad', 'PVE 較差': 'bad', 可拆: 'drop' };
+  const tableRows = shownGroups.map(key => {
+    const groupRows = rows.filter(row => row.group === key).sort((a, b) => {
+      if (equippedHere(a) !== equippedHere(b)) return equippedHere(a) ? -1 : 1;
+      return templateCompareSortValue(b, filter.sort) - templateCompareSortValue(a, filter.sort);
+    });
+    return `<tr class="tplcmp-group-row"><td colspan="${columnCount}">${escHtml(groupLabel(key))}（${groupRows.length}）</td></tr>`
+      + groupRows.map(row => {
+        const labels = templateCompareViewLabels(row, view).map(label => `<span class="tplcmp-label tplcmp-label-${labelClass[label] || 'note'}">${label}</span>`).join('');
+        const actions = modes.filter(mode => !row[mode].equipped).map(mode =>
+          `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
+        const target = view === 'all' ? templateCompareTargetText(row) : templateCompareSideText(row[view]);
+        return `<tr${equippedHere(row) ? ' class="tplcmp-equipped"' : ''}>
+          <td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div></td>
+          ${metricColumns.map(([, value]) => `<td class="tplcmp-num">${fmtTemplatePct(value(row))}</td>`).join('')}
+          <td>${labels}${row.dominatedBy.length ? `<div class="tpl-note">同組三項都更好：${row.dominatedBy.slice(0, 2).map(escHtml).join('、')}${row.dominatedBy.length > 2 ? ` 等 ${row.dominatedBy.length} 件` : ''}</div>` : ''}</td>
+          <td class="tplcmp-small">${target}</td>
+          <td class="tplcmp-small">${templateCompareChangeText(row, contexts, view)}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+  }).join('');
+  const metricNote = [
+    modes.includes('pvp') && 'PVP 攻擊是我打對手的期望傷害，PVP 防禦是可承受次數（氣血 ÷ 對手打我的期望傷害），用 PVP 公式與 PVP 模板',
+    modes.includes('pve') && 'PVE 攻擊是打首領的期望傷害，用 PVE 公式與 PVE 模板',
+  ].filter(Boolean).join('；');
+  box.innerHTML = `
+    <div class="section" style="margin-bottom:16px;">
+      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span>模板摘要</span>
+        <span style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="db-btn" onclick="undoTemplateSwap()" ${templateSwapHistory.length ? '' : 'disabled'}>復原上一次換上</button>
+          <button type="button" class="db-btn" onclick="switchTab('template')">回模板頁修改</button>
+        </span>
+      </div>
+      <div class="section-body">${renderTemplateCompareSummary(contexts)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">依模板比較</div>
+      <div class="section-body">
+        ${renderTemplateCompareWarning(contexts, view)}
+        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。「可拆」決定要不要拆，一律看 PVP 與 PVE 三項。</div>
+        <div class="tpl-row">
+          <select id="tplcmp_kind" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('kind', this.value)">
+            <option value="ng" ${filter.kind === 'ng' ? 'selected' : ''}>內功</option>
+            <option value="gear" ${filter.kind === 'gear' ? 'selected' : ''}>裝備</option>
+          </select>
+          <select id="tplcmp_view" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('view', this.value)">
+            ${Object.entries(TEMPLATE_COMPARE_VIEWS).map(([key, label]) => `<option value="${key}" ${view === key ? 'selected' : ''}>${label}</option>`).join('')}
+          </select>
+          <select id="tplcmp_group" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('group', this.value)">
+            <option value="all">全部（${rows.length}）</option>
+            ${groupKeys.map(key => `<option value="${escHtml(key)}" ${filter.group === key ? 'selected' : ''}>${escHtml(groupLabel(key))}（${count(key)}）</option>`).join('')}
+          </select>
+          <select id="tplcmp_sort" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('sort', this.value)">
+            ${sorts.map(key => `<option value="${key}" ${filter.sort === key ? 'selected' : ''}>依 ${TEMPLATE_COMPARE_SORTS[key]} 排序</option>`).join('')}
+          </select>
+          ${unregistered ? `<span class="tpl-note">沒補登完的 ${unregistered} ${filter.kind === 'ng' ? '顆' : '件'}不列入（到補登頁補齊）</span>` : ''}
+        </div>
+        <div class="tplcmp-table-wrap">
+          <table class="tplcmp-table">
+            <thead><tr><th>名稱</th>${metricColumns.map(([label]) => `<th>${label}</th>`).join('')}<th>判讀</th><th>換掉誰</th><th>周天／件數變化</th><th>操作</th></tr></thead>
+            <tbody>${tableRows || `<tr><td colspan="${columnCount}" class="tpl-note">沒有可以比較的項目。</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function setTemplateCompareFilter(key, value) {
+  templateCompareFilter[key] = value;
+  if (key === 'kind') templateCompareFilter.group = 'all';
+  renderTemplateComparePage();
+}
+
+// 換上後裸面板不變：數值面板扣掉被換掉的那件、加上換上的這件
+function swapTemplateItemFromCompare(mode, key) {
+  const kind = String(key).startsWith('gear:') ? 'gear' : 'ng';
+  const row = computeTemplateCompareRows(kind).rows.find(item => item.key === key);
+  const side = row?.[mode];
+  if (!side || side.equipped) return;
+  templateSwapHistory.push(JSON.stringify(getTemplateState()));
+  const tpl = getTemplateState()[mode];
+  const cls = templateClassFlags(tpl.cls);
+  const targetIndex = side.target ? tpl[kind].indexOf(side.target.name) : -1;
+  if (targetIndex >= 0) {
+    addTemplateItemToPanel(tpl.self, mode, side.target.entry, cls, -1);
+    tpl[kind].splice(targetIndex, 1, side.name);
+  } else {
+    tpl[kind].push(side.name);
+  }
+  addTemplateItemToPanel(tpl.self, mode, side.entry, cls, 1);
+  saveTemplates({ keepSwapHistory: true });
+  renderTemplateComparePage();
+}
+
+function undoTemplateSwap() {
+  const snapshot = templateSwapHistory.pop();
+  if (!snapshot) return;
+  templateState = normalizeTemplateState(JSON.parse(snapshot));
+  saveTemplates({ keepSwapHistory: true });
+  renderTemplateComparePage();
 }
 
 // ===================== INIT =====================
