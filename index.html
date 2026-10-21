@@ -188,6 +188,61 @@
     border-color: var(--tk-line-e8b6aa);
   }
   .btn-danger:hover { background: var(--tk-bg-f6d5cc); }
+  .copy-modal-overlay[hidden] {
+    display: none;
+  }
+  .copy-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(32, 24, 18, 0.42);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+  }
+  .copy-modal {
+    width: min(520px, 100%);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--tk-bg-fffaf4);
+    box-shadow: 0 18px 44px rgba(60, 44, 20, 0.22);
+    padding: 18px;
+  }
+  .copy-modal h3 {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: 20px;
+  }
+  .copy-modal p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .copy-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+  #import_snapshot_modal_text {
+    white-space: pre-line;
+  }
+  .import-snapshot-backup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  .import-snapshot-backup input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+  }
+  .import-snapshot-backup[hidden] {
+    display: none;
+  }
   .btn-ghost {
     background: var(--tk-bg-ffffff);
     border-color: var(--tk-line-d5cabd);
@@ -1734,7 +1789,7 @@
               <div class="data-menu-panel" id="data_menu_panel" hidden>
                 <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
                 <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
-                <div class="hero-tools-note">提醒：匯入覆盤資料會覆蓋現有資料。</div>
+                <div class="hero-tools-note">匯入時可以選擇只加入缺少的場次，或整份覆蓋。</div>
               </div>
             </div>
             <input id="snapshot_file" type="file" accept=".json,application/json" hidden>
@@ -1932,6 +1987,13 @@
                   </div>
                 </div>
                 <div class="field">
+                  <label>職業</label>
+                  <select id="player_job_filter" disabled>
+                    <option value="all">全部</option>
+                  </select>
+                  <div class="subtle">打過多種職業時可只看一種；選「全部」是混在一起平均。</div>
+                </div>
+                <div class="field">
                   <label>團別篩選</label>
                   <select id="player_group_filter">
                     <option value="all">全部</option>
@@ -2110,6 +2172,19 @@
             </div>
           </div>
         </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="import_snapshot_modal" class="copy-modal-overlay" hidden>
+    <div class="copy-modal" role="dialog" aria-labelledby="import_snapshot_modal_title">
+      <h3 id="import_snapshot_modal_title">批量匯入覆盤資料</h3>
+      <p id="import_snapshot_modal_text"></p>
+      <label class="import-snapshot-backup" id="import_snapshot_backup_row"><input id="import_snapshot_backup" type="checkbox" checked> 匯入前先下載一份目前的資料</label>
+      <div class="copy-modal-actions">
+        <button class="btn-primary" id="btn_import_snapshot_merge" type="button">只加入缺少的場次</button>
+        <button class="btn-danger" id="btn_import_snapshot_overwrite" type="button">整份覆蓋</button>
+        <button class="btn-ghost" id="btn_import_snapshot_cancel" type="button">取消</button>
       </div>
     </div>
   </div>
@@ -2383,11 +2458,13 @@ const PLAYER_COMPARE_METRICS = [
 // loadState 在下一行就會執行，這兩個變數必須宣告在 let state 之前。
 let stateLoadError = '';
 let stateLoadErrorNotified = false;
+let pendingReviewSnapshot = null;
 let state = loadState();
 let importedSections = [];
 let importedRoleRows = [];
 let importedBattleFileLabel = '';
 let selectedPlayer = '';
+let playerJobFilterName = '';
 let playerSearchComposing = false;
 let professionSearchComposing = false;
 
@@ -2498,7 +2575,8 @@ function restoreUiState(uiState = {}) {
   switchTab(uiState.activeTab || 'players');
 }
 
-function exportReviewSnapshot() {
+function exportReviewSnapshot(options = {}) {
+  const suffix = typeof options?.suffix === 'string' && options.suffix ? `_${options.suffix}` : '';
   const payload = {
     app: 'battle_review',
     version: 1,
@@ -2516,15 +2594,15 @@ function exportReviewSnapshot() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `battle_review_export_${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `battle_review_export_${new Date().toISOString().slice(0, 10)}${suffix}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
 }
 
-async function importReviewSnapshot(file) {
-  if (!file) return;
+// 讀檔並檢查格式；批量匯入的確認視窗先用它讀出場數，再決定只加入缺少的場次或整份覆蓋
+async function readReviewSnapshotFile(file) {
   const fileName = String(file.name || '');
   if (/Zone\.Identifier$/i.test(fileName)) {
     throw new Error('你選到的是 Windows 附帶資訊檔（Zone.Identifier），不是覆盤資料 JSON。請改選真正的 .json 檔。');
@@ -2549,10 +2627,11 @@ async function importReviewSnapshot(file) {
   if (parsed?.app !== 'battle_review' || !parsed?.state) {
     throw new Error('不是有效的覆盤資料 JSON。');
   }
-  const next = parsed.state || {};
-  const previousState = state;
-  const previousLoadError = stateLoadError;
-  state = {
+  return parsed;
+}
+
+function reviewStateFromSnapshot(next = {}) {
+  return {
     battles: Array.isArray(next.battles) ? canonicalBattleNames(next.battles) : [],
     activeBattleId: next.activeBattleId || (Array.isArray(next.battles) && next.battles[0]?.id) || '',
     importDraft: next.importDraft || {},
@@ -2562,18 +2641,143 @@ async function importReviewSnapshot(file) {
       deathPct: Number(next.settings?.deathPct || 30),
     },
   };
+}
+
+function battleMergeKey(battle) {
+  return [
+    battle?.date || '',
+    battle?.sourceLabel || '',
+    battle?.teamName || '',
+    battle?.opponent || '',
+  ].map(value => String(value || '').trim()).join('|');
+}
+
+// 和桌機「從公開資料建立本機副本」的合併相同：同 id，或日期、場次標記、己方、對手都相同就算本機已有
+function mergeReviewSnapshotState(nextState, localState) {
+  const incoming = reviewStateFromSnapshot(nextState);
+  const localBattles = Array.isArray(localState?.battles) ? localState.battles : [];
+  const localIds = new Set(localBattles.map(battle => String(battle.id || '')).filter(Boolean));
+  const localKeys = new Set(localBattles.map(battleMergeKey).filter(key => key !== '|||'));
+  const additions = [];
+  incoming.battles.forEach(battle => {
+    const id = String(battle.id || '');
+    const key = battleMergeKey(battle);
+    if ((id && localIds.has(id)) || (key !== '|||' && localKeys.has(key))) return;
+    additions.push(battle);
+    if (id) localIds.add(id);
+    if (key !== '|||') localKeys.add(key);
+  });
+  const battles = [...additions, ...localBattles].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  return {
+    state: { ...localState, battles, activeBattleId: additions[0]?.id || localState.activeBattleId || battles[0]?.id || '' },
+    added: additions.length,
+    skipped: incoming.battles.length - additions.length,
+  };
+}
+
+// merge 只加入本機沒有的場次，本機原有的場次、分工、別名與門檻不變；overwrite 用檔案取代本機全部資料
+function applyReviewSnapshot(parsed, mode = 'overwrite') {
+  const previousState = state;
+  const previousLoadError = stateLoadError;
+  let added = 0;
+  let skipped = 0;
+  if (mode === 'merge') {
+    const result = mergeReviewSnapshotState(parsed.state || {}, state);
+    state = result.state;
+    added = result.added;
+    skipped = result.skipped;
+  } else {
+    state = reviewStateFromSnapshot(parsed.state || {});
+  }
   // 匯入是讀取存檔失敗時的還原出口，所以這裡允許蓋掉讀不出來的原始存檔
   stateLoadError = '';
   if (!saveState()) {
     state = previousState;
     stateLoadError = previousLoadError;
-    return;
+    return null;
   }
   importedSections = [];
   importedRoleRows = [];
   refreshAll();
-  restoreUiState(parsed.ui_state || {});
+  if (mode !== 'merge') restoreUiState(parsed.ui_state || {});
   if (previousLoadError) document.getElementById('state_load_error_banner')?.remove();
+  return { added, skipped, total: state.battles.length };
+}
+
+async function importReviewSnapshot(file, mode = 'overwrite') {
+  if (!file) return null;
+  return applyReviewSnapshot(await readReviewSnapshotFile(file), mode);
+}
+
+function toggleElement(id, hidden) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = hidden;
+}
+function setDisabled(id, disabled) {
+  const el = document.getElementById(id);
+  if (el) el.disabled = disabled;
+}
+
+function reviewSnapshotCountText(battles) {
+  const list = Array.isArray(battles) ? battles : [];
+  const latest = list.map(battle => String(battle?.date || '').trim()).filter(Boolean).sort().pop() || '';
+  return `${fmtNumber(list.length)} 場${latest ? `（最新 ${latest}）` : ''}`;
+}
+
+function openImportSnapshotModal(parsed) {
+  pendingReviewSnapshot = parsed;
+  const incoming = Array.isArray(parsed?.state?.battles) ? parsed.state.battles : [];
+  const canMerge = !stateLoadError;
+  const missing = canMerge ? mergeReviewSnapshotState(parsed.state || {}, state).added : incoming.length;
+  const lines = canMerge
+    ? [
+      `本機：${reviewSnapshotCountText(state.battles)}`,
+      `檔案：${reviewSnapshotCountText(incoming)}，其中 ${fmtNumber(missing)} 場本機沒有`,
+      '「只加入缺少的場次」會保留本機原有的場次、分工、別名與門檻；「整份覆蓋」會用檔案取代本機全部資料。',
+    ]
+    : [
+      '本機存檔讀不出來，只能用檔案整份覆蓋。',
+      `檔案：${reviewSnapshotCountText(incoming)}`,
+    ];
+  const text = document.getElementById('import_snapshot_modal_text');
+  if (text) text.textContent = lines.join('\n');
+  const backup = document.getElementById('import_snapshot_backup');
+  if (backup) backup.checked = true;
+  toggleElement('import_snapshot_backup_row', !canMerge || !state.battles.length);
+  setDisabled('btn_import_snapshot_merge', !canMerge || !missing);
+  toggleElement('import_snapshot_modal', false);
+}
+
+function closeImportSnapshotModal() {
+  pendingReviewSnapshot = null;
+  toggleElement('import_snapshot_modal', true);
+}
+
+function confirmImportSnapshot(mode) {
+  const parsed = pendingReviewSnapshot;
+  const wantBackup = !!document.getElementById('import_snapshot_backup')?.checked && !document.getElementById('import_snapshot_backup_row')?.hidden;
+  closeImportSnapshotModal();
+  if (!parsed) return;
+  if (wantBackup) exportReviewSnapshot({ suffix: '匯入前備份' });
+  const result = applyReviewSnapshot(parsed, mode);
+  if (!result) return;
+  window.alert(mode === 'merge'
+    ? `已加入 ${fmtNumber(result.added)} 場，略過本機已有的 ${fmtNumber(result.skipped)} 場，現在共 ${fmtNumber(result.total)} 場。`
+    : `已用檔案覆蓋本機資料，現在共 ${fmtNumber(result.total)} 場。`);
+}
+
+async function handleSnapshotFileChange(event) {
+  const input = event?.target;
+  const file = input?.files?.[0];
+  if (!file) return;
+  try {
+    openImportSnapshotModal(await readReviewSnapshotFile(file));
+  } catch (err) {
+    console.error(err);
+    window.alert(err?.message || '匯入失敗。');
+  } finally {
+    if (input) input.value = '';
+  }
 }
 
 function resolveAliasName(name, map = state.aliasMap || {}) {
@@ -3349,16 +3553,17 @@ function buildPlayerSummary(player) {
   return lines.join('｜');
 }
 
-function aggregatePlayers(battleIds = null) {
+function aggregatePlayers(battleIds = null, { splitByJob = false } = {}) {
   const bucket = new Map();
   const battles = battleIds ? filteredBattlesByIds(battleIds) : state.battles;
   battles.forEach(battle => {
     const review = computeBattleReview(battle);
     (review?.summaries || []).forEach(player => {
-      const key = canonicalPlayerName(player.name);
+      const canonicalName = canonicalPlayerName(player.name);
+      const key = splitByJob ? `${canonicalName}\u0000${player.job || ''}` : canonicalName;
       if (!bucket.has(key)) {
         bucket.set(key, {
-          name: key,
+          name: canonicalName,
           job: player.job,
           aliasNames: new Set(),
           battles: 0,
@@ -3486,8 +3691,8 @@ function summarizeLookupHistory(item, history, groupFilter) {
   };
 }
 
-function lookupPlayerRows(battleIds, groupFilter = 'all') {
-  return aggregatePlayers(battleIds)
+function lookupPlayerRows(battleIds, groupFilter = 'all', options = {}) {
+  return aggregatePlayers(battleIds, options)
     .map(item => {
       const history = item.history.filter(entry => historyMatchesPlayerGroupFilter(groupFilter, entry.groupType));
       if (!history.length) return null;
@@ -4099,6 +4304,31 @@ function filteredBattlesByIds(ids) {
   return state.battles.filter(battle => set.has(battle.id));
 }
 
+function playerJobCounts(player) {
+  const counts = new Map();
+  (player?.history || []).forEach(entry => {
+    const job = entry?.raw?.job || '';
+    if (job) counts.set(job, (counts.get(job) || 0) + 1);
+  });
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || JOB_ORDER.indexOf(a[0]) - JOB_ORDER.indexOf(b[0]));
+}
+
+// 職業選項跟著查到的玩家，換人時回到「全部」；只打過一種職業時不用選，維持原本的混合平均
+function syncPlayerJobFilter(player, jobCounts = []) {
+  const select = document.getElementById('player_job_filter');
+  if (!select) return 'all';
+  const previous = player && player.name === playerJobFilterName ? (select.value || 'all') : 'all';
+  playerJobFilterName = player?.name || '';
+  const multi = jobCounts.length > 1;
+  const allLabel = multi ? `全部（${jobCounts.length} 種職業混在一起平均）` : (jobCounts.length === 1 ? `只打過${jobCounts[0][0]}` : '全部');
+  const options = [['all', allLabel]].concat(multi ? jobCounts.map(([job, count]) => [job, `${job}（${fmtNumber(count)} 場）`]) : []);
+  select.innerHTML = options.map(([value, label]) => `<option value="${escHtml(value)}">${escHtml(label)}</option>`).join('');
+  const selected = multi && jobCounts.some(([job]) => job === previous) ? previous : 'all';
+  select.value = selected;
+  select.disabled = !multi;
+  return selected;
+}
+
 function renderPlayerLookup() {
   const search = document.getElementById('player_search').value.trim();
   const battleIds = selectedBattleIds('player_battle_select');
@@ -4107,6 +4337,7 @@ function renderPlayerLookup() {
   const lookupRows = lookupPlayerRows(battleIds, groupFilter);
   renderPlayerLeaders(battleIds, groupFilter);
   if (!search) {
+    syncPlayerJobFilter(null);
     renderPlayerDetail(null, '請先輸入玩家名稱。');
     return;
   }
@@ -4114,16 +4345,29 @@ function renderPlayerLookup() {
     item.name.includes(search) || (item.aliasNames || []).some(alias => alias.includes(search))
   );
   if (!rows.length) {
+    syncPlayerJobFilter(null);
     renderPlayerDetail(null, '找不到符合條件的玩家，或該玩家在目前選取場次內沒有資料。');
     return;
   }
   const exact = rows.find(item => item.name === search) || rows[0];
-  renderPlayerDetail(exact, undefined, { groupFilter, cohortFilter, allRows: lookupRows });
+  const jobCounts = playerJobCounts(exact);
+  const jobFilter = syncPlayerJobFilter(exact, jobCounts);
+  // 選了職業：這位玩家只算該職業的場次，比較母體也改成每人每個職業各一列
+  const allRows = jobFilter === 'all' ? lookupRows : lookupPlayerRows(battleIds, groupFilter, { splitByJob: true });
+  const player = jobFilter === 'all' ? exact : (allRows.find(row => row.name === exact.name && row.job === jobFilter) || exact);
+  renderPlayerDetail(player, undefined, { groupFilter, cohortFilter, allRows, jobFilter, jobCounts });
 }
 
-function topPlayersWithTies(rows, key, limit = 5) {
+// 只打 1～2 場的人比率最容易是 100%，排行會被他們佔滿（2026-10-21）
+const PLAYER_LEADER_MIN_BATTLES = 3;
+
+function playerLeaderMinBattles(battleIds) {
+  return Math.max(1, Math.min(PLAYER_LEADER_MIN_BATTLES, (battleIds || []).length));
+}
+
+function topPlayersWithTies(rows, key, limit = 5, minBattles = 1) {
   const sorted = [...rows]
-    .filter(row => Number(row[key] || 0) > 0)
+    .filter(row => Number(row[key] || 0) > 0 && Number(row.battles || 0) >= minBattles)
     .map(row => ({
       ...row,
       _ratio: row.battles ? Number(row[key] || 0) / row.battles : 0,
@@ -4151,12 +4395,13 @@ function renderPlayerLeaders(battleIds, groupFilter = 'all') {
     { title: '優先找幹部覆盤', key: 'priorityCount' },
     { title: '歡迎找幹部覆盤', key: 'secondaryCount' },
   ];
+  const minBattles = playerLeaderMinBattles(battleIds);
   box.innerHTML = `
     <details open>
-      <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">建議覆盤場次統計</summary>
+      <summary class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0; cursor:pointer;">建議覆盤場次統計（至少出場 ${fmtNumber(minBattles)} 場）</summary>
       <div class="summary-grid">
         ${groups.map(group => {
-          const leaders = topPlayersWithTies(rows, group.key, 5);
+          const leaders = topPlayersWithTies(rows, group.key, 5, minBattles);
           return `
             <div class="summary-card">
               <div class="summary-label">${group.title}</div>
@@ -4192,12 +4437,20 @@ function renderPlayerDetail(player, emptyText = '輸入玩家名稱後，這裡�
   const latest = [...player.history].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
   const cohortIncludesPlayer = cohortRows.some(row => row.name === player.name);
   const warningLines = [];
+  const jobFilter = options.jobFilter || 'all';
+  const jobCounts = Array.isArray(options.jobCounts) ? options.jobCounts : [];
+  if (jobCounts.length > 1) {
+    const jobText = jobCounts.map(([job, count]) => `${job} ${fmtNumber(count)} 場`).join('、');
+    warningLines.push(jobFilter === 'all'
+      ? `這位玩家在目前場次打過 ${fmtNumber(jobCounts.length)} 種職業（${jobText}），以下是混在一起的平均${cohortFilter === 'same_job' ? `，同職業母體用最近一場的職業（${player.job}）` : ''}；要分開看請在「職業」選一個。`
+      : `只看${jobFilter}的 ${fmtNumber(player.battles)} 場（目前場次共有 ${jobText}）。`);
+  }
   if (player.battles < 3) warningLines.push(`玩家樣本偏少：目前只有 ${fmtNumber(player.battles)} 場。`);
   if (cohortRows.length < 5) warningLines.push(`比較母體偏小：目前只有 ${fmtNumber(cohortRows.length)} 人。`);
   if (!cohortIncludesPlayer) warningLines.push('目前玩家不屬於此比較母體，以下對比僅供橫向參考。');
   box.innerHTML = `
     <div>
-      <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">${escHtml(player.name)}｜${jobIconHtml(player.job)}${escHtml(player.job)} <small>${player.battles} 場</small></div>
+      <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;"><span>${escHtml(player.name)}｜${jobIconHtml(player.job)}${escHtml(player.job)} <small>${player.battles} 場</small></span></div>
       ${(player.aliasNames || []).length > 1 ? `<div class="subtle" style="margin-bottom:8px;">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
       <div class="mini-grid">
         <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%</b></div>
@@ -4677,22 +4930,12 @@ window.addEventListener('keydown', event => {
 document.getElementById('btn_import_snapshot').addEventListener('click', () => {
   document.getElementById('snapshot_file').click();
 });
-document.getElementById('snapshot_file').addEventListener('change', async event => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const ok = window.confirm('匯入覆盤資料會覆蓋現有資料，是否繼續？');
-  if (!ok) {
-    event.target.value = '';
-    return;
-  }
-  try {
-    await importReviewSnapshot(file);
-  } catch (err) {
-    console.error(err);
-    window.alert(err?.message || '匯入失敗。');
-  } finally {
-    event.target.value = '';
-  }
+document.getElementById('snapshot_file').addEventListener('change', handleSnapshotFileChange);
+document.getElementById('btn_import_snapshot_merge').addEventListener('click', () => confirmImportSnapshot('merge'));
+document.getElementById('btn_import_snapshot_overwrite').addEventListener('click', () => confirmImportSnapshot('overwrite'));
+document.getElementById('btn_import_snapshot_cancel').addEventListener('click', closeImportSnapshotModal);
+document.getElementById('import_snapshot_modal').addEventListener('click', event => {
+  if (event.target.id === 'import_snapshot_modal') closeImportSnapshotModal();
 });
 document.getElementById('btn_group_attack').addEventListener('click', () => bulkSetGroup('attack'));
 document.getElementById('btn_group_defense').addEventListener('click', () => bulkSetGroup('defense'));
@@ -4715,6 +4958,7 @@ document.getElementById('btn_player_search').addEventListener('click', renderPla
 document.getElementById('player_battle_select').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_group_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('player_cohort_filter').addEventListener('change', renderPlayerLookup);
+document.getElementById('player_job_filter').addEventListener('change', renderPlayerLookup);
 document.getElementById('profession_search').addEventListener('compositionstart', () => {
   professionSearchComposing = true;
 });

@@ -40,7 +40,7 @@
    - `github_pages_mobile/index.html`
 2. 將最新桌機版同步到：
    - `github_pages_mobile/desktop/index.html`
-3. 若要更新公開唯讀資料，將公開用的覆盤匯出 JSON 同步到：
+3. 若要更新公開唯讀資料，在主倉執行 `node tools/publish_public_data.js`：它把 `public-data/latest.json` 去掉內部註記後寫到下面這個檔案（不要直接複製，否則註記會公開）：
    - `github_pages_mobile/desktop/public-data/latest.json`
 4. 視需要同步文件到：
    - `github_pages_mobile/docs/`

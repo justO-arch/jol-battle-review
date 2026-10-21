@@ -6755,15 +6755,16 @@ function dbPersist(type) {
 
 function dbAdd(type, name, data, meta = null) {
   const limit = getDBStorageTypeLimit(type);
-  if (DB[type].length >= limit) { alert(`已達 ${limit} 筆上限，請先刪除不需要的項目。`); return; }
+  if (DB[type].length >= limit) { alert(`已達 ${limit} 筆上限，請先刪除不需要的項目。`); return false; }
   DB[type].push(normalizeDBEntryMeta({ name, data, ...(meta ? { meta } : {}) }));
   if (!dbPersist(type)) {
     DB[type].pop();
-    return;
+    return false;
   }
   renderDB();
   refreshDBDropdowns();
   renderOptimizePage();
+  return true;
 }
 
 function dbDelete(type, idx) {
@@ -9878,8 +9879,7 @@ function saveNgOptimizeResultAsStack(resultKey, rank = 0) {
   const name = prompt('請輸入內功套路名稱（最多 20 字）：', defaultName);
   if (name === null || name.trim() === '') return;
   const trimmed = name.trim().slice(0, 20);
-  dbAdd('ng', trimmed, data, { category: 'set_build', slot: null, tags: null });
-  alert(`已儲存內功套路：${trimmed}`);
+  if (dbAdd('ng', trimmed, data, { category: 'set_build', slot: null, tags: null })) alert(`已儲存內功套路：${trimmed}`);
 }
 
 const OPTIMIZE_GEAR_STACK_LABELS = {
@@ -9929,8 +9929,7 @@ function saveGearOptimizeResultAsStack(kind, resultKey, rank = 0) {
   const name = prompt('請輸入裝備套路名稱（最多 20 字）：', defaultName);
   if (name === null || name.trim() === '') return;
   const trimmed = name.trim().slice(0, 20);
-  dbAdd('gear', trimmed, data, { category: 'set_build', slot: null, tags: null });
-  alert(`已儲存${label}套路：${trimmed}`);
+  if (dbAdd('gear', trimmed, data, { category: 'set_build', slot: null, tags: null })) alert(`已儲存${label}套路：${trimmed}`);
 }
 
 function runNgOptimize() {
