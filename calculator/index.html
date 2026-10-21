@@ -7098,6 +7098,9 @@ function nextFreeDBName(type, name) {
 // 回傳實際存入的名稱；沒有存入時回傳 false
 function dbAdd(type, name, data, meta = null) {
   const existing = findDBEntryByName(type, name);
+  if (existing && existing.type !== type && !dbEntryFitsList(existing.type, DB[existing.type][existing.index])) {
+    return dbMoveSameNameEntry(existing, type, name, data, meta);
+  }
   if (existing) {
     // 以前同名會多存一筆，之後載入永遠拿到舊的那筆（2026-10-21）
     if (confirm(`資料庫已有「${name}」。\n\n按「確定」：用現在的數值覆蓋它${meta ? '' : '（補登的分類、部位與詞條保留）'}。\n按「取消」：不覆蓋。`)) {
@@ -7123,6 +7126,41 @@ function dbAdd(type, name, data, meta = null) {
   DB[type].push(normalizeDBEntryMeta({ name, data, ...(meta ? { meta } : {}) }));
   if (!dbPersist(type)) {
     DB[type].pop();
+    return false;
+  }
+  renderDB();
+  refreshDBDropdowns();
+  renderOptimizePage();
+  return name;
+}
+
+// 補登的類別符合它所在的那一類（裝備配置放裝備或套路、內功配置放內功或套路）
+function dbEntryFitsList(type, entry) {
+  const category = normalizeDBEntryMeta(entry).meta?.category;
+  return type === 'gear'
+    ? ['pvp_gear', 'pve_gear', 'unique_gear', 'set_build'].includes(category)
+    : ['inner_skill', 'set_build'].includes(category);
+}
+
+// 同名的那筆在另一類（裝備配置／內功配置），而且沒補登或補登的類別不符合它所在的那一類時，覆蓋就順便搬到這次要存的那一類：
+// 例如帶著舊疊加清單誤存進內功配置的裝備，用同名重存一次就回到裝備配置。已經補登成符合所在類別的，照舊在原處覆蓋（dbAdd）。
+// 原本的補登資料只在類別符合新的那一類時保留。搬出的那一類後面幾筆的位置會往前移，和刪除時相同
+function dbMoveSameNameEntry(existing, type, name, data, meta) {
+  const from = DB[existing.type];
+  const old = from[existing.index];
+  const keepMeta = dbEntryFitsList(type, old);
+  const nextMeta = meta || (keepMeta ? old.meta : null);
+  const note = meta || keepMeta ? '' : '（原本的補登資料不保留，要到補登頁重新補登）';
+  if (!confirm(`${DB_IMPORT_LABELS[existing.type]}已有「${name}」。\n\n按「確定」：用現在的數值覆蓋它，並搬到${DB_IMPORT_LABELS[type]}${note}。\n按「取消」：不儲存。`)) return false;
+  const limit = getDBStorageTypeLimit(type);
+  if (DB[type].length >= limit) { alert(`${DB_IMPORT_LABELS[type]}已達 ${limit} 筆上限，請先刪除不需要的項目。`); return false; }
+  from.splice(existing.index, 1);
+  DB[type].push(normalizeDBEntryMeta({ ...old, name, data, meta: nextMeta }));
+  if (!dbPersist(existing.type) || !dbPersist(type)) {
+    DB[type].pop();
+    from.splice(existing.index, 0, old);
+    dbPersist(existing.type);
+    dbPersist(type);
     return false;
   }
   renderDB();
@@ -7232,18 +7270,39 @@ function dbLoadPVPCmpAtt(id, selId) {
 }
 
 // 內功/裝備
+// 疊加清單記的是「這一欄＝這幾件的加總」，疊加後又改過數值時清單就不對了
+function ngStackMatchesValues(stackItems, values) {
+  const totals = {};
+  NG_ATTR_ROWS.forEach(row => { totals[row.key] = 0; });
+  for (const name of stackItems) {
+    const entry = findNgDBEntry(name);
+    if (!entry) return false;
+    const data = getNgDBData(entry);
+    NG_ATTR_ROWS.forEach(row => { totals[row.key] += parseFloat(data[row.key]) || 0; });
+  }
+  return NG_ATTR_ROWS.every(row => Math.abs((parseFloat(values[row.key]) || 0) - totals[row.key]) < 1e-6);
+}
+
 function dbSaveNG(set) {
   ngSaveCurrentVals();
   const values = {};
   NG_ATTR_ROWS.forEach(row => { values[row.key] = ng_vals[set][row.key] || 0; });
-  const data = {
-    values,
-    stackItems: Array.isArray(ng_db_stacks[set]) ? ng_db_stacks[set].slice() : []
-  };
+  let stackItems = Array.isArray(ng_db_stacks[set]) ? ng_db_stacks[set].slice() : [];
   const name = prompt('請輸入名稱（最多 20 字）：', '');
   if (name === null || name.trim() === '') return;
   const trimmed = name.trim().slice(0, 20);
-  dbAdd(isInnerSkillName(trimmed) || isInnerSkillRoutineStack(data.stackItems) ? 'ng' : 'gear', trimmed, data);
+  // 欄位留著舊的疊加清單、數值卻已經改成別的（例如直接打上新裝備的數值），照舊存會被當成套路：
+  // 6 顆內功的清單會讓新裝備存進內功配置，模板比較與最佳化都不會把它當成一件裝備（使用者回報 133pvp鐲2，2026-10-21）
+  let clearStack = false;
+  if (stackItems.length && !ngStackMatchesValues(stackItems, values)) {
+    const listText = `${stackItems.slice(0, 6).join('、')}${stackItems.length > 6 ? ` 等 ${stackItems.length} 件` : ''}`;
+    if (confirm(`這一欄還留著疊加清單（${listText}），但數值已經和這幾件的加總不同，可能是疊加後又改過數值。\n\n按「確定」：存成單件，不帶疊加清單（名稱有四位數字的存到內功配置，其他存到裝備配置），並清掉這一欄的疊加清單。\n按「取消」：照舊帶著疊加清單存成套路。`)) {
+      stackItems = [];
+      clearStack = true;
+    }
+  }
+  const saved = dbAdd(isInnerSkillName(trimmed) || isInnerSkillRoutineStack(stackItems) ? 'ng' : 'gear', trimmed, { values, stackItems });
+  if (saved && clearStack) clearNgStackSelection(set);
 }
 function dbLoadNG(set, selId) {
   const name = document.getElementById(selId)?.value; if (!name) return;
@@ -12252,9 +12311,15 @@ function saveTemplates({ keepSwapHistory = false } = {}) {
   return false;
 }
 
-// 套路是好幾件加總成的一筆，要在挑選視窗按「帶入」展開；直接放在身上會和成員重複扣
+// 套路是好幾件加總成的一筆，要在挑選視窗按「帶入」展開；直接放在身上會和成員重複扣。
+// 補登成單件裝備（有類別與部位）或單顆內功（有五行）的，就算留有疊加清單也當成單件，和最佳化的候選相同
+// （例如在內功/裝備比較頁「+ DB疊加」後改了數值、再存成新的一件）
 function isTemplateRoutineEntry(entry) {
-  return !!entry && getNgDBStackItems(entry).length > 0;
+  if (!entry || !getNgDBStackItems(entry).length) return false;
+  const meta = normalizeDBEntryMeta(entry).meta || {};
+  const singleGear = ['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && !!OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot];
+  const singleNg = meta.category === 'inner_skill' && Array.isArray(meta.tags) && meta.tags.length === 5 && meta.tags.every(Boolean);
+  return !singleGear && !singleNg;
 }
 
 function templateRoutineMessage(names) {
@@ -12628,7 +12693,7 @@ function templatePickerData(kind) {
     const name = entry?.name;
     if (!name) return;
     const meta = normalizeDBEntryMeta(entry).meta || {};
-    if (getNgDBStackItems(entry).length) {
+    if (isTemplateRoutineEntry(entry)) {
       const items = getNgDBExpandedStackItems(entry);
       if (isInnerSkillRoutineEntry(entry) === (kind === 'ng')) routines.push({ name, count: items.length });
       return;
@@ -12920,7 +12985,7 @@ function evaluateTemplateCandidate(ctx, kind, names, name, entry) {
 function templateCompareCandidates(kind) {
   if (kind === 'gear') {
     return DB.gear.map((entry, index) => ({ entry, index, meta: normalizeDBEntryMeta(entry).meta || {} }))
-      .filter(({ entry, meta }) => entry?.name && !getNgDBStackItems(entry).length
+      .filter(({ entry, meta }) => entry?.name && !isTemplateRoutineEntry(entry)
         && ['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot])
       .map(({ entry, index, meta }) => ({
         key: `gear:${entry.name}`, kind, group: meta.slot, groupLabel: OPTIMIZE_GEAR_SLOT_LABELS[meta.slot], label: entry.name,
@@ -12931,7 +12996,7 @@ function templateCompareCandidates(kind) {
   // 同一顆內功拆成 P、E 兩筆的合成一列：PVP 用 P 版，PVE 用 E 版
   const byBase = new Map();
   DB.ng.forEach((entry, index) => {
-    if (!entry?.name || getNgDBStackItems(entry).length) return;
+    if (!entry?.name || isTemplateRoutineEntry(entry)) return;
     const meta = normalizeDBEntryMeta(entry).meta || {};
     if (meta.category !== 'inner_skill' || !templateNgTags(entry.name)) return;
     const match = entry.name.match(/^(.*\d)(PVE|P|E)$/u);
@@ -12954,15 +13019,24 @@ function templateCompareCandidates(kind) {
   });
 }
 
-function templateCompareUnregisteredCount(kind) {
+// 沒列入比較的：沒補登完的，以及套路與套裝類別。寫出名稱，新增的那件沒出現時才看得出原因（使用者回報，2026-10-21）
+function templateCompareExcluded(kind) {
   const list = kind === 'gear' ? DB.gear : DB.ng;
-  return list.filter(entry => {
-    if (!entry?.name || getNgDBStackItems(entry).length) return false;
+  const unregistered = [];
+  const routines = [];
+  list.forEach(entry => {
+    if (!entry?.name) return;
     const meta = normalizeDBEntryMeta(entry).meta || {};
-    return kind === 'gear'
-      ? !(['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot])
-      : !(meta.category === 'inner_skill' && templateNgTags(entry.name));
-  }).length;
+    if (isTemplateRoutineEntry(entry) || meta.category === 'set_build') {
+      routines.push(entry.name);
+      return;
+    }
+    const registered = kind === 'gear'
+      ? ['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot]
+      : meta.category === 'inner_skill' && templateNgTags(entry.name);
+    if (!registered) unregistered.push(entry.name);
+  });
+  return { unregistered, routines };
 }
 
 function templateCompareVector(row) {
@@ -13186,7 +13260,9 @@ function renderTemplateComparePage() {
   filter.labels = labelKeys.filter(label => filter.labels.includes(label));
   templateComparePageData = { rows, contexts, view, modes, groupKeys, groupLabels, labelKeys };
   const kindLabel = filter.kind === 'ng' ? '核心' : '部位';
-  const unregistered = templateCompareUnregisteredCount(filter.kind);
+  const excluded = templateCompareExcluded(filter.kind);
+  const unit = filter.kind === 'ng' ? '顆' : '件';
+  const nameList = names => `${names.slice(0, 5).map(escHtml).join('、')}${names.length > 5 ? ` 等 ${names.length} ${unit}` : ''}`;
   const metricNote = [
     modes.includes('pvp') && 'PVP 攻擊是我打對手的期望傷害，PVP 防禦是可承受次數（氣血 ÷ 對手打我的期望傷害），用 PVP 公式與 PVP 模板',
     modes.includes('pve') && 'PVE 攻擊是打首領的期望傷害，用 PVE 公式與 PVE 模板',
@@ -13266,7 +13342,8 @@ function renderTemplateComparePage() {
           <select id="tplcmp_sort" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('sort', this.value)">
             ${sorts.map(key => `<option value="${key}" ${filter.sort === key ? 'selected' : ''}>依 ${TEMPLATE_COMPARE_SORTS[key]} 排序</option>`).join('')}
           </select>
-          ${unregistered ? `<span class="tpl-note">沒補登完的 ${unregistered} ${filter.kind === 'ng' ? '顆' : '件'}不列入（到補登頁補齊）</span>` : ''}
+          ${excluded.unregistered.length ? `<span class="tpl-warn">沒補登完、不列入：${nameList(excluded.unregistered)}（到補登頁補齊類別與${filter.kind === 'ng' ? '五行' : '部位'}）</span>` : ''}
+          ${excluded.routines.length ? `<span class="tpl-note">套路與套裝不列入：${nameList(excluded.routines)}</span>` : ''}
         </div>
         ${targetRow ? `<div class="tpl-row">${targetRow}</div>` : ''}
         <div id="tplcmp_shown" class="tpl-note" style="margin-bottom:6px;"></div>
