@@ -1129,6 +1129,14 @@
     font-weight: bold;
   }
   /* select.db-sel 設了 width:100%，要寫到同樣的特異度才蓋得過 */
+  .opt-base-row {
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #4f4538;
+  }
+  .opt-base-note { margin-bottom: 8px; }
+  .opt-base-note:empty { display: none; }
   .tplcmp-warning {
     margin-bottom: 10px;
     padding: 8px 12px;
@@ -1203,6 +1211,79 @@
   .tplcmp-label-bad { background: #f6e4e2; color: #b24842; border-color: #e3bcb8; }
   .tplcmp-label-drop { background: #b24842; color: #ffffff; }
   .tplcmp-label-note { background: #f1ede6; color: #6b5d48; border-color: #ddd3c3; }
+  .tplcmp-multi {
+    position: relative;
+    display: inline-block;
+  }
+  .tplcmp-multi > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border: 1px solid rgba(124, 98, 60, 0.24);
+    border-radius: 10px;
+    background: rgba(255, 252, 247, 0.95);
+    color: var(--ink-900);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .tplcmp-multi > summary::-webkit-details-marker { display: none; }
+  .tplcmp-multi > summary::after { content: ' ▾'; color: #8a7a63; }
+  .tplcmp-multi-panel {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 560px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid rgba(124, 98, 60, 0.24);
+    border-radius: 10px;
+    background: #fffdf8;
+    box-shadow: 0 8px 20px rgba(79, 69, 56, 0.16);
+  }
+  .tplcmp-multi-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .tplcmp-multi-actions input[type="search"] {
+    flex: 1 1 140px;
+    min-width: 0;
+    padding: 4px 8px;
+    border: 1px solid rgba(124, 98, 60, 0.24);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+  }
+  .tplcmp-multi-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 4px 12px;
+  }
+  .tplcmp-multi-list label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #4f4538;
+    cursor: pointer;
+  }
+  .tplcmp-target {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #4f4538;
+  }
+  .tplcmp-target select.tplcmp-select { max-width: 100%; }
+  @media (max-width: 640px) {
+    .tplcmp-multi { display: block; width: 100%; }
+    .tplcmp-multi-panel { position: static; width: auto; max-height: 50vh; margin-top: 4px; box-shadow: none; }
+  }
   .result-stage {
     position: relative;
     overflow: hidden;
@@ -2633,10 +2714,18 @@
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
         <button onclick="loadNeigongFromPVE()" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:5px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">← 從 PVE 頁載入</button>
         <button onclick="loadNeigongFromPVP()" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:5px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">← 從 PVP 頁載入</button>
+        <select id="ng_tpl_source" title="裸面板是最佳化用的基底，用來驗算最佳化的推薦；數值面板是身上穿戴都算進去的遊戲面板" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:5px 8px;border-radius:3px;font-family:inherit;font-size:12px;">
+          <option value="pvp:bare">PVP 模板・裸面板</option>
+          <option value="pvp:self">PVP 模板・數值面板</option>
+          <option value="pve:bare">PVE 模板・裸面板</option>
+          <option value="pve:self">PVE 模板・數值面板</option>
+        </select>
+        <button onclick="loadNeigongFromTemplate()" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:5px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">← 從模板帶入</button>
         <select id="ng_mode" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:5px 8px;border-radius:3px;font-family:inherit;font-size:12px;" onchange="calcNeigong()">
           <option value="pve">PVE 公式</option>
           <option value="pvp">PVP 公式</option>
         </select>
+        <span id="ng_tpl_note" class="tpl-note"></span>
       </div>
 
       <div class="form-grid-2" style="align-items:start;margin-bottom:14px;">
@@ -2928,6 +3017,8 @@
     <a href="#opt-section-final">最終</a>
   </nav>
 
+  <div id="opt_base_box" class="section opt-block" style="margin-bottom:16px;"></div>
+
   <div class="section opt-block opt-block-exclude" style="margin-bottom:16px;">
     <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
       <span>排除裝備</span>
@@ -2989,7 +3080,7 @@
         第一版只搜尋下半 5 件：`戒 x2 / 手鐲 x2 / 項鍊 x1`。候選只吃已補登完成的裝備資料。
       </div>
       <div class="formula-note">
-        `PVE / PVP` 都使用目前 `內功/裝備比較` 頁的我方 / 對手屬性作為基底，方便直接手動驗算推薦結果。
+        基底見本頁最上方「最佳化基底」：模板設定好時用模板的裸面板，否則用 `內功/裝備比較` 頁。要手動驗算推薦結果，在 `內功/裝備比較` 頁按「從模板帶入」帶入裸面板。
       </div>
     </div>
   </div>
@@ -3042,6 +3133,7 @@
     </div>
     <div class="section-body">
       <div id="opt_lower_result_panel">
+        <div id="opt_lower_base_note" class="formula-note opt-base-note"></div>
         <div id="opt_result_empty" style="color:#666666;font-size:13px;">尚未執行最佳化。</div>
         <div id="opt_results"></div>
       </div>
@@ -3055,7 +3147,7 @@
         第一版只搜尋上半 6 件：`頭 / 身 / 腰 / 手 / 鞋 / 臂`。候選只吃已補登完成的裝備資料。
       </div>
       <div class="formula-note">
-        `PVE / PVP` 都使用目前 `內功/裝備比較` 頁的我方 / 對手屬性作為基底；上半未觸發效果一（模式件數 < 2）的組合直接排除，效果二（模式件數 >= 4）永遠排序優先。
+        基底見本頁最上方「最佳化基底」；上半未觸發效果一（模式件數 < 2）的組合直接排除，效果二（模式件數 >= 4）永遠排序優先。
       </div>
     </div>
   </div>
@@ -3111,6 +3203,7 @@
     </div>
     <div class="section-body">
       <div id="opt_upper_result_panel">
+        <div id="opt_upper_base_note" class="formula-note opt-base-note"></div>
         <div id="opt_upper_result_empty" style="color:#666666;font-size:13px;">尚未執行最佳化。</div>
         <div id="opt_upper_results"></div>
       </div>
@@ -3124,7 +3217,7 @@
         直接窮舉目前候選池中的上半 6 件與下半 5 件所有合法組合，再做 11 件完整重算。
       </div>
       <div class="formula-note">
-        不需要先跑上半或下半最佳化；排除清單與模式件數規則仍生效，並使用目前 `內功/裝備比較` 頁欄位值作為基底。
+        不需要先跑上半或下半最佳化；排除清單與模式件數規則仍生效，基底見本頁最上方「最佳化基底」。
       </div>
     </div>
   </div>
@@ -3178,6 +3271,7 @@
     </div>
     <div class="section-body">
       <div id="opt_joint_result_panel">
+        <div id="opt_joint_base_note" class="formula-note opt-base-note"></div>
         <div id="opt_joint_result_empty" style="color:#666666;font-size:13px;">尚未執行聯合最佳化。</div>
         <div id="opt_joint_results"></div>
       </div>
@@ -3374,6 +3468,7 @@
     </div>
     <div class="section-body">
       <div id="opt_ng_result_panel">
+        <div id="opt_ng_base_note" class="formula-note opt-base-note"></div>
         <div id="opt_ng_result_empty" style="color:#666666;font-size:13px;">尚未執行最佳化。</div>
         <div id="opt_ng_results"></div>
       </div>
@@ -3387,7 +3482,7 @@
         先沿用已跑出的上下裝備聯合最佳化前 `500` 組，再沿用已跑出的內功最佳化前 `1000` 組，交叉後重新套公式計算完整結果。
       </div>
       <div class="formula-note">
-        請先用各自正確基底跑完上下裝備聯合最佳化與內功最佳化；最終結果只沿用候選清單，不沿用子結果分數，並使用目前 `內功/裝備比較` 頁欄位值作為全裸基底。
+        請先跑完上下裝備聯合最佳化與內功最佳化；最終結果只沿用它們的候選清單，不沿用它們的分數，基底見本頁最上方「最佳化基底」。
       </div>
     </div>
   </div>
@@ -3439,6 +3534,7 @@
     </div>
     <div class="section-body">
       <div id="opt_final_result_panel">
+        <div id="opt_final_base_note" class="formula-note opt-base-note"></div>
         <div id="opt_final_result_empty" style="color:#666666;font-size:13px;">尚未執行最終最佳化。</div>
         <div id="opt_final_results"></div>
       </div>
@@ -4648,6 +4744,7 @@ function switchTab(tab, evt) {
   if (activeBtn) activeBtn.classList.add('active');
   if (tab === 'template') renderTemplatePage();
   if (tab === 'template-compare') renderTemplateComparePage();
+  if (tab === 'optimize') renderOptimizeBaseBox();
 }
 
 // ===================== TAB: 神器樹標註 =====================
@@ -6422,7 +6519,8 @@ function collectOptimizeSnapshot() {
     'opt_upper_head_count','opt_upper_body_count','opt_upper_waist_count','opt_upper_hand_count','opt_upper_foot_count','opt_upper_wrist_count','opt_upper_combo_count','opt_upper_candidate_note','opt_upper_result_empty',
     'opt_joint_upper_legal_count','opt_joint_lower_legal_count','opt_joint_upper_kept_count','opt_joint_lower_kept_count','opt_joint_combo_count','opt_joint_candidate_note','opt_joint_result_empty',
     'opt_ng_candidate_count','opt_ng_core_count','opt_ng_combo_count','opt_ng_candidate_note','opt_ng_result_empty',
-    'opt_final_joint_kept_count','opt_final_ng_kept_count','opt_final_combo_count','opt_final_candidate_note','opt_final_result_empty'
+    'opt_final_joint_kept_count','opt_final_ng_kept_count','opt_final_combo_count','opt_final_candidate_note','opt_final_result_empty',
+    ...Object.values(OPTIMIZE_BASE_NOTE_IDS)
   ];
   const textMap = {};
   textIds.forEach(id => {
@@ -6449,12 +6547,14 @@ function hasOptimizeSnapshotResults(results) {
 
 function restoreOptimizeResultData(resultMap) {
   if (!resultMap || typeof resultMap !== 'object') return false;
-  optimizeLastLowerResults = hydrateOptimizeStoredResults('lower', resultMap.lower);
-  optimizeLastUpperResults = hydrateOptimizeStoredResults('upper', resultMap.upper);
-  optimizeLastJointResults = hydrateOptimizeStoredResults('joint', resultMap.joint);
-  optimizeLastNgResults = hydrateOptimizeStoredResults('ng', resultMap.ng);
+  // 裝備與內功的屬性用各區模式目前基底的職業標籤換算（模板或內功/裝備比較頁）
+  const clsFor = id => getOptimizeBaseSource(document.getElementById(id)?.value || 'pve').cls;
+  optimizeLastLowerResults = hydrateOptimizeStoredResults('lower', resultMap.lower, null, clsFor('opt_mode'));
+  optimizeLastUpperResults = hydrateOptimizeStoredResults('upper', resultMap.upper, null, clsFor('opt_upper_mode'));
+  optimizeLastJointResults = hydrateOptimizeStoredResults('joint', resultMap.joint, null, clsFor('opt_joint_mode'));
+  optimizeLastNgResults = hydrateOptimizeStoredResults('ng', resultMap.ng, null, clsFor('opt_ng_mode'));
   optimizeLastNgPool = null;
-  optimizeLastFinalResults = hydrateOptimizeStoredResults('final', resultMap.final);
+  optimizeLastFinalResults = hydrateOptimizeStoredResults('final', resultMap.final, null, clsFor('opt_final_mode'));
   let restored = false;
   if (hasOptimizeSnapshotResults(optimizeLastLowerResults)) {
     renderLowerOptimizeResults(document.getElementById('opt_mode')?.value || 'pve', optimizeLastLowerResults);
@@ -8375,7 +8475,7 @@ function updateJointOptimizeSearchControls() {
         ['expected', '輸出期望最高'],
       ];
   sortEl.innerHTML = options.map(([v, label]) => `<option value="${v}">${label}</option>`).join('');
-  noteEl.textContent = '直接窮舉目前候選池中的上半合法組與下半合法組，再以目前比較頁欄位值作為基底做 11 件完整重算。';
+  noteEl.textContent = '直接窮舉目前候選池中的上半合法組與下半合法組，再以目前的基底（見最上方「最佳化基底」）做 11 件完整重算。';
 }
 
 function updateFinalOptimizeSearchControls() {
@@ -8445,9 +8545,9 @@ function getNgAppliedValuesFromVals(vals, cls = getOptimizeClassFlags()) {
   };
 }
 
-function getOptimizeGearDelta(entry) {
+function getOptimizeGearDelta(entry, cls) {
   const raw = getNgDBData(entry);
-  const applied = getNgAppliedValuesFromVals(raw);
+  const applied = getNgAppliedValuesFromVals(raw, cls);
   return {
     atk: applied.atk,
     hit: applied.hit,
@@ -8496,7 +8596,7 @@ function choosePairs(list) {
   return pairs;
 }
 
-function getLowerOptimizeCandidates(mode) {
+function getLowerOptimizeCandidates(mode, cls) {
   const modeCategory = mode === 'pvp' ? 'pvp_gear' : 'pve_gear';
   const out = { ring: [], bracelet: [], necklace: [] };
   DB.gear.forEach((entry, index) => {
@@ -8511,13 +8611,13 @@ function getLowerOptimizeCandidates(mode) {
       name: normalized.name || `裝備${index + 1}`,
       category: meta.category,
       slot: meta.slot,
-      delta: getOptimizeGearDelta(normalized),
+      delta: getOptimizeGearDelta(normalized, cls),
     });
   });
   return out;
 }
 
-function getUpperOptimizeCandidates(mode) {
+function getUpperOptimizeCandidates(mode, cls) {
   const modeCategory = mode === 'pvp' ? 'pvp_gear' : 'pve_gear';
   const out = { head: [], body: [], waist: [], hand: [], foot: [], wrist: [] };
   DB.gear.forEach((entry, index) => {
@@ -8532,7 +8632,7 @@ function getUpperOptimizeCandidates(mode) {
       name: normalized.name || `裝備${index + 1}`,
       category: meta.category,
       slot: meta.slot,
-      delta: getOptimizeGearDelta(normalized),
+      delta: getOptimizeGearDelta(normalized, cls),
     });
   });
   return out;
@@ -8645,13 +8745,13 @@ function getNgCoreAdjustment(coreName) {
   };
 }
 
-function getNgOptimizeCandidates() {
+function getNgOptimizeCandidates(cls) {
   return DB.ng.map((entry, index) => {
     const normalized = normalizeDBEntryMeta(entry);
     const meta = normalized.meta || {};
     if (meta.category !== 'inner_skill' || !Array.isArray(meta.tags) || meta.tags.length !== 5 || meta.tags.some(tag => !tag)) return null;
     const raw = getNgDBData(normalized);
-    const applied = getNgAppliedValuesFromVals(raw);
+    const applied = getNgAppliedValuesFromVals(raw, cls);
     const coreName = getNgCoreName(normalized.name || `內功${index + 1}`);
     return {
       index,
@@ -8706,7 +8806,7 @@ function findOptimizeStoredDBEntry(type, item) {
   return null;
 }
 
-function hydrateOptimizeGearItem(item) {
+function hydrateOptimizeGearItem(item, cls) {
   if (!item || typeof item !== 'object') return null;
   const found = findOptimizeStoredDBEntry('gear', item);
   const entry = found?.entry || (item.entry ? normalizeDBEntryMeta(item.entry) : null);
@@ -8721,27 +8821,27 @@ function hydrateOptimizeGearItem(item) {
     name: entry.name || item.name || `裝備${(index ?? 0) + 1}`,
     category: meta.category,
     slot: meta.slot,
-    delta: getOptimizeGearDelta(entry),
+    delta: getOptimizeGearDelta(entry, cls),
   };
 }
 
-function hydrateOptimizeGearItems(items, expectedLength = null) {
+function hydrateOptimizeGearItems(items, expectedLength = null, cls) {
   const source = Array.isArray(items) ? items : [];
   if (expectedLength !== null && source.length !== expectedLength) return null;
-  const hydrated = source.map(hydrateOptimizeGearItem);
+  const hydrated = source.map(item => hydrateOptimizeGearItem(item, cls));
   if (hydrated.some(item => !item)) return null;
   if (expectedLength !== null && hydrated.length !== expectedLength) return null;
   return hydrated;
 }
 
-function hydrateOptimizeGearStageResult(result, expectedLength) {
+function hydrateOptimizeGearStageResult(result, expectedLength, cls) {
   if (!result || typeof result !== 'object') return null;
-  const items = hydrateOptimizeGearItems(result.items, expectedLength);
+  const items = hydrateOptimizeGearItems(result.items, expectedLength, cls);
   if (!items) return null;
   return { ...result, items };
 }
 
-function hydrateOptimizeJointResult(result) {
+function hydrateOptimizeJointResult(result, cls) {
   if (!result || typeof result !== 'object') return null;
   const combinedItems = Array.isArray(result.items) ? result.items : [];
   const upperSource = Array.isArray(result.upperItems) && result.upperItems.length
@@ -8750,8 +8850,8 @@ function hydrateOptimizeJointResult(result) {
   const lowerSource = Array.isArray(result.lowerItems) && result.lowerItems.length
     ? result.lowerItems
     : combinedItems.slice(6, 11);
-  const upperItems = hydrateOptimizeGearItems(upperSource, 6);
-  const lowerItems = hydrateOptimizeGearItems(lowerSource, 5);
+  const upperItems = hydrateOptimizeGearItems(upperSource, 6, cls);
+  const lowerItems = hydrateOptimizeGearItems(lowerSource, 5, cls);
   if (!upperItems || !lowerItems) return null;
   const items = [...upperItems, ...lowerItems];
   return {
@@ -8763,7 +8863,7 @@ function hydrateOptimizeJointResult(result) {
   };
 }
 
-function hydrateOptimizeNgItem(item) {
+function hydrateOptimizeNgItem(item, cls) {
   if (!item || typeof item !== 'object') return null;
   const found = findOptimizeStoredDBEntry('ng', item);
   const entry = found?.entry || (item.entry ? normalizeDBEntryMeta(item.entry) : null);
@@ -8781,7 +8881,7 @@ function hydrateOptimizeNgItem(item) {
     coreName: getNgCoreName(name),
     tags,
     tagCounts: getNgTagCounts(tags),
-    applied: getNgAppliedValuesFromVals(getNgDBData(entry)),
+    applied: getNgAppliedValuesFromVals(getNgDBData(entry), cls),
   };
 }
 
@@ -8803,12 +8903,12 @@ function getOptimizeNgAppliedTotalFromItems(items) {
   return total;
 }
 
-function hydrateOptimizeNgResult(result) {
+function hydrateOptimizeNgResult(result, cls) {
   if (!result || typeof result !== 'object') return null;
   const source = Array.isArray(result.items) && result.items.length
     ? result.items
     : result.ngItems;
-  const items = (Array.isArray(source) ? source : []).map(hydrateOptimizeNgItem);
+  const items = (Array.isArray(source) ? source : []).map(item => hydrateOptimizeNgItem(item, cls));
   if (items.length !== 6 || items.some(item => !item)) return null;
   const elementCounts = result.elementCounts && typeof result.elementCounts === 'object'
     ? { ...sumOptimizeNgElementCounts([]), ...result.elementCounts }
@@ -8829,10 +8929,10 @@ function hydrateOptimizeNgResult(result) {
   };
 }
 
-function hydrateOptimizeFinalResult(result) {
+function hydrateOptimizeFinalResult(result, cls) {
   if (!result || typeof result !== 'object') return null;
-  const jointResult = hydrateOptimizeJointResult(result);
-  const ngResult = hydrateOptimizeNgResult(result);
+  const jointResult = hydrateOptimizeJointResult(result, cls);
+  const ngResult = hydrateOptimizeNgResult(result, cls);
   if (!jointResult || !ngResult) return null;
   const items = [...jointResult.items, ...ngResult.items];
   return {
@@ -8847,18 +8947,18 @@ function hydrateOptimizeFinalResult(result) {
   };
 }
 
-function hydrateOptimizeStoredResults(kind, results, limit = null) {
+function hydrateOptimizeStoredResults(kind, results, limit = null, cls) {
   const source = Array.isArray(results) ? results : [];
   const limitedSource = Number.isInteger(limit) && limit >= 0 ? source.slice(0, limit) : source;
   const hydrate = {
-    lower: result => hydrateOptimizeGearStageResult(result, 5),
-    upper: result => hydrateOptimizeGearStageResult(result, 6),
-    joint: hydrateOptimizeJointResult,
-    ng: hydrateOptimizeNgResult,
-    final: hydrateOptimizeFinalResult,
+    lower: result => hydrateOptimizeGearStageResult(result, 5, cls),
+    upper: result => hydrateOptimizeGearStageResult(result, 6, cls),
+    joint: result => hydrateOptimizeJointResult(result, cls),
+    ng: result => hydrateOptimizeNgResult(result, cls),
+    final: result => hydrateOptimizeFinalResult(result, cls),
   }[kind];
   if (!hydrate) return [];
-  return limitedSource.map(hydrate).filter(Boolean);
+  return limitedSource.map(result => hydrate(result)).filter(Boolean);
 }
 
 function renderNgCandidateList(candidates) {
@@ -8986,7 +9086,102 @@ function prefilterNgOptimizeCandidates(candidates, mode, sort, bases, requiremen
   };
 }
 
-function getOptimizePVEBase() {
+// 最佳化的基底（規格第 6 節）：模板設定好時，用模板的面板加增益、模板的敵方與職業標籤；模板沒設定好時沿用內功/裝備比較頁。
+// 各區把該區的身上穿戴換成候選，其他部位保留模板身上的（使用者決定，2026-10-21）：下半保留上半裝備與內功、上半保留下半裝備與內功、
+// 上下聯合保留內功、內功保留 11 件裝備，最終從裸面板開始。所以分區的數字就是「換掉這一區後的整套」，也不會把裝備重複算（評估報告 C-17）。
+// 保留的內功湊到土 4 顆時，PVP 的受到傷害降低 1% 也算進基底（候選組合不含內功的區不會再算一次）。
+// cls 是換算候選基礎屬性的職業標籤，要和裸面板扣除時用的相同，否則氣海、根骨等換算出來的數值不一致
+function getOptimizeBaseSource(mode, section = 'final') {
+  const tpl = getTemplateState()[mode];
+  if (!isTemplateModeReady(mode, tpl)) return { useTemplate: false, mode, section, cls: getOptimizeClassFlags() };
+  const cls = templateClassFlags(tpl.cls);
+  const panel = computeTemplateBare(mode, tpl).bare;
+  const keepSlots = { lower: UPPER_OPT_SLOTS, upper: LOWER_OPT_SLOTS, ng: [...UPPER_OPT_SLOTS, ...LOWER_OPT_SLOTS] }[section] || [];
+  const keepNg = ['lower', 'upper', 'joint'].includes(section);
+  const resolve = names => names.map(name => findNgDBEntry(name)).filter(entry => entry && !isTemplateRoutineEntry(entry));
+  const keptGear = resolve(tpl.gear).filter(entry => keepSlots.includes(normalizeDBEntryMeta(entry).meta?.slot));
+  const keptNg = keepNg ? resolve(tpl.ng) : [];
+  [...keptGear, ...keptNg].forEach(entry => addTemplateItemToPanel(panel, mode, entry, cls, 1));
+  const counts = keptNg.reduce((acc, entry) => templateCountsAdd(acc, templateNgTags(entry.name), 1), { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 });
+  const earthTraitDef = mode === 'pvp' ? getNgElementTraitDefBonus(counts) : 0;
+  return { useTemplate: true, mode, section, tpl, panel, cls, earthTraitDef };
+}
+
+const OPTIMIZE_SECTION_BASE_TEXT = {
+  lower: '去掉身上的下半裝備（保留上半裝備與內功）',
+  upper: '去掉身上的上半裝備（保留下半裝備與內功）',
+  joint: '去掉身上的裝備（保留內功）',
+  ng: '去掉身上的內功（保留裝備）',
+  final: '的裸面板',
+};
+
+const OPTIMIZE_BASE_NOTE_IDS = {
+  lower: 'opt_lower_base_note', upper: 'opt_upper_base_note', joint: 'opt_joint_base_note', ng: 'opt_ng_base_note', final: 'opt_final_base_note',
+};
+
+function describeOptimizeBase(mode, source) {
+  let atk, breakDef, hp;
+  if (mode === 'pvp') {
+    const base = getOptimizePVPBase(source);
+    atk = base.myAtk.atk;
+    breakDef = base.myAtk.breakDef;
+    hp = base.myHp;
+  } else {
+    const base = getOptimizePVEBase(source);
+    atk = base.atk;
+    breakDef = base.breakDef;
+    hp = source.useTemplate ? source.panel.hp + getCombatBuffDeltaForToggles(source.tpl.buffs).hp : n('ng_myhp');
+  }
+  const numbers = `攻擊 ${fmt(atk)}、破防 ${fmt(breakDef)}、氣血 ${fmt(hp)}`;
+  if (!source.useTemplate) return `內功/裝備比較頁（${numbers}，可能已包含裝備）`;
+  const buffs = [source.tpl.buffs.buff && '藥', source.tpl.buffs.tongxin && '同心一力'].filter(Boolean);
+  const what = OPTIMIZE_SECTION_BASE_TEXT[source.section] || OPTIMIZE_SECTION_BASE_TEXT.final;
+  return `${TEMPLATE_MODE_LABELS[mode]} 模板${what}${buffs.map(name => `＋${name}`).join('')}（${numbers}${source.earthTraitDef ? '，含土 4 顆的受到傷害降低 1%' : ''}）`;
+}
+
+// 每區結果上方記下執行時的基底，存進快照；之後改了模板，看得出結果是用哪個基底算的
+function setOptimizeBaseNote(section, mode, source) {
+  const el = document.getElementById(OPTIMIZE_BASE_NOTE_IDS[section]);
+  if (el) el.textContent = `基底：${describeOptimizeBase(mode, source)}`;
+}
+
+function renderOptimizeBaseBox() {
+  const box = document.getElementById('opt_base_box');
+  if (!box) return;
+  const rows = TEMPLATE_MODES.map(mode => {
+    const source = getOptimizeBaseSource(mode);
+    const label = TEMPLATE_MODE_LABELS[mode];
+    const problems = templateCompareProblems(buildTemplateCompareContext(mode));
+    if (!source.useTemplate) {
+      const empty = problems.filter(text => text.endsWith('面板是空的'));
+      return `<div class="tplcmp-warning"><b>${label} 最佳化</b>：${label} 模板還沒設定好（${empty.join('、')}），改用內功/裝備比較頁的我方與${mode === 'pvp' ? '對手' : '首領'}。那裡填的如果是穿著裝備的遊戲面板，基底已經包含裝備，再加上候選會重複計算，結果偏高。<div>${escHtml(describeOptimizeBase(mode, source))}</div></div>`;
+    }
+    const cls = source.tpl.cls.map(key => TEMPLATE_CLS_LABELS[key]).join('、') || '沒有勾';
+    const missing = problems.filter(text => !text.endsWith('面板是空的'));
+    // 這些情況下裸面板還含有沒扣掉的裝備，或扣錯了，基底就不對；模板頁也有同樣的提醒
+    const bareInfo = computeTemplateBare(mode, source.tpl);
+    const fieldLabels = Object.fromEntries(TEMPLATE_PANEL_FIELDS.map(([key, text]) => [key, templateFieldLabel(mode, key, text)]));
+    const warnings = [];
+    if (missing.length) warnings.push(`${label} 模板身上穿戴沒填完整（${missing.join('；')}）：沒填的那幾件還留在裸面板裡，加上候選時會重複計算。`);
+    if (bareInfo.missing.length) warnings.push(`${label} 模板身上有資料庫找不到的項目（${bareInfo.missing.map(escHtml).join('、')}），沒有從數值面板扣掉。`);
+    if (bareInfo.routines.length) warnings.push(`${label} 模板：${escHtml(templateRoutineMessage(bareInfo.routines))}。`);
+    if (bareInfo.negative.length) warnings.push(`${label} 模板的裸面板有欄位扣成負數（${bareInfo.negative.map(key => fieldLabels[key]).join('、')}），通常是數值面板沒包含身上勾選的某件，或是勾錯了。`);
+    return `<div class="opt-base-row"><b>${label} 最佳化</b>：${escHtml(describeOptimizeBase(mode, source))}；${mode === 'pvp' ? '對手用模板的敵方' : '首領用模板的首領'}；職業標籤 ${cls}。</div>`
+      + warnings.map(text => `<div class="tplcmp-warning">${text}</div>`).join('');
+  }).join('');
+  box.innerHTML = `
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <span>最佳化基底</span>
+      <button type="button" class="db-btn" onclick="switchTab('template')">回模板頁修改</button>
+    </div>
+    <div class="section-body">
+      ${rows}
+      <div class="formula-note" style="margin-top:8px;">模板設定好時，上面是最終最佳化的基底：模板的裸面板（數值面板扣掉身上的裝備與內功）加上模板勾的藥與同心一力，職業標籤也用模板的。其他各區把該區的身上穿戴換成候選，其他部位保留模板身上的：下半保留上半裝備與內功、上半保留下半裝備與內功、上下聯合保留內功、內功保留 11 件裝備，所以分區的數字就是「換掉這一區後的整套」。每區結果上方會記下執行時用的基底。</div>
+    </div>`;
+}
+
+function getOptimizePVEBase(source = getOptimizeBaseSource('pve')) {
+  if (source.useTemplate) return templatePveParams(source.tpl, source.panel);
   const atkParams = {
     atk: n('ng_atk') + n('ng_skillenh'), hit: n('ng_hit'), crit: n('ng_crit'),
     critDmg: n('ng_critdmg'), breakShield: n('ng_breakshield'),
@@ -9001,7 +9196,8 @@ function getOptimizePVEBase() {
   return { ...atkParams, ...defParams };
 }
 
-function getOptimizePVPBase() {
+function getOptimizePVPBase(source = getOptimizeBaseSource('pvp')) {
+  if (source.useTemplate) return templatePvpParams(source.tpl, source.panel, source.earthTraitDef);
   return {
     myAtk: {
       atk: n('ng_atk') + n('ng_skillenh'), hit: n('ng_hit'), crit: n('ng_crit'),
@@ -9301,8 +9497,8 @@ function clearOptimizeIgnoredResults(kind) {
   }
 }
 
-function buildLowerOptimizeResults(mode, sort) {
-  const candidates = getLowerOptimizeCandidates(mode);
+function buildLowerOptimizeResults(mode, sort, baseSource = getOptimizeBaseSource(mode, 'lower')) {
+  const candidates = getLowerOptimizeCandidates(mode, baseSource.cls);
   const requiredGear = getOptimizeRequiredGearItems(LOWER_OPT_SLOTS);
   const requiredIssue = getOptimizeRequiredGearIssue(requiredGear, candidates);
   if (requiredIssue) {
@@ -9331,9 +9527,9 @@ function buildLowerOptimizeResults(mode, sort) {
   }
   const ringPairs = choosePairs(candidates.ring);
   const braceletPairs = choosePairs(candidates.bracelet);
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  const pveBase = mode === 'pve' ? getOptimizePVEBase(baseSource) : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase(baseSource) : null;
   const results = [];
   let legalCount = 0;
   ringPairs.forEach(rings => {
@@ -9363,8 +9559,8 @@ function buildLowerOptimizeResults(mode, sort) {
   };
 }
 
-function buildUpperOptimizeResults(mode, sort) {
-  const candidates = getUpperOptimizeCandidates(mode);
+function buildUpperOptimizeResults(mode, sort, baseSource = getOptimizeBaseSource(mode, 'upper')) {
+  const candidates = getUpperOptimizeCandidates(mode, baseSource.cls);
   const requiredGear = getOptimizeRequiredGearItems(UPPER_OPT_SLOTS);
   const requiredIssue = getOptimizeRequiredGearIssue(requiredGear, candidates);
   if (requiredIssue) {
@@ -9393,9 +9589,9 @@ function buildUpperOptimizeResults(mode, sort) {
     };
   }
   const modeCategory = mode === 'pvp' ? 'pvp_gear' : 'pve_gear';
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  const pveBase = mode === 'pve' ? getOptimizePVEBase(baseSource) : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase(baseSource) : null;
   const results = [];
   let legalCount = 0;
   candidates.head.forEach(head => {
@@ -9542,7 +9738,9 @@ function runLowerOptimize() {
     combo: document.getElementById('opt_combo_count'),
   };
   const noteEl = document.getElementById('opt_candidate_note');
-  const built = buildLowerOptimizeResults(mode, sort);
+  const baseSource = getOptimizeBaseSource(mode, 'lower');
+  setOptimizeBaseNote('lower', mode, baseSource);
+  const built = buildLowerOptimizeResults(mode, sort, baseSource);
   const candidates = built.candidates;
   if (counts.ring) counts.ring.textContent = String(candidates.ring.length);
   if (counts.bracelet) counts.bracelet.textContent = String(candidates.bracelet.length);
@@ -9579,7 +9777,9 @@ function runUpperOptimize() {
   const noteEl = document.getElementById('opt_upper_candidate_note');
   const emptyEl = document.getElementById('opt_upper_result_empty');
   const resultsEl = document.getElementById('opt_upper_results');
-  const built = buildUpperOptimizeResults(mode, sort);
+  const baseSource = getOptimizeBaseSource(mode, 'upper');
+  setOptimizeBaseNote('upper', mode, baseSource);
+  const built = buildUpperOptimizeResults(mode, sort, baseSource);
   const candidates = built.candidates;
   Object.keys(counts).forEach(key => {
     if (key === 'combo') return;
@@ -9644,9 +9844,9 @@ function getJointLowerLegalCandidates(candidates, modeCategory, requiredGear = [
   return results;
 }
 
-function buildJointOptimizeResults(mode, sort) {
-  const upperCandidates = getUpperOptimizeCandidates(mode);
-  const lowerCandidates = getLowerOptimizeCandidates(mode);
+function buildJointOptimizeResults(mode, sort, baseSource = getOptimizeBaseSource(mode, 'joint')) {
+  const upperCandidates = getUpperOptimizeCandidates(mode, baseSource.cls);
+  const lowerCandidates = getLowerOptimizeCandidates(mode, baseSource.cls);
   const requiredUpperGear = getOptimizeRequiredGearItems(UPPER_OPT_SLOTS);
   const requiredLowerGear = getOptimizeRequiredGearItems(LOWER_OPT_SLOTS);
   const requiredIssues = [
@@ -9694,9 +9894,9 @@ function buildJointOptimizeResults(mode, sort) {
   const upperTop = getJointUpperLegalCandidates(upperCandidates, modeCategory, requiredUpperGear);
   const lowerTop = getJointLowerLegalCandidates(lowerCandidates, modeCategory, requiredLowerGear);
   const combinedCount = upperTop.length * lowerTop.length;
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  const pveBase = mode === 'pve' ? getOptimizePVEBase(baseSource) : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase(baseSource) : null;
   const results = [];
   upperTop.forEach(upper => {
     lowerTop.forEach(lower => {
@@ -9730,7 +9930,7 @@ function buildJointOptimizeResults(mode, sort) {
     combinedCount,
     results,
     error: false,
-    note: `已直接窮舉上半合法 ${upperTop.length} 組、下半合法 ${lowerTop.length} 組，共重算 ${combinedCount} 組完整裝備。必選裝備：${getOptimizeRequiredGearText([...requiredUpperGear, ...requiredLowerGear])}。請確認目前比較頁欄位值為聯合最佳化基底。`,
+    note: `已直接窮舉上半合法 ${upperTop.length} 組、下半合法 ${lowerTop.length} 組，共重算 ${combinedCount} 組完整裝備。必選裝備：${getOptimizeRequiredGearText([...requiredUpperGear, ...requiredLowerGear])}。`,
   };
 }
 
@@ -9804,7 +10004,9 @@ function runJointOptimize() {
   const noteEl = document.getElementById('opt_joint_candidate_note');
   const emptyEl = document.getElementById('opt_joint_result_empty');
   const resultsEl = document.getElementById('opt_joint_results');
-  const built = buildJointOptimizeResults(mode, sort);
+  const baseSource = getOptimizeBaseSource(mode, 'joint');
+  setOptimizeBaseNote('joint', mode, baseSource);
+  const built = buildJointOptimizeResults(mode, sort, baseSource);
   if (counts.upperLegal) counts.upperLegal.textContent = String(built.upperBuilt.legalCount || 0);
   if (counts.lowerLegal) counts.lowerLegal.textContent = String(built.lowerBuilt.legalCount || 0);
   if (counts.upperKept) counts.upperKept.textContent = '0';
@@ -9824,7 +10026,7 @@ function runJointOptimize() {
   renderJointOptimizeResults(mode, built.results);
 }
 
-function buildNgOptimizeResults(mode, sort) {
+function buildNgOptimizeResults(mode, sort, baseSource = getOptimizeBaseSource(mode, 'ng')) {
   const requirements = getNgOptimizeRequirements();
   const requiredCores = new Set(Array.from(optimizeNgRequiredCores).filter(v => typeof v === 'string' && v));
   const excludedCores = new Set(Array.from(optimizeNgExcludedCores).filter(v => typeof v === 'string' && v));
@@ -9893,7 +10095,7 @@ function buildNgOptimizeResults(mode, sort) {
     };
   }
 
-  const allCandidates = getNgOptimizeCandidates().filter(item => !excludedCores.has(item.coreName));
+  const allCandidates = getNgOptimizeCandidates(baseSource.cls).filter(item => !excludedCores.has(item.coreName));
   const allUniqueCores = new Set(allCandidates.map(item => item.coreName));
   if (new Set(allCandidates.map(item => item.conflictName)).size < 6) {
     return {
@@ -9925,9 +10127,9 @@ function buildNgOptimizeResults(mode, sort) {
     };
   }
 
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  const pveBase = mode === 'pve' ? getOptimizePVEBase(baseSource) : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase(baseSource) : null;
   const bases = { pveBase, pvpBase };
   const prefilter = prefilterNgOptimizeCandidates(
     allCandidates,
@@ -10212,7 +10414,9 @@ function runNgOptimize() {
   const noteEl = document.getElementById('opt_ng_candidate_note');
   const emptyEl = document.getElementById('opt_ng_result_empty');
   const resultsEl = document.getElementById('opt_ng_results');
-  const built = buildNgOptimizeResults(mode, sort);
+  const baseSource = getOptimizeBaseSource(mode, 'ng');
+  setOptimizeBaseNote('ng', mode, baseSource);
+  const built = buildNgOptimizeResults(mode, sort, baseSource);
   if (counts.candidate) counts.candidate.textContent = String(built.candidates.length);
   if (counts.core) counts.core.textContent = String(built.uniqueCores.size);
   if (counts.combo) counts.combo.textContent = '0';
@@ -10406,7 +10610,7 @@ function keepTopOptimizeRanks(heap, entry, limit) {
 
 // 內功最佳化是在未加裝備的基底上排名；裝備加上去後各屬性邊際收益會變，
 // 所以截斷前先以「基底 + 聯合第一名裝備」重新排序全部內功候選。
-function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults, pool = null) {
+function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults, pool = null, cls) {
   const source = Array.isArray(storedResults) ? storedResults : [];
   const count = pool ? pool.count : source.length;
   const refGear = sumOptimizeGearDeltas(refJoint.items);
@@ -10421,7 +10625,7 @@ function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults, pool 
         ? { ...getEmptyNgAppliedTotal(), ...result.appliedTotal }
         : null);
     if (!appliedTotal) {
-      const hydrated = hydrateOptimizeNgResult(result);
+      const hydrated = hydrateOptimizeNgResult(result, cls);
       if (!hydrated) continue;
       hydratedCache.set(index, hydrated);
       appliedTotal = hydrated.appliedTotal;
@@ -10439,7 +10643,7 @@ function getFinalOptimizeNgTop(mode, sort, bases, refJoint, storedResults, pool 
   for (const index of order) {
     if (top.length >= FINAL_OPT_NG_LIMIT) break;
     const hydrated = hydratedCache.get(index)
-      || hydrateOptimizeNgResult(pool ? getNgOptimizePoolResult(pool, index) : source[index]);
+      || hydrateOptimizeNgResult(pool ? getNgOptimizePoolResult(pool, index) : source[index], cls);
     if (hydrated) top.push(hydrated);
   }
   return top;
@@ -10479,21 +10683,21 @@ function getNgOptimizePoolResult(pool, index) {
   };
 }
 
-function buildFinalOptimizeResults(mode, sort) {
+function buildFinalOptimizeResults(mode, sort, baseSource = getOptimizeBaseSource(mode, 'final')) {
   const jointCandidateCount = Array.isArray(optimizeLastJointResults) ? optimizeLastJointResults.length : 0;
   const ngCandidateCount = optimizeLastNgPool
     ? optimizeLastNgPool.count
     : (Array.isArray(optimizeLastNgResults) ? optimizeLastNgResults.length : 0);
   const requiredGear = getOptimizeRequiredGearItems([...UPPER_OPT_SLOTS, ...LOWER_OPT_SLOTS]);
-  const rawJointTop = hydrateOptimizeStoredResults('joint', optimizeLastJointResults, FINAL_OPT_JOINT_LIMIT);
+  const rawJointTop = hydrateOptimizeStoredResults('joint', optimizeLastJointResults, FINAL_OPT_JOINT_LIMIT, baseSource.cls);
   const jointTop = rawJointTop.filter(result => optimizeResultHasRequiredGear(result.items, requiredGear));
-  const pveBase = mode === 'pve' ? getOptimizePVEBase() : null;
+  const pveBase = mode === 'pve' ? getOptimizePVEBase(baseSource) : null;
   if (pveBase) pveBase._baseExpected = calcPVEExpected(pveBase).expected;
-  const pvpBase = mode === 'pvp' ? getOptimizePVPBase() : null;
+  const pvpBase = mode === 'pvp' ? getOptimizePVPBase(baseSource) : null;
   const bases = { pveBase, pvpBase };
   const ngTop = jointTop.length
-    ? getFinalOptimizeNgTop(mode, sort, bases, jointTop[0], optimizeLastNgResults, optimizeLastNgPool)
-    : hydrateOptimizeStoredResults('ng', optimizeLastNgResults, FINAL_OPT_NG_LIMIT);
+    ? getFinalOptimizeNgTop(mode, sort, bases, jointTop[0], optimizeLastNgResults, optimizeLastNgPool, baseSource.cls)
+    : hydrateOptimizeStoredResults('ng', optimizeLastNgResults, FINAL_OPT_NG_LIMIT, baseSource.cls);
   if (!jointTop.length || !ngTop.length) {
     const missing = [];
     if (!jointTop.length) {
@@ -10511,7 +10715,7 @@ function buildFinalOptimizeResults(mode, sort) {
       error: true,
       note: requiredEmpty
         ? `目前已存聯合裝備結果沒有符合必選裝備：${getOptimizeRequiredGearText(requiredGear)}。請重新執行上下裝備聯合最佳化後，再執行最終最佳化。`
-        : `請先用正確基底執行${missing.join('與')}，再執行最終最佳化。`,
+        : `請先執行${missing.join('與')}，再執行最終最佳化。`,
       emptyText: requiredEmpty ? '必選裝備條件未命中，請重新執行上下裝備聯合最佳化。' : '候選不足，無法執行最終最佳化。',
     };
   }
@@ -10549,7 +10753,7 @@ function buildFinalOptimizeResults(mode, sort) {
     combinedCount,
     results,
     error: false,
-    note: `已沿用聯合裝備已存 ${jointCandidateCount} 組、內功已存 ${ngCandidateCount} 組；內功依「基底 + 聯合第一名裝備」重新排序後，各取前 ${jointTop.length} / ${ngTop.length} 候選，共重算 ${combinedCount} 組完整裝備 + 內功，保留前 ${results.length} 名。必選裝備：${getOptimizeRequiredGearText(requiredGear)}。請確認目前比較頁欄位值為全裸機體。`,
+    note: `已沿用聯合裝備已存 ${jointCandidateCount} 組、內功已存 ${ngCandidateCount} 組；內功依「基底 + 聯合第一名裝備」重新排序後，各取前 ${jointTop.length} / ${ngTop.length} 候選，共重算 ${combinedCount} 組完整裝備 + 內功，保留前 ${results.length} 名。必選裝備：${getOptimizeRequiredGearText(requiredGear)}。`,
     emptyText: '',
   };
 }
@@ -10639,7 +10843,9 @@ function runFinalOptimize() {
   if (counts.joint) counts.joint.textContent = '0';
   if (counts.ng) counts.ng.textContent = '0';
   if (counts.combo) counts.combo.textContent = '0';
-  const built = buildFinalOptimizeResults(mode, sort);
+  const baseSource = getOptimizeBaseSource(mode, 'final');
+  setOptimizeBaseNote('final', mode, baseSource);
+  const built = buildFinalOptimizeResults(mode, sort, baseSource);
   if (built.error) {
     if (noteEl) noteEl.textContent = built.note;
     if (emptyEl) emptyEl.textContent = built.emptyText || '條件不足，無法執行最終最佳化。';
@@ -11631,6 +11837,66 @@ function loadNeigongFromPVP() {
   calcNeigong();
 }
 
+// 把模板帶到本頁。裸面板是最佳化的基底，帶入後把推薦的組合放進一欄，看「PVP整套重算」即可驗算；數值面板是身上穿戴都算進去的遊戲面板。
+// 模板勾的藥與同心一力直接加進數值（PVP 敵我雙方，PVE 只加我方），本頁的增益改成不勾：本頁的增益在 PVE 也會加到首領欄，和模板的算法不同
+function loadNeigongFromTemplate() {
+  const [mode, kind] = (document.getElementById('ng_tpl_source')?.value || 'pvp:bare').split(':');
+  const tpl = getTemplateState()[mode];
+  const label = TEMPLATE_MODE_LABELS[mode];
+  if (!isTemplateModeReady(mode, tpl)) {
+    alert(`${label} 模板還沒設定好（${mode === 'pvp' ? '我方或敵方' : '我方'}數值面板是空的），請先到模板頁設定。`);
+    return;
+  }
+  const panel = kind === 'bare' ? computeTemplateBare(mode, tpl).bare : templateSetPanel(tpl.self);
+  const buffPage = combatBuffState.pages.neigong;
+  const turnedOff = !!(buffPage && (buffPage.buff || buffPage.tongxin));
+  if (turnedOff) {
+    buffPage.buff = false;
+    buffPage.tongxin = false;
+    saveCombatBuffState();
+    refreshCombatBuffFields('neigong');
+    syncCombatBuffInputs();
+  }
+  const buff = getCombatBuffDeltaForToggles(tpl.buffs);
+  const buffKeys = getCombatBuffFieldMap('neigong');
+  const write = (map, values, withBuff) => Object.entries(map).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const add = withBuff && buffKeys[id] ? (buff[buffKeys[id]] || 0) : 0;
+    el.value = Number(((parseFloat(values[key]) || 0) + add).toFixed(6));
+  });
+  const zero = ids => ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = 0; });
+  if (mode === 'pvp') {
+    write(DB_SET_FULL_ID_MAPS.ng_my, panel, true);
+    write(DB_SET_FULL_ID_MAPS.ng_opp, tpl.enemy, true);
+    zero(['ng_bossover', 'ng_ebossover', 'ng_mybossres', 'ng_bbossres']);
+  } else {
+    // PVE 模板的「首領克制」存在套裝的 styleOver（和 PVE 頁載入套裝相同）
+    write({
+      atk: 'ng_atk', skillEnh: 'ng_skillenh', traitAtkPct: 'ng_traitAtkPct', hit: 'ng_hit', crit: 'ng_crit', critDmg: 'ng_critdmg',
+      breakShield: 'ng_breakshield', elemAtk: 'ng_elementatk', elemBonus: 'ng_elemBonus', styleOver: 'ng_bossover',
+      ignoreElem: 'ng_ignoreelem', breakDef: 'ng_breakdef', techOver: 'ng_techover',
+    }, panel, true);
+    write({ bDef: 'ng_bdef', bBlock: 'ng_bblock', bCritRes: 'ng_bcritres', bQiShield: 'ng_bqishield', bElemRes: 'ng_belemres', bBossRes: 'ng_bbossres' }, tpl.enemy, false);
+    zero(['ng_styleover', 'ng_estyleover', 'ng_mystyleres', 'ng_bstyleres']);
+  }
+  document.getElementById('ng_mode').value = mode;
+  TEMPLATE_CLS_KEYS.forEach(key => {
+    const el = document.getElementById(`ng_cls_${key}`);
+    if (el) el.checked = tpl.cls.includes(key);
+  });
+  enforceNgCls();
+  calcNeigong();
+  const notes = [`已帶入 ${label} 模板的${kind === 'bare' ? '裸面板' : '數值面板'}與${mode === 'pvp' ? '敵方' : '首領'}，職業標籤也改成模板的`];
+  if (tpl.buffs.buff || tpl.buffs.tongxin) notes.push(`模板勾的藥、同心一力已直接加進數值${mode === 'pve' ? '（只加我方）' : ''}`);
+  if (turnedOff || tpl.buffs.buff || tpl.buffs.tongxin) notes.push('本頁的增益勾選改成不勾，不要再勾，否則會重複加');
+  const multipliers = [panel, mode === 'pvp' ? tpl.enemy : null].some(p => p && (p.lei || p.xinsui));
+  if (multipliers) notes.push('本頁沒有乘區1、乘區2 欄位，模板填的乘區沒有帶過來，期望傷害會和最佳化不同');
+  if (mode === 'pvp') notes.push('本頁的整套重算不含土 4 顆的受到傷害降低 1%，土 4 顆以上時對手期望傷害會比最佳化高');
+  const noteEl = document.getElementById('ng_tpl_note');
+  if (noteEl) noteEl.textContent = `${notes.join('；')}。`;
+}
+
 // ===================== 匯出/匯入 =====================
 // 'jol' 前綴也會比對到 'jol2_*' 等其他複本；匯入前備份本身不放進備份，避免每次匯入層層巢狀變大。
 // 幫戰覆盤和計算機共用同一個瀏覽器儲存空間；覆盤資料由覆盤頁的批量匯出／匯入備份，計算機的匯出入不碰它，
@@ -12304,6 +12570,11 @@ function templatePanelHasValues(panel) {
   return Object.values(panel || {}).some(v => templateNumber(v) !== 0);
 }
 
+// 模板設定好：我方數值面板有值，PVP 的敵方也要有值。模板比較的判讀與最佳化的基底用同一個條件
+function isTemplateModeReady(mode, tpl) {
+  return templatePanelHasValues(tpl.self) && (mode === 'pve' || templatePanelHasValues(tpl.enemy));
+}
+
 function loadTemplatePanelFromDB(mode, side, selId) {
   const name = document.getElementById(selId)?.value;
   const entry = name ? DB.set.find(e => e.name === name) : null;
@@ -12476,41 +12747,71 @@ function confirmTemplatePicker() {
 // 欄位對應和最佳化的整套重算相同；土 4 顆的 1% 依換上後的顆數計算，周天與套裝件數只顯示（規格第 5 節）
 const TEMPLATE_COMPARE_EPS = 0.005;
 const TEMPLATE_COMPARE_SORTS = { both: 'PVP 攻＋防', pvpAtk: 'PVP 攻擊', pvpDef: 'PVP 防禦', pveAtk: 'PVE 攻擊' };
-let templateCompareFilter = { kind: 'ng', view: 'all', group: 'all', sort: 'both' };
+let templateCompareFilter = { kind: 'ng', view: 'all', groups: [], labels: [], sort: 'both', target: defaultTemplateCompareTarget() };
 const TEMPLATE_COMPARE_VIEWS = { all: 'PVP＋PVE', pvp: '只看 PVP', pve: '只看 PVE' };
 const TEMPLATE_COMPARE_VIEW_SORTS = { all: ['both', 'pvpAtk', 'pvpDef', 'pveAtk'], pvp: ['both', 'pvpAtk', 'pvpDef'], pve: ['pveAtk'] };
 let templateSwapHistory = [];
+const TEMPLATE_COMPARE_LABEL_ORDER = ['身上', 'PVP 身上', 'PVE 身上', 'PVP 較好', 'PVP 取捨', 'PVP 較差', 'PVE 較好', 'PVE 較差', '可拆', '五行不同', '類別不同'];
+const TEMPLATE_COMPARE_NO_LABEL = '沒有判讀';
+const TEMPLATE_COMPARE_LABEL_CLASS = { 身上: 'on', 'PVP 身上': 'on', 'PVE 身上': 'on', 'PVP 較好': 'good', 'PVE 較好': 'good', 'PVP 取捨': 'mixed', 'PVP 較差': 'bad', 'PVE 較差': 'bad', 可拆: 'drop' };
+const TEMPLATE_SWAP_REASON_TEXT = { same: '同核心', chosen: '指定', weakest: '貢獻最小', pair: '兩件裡貢獻較小' };
+// 可以指定換掉哪一件的：內功（沒有同核心時），以及有兩格的戒指、手鐲
+const TEMPLATE_COMPARE_PAIR_SLOTS = ['ring', 'bracelet'];
+const TEMPLATE_COMPARE_PAIR_LABELS = { ring: '戒指', bracelet: '手鐲' };
+// 整頁重算的結果；勾選核心或判讀時只重畫表格，不重算，勾選清單也不會被關掉
+let templateComparePageData = null;
 
-function evaluateTemplatePanel(mode, tpl, panel, counts) {
-  const buff = getCombatBuffDeltaForToggles(tpl.buffs);
-  const attack = (p, delta) => ({
+// 模板的面板換成公式參數，模板比較與最佳化的基底共用（規格第 5、6 節）。PVP 的藥與同心一力敵我雙方都加（和 PVP 攻防等頁相同），PVE 只加我方
+function templateAttackParams(p, delta) {
+  return {
     atk: p.atk + p.skillEnh + delta.atk, hit: p.hit + delta.hit, crit: p.crit + delta.crit, critDmg: p.critDmg,
     breakShield: p.breakShield, elemAtk: p.elemAtk + delta.elemAtk, elemBonus: p.elemBonus,
     ignoreElem: p.ignoreElem, breakDef: p.breakDef + delta.breakDef, techOver: p.techOver,
     lei: p.lei, xinsui: p.xinsui, traitAtk: p.traitAtkPct / 100,
-  });
-  if (mode === 'pve') {
-    const boss = tpl.enemy;
-    const params = {
-      ...attack(panel, buff), bossOver: panel.styleOver, bossOverPct: 0,
-      bDef: boss.bDef, bBlock: boss.bBlock, bCritRes: boss.bCritRes, bQiShield: boss.bQiShield, bElemRes: boss.bElemRes, bBossRes: boss.bBossRes,
-    };
-    return { expected: calcPVEExpected(params).expected };
-  }
-  // PVP 的藥與同心一力敵我雙方都加（和 PVP 攻防等頁相同）
-  const enemy = tpl.enemy;
-  // oppTechOver 是被打方自己的技巧克制（calcPVPSideExpected 用它算技巧差）
-  const defense = (p, delta, ownTechOver, extraTraitDef) => ({
+  };
+}
+
+// oppTechOver 是被打方自己的技巧克制（calcPVPSideExpected 用它算技巧差）
+function templateDefenseParams(p, delta, extraTraitDef = 0) {
+  return {
     bDef: p.bDef + delta.bDef, bBlock: p.bBlock + delta.bBlock, bCritRes: p.bCritRes + delta.bCritRes,
     bQiShield: p.bQiShield, bElemRes: p.bElemRes + delta.bElemRes, bStyleRes: p.bStyleRes, antiCrit: p.antiCrit,
-    oppTechOver: ownTechOver, bStyleResPct: p.styleResPct, traitDef: p.traitDefPct / 100 + extraTraitDef,
-  });
-  const myAtk = { ...attack(panel, buff), styleOver: panel.styleOver, stylePct: panel.stylePct };
-  const oppAtk = { ...attack(enemy, buff), styleOver: enemy.styleOver, stylePct: enemy.stylePct };
-  const myExpected = calcPVPSideExpected(myAtk, defense(enemy, buff, enemy.techOver, 0)).expected;
-  const oppExpected = calcPVPSideExpected(oppAtk, defense(panel, buff, panel.techOver, getNgElementTraitDefBonus(counts))).expected;
-  const myHp = panel.hp + buff.hp;
-  return { myExpected, oppExpected, myHits: oppExpected > 0 && myHp > 0 ? myHp / oppExpected : Infinity };
+    oppTechOver: p.techOver, bStyleResPct: p.styleResPct, traitDef: p.traitDefPct / 100 + extraTraitDef,
+  };
+}
+
+function templatePveParams(tpl, panel) {
+  const boss = tpl.enemy;
+  return {
+    ...templateAttackParams(panel, getCombatBuffDeltaForToggles(tpl.buffs)), bossOver: panel.styleOver, bossOverPct: 0,
+    bDef: boss.bDef, bBlock: boss.bBlock, bCritRes: boss.bCritRes, bQiShield: boss.bQiShield, bElemRes: boss.bElemRes, bBossRes: boss.bBossRes,
+  };
+}
+
+// 格式和 getOptimizePVPBase 相同；extraTraitDef 是土 4 顆的受到傷害降低
+function templatePvpParams(tpl, panel, extraTraitDef = 0) {
+  const buff = getCombatBuffDeltaForToggles(tpl.buffs);
+  const enemy = tpl.enemy;
+  return {
+    myAtk: { ...templateAttackParams(panel, buff), styleOver: panel.styleOver, stylePct: panel.stylePct },
+    oppDef: templateDefenseParams(enemy, buff),
+    oppAtk: { ...templateAttackParams(enemy, buff), styleOver: enemy.styleOver, stylePct: enemy.stylePct },
+    myDef: templateDefenseParams(panel, buff, extraTraitDef),
+    myHp: panel.hp + buff.hp,
+    enemyHp: enemy.hp + buff.hp,
+  };
+}
+
+function defaultTemplateCompareTarget() {
+  return { pvp: { ng: '', ring: '', bracelet: '' }, pve: { ng: '', ring: '', bracelet: '' } };
+}
+
+function evaluateTemplatePanel(mode, tpl, panel, counts) {
+  if (mode === 'pve') return { expected: calcPVEExpected(templatePveParams(tpl, panel)).expected };
+  const params = templatePvpParams(tpl, panel, getNgElementTraitDefBonus(counts));
+  const myExpected = calcPVPSideExpected(params.myAtk, params.oppDef).expected;
+  const oppExpected = calcPVPSideExpected(params.oppAtk, params.myDef).expected;
+  return { myExpected, oppExpected, myHits: oppExpected > 0 && params.myHp > 0 ? params.myHp / oppExpected : Infinity };
 }
 
 function templatePct(after, before) {
@@ -12547,7 +12848,7 @@ function templatePieceCounts(mode, gearItems) {
   return { upper, lower, effect1: upper >= 2, effect2: upper >= 4, effect3: lower >= 2 };
 }
 
-function buildTemplateCompareContext(mode) {
+function buildTemplateCompareContext(mode, chosen = {}) {
   const tpl = getTemplateState()[mode];
   const cls = templateClassFlags(tpl.cls);
   const resolve = names => names
@@ -12559,7 +12860,7 @@ function buildTemplateCompareContext(mode) {
   const panel = templateSetPanel(tpl.self);
   const counts = ng.reduce((acc, item) => templateCountsAdd(acc, item.tags, 1), { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 });
   const before = evaluateTemplatePanel(mode, tpl, panel, counts);
-  const ctx = { mode, tpl, cls, gear, ng, panel, counts, before, contribution: new Map() };
+  const ctx = { mode, tpl, cls, gear, ng, panel, counts, before, chosen: { ng: '', ring: '', bracelet: '', ...chosen }, contribution: new Map() };
   [...gear, ...ng].forEach(item => {
     const without = addTemplateItemToPanel(templateSetPanel(panel), mode, item.entry, cls, -1);
     const withoutCounts = item.tags ? templateCountsAdd(counts, item.tags, -1) : counts;
@@ -12573,17 +12874,24 @@ function templateWeakest(ctx, items) {
     (!weakest || templateContributionScore(ctx.mode, ctx.contribution.get(item.name)) < templateContributionScore(ctx.mode, ctx.contribution.get(weakest.name)) ? item : weakest), null);
 }
 
-// 換掉誰：內功換身上同核心的（靈韻版與一般版互斥），沒有就換身上貢獻最小的；裝備換同部位的，戒、手鐲換兩件裡貢獻較小的。還有空位就直接加上
+// 換掉誰：內功換身上同核心的（靈韻版與一般版互斥）；沒有同核心時換使用者指定的那顆，沒指定就換身上貢獻最小的。
+// 裝備換同部位的；戒指、手鐲有兩格，換使用者指定的那件，沒指定就換兩件裡貢獻較小的。指定了就照樣換掉它，即使還有空位；
+// 沒指定時還有空位就直接加上。回傳 ctx 裡的同一個物件，呼叫端用 !== 比對被換掉的那件
 function templateSwapTarget(ctx, kind, entry, name) {
   if (kind === 'ng') {
     const conflict = getNgConflictName(getNgCoreName(name));
     const same = ctx.ng.find(item => getNgConflictName(getNgCoreName(item.name)) === conflict);
-    if (same) return same;
-    return ctx.ng.length < 6 ? null : templateWeakest(ctx, ctx.ng);
+    if (same) return { item: same, reason: 'same' };
+    const chosen = ctx.chosen.ng ? ctx.ng.find(item => item.name === ctx.chosen.ng) : null;
+    if (chosen) return { item: chosen, reason: 'chosen' };
+    return ctx.ng.length < 6 ? null : { item: templateWeakest(ctx, ctx.ng), reason: 'weakest' };
   }
   const slot = normalizeDBEntryMeta(entry).meta?.slot;
   const inSlot = ctx.gear.filter(item => item.meta.slot === slot);
-  return inSlot.length < (OPTIMIZE_GEAR_SLOT_CAPACITY[slot] || 1) ? null : templateWeakest(ctx, inSlot);
+  const chosen = ctx.chosen[slot] ? inSlot.find(item => item.name === ctx.chosen[slot]) : null;
+  if (chosen) return { item: chosen, reason: 'chosen' };
+  if (inSlot.length < (OPTIMIZE_GEAR_SLOT_CAPACITY[slot] || 1)) return null;
+  return { item: templateWeakest(ctx, inSlot), reason: inSlot.length > 1 ? 'pair' : 'slot' };
 }
 
 function evaluateTemplateCandidate(ctx, kind, names, name, entry) {
@@ -12592,7 +12900,8 @@ function evaluateTemplateCandidate(ctx, kind, names, name, entry) {
   if (equipped) {
     return { name: equipped.name, entry: equipped.entry, equipped: true, target: null, metrics: ctx.contribution.get(equipped.name), cmp: { atk: 0, def: 0 } };
   }
-  const target = templateSwapTarget(ctx, kind, entry, name);
+  const swap = templateSwapTarget(ctx, kind, entry, name);
+  const target = swap?.item || null;
   const after = templateSetPanel(ctx.panel);
   if (target) addTemplateItemToPanel(after, ctx.mode, target.entry, ctx.cls, -1);
   addTemplateItemToPanel(after, ctx.mode, entry, ctx.cls, 1);
@@ -12605,7 +12914,7 @@ function evaluateTemplateCandidate(ctx, kind, names, name, entry) {
     pieces = { before: templatePieceCounts(ctx.mode, ctx.gear), after: templatePieceCounts(ctx.mode, afterGear) };
   }
   const metrics = templateMetricsChange(ctx.mode, evaluateTemplatePanel(ctx.mode, ctx.tpl, after, counts), ctx.before);
-  return { name, entry, equipped: false, target, metrics, cmp: metrics, counts, pieces };
+  return { name, entry, equipped: false, target, targetReason: swap?.reason || null, metrics, cmp: metrics, counts, pieces };
 }
 
 function templateCompareCandidates(kind) {
@@ -12726,8 +13035,8 @@ function templateCompareViewLabels(row, view) {
   return [...row.modeLabels.pvp, ...row.modeLabels.pve, ...row.overallLabels];
 }
 
-function computeTemplateCompareRows(kind) {
-  const contexts = { pvp: buildTemplateCompareContext('pvp'), pve: buildTemplateCompareContext('pve') };
+function computeTemplateCompareRows(kind, chosen = templateCompareFilter.target) {
+  const contexts = { pvp: buildTemplateCompareContext('pvp', chosen?.pvp), pve: buildTemplateCompareContext('pve', chosen?.pve) };
   const rows = templateCompareCandidates(kind).map(candidate => ({
     ...candidate,
     pvp: evaluateTemplateCandidate(contexts.pvp, kind, candidate.names, candidate.pvp.name, candidate.pvp),
@@ -12738,10 +13047,7 @@ function computeTemplateCompareRows(kind) {
     if (!groups.has(row.group)) groups.set(row.group, []);
     groups.get(row.group).push(row);
   });
-  const panelOk = {
-    pvp: templatePanelHasValues(contexts.pvp.tpl.self) && templatePanelHasValues(contexts.pvp.tpl.enemy),
-    pve: templatePanelHasValues(contexts.pve.tpl.self),
-  };
+  const panelOk = { pvp: isTemplateModeReady('pvp', contexts.pvp.tpl), pve: isTemplateModeReady('pve', contexts.pve.tpl) };
   rows.forEach(row => { row.labels = templateCompareLabels(row, groups.get(row.group), panelOk); });
   return { rows, contexts, panelOk };
 }
@@ -12762,7 +13068,22 @@ function fmtTemplatePct(value) {
 
 function templateCompareSideText(side) {
   if (side.equipped) return '身上（數字是本身的貢獻）';
-  return side.target ? `換掉 ${escHtml(side.target.name)}` : '加上（還有空位）';
+  if (!side.target) return '加上（還有空位）';
+  const reason = TEMPLATE_SWAP_REASON_TEXT[side.targetReason];
+  return `換掉 ${escHtml(side.target.name)}${reason ? `（${reason}）` : ''}`;
+}
+
+function templateCompareRowLabels(row, view) {
+  const labels = templateCompareViewLabels(row, view);
+  return labels.length ? labels : [TEMPLATE_COMPARE_NO_LABEL];
+}
+
+// 核心／部位與判讀都可以複選，沒勾就是全部；判讀勾了好幾個時，有任一個就列出
+function filterTemplateCompareRows(rows, filter) {
+  const groups = new Set(filter.groups || []);
+  const labels = new Set(filter.labels || []);
+  return rows.filter(row => (!groups.size || groups.has(row.group))
+    && (!labels.size || templateCompareRowLabels(row, filter.view).some(label => labels.has(label))));
 }
 
 // 兩個模板的結果相同時只寫一次，不同時才分 PVP、PVE 各寫一行
@@ -12846,48 +13167,76 @@ function renderTemplateComparePage() {
   const sorts = TEMPLATE_COMPARE_VIEW_SORTS[view];
   if (!sorts.includes(filter.sort)) filter.sort = sorts[0];
   const { rows, contexts } = computeTemplateCompareRows(filter.kind);
+  // 指定的那件已經不在身上（或不在那個部位）時改回自動
+  TEMPLATE_MODES.forEach(mode => {
+    const ctx = contexts[mode];
+    const target = filter.target[mode];
+    if (!ctx.ng.some(item => item.name === target.ng)) target.ng = '';
+    TEMPLATE_COMPARE_PAIR_SLOTS.forEach(slot => {
+      if (!ctx.gear.some(item => item.meta.slot === slot && item.name === target[slot])) target[slot] = '';
+    });
+  });
   const groupOrder = filter.kind === 'gear'
     ? (a, b) => (GEAR_SLOT_SORT_ORDER[a] || 99) - (GEAR_SLOT_SORT_ORDER[b] || 99)
     : (a, b) => a.localeCompare(b, 'zh-Hant');
   const groupKeys = [...new Set(rows.map(row => row.group))].sort(groupOrder);
-  if (filter.group !== 'all' && !groupKeys.includes(filter.group)) filter.group = 'all';
-  const groupLabel = key => rows.find(row => row.group === key)?.groupLabel || key;
-  const count = key => rows.filter(row => row.group === key).length;
-  const shownGroups = filter.group === 'all' ? groupKeys : [filter.group];
+  const groupLabels = Object.fromEntries(groupKeys.map(key => [key, rows.find(row => row.group === key)?.groupLabel || key]));
+  const labelKeys = [...TEMPLATE_COMPARE_LABEL_ORDER, TEMPLATE_COMPARE_NO_LABEL].filter(label => rows.some(row => templateCompareRowLabels(row, view).includes(label)));
+  filter.groups = groupKeys.filter(key => filter.groups.includes(key));
+  filter.labels = labelKeys.filter(label => filter.labels.includes(label));
+  templateComparePageData = { rows, contexts, view, modes, groupKeys, groupLabels, labelKeys };
+  const kindLabel = filter.kind === 'ng' ? '核心' : '部位';
   const unregistered = templateCompareUnregisteredCount(filter.kind);
-  // 只看 PVP 或 PVE 時，欄位、判讀、換掉誰、周天／件數變化與換上按鈕都只顯示那一邊
-  const metricColumns = [
-    ...(modes.includes('pvp') ? [['PVP 攻擊', row => row.pvp.metrics?.atk], ['PVP 防禦', row => row.pvp.metrics?.def]] : []),
-    ...(modes.includes('pve') ? [['PVE 攻擊', row => row.pve.metrics?.atk]] : []),
-  ];
-  const columnCount = metricColumns.length + 5;
-  const equippedHere = row => modes.some(mode => row[mode].equipped);
-  const labelClass = { 身上: 'on', 'PVP 身上': 'on', 'PVE 身上': 'on', 'PVP 較好': 'good', 'PVE 較好': 'good', 'PVP 取捨': 'mixed', 'PVP 較差': 'bad', 'PVE 較差': 'bad', 可拆: 'drop' };
-  const tableRows = shownGroups.map(key => {
-    const groupRows = rows.filter(row => row.group === key).sort((a, b) => {
-      if (equippedHere(a) !== equippedHere(b)) return equippedHere(a) ? -1 : 1;
-      return templateCompareSortValue(b, filter.sort) - templateCompareSortValue(a, filter.sort);
-    });
-    return `<tr class="tplcmp-group-row"><td colspan="${columnCount}">${escHtml(groupLabel(key))}（${groupRows.length}）</td></tr>`
-      + groupRows.map(row => {
-        const labels = templateCompareViewLabels(row, view).map(label => `<span class="tplcmp-label tplcmp-label-${labelClass[label] || 'note'}">${label}</span>`).join('');
-        const actions = modes.filter(mode => !row[mode].equipped).map(mode =>
-          `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
-        const target = view === 'all' ? templateCompareTargetText(row) : templateCompareSideText(row[view]);
-        return `<tr${equippedHere(row) ? ' class="tplcmp-equipped"' : ''}>
-          <td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div></td>
-          ${metricColumns.map(([, value]) => `<td class="tplcmp-num">${fmtTemplatePct(value(row))}</td>`).join('')}
-          <td>${labels}${row.dominatedBy.length ? `<div class="tpl-note">同組三項都更好：${row.dominatedBy.slice(0, 2).map(escHtml).join('、')}${row.dominatedBy.length > 2 ? ` 等 ${row.dominatedBy.length} 件` : ''}</div>` : ''}</td>
-          <td class="tplcmp-small">${target}</td>
-          <td class="tplcmp-small">${templateCompareChangeText(row, contexts, view)}</td>
-          <td>${actions}</td>
-        </tr>`;
-      }).join('');
-  }).join('');
   const metricNote = [
     modes.includes('pvp') && 'PVP 攻擊是我打對手的期望傷害，PVP 防禦是可承受次數（氣血 ÷ 對手打我的期望傷害），用 PVP 公式與 PVP 模板',
     modes.includes('pve') && 'PVE 攻擊是打首領的期望傷害，用 PVE 公式與 PVE 模板',
   ].filter(Boolean).join('；');
+  const groupCount = key => rows.filter(row => row.group === key).length;
+  const groupMenu = `<details class="tplcmp-multi" data-tplcmp-menu="groups">
+    <summary id="tplcmp_groups_summary"></summary>
+    <div class="tplcmp-multi-panel">
+      <div class="tplcmp-multi-actions">
+        ${groupKeys.length > 12 ? `<input type="search" placeholder="搜尋${kindLabel}" oninput="filterTemplateCompareMenu(this)">` : ''}
+        <button type="button" class="db-btn" onclick="setTemplateCompareChoices('groups', true)">全選</button>
+        <button type="button" class="db-btn" onclick="setTemplateCompareChoices('groups', false)">清除</button>
+      </div>
+      <div class="tplcmp-multi-list">
+        ${groupKeys.map(key => `<label data-tplcmp-search="${escHtml(groupLabels[key])}"><input type="checkbox" data-tplcmp-choice="groups" value="${escHtml(key)}" ${filter.groups.includes(key) ? 'checked' : ''} onchange="toggleTemplateCompareChoice(this)">${escHtml(groupLabels[key])}（${groupCount(key)}）</label>`).join('')}
+      </div>
+    </div>
+  </details>`;
+  const labelMenu = `<details class="tplcmp-multi" data-tplcmp-menu="labels">
+    <summary id="tplcmp_labels_summary"></summary>
+    <div class="tplcmp-multi-panel">
+      <div class="tplcmp-multi-actions">
+        <span class="tpl-note">勾了好幾個時，有任一個就列出；沒勾就是全部。</span>
+        <button type="button" class="db-btn" onclick="setTemplateCompareChoices('labels', false)">清除</button>
+      </div>
+      <div class="tplcmp-multi-list">
+        ${labelKeys.map(label => `<label><input type="checkbox" data-tplcmp-choice="labels" value="${escHtml(label)}" ${filter.labels.includes(label) ? 'checked' : ''} onchange="toggleTemplateCompareChoice(this)"><span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${escHtml(label)}</span><span class="tpl-note" data-tplcmp-label-count="${escHtml(label)}"></span></label>`).join('')}
+      </div>
+    </div>
+  </details>`;
+  // 指定換掉哪一件：內功是沒有同核心時換掉的那顆，裝備是有兩格的戒指、手鐲
+  const targetSelect = (mode, part, title, items, auto, detail = () => '') => `<label class="tplcmp-target">${TEMPLATE_MODE_LABELS[mode]} ${title}
+      <select id="tplcmp_target_${mode}_${part}" class="db-sel tplcmp-select" data-tplcmp-target-mode="${mode}" data-tplcmp-target-part="${part}" onchange="setTemplateCompareTarget(this.dataset.tplcmpTargetMode, this.dataset.tplcmpTargetPart, this.value)">
+        <option value="">${auto}</option>
+        ${items.map(item => `<option value="${escHtml(item.name)}" ${filter.target[mode][part] === item.name ? 'selected' : ''}>${escHtml(item.name)}${detail(item)}</option>`).join('')}
+      </select>
+    </label>`;
+  const targetRow = modes.map(mode => {
+    const ctx = contexts[mode];
+    if (filter.kind === 'ng') {
+      return ctx.ng.length
+        ? targetSelect(mode, 'ng', '沒有同核心時換掉', ctx.ng, ctx.ng.length < 6 ? '自動（還有空位，直接加上）' : '自動（換貢獻最小的）', item => (item.tags ? `（${templateTagText(item.tags)}）` : ''))
+        : '';
+    }
+    return TEMPLATE_COMPARE_PAIR_SLOTS.map(slot => {
+      const inSlot = ctx.gear.filter(item => item.meta.slot === slot);
+      if (!inSlot.length) return '';
+      return targetSelect(mode, slot, `${TEMPLATE_COMPARE_PAIR_LABELS[slot]}換掉`, inSlot, inSlot.length < OPTIMIZE_GEAR_SLOT_CAPACITY[slot] ? '自動（還有空位，直接加上）' : '自動（兩件裡貢獻較小的）');
+    }).join('');
+  }).join('');
   box.innerHTML = `
     <div class="section" style="margin-bottom:16px;">
       <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
@@ -12912,28 +13261,123 @@ function renderTemplateComparePage() {
           <select id="tplcmp_view" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('view', this.value)">
             ${Object.entries(TEMPLATE_COMPARE_VIEWS).map(([key, label]) => `<option value="${key}" ${view === key ? 'selected' : ''}>${label}</option>`).join('')}
           </select>
-          <select id="tplcmp_group" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('group', this.value)">
-            <option value="all">全部（${rows.length}）</option>
-            ${groupKeys.map(key => `<option value="${escHtml(key)}" ${filter.group === key ? 'selected' : ''}>${escHtml(groupLabel(key))}（${count(key)}）</option>`).join('')}
-          </select>
+          ${groupMenu}
+          ${labelMenu}
           <select id="tplcmp_sort" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('sort', this.value)">
             ${sorts.map(key => `<option value="${key}" ${filter.sort === key ? 'selected' : ''}>依 ${TEMPLATE_COMPARE_SORTS[key]} 排序</option>`).join('')}
           </select>
           ${unregistered ? `<span class="tpl-note">沒補登完的 ${unregistered} ${filter.kind === 'ng' ? '顆' : '件'}不列入（到補登頁補齊）</span>` : ''}
         </div>
-        <div class="tplcmp-table-wrap">
-          <table class="tplcmp-table">
-            <thead><tr><th>名稱</th>${metricColumns.map(([label]) => `<th>${label}</th>`).join('')}<th>判讀</th><th>換掉誰</th><th>周天／件數變化</th><th>操作</th></tr></thead>
-            <tbody>${tableRows || `<tr><td colspan="${columnCount}" class="tpl-note">沒有可以比較的項目。</td></tr>`}</tbody>
-          </table>
-        </div>
+        ${targetRow ? `<div class="tpl-row">${targetRow}</div>` : ''}
+        <div id="tplcmp_shown" class="tpl-note" style="margin-bottom:6px;"></div>
+        <div id="tplcmp_table_area"></div>
       </div>
     </div>`;
+  renderTemplateCompareTable();
+}
+
+function templateCompareChoiceSummary(title, names, allText) {
+  if (!names.length) return `${title}：${allText}`;
+  return names.length <= 2 ? `${title}：${names.join('、')}` : `${title}：已選 ${names.length} 項`;
+}
+
+function renderTemplateCompareTable() {
+  const data = templateComparePageData;
+  const area = document.getElementById('tplcmp_table_area');
+  if (!data || !area) return;
+  const filter = templateCompareFilter;
+  const { rows, contexts, view, modes, groupKeys, groupLabels } = data;
+  const shownRows = filterTemplateCompareRows(rows, filter);
+  // 只看 PVP 或 PVE 時，欄位、判讀、換掉誰、周天／件數變化與換上按鈕都只顯示那一邊
+  const metricColumns = [
+    ...(modes.includes('pvp') ? [['PVP 攻擊', row => row.pvp.metrics?.atk], ['PVP 防禦', row => row.pvp.metrics?.def]] : []),
+    ...(modes.includes('pve') ? [['PVE 攻擊', row => row.pve.metrics?.atk]] : []),
+  ];
+  const columnCount = metricColumns.length + 5;
+  const equippedHere = row => modes.some(mode => row[mode].equipped);
+  const tableRows = groupKeys.map(key => {
+    const groupRows = shownRows.filter(row => row.group === key).sort((a, b) => {
+      if (equippedHere(a) !== equippedHere(b)) return equippedHere(a) ? -1 : 1;
+      return templateCompareSortValue(b, filter.sort) - templateCompareSortValue(a, filter.sort);
+    });
+    if (!groupRows.length) return '';
+    const total = rows.filter(row => row.group === key).length;
+    return `<tr class="tplcmp-group-row"><td colspan="${columnCount}">${escHtml(groupLabels[key])}（${groupRows.length}${groupRows.length !== total ? `／${total}` : ''}）</td></tr>`
+      + groupRows.map(row => {
+        const labels = templateCompareViewLabels(row, view).map(label => `<span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${label}</span>`).join('');
+        const actions = modes.filter(mode => !row[mode].equipped).map(mode =>
+          `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
+        const target = view === 'all' ? templateCompareTargetText(row) : templateCompareSideText(row[view]);
+        return `<tr${equippedHere(row) ? ' class="tplcmp-equipped"' : ''}>
+          <td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div></td>
+          ${metricColumns.map(([, value]) => `<td class="tplcmp-num">${fmtTemplatePct(value(row))}</td>`).join('')}
+          <td>${labels}${row.dominatedBy.length ? `<div class="tpl-note">同組三項都更好：${row.dominatedBy.slice(0, 2).map(escHtml).join('、')}${row.dominatedBy.length > 2 ? ` 等 ${row.dominatedBy.length} 件` : ''}</div>` : ''}</td>
+          <td class="tplcmp-small">${target}</td>
+          <td class="tplcmp-small">${templateCompareChangeText(row, contexts, view)}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+  }).join('');
+  const emptyText = rows.length ? '沒有符合篩選的項目。' : '沒有可以比較的項目。';
+  area.innerHTML = `<div class="tplcmp-table-wrap">
+    <table class="tplcmp-table">
+      <thead><tr><th>名稱</th>${metricColumns.map(([label]) => `<th>${label}</th>`).join('')}<th>判讀</th><th>換掉誰</th><th>周天／件數變化</th><th>操作</th></tr></thead>
+      <tbody>${tableRows || `<tr><td colspan="${columnCount}" class="tpl-note">${emptyText}</td></tr>`}</tbody>
+    </table>
+  </div>`;
+  const unit = filter.kind === 'ng' ? '顆' : '件';
+  const allGroups = filter.groups.length === groupKeys.length;
+  const groupSummary = document.getElementById('tplcmp_groups_summary');
+  if (groupSummary) groupSummary.textContent = templateCompareChoiceSummary(filter.kind === 'ng' ? '核心' : '部位', allGroups ? [] : filter.groups.map(key => groupLabels[key]), `全部（${rows.length}）`);
+  const labelSummary = document.getElementById('tplcmp_labels_summary');
+  if (labelSummary) labelSummary.textContent = templateCompareChoiceSummary('判讀', filter.labels, '全部');
+  // 判讀後面的件數只算目前勾選的核心／部位
+  const inGroups = filterTemplateCompareRows(rows, { ...filter, labels: [] });
+  document.querySelectorAll('[data-tplcmp-label-count]').forEach(el => {
+    const label = el.dataset.tplcmpLabelCount;
+    el.textContent = `（${inGroups.filter(row => templateCompareRowLabels(row, view).includes(label)).length}）`;
+  });
+  const shownEl = document.getElementById('tplcmp_shown');
+  if (shownEl) shownEl.textContent = `列出 ${shownRows.length}／${rows.length} ${unit}`;
+}
+
+function toggleTemplateCompareChoice(el) {
+  const key = el.dataset.tplcmpChoice;
+  const data = templateComparePageData;
+  if (!data || !['groups', 'labels'].includes(key)) return;
+  const chosen = new Set(templateCompareFilter[key]);
+  if (el.checked) chosen.add(el.value);
+  else chosen.delete(el.value);
+  templateCompareFilter[key] = (key === 'groups' ? data.groupKeys : data.labelKeys).filter(value => chosen.has(value));
+  renderTemplateCompareTable();
+}
+
+function setTemplateCompareChoices(key, all) {
+  const data = templateComparePageData;
+  if (!data) return;
+  templateCompareFilter[key] = all ? [...(key === 'groups' ? data.groupKeys : data.labelKeys)] : [];
+  document.querySelectorAll(`[data-tplcmp-choice="${key}"]`).forEach(el => { el.checked = templateCompareFilter[key].includes(el.value); });
+  renderTemplateCompareTable();
+}
+
+function filterTemplateCompareMenu(input) {
+  const text = input.value.trim();
+  input.closest('.tplcmp-multi').querySelectorAll('[data-tplcmp-search]').forEach(el => {
+    el.style.display = !text || el.dataset.tplcmpSearch.includes(text) ? '' : 'none';
+  });
+}
+
+function setTemplateCompareTarget(mode, part, name) {
+  templateCompareFilter.target[mode][part] = name;
+  renderTemplateComparePage();
 }
 
 function setTemplateCompareFilter(key, value) {
   templateCompareFilter[key] = value;
-  if (key === 'kind') templateCompareFilter.group = 'all';
+  if (key === 'kind') {
+    templateCompareFilter.groups = [];
+    templateCompareFilter.labels = [];
+  }
   renderTemplateComparePage();
 }
 
@@ -12943,7 +13387,7 @@ function swapTemplateItemFromCompare(mode, key) {
   const row = computeTemplateCompareRows(kind).rows.find(item => item.key === key);
   const side = row?.[mode];
   if (!side || side.equipped) return;
-  templateSwapHistory.push(JSON.stringify(getTemplateState()));
+  templateSwapHistory.push(JSON.stringify({ state: getTemplateState(), target: templateCompareFilter.target }));
   const tpl = getTemplateState()[mode];
   const cls = templateClassFlags(tpl.cls);
   const targetIndex = side.target ? tpl[kind].indexOf(side.target.name) : -1;
@@ -12954,6 +13398,8 @@ function swapTemplateItemFromCompare(mode, key) {
     tpl[kind].push(side.name);
   }
   addTemplateItemToPanel(tpl.self, mode, side.entry, cls, 1);
+  // 換掉的是指定的那件時，指定改成新換上的這件，同一格可以接著比下一件
+  if (side.targetReason === 'chosen') templateCompareFilter.target[mode][kind === 'ng' ? 'ng' : side.target.meta.slot] = side.name;
   saveTemplates({ keepSwapHistory: true });
   renderTemplateComparePage();
 }
@@ -12961,13 +13407,20 @@ function swapTemplateItemFromCompare(mode, key) {
 function undoTemplateSwap() {
   const snapshot = templateSwapHistory.pop();
   if (!snapshot) return;
-  templateState = normalizeTemplateState(JSON.parse(snapshot));
+  const { state, target } = JSON.parse(snapshot);
+  templateState = normalizeTemplateState(state);
+  templateCompareFilter.target = target;
   saveTemplates({ keepSwapHistory: true });
   renderTemplateComparePage();
 }
 
 // ===================== INIT =====================
 window.onload = function() {
+  document.addEventListener('click', event => {
+    document.querySelectorAll('.tplcmp-multi[open]').forEach(menu => {
+      if (!menu.contains(event.target)) menu.removeAttribute('open');
+    });
+  });
   const skEl = document.getElementById('show_storage_key');
   if (skEl) skEl.textContent = STORAGE_KEY;
   loadSavedSettings();
