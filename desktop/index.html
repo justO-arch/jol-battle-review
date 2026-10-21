@@ -731,6 +731,24 @@
   .import-snapshot-backup[hidden] {
     display: none;
   }
+  .copy-modal.batch-export-dialog {
+    width: min(1120px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+  }
+  .batch-export-dialog .batch-export-panel {
+    border: 0;
+    background: none;
+    padding: 0;
+  }
+  @media (max-width: 640px) {
+    .batch-export-dialog .batch-export-head {
+      flex-direction: column;
+    }
+    .batch-export-dialog .batch-export-actions {
+      justify-content: flex-start;
+    }
+  }
   .alias-list-details {
     margin-top: 10px;
   }
@@ -3120,7 +3138,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
   body.public-readonly #btn_open_import_drawer,
-  body.public-readonly .data-menu,
+  body.public-readonly .data-menu-panel .hero-tools-note,
   body.public-readonly .first-battle-cta {
     display: none;
   }
@@ -3915,6 +3933,7 @@
             <div class="data-menu">
               <button class="btn-ghost data-menu-toggle" id="btn_data_menu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="data_menu_panel">資料</button>
               <div class="data-menu-panel" id="data_menu_panel" hidden>
+                <button class="btn-secondary" id="btn_open_batch_export" type="button">批次匯出 PDF</button>
                 <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
                 <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
                 <div class="hero-tools-note">匯入時可以選擇只加入缺少的場次，或整份覆蓋。</div>
@@ -4639,6 +4658,14 @@
         <button class="btn-primary" id="btn_import_snapshot_merge" type="button">只加入缺少的場次</button>
         <button class="btn-danger" id="btn_import_snapshot_overwrite" type="button">整份覆蓋</button>
         <button class="btn-ghost" id="btn_import_snapshot_cancel" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+  <div id="batch_export_modal" class="copy-modal-overlay" hidden>
+    <div class="copy-modal batch-export-dialog" role="dialog" aria-label="批次匯出 PDF">
+      <div id="batch_export_box"></div>
+      <div class="copy-modal-actions">
+        <button class="btn-ghost" id="btn_batch_export_close" type="button">關閉</button>
       </div>
     </div>
   </div>
@@ -11896,7 +11923,7 @@ function renderRulesExplain() {
     <div class="explain-item"><b>同分與人數少的比較組</b><span class="subtle">後 30%（重傷是前 30%）的切線如果剛好落在同分之間，同分的人一起標記；同分有 3 人以上時，這個標記只顯示、不拿來判定名單，卡片上標「同分」。比較組只有 5 人以下時（例如防守團素問每場通常 4 人），只標最低（重傷是最多）的 1 人，同分照上面處理。清泉保護看的「同側同職業前 30%」，同分的人一起算。</span></div>
     <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；潮光補看清泉；鐵衣補看承傷與承傷/重傷。潮光若清泉 > 12 或清泉位於同側同職業前 30%，且清泉數 > 自身重傷數，視為清泉有補回成本，不進單場覆盤自動名單。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦度門檻目前定為：承傷 > 5250萬 且 承傷/重傷 > 600萬，或承傷 > 3750萬 且 承傷/重傷 > 900萬；素問不適用，因為素問的承傷已經從淨奶量扣掉。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。塔傷門檻定為單場塔傷排名前 10 名，或單場塔傷 > 4000萬。承傷與塔傷門檻依 7/20 改版後的數值訂定。達標以上任一門檻，即使其他數據不佳也不會進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。單一弱項通常不直接進名單，但若再疊加高重傷仍會進待查；若化羽或淨奶量是該分組第一，則直接排除，不進自動名單。素問不適用坦度保護。需要時再由人工備註補充。</span></div>
-    ${renderBatchExportPanel()}
+    <div class="explain-item"><b>批次匯出 PDF</b><span class="subtle">在頁首的「資料」選單。</span></div>
   `;
 }
 
@@ -12007,20 +12034,35 @@ function applyBatchExportPrefix(prefix, baseTitle) {
   return batchExportPrefixedTitle(baseTitle, prefix);
 }
 
+// 批次匯出 PDF 以前放在判讀說明最下方，不容易找到；改從頁首「資料」選單打開（2026-10-21）
+function renderBatchExportBox() {
+  const box = document.getElementById('batch_export_box');
+  if (box) box.innerHTML = renderBatchExportPanel();
+}
+
+function openBatchExportModal() {
+  renderBatchExportBox();
+  toggleElement('batch_export_modal', false);
+}
+
+function closeBatchExportModal() {
+  toggleElement('batch_export_modal', true);
+}
+
 function updateBatchExportOrder(key, value) {
   if (!state.batchExportConfig) state.batchExportConfig = defaultBatchExportConfig();
   const max = batchExportItems().length;
   const next = Number(value);
   state.batchExportConfig[key] = Number.isFinite(next) && next >= 0 && next <= max ? next : 0;
   saveState();
-  renderRulesExplain();
+  renderBatchExportBox();
 }
 
 function resetBatchExportOrders() {
   state.batchExportConfig = defaultBatchExportConfig();
   batchExportRunState = null;
   saveState();
-  renderRulesExplain();
+  renderBatchExportBox();
 }
 
 function renderBatchExportPanel() {
@@ -12098,7 +12140,7 @@ function renderBatchExportRunState() {
 }
 
 function checkBatchExportReadiness() {
-  renderRulesExplain();
+  renderBatchExportBox();
   const issues = batchExportSelectionIssues();
   if (issues.length) {
     window.alert(`目前無法直接批次匯出：\n- ${issues.join('\n- ')}`);
@@ -12117,7 +12159,7 @@ async function runBatchExportItem(item) {
 async function startGuidedBatchExport() {
   const issues = batchExportSelectionIssues();
   if (issues.length) {
-    renderRulesExplain();
+    renderBatchExportBox();
     window.alert(`目前無法直接批次匯出：\n- ${issues.join('\n- ')}`);
     return;
   }
@@ -12125,7 +12167,7 @@ async function startGuidedBatchExport() {
     queue: orderedBatchExportQueue(),
     opened: 0,
   };
-  renderRulesExplain();
+  renderBatchExportBox();
   await openNextBatchExport();
 }
 
@@ -12133,7 +12175,7 @@ async function openNextBatchExport() {
   if (!batchExportRunState?.queue?.length) return;
   const nextItem = batchExportRunState.queue[batchExportRunState.opened];
   if (!nextItem) {
-    renderRulesExplain();
+    renderBatchExportBox();
     return;
   }
   try {
@@ -12143,12 +12185,12 @@ async function openNextBatchExport() {
     console.error(err);
     window.alert(`開啟 ${nextItem.label} 失敗，請稍後再試。`);
   }
-  renderRulesExplain();
+  renderBatchExportBox();
 }
 
 function clearBatchExportRunState() {
   batchExportRunState = null;
-  renderRulesExplain();
+  renderBatchExportBox();
 }
 
 function renderBattleManualNote() {
@@ -12720,6 +12762,11 @@ document.getElementById('snapshot_file').addEventListener('change', handleSnapsh
 document.getElementById('btn_import_snapshot_merge').addEventListener('click', () => confirmImportSnapshot('merge'));
 document.getElementById('btn_import_snapshot_overwrite').addEventListener('click', () => confirmImportSnapshot('overwrite'));
 document.getElementById('btn_import_snapshot_cancel').addEventListener('click', closeImportSnapshotModal);
+document.getElementById('btn_open_batch_export').addEventListener('click', openBatchExportModal);
+document.getElementById('btn_batch_export_close').addEventListener('click', closeBatchExportModal);
+document.getElementById('batch_export_modal').addEventListener('click', event => {
+  if (event.target.id === 'batch_export_modal') closeBatchExportModal();
+});
 document.getElementById('import_snapshot_modal').addEventListener('click', event => {
   if (event.target.id === 'import_snapshot_modal') closeImportSnapshotModal();
 });
