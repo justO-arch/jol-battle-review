@@ -1035,6 +1035,99 @@
     font-size: 12px;
     background: #ffffff;
   }
+  .combat-buff-note {
+    color: #8a7a63;
+    font-size: 12px;
+  }
+  .tpl-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 16px 0 8px;
+    color: #4f4538;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .tpl-subtitle:first-child { margin-top: 0; }
+  .tpl-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .tpl-note {
+    color: #8a7a63;
+    font-size: 12px;
+    font-weight: normal;
+  }
+  .tpl-warn {
+    margin-top: 4px;
+    color: #b24842;
+    font-size: 12px;
+  }
+  .tpl-check-row {
+    display: flex;
+    align-items: center;
+    gap: 6px 14px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+  .tpl-check-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .tpl-equip-grid,
+  .tpl-bare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 6px 14px;
+    font-size: 13px;
+    color: #333333;
+  }
+  .tpl-bare-grid .neg {
+    color: #b24842;
+    font-weight: bold;
+  }
+  .tpl-status-line {
+    font-size: 13px;
+    color: #333333;
+    line-height: 1.8;
+  }
+  .tpl-picker-modal {
+    width: min(640px, 100%);
+  }
+  /* 敵方區塊沿用 PVP 裝備比較「對手」的灰藍配色 */
+  .tpl-enemy-box {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid #c3d0dd;
+    border-left: 4px solid #5d748d;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf3f8 100%);
+  }
+  .tpl-enemy-box .tpl-subtitle {
+    margin-top: 0;
+    color: #36506b;
+  }
+  .tpl-picker-search {
+    width: 100%;
+    margin-top: 8px;
+    padding: 6px 8px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .tpl-picker-group-title {
+    margin: 10px 0 2px;
+    color: #4f4538;
+    font-size: 12px;
+    font-weight: bold;
+  }
   .result-stage {
     position: relative;
     overflow: hidden;
@@ -1502,6 +1595,7 @@
   <button class="tab-btn" onclick="switchTab('neigong')">內功/裝備比較</button>
   <button class="tab-btn" onclick="switchTab('database')">📦 資料庫</button>
   <button class="tab-btn" onclick="switchTab('metadata')">補登</button>
+  <button class="tab-btn" onclick="switchTab('template')">模板</button>
   <button class="tab-btn" onclick="switchTab('optimize')">最佳化</button>
   <button class="tab-btn" onclick="switchTab('artifact-tree')">神器樹標註</button>
   <button class="tab-btn" onclick="switchTab('settings')">⚙ 公式設定</button>
@@ -2724,6 +2818,18 @@
 
 </div>
 
+<!-- ==================== TAB: 模板 ==================== -->
+<div id="tab-template" class="tab-pane">
+  <div class="section" style="margin-bottom:16px;">
+    <div class="section-title">模板說明</div>
+    <div class="section-body">
+      <div class="formula-note">記下 PVP、PVE 各一套身上的完整面板與穿戴。裸面板 = 數值面板 − 身上裝備 − 身上內功，之後的「依模板比較」與最佳化會用它。改了就會自動存。</div>
+    </div>
+  </div>
+  <div id="tpl_pvp_box"></div>
+  <div id="tpl_pve_box"></div>
+</div>
+
 <!-- ==================== TAB: 最佳化 ==================== -->
 <div id="tab-optimize" class="tab-pane">
 
@@ -3565,6 +3671,15 @@
     </div>
   </div>
 
+  <!-- 戰鬥增益數值 -->
+  <div class="section" style="margin-bottom:16px;">
+    <div class="section-title">戰鬥增益數值（全站共用）</div>
+    <div class="section-body">
+      <div class="formula-note" style="margin-bottom:10px;">藥與同心一力的數值在這裡調整；PVP 攻防計算、PVP 裝備比較、內功/裝備比較與模板頁只勾選要不要加。改了就會存，不用按儲存。</div>
+      <div id="combat_buff_values" class="combat-buff-panel" style="margin:0;"></div>
+    </div>
+  </div>
+
   <!-- Formula Display -->
   <div class="section">
     <div class="section-title">公式說明（唯讀）</div>
@@ -3813,6 +3928,15 @@ function renderCombatBuffPanels() {
           <input type="checkbox" data-combat-buff-page="${pageKey}" data-combat-buff-toggle="tongxin">
           <span>同心一力增益</span>
         </label>
+        <span class="combat-buff-note">數值在公式設定頁調整</span>
+      </div>`;
+  });
+  // 藥與同心一力的數值全站共用一份，只在公式設定頁調整；各頁只留勾選（2026-10-21）
+  const valuesEl = document.getElementById('combat_buff_values');
+  if (valuesEl) {
+    valuesEl.innerHTML = `
+      <div class="combat-buff-row">
+        <span class="combat-buff-title">藥（buff增益）</span>
         <div class="combat-buff-inputs">
           <label>氣海/耐力 a <input type="number" step="1" data-combat-buff-value="base"></label>
           <label>會心 b <input type="number" step="1" data-combat-buff-value="crit"></label>
@@ -3820,13 +3944,13 @@ function renderCombatBuffPanels() {
         </div>
       </div>
       <div class="combat-buff-row combat-buff-tongxin-row">
-        <span class="combat-buff-title">同心一力數值（敵我雙方都加）</span>
+        <span class="combat-buff-title">同心一力數值（PVP 敵我雙方都加）</span>
         <div class="combat-buff-inputs">
           ${TONGXIN_BUFF_FIELDS.map(([key, label]) => `<label>${label} <input type="number" step="1" data-combat-buff-tongxin="${key}"></label>`).join('')}
         </div>
         <button type="button" class="combat-buff-reset" data-combat-buff-tongxin-reset>恢復預設</button>
       </div>`;
-  });
+  }
   document.querySelectorAll('[data-combat-buff-toggle]').forEach(el => {
     el.addEventListener('change', () => {
       const pageKey = el.dataset.combatBuffPage;
@@ -4437,6 +4561,7 @@ function switchTab(tab, evt) {
     (typeof event !== 'undefined' && event ? (event.currentTarget || event.target) : null) ||
     document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
   if (activeBtn) activeBtn.classList.add('active');
+  if (tab === 'template') renderTemplatePage();
 }
 
 // ===================== TAB: 神器樹標註 =====================
@@ -11663,6 +11788,596 @@ function importDataReplace() {
   input.click();
 }
 
+// ===================== TAB: 模板 =====================
+// 模板記下身上的完整面板與穿戴：裸面板 = 數值面板 − 身上裝備 − 身上內功。規格見 計算機模板頁規格.md（2026-10-21）
+const TEMPLATE_STORAGE_KEY = `${STORAGE_KEY}_templates`;
+const TEMPLATE_MODES = ['pvp', 'pve'];
+const TEMPLATE_MODE_LABELS = { pvp: 'PVP', pve: 'PVE' };
+const TEMPLATE_CLS_KEYS = ['shenxiang', 'longyin', 'suimeng', 'xuanji', 'jiuling', 'xuehe', 'chaoguang'];
+const TEMPLATE_CLS_LABELS = { shenxiang: '神相', longyin: '龍吟', suimeng: '碎夢', xuanji: '玄機', jiuling: '九靈', xuehe: '血河', chaoguang: '潮光' };
+const TEMPLATE_BOSS_KEYS = ['bDef', 'bBlock', 'bCritRes', 'bQiShield', 'bElemRes', 'bBossRes'];
+const TEMPLATE_BOSS_LABELS = { bDef: '防禦力', bBlock: '格檔', bCritRes: '會心抗性', bQiShield: '氣盾', bElemRes: '元素抗性', bBossRes: '首領抵禦' };
+const TEMPLATE_BOSS_BUTTON_ORDER = [0, 4, 1, 2, 3];
+const TEMPLATE_PANEL_FIELDS = [
+  ['atk', '攻擊'], ['skillEnh', '全技能增強'], ['hit', '命中'], ['crit', '會心'], ['critDmg', '會心傷害(倍率)', '0.001'],
+  ['breakShield', '破盾'], ['elemAtk', '元素攻擊'], ['elemBonus', '元素傷害加成', '0.001'], ['styleOver', '流派克制'],
+  ['ignoreElem', '忽視元素抗性'], ['breakDef', '破防'], ['techOver', '技巧克制'], ['traitAtkPct', '攻擊特性(%)', '0.1'],
+  ['lei', '乘區1(%)', '0.1'], ['xinsui', '乘區2(%)', '0.1'], ['stylePct', '流派克制(%)', '0.1'],
+  ['bDef', '防禦力'], ['bBlock', '格檔'], ['bCritRes', '會心抗性'], ['bQiShield', '氣盾'], ['bElemRes', '元素抗性'],
+  ['bStyleRes', '流派抵禦'], ['antiCrit', '抗會傷(倍率)', '0.01'], ['traitDefPct', '防禦特性(%)', '0.1'],
+  ['styleResPct', '流派抵禦(%)', '0.1'], ['hp', '氣血上限'],
+];
+
+let templateState = null;
+let templateSaveFailed = false;
+let templatePicker = null;
+
+function templateFieldLabel(mode, key, label) {
+  // 套裝的 styleOver 在 PVE 頁對應首領克制
+  return mode === 'pve' && key === 'styleOver' ? '首領克制' : label;
+}
+
+function templateNumber(value) {
+  const num = parseFloat(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function templateNames(list) {
+  return Array.isArray(list)
+    ? list.filter(name => typeof name === 'string' && name.trim() !== '').map(name => name.trim())
+    : [];
+}
+
+function templateSetPanel(data) {
+  const panel = normalizeSetData(data);
+  DB_SET_KEYS.forEach(key => { panel[key] = templateNumber(panel[key]); });
+  return panel;
+}
+
+function defaultTemplate(mode) {
+  const boss = PVE_BOSSES[0] || {};
+  return {
+    self: templateSetPanel({}),
+    cls: [],
+    gear: [],
+    ng: [],
+    buffs: { buff: false, tongxin: false },
+    enemy: mode === 'pvp'
+      ? templateSetPanel({})
+      : {
+        bDef: templateNumber(boss.def), bBlock: templateNumber(boss.block), bCritRes: templateNumber(boss.critRes),
+        bQiShield: templateNumber(boss.qiShield), bElemRes: templateNumber(boss.elemRes), bBossRes: templateNumber(boss.bossRes),
+      },
+  };
+}
+
+function normalizeTemplate(mode, data) {
+  const out = defaultTemplate(mode);
+  if (!data || typeof data !== 'object') return out;
+  out.self = templateSetPanel(data.self);
+  out.cls = Array.isArray(data.cls) ? [...new Set(data.cls.filter(key => TEMPLATE_CLS_KEYS.includes(key)))].slice(0, 2) : [];
+  out.gear = templateNames(data.gear);
+  out.ng = templateNames(data.ng);
+  out.buffs = { buff: !!data.buffs?.buff, tongxin: !!data.buffs?.tongxin };
+  if (mode === 'pvp') {
+    out.enemy = templateSetPanel(data.enemy);
+  } else if (data.enemy && typeof data.enemy === 'object') {
+    TEMPLATE_BOSS_KEYS.forEach(key => {
+      if (data.enemy[key] !== undefined) out.enemy[key] = templateNumber(data.enemy[key]);
+    });
+  }
+  return out;
+}
+
+function normalizeTemplateState(data) {
+  const src = data && typeof data === 'object' ? data : {};
+  return { pvp: normalizeTemplate('pvp', src.pvp), pve: normalizeTemplate('pve', src.pve) };
+}
+
+function loadTemplates() {
+  try {
+    return normalizeTemplateState(JSON.parse(localStorage.getItem(TEMPLATE_STORAGE_KEY) || 'null'));
+  } catch (e) {
+    return normalizeTemplateState(null);
+  }
+}
+
+function getTemplateState() {
+  if (!templateState) templateState = loadTemplates();
+  return templateState;
+}
+
+function saveTemplates() {
+  if (trySetItem(TEMPLATE_STORAGE_KEY, JSON.stringify(getTemplateState()))) {
+    templateSaveFailed = false;
+    return true;
+  }
+  // 打字時每一下都會存；存不進去只提示一次，之後存成功才會再提示
+  if (!templateSaveFailed) alertStorageFull('模板');
+  templateSaveFailed = true;
+  return false;
+}
+
+// 套路是好幾件加總成的一筆，要在挑選視窗按「帶入」展開；直接放在身上會和成員重複扣
+function isTemplateRoutineEntry(entry) {
+  return !!entry && getNgDBStackItems(entry).length > 0;
+}
+
+function templateRoutineMessage(names) {
+  return `套路要在挑選視窗按「帶入」展開，直接放在身上不會扣：${names.join('、')}`;
+}
+
+function templateClassFlags(cls) {
+  const flags = {};
+  TEMPLATE_CLS_KEYS.forEach(key => { flags[key] = Array.isArray(cls) && cls.includes(key); });
+  return flags;
+}
+
+// 扣法和最佳化把裝備加回面板時相同（evaluateLowerOptimizePVP／evaluateLowerOptimizePVE）：
+// PVP 扣流派克制、PVE 扣首領克制；本身特性是小數，面板的特性欄是百分比
+function computeTemplateBare(mode, tpl) {
+  const cls = templateClassFlags(tpl.cls);
+  const bare = templateSetPanel(tpl.self);
+  const missing = [];
+  const routines = [];
+  [...tpl.gear, ...tpl.ng].forEach(name => {
+    const entry = findNgDBEntry(name);
+    if (!entry) {
+      missing.push(name);
+      return;
+    }
+    if (isTemplateRoutineEntry(entry)) {
+      routines.push(name);
+      return;
+    }
+    const raw = getNgDBData(entry);
+    const d = getNgAppliedValuesFromVals(raw, cls);
+    const skillEnh = parseFloat(raw.skillenh) || 0;
+    bare.skillEnh -= skillEnh;
+    bare.atk -= d.atk - skillEnh;
+    bare.hit -= d.hit;
+    bare.crit -= d.crit;
+    bare.critDmg -= d.critDmg;
+    bare.breakShield -= d.breakShield;
+    bare.elemAtk -= d.elemAtk;
+    bare.styleOver -= mode === 'pve' ? d.bossOver : d.styleOver;
+    bare.ignoreElem -= d.ignoreElem;
+    bare.breakDef -= d.breakDef;
+    bare.techOver -= d.techOver;
+    bare.traitAtkPct -= d.traitAtk * 100;
+    bare.bDef -= d.bDef;
+    bare.bBlock -= d.bBlock;
+    bare.bCritRes -= d.bCritRes;
+    bare.bQiShield -= d.bQiShield;
+    bare.bElemRes -= d.bElemRes;
+    bare.bStyleRes -= d.bStyleRes;
+    bare.antiCrit -= d.antiCrit;
+    bare.traitDefPct -= d.traitDef * 100;
+    bare.hp -= d.hp;
+  });
+  const negative = TEMPLATE_PANEL_FIELDS.map(([key]) => key).filter(key => bare[key] < -1e-9);
+  return { bare, missing, routines, negative };
+}
+
+function templateGearMeta(name) {
+  const entry = findNgDBEntry(name);
+  return entry ? (normalizeDBEntryMeta(entry).meta || {}) : null;
+}
+
+function templateNgTags(name) {
+  const entry = findNgDBEntry(name);
+  const tags = entry ? normalizeDBEntryMeta(entry).meta?.tags : null;
+  return Array.isArray(tags) && tags.every(tag => NG_ELEMENT_KEYS.includes(tag)) ? tags : null;
+}
+
+function templateGearWarnings(names) {
+  const slotCounts = {};
+  const unregistered = [];
+  const routines = [];
+  names.forEach(name => {
+    const entry = findNgDBEntry(name);
+    if (isTemplateRoutineEntry(entry)) {
+      routines.push(name);
+      return;
+    }
+    const meta = templateGearMeta(name);
+    if (!meta) return;
+    if (!OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot]) {
+      unregistered.push(name);
+      return;
+    }
+    slotCounts[meta.slot] = (slotCounts[meta.slot] || 0) + 1;
+  });
+  const overSlots = Object.keys(slotCounts).filter(slot => slotCounts[slot] > OPTIMIZE_GEAR_SLOT_CAPACITY[slot]);
+  const messages = overSlots.map(slot => `${OPTIMIZE_GEAR_SLOT_LABELS[slot]} ${slotCounts[slot]} 件，最多 ${OPTIMIZE_GEAR_SLOT_CAPACITY[slot]} 件`);
+  if (unregistered.length) messages.push(`沒有補登部位：${unregistered.join('、')}`);
+  if (routines.length) messages.push(templateRoutineMessage(routines));
+  return { slotCounts, overSlots, unregistered, routines, messages };
+}
+
+function templateNgWarnings(allNames) {
+  const routines = allNames.filter(name => isTemplateRoutineEntry(findNgDBEntry(name)));
+  const names = allNames.filter(name => !routines.includes(name));
+  const seen = new Map();
+  const conflicts = [];
+  const untagged = [];
+  names.forEach(name => {
+    // 遊戲不能同時戴兩顆同核心，靈韻版與一般版也不行
+    const conflictName = getNgConflictName(getNgCoreName(name));
+    if (seen.has(conflictName)) conflicts.push(`${seen.get(conflictName)}、${name}`);
+    else seen.set(conflictName, name);
+    if (findNgDBEntry(name) && !templateNgTags(name)) untagged.push(name);
+  });
+  const messages = [];
+  if (names.length !== 6) messages.push(`目前 ${names.length} 顆，身上要 6 顆`);
+  conflicts.forEach(pair => messages.push(`同核心不能同時戴：${pair}`));
+  if (untagged.length) messages.push(`沒有補登五行：${untagged.join('、')}`);
+  if (routines.length) messages.push(templateRoutineMessage(routines));
+  return { conflicts, untagged, routines, messages };
+}
+
+function computeTemplateStatus(mode, tpl) {
+  const counts = { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 };
+  tpl.ng.forEach(name => {
+    const tagCounts = getNgTagCounts(templateNgTags(name));
+    NG_ELEMENT_KEYS.forEach(key => { counts[key] += tagCounts[key]; });
+  });
+  // 套裝件數只算該模式的裝備，獨珍不算（和最佳化相同）
+  const modeCategory = mode === 'pvp' ? 'pvp_gear' : 'pve_gear';
+  let upper = 0;
+  let lower = 0;
+  tpl.gear.forEach(name => {
+    const meta = templateGearMeta(name);
+    if (!meta || meta.category !== modeCategory) return;
+    if (UPPER_OPT_SLOTS.includes(meta.slot)) upper += 1;
+    else if (LOWER_OPT_SLOTS.includes(meta.slot)) lower += 1;
+  });
+  return {
+    counts,
+    zhoutian: getNgZhoutianCounts(counts),
+    earthBonus: getNgElementTraitDefBonus(counts) > 0,
+    upper,
+    lower,
+    effect1: upper >= 2,
+    effect2: upper >= 4,
+    effect3: lower >= 2,
+    gear: templateGearWarnings(tpl.gear),
+    ng: templateNgWarnings(tpl.ng),
+  };
+}
+
+function fmtTemplateValue(value) {
+  const rounded = Math.round(templateNumber(value) * 1000) / 1000;
+  return String(Object.is(rounded, -0) ? 0 : rounded);
+}
+
+function templateTagText(tags) {
+  return tags ? tags.map(tag => NG_ELEMENT_LABELS[tag]).join('') : '未補登五行';
+}
+
+function renderTemplatePanelInputs(mode, side) {
+  const panel = getTemplateState()[mode][side];
+  return `<div class="form-grid">${TEMPLATE_PANEL_FIELDS.map(([key, label, step]) => `
+    <div class="field"><label>${templateFieldLabel(mode, key, label)}</label><input type="number" id="tpl_${mode}_${side}_${key}" value="${fmtTemplateValue(panel[key])}" ${step ? `step="${step}"` : ''} oninput="setTemplateField('${mode}','${side}','${key}',this.value)"></div>`).join('')}
+  </div>`;
+}
+
+function renderTemplateBossInputs() {
+  const enemy = getTemplateState().pve.enemy;
+  const matchIdx = PVE_BOSSES.findIndex(b =>
+    [b.def, b.block, b.critRes, b.qiShield, b.elemRes, b.bossRes].every((v, i) => templateNumber(v) === templateNumber(enemy[TEMPLATE_BOSS_KEYS[i]])));
+  const buttons = TEMPLATE_BOSS_BUTTON_ORDER.filter(idx => PVE_BOSSES[idx]).map(idx =>
+    `<button type="button" class="preset-btn${idx === matchIdx ? ' active' : ''}" onclick="setTemplateBoss(${idx})">${escHtml(PVE_BOSSES[idx].name)}</button>`).join('');
+  return `<div class="preset-group tpl-row">${buttons}<span class="preset-btn${matchIdx < 0 ? ' active' : ''}">自訂</span></div>
+    <div class="form-grid">${TEMPLATE_BOSS_KEYS.map(key => `
+      <div class="field"><label>${TEMPLATE_BOSS_LABELS[key]}</label><input type="number" id="tpl_pve_enemy_${key}" value="${fmtTemplateValue(enemy[key])}" oninput="setTemplateField('pve','enemy','${key}',this.value)"></div>`).join('')}
+    </div>`;
+}
+
+function renderTemplateBox(mode) {
+  const tpl = getTemplateState()[mode];
+  const label = TEMPLATE_MODE_LABELS[mode];
+  const clsFull = tpl.cls.length >= 2;
+  const clsRow = TEMPLATE_CLS_KEYS.map(key => {
+    const checked = tpl.cls.includes(key);
+    return `<label><input type="checkbox" ${checked ? 'checked' : ''} ${clsFull && !checked ? 'disabled' : ''} onchange="setTemplateCls('${mode}','${key}',this.checked)"> ${TEMPLATE_CLS_LABELS[key]}</label>`;
+  }).join('');
+  const enemyBlock = mode === 'pvp'
+    ? `<div class="tpl-row">
+        <select class="db-sel db-sel-set" id="tpl_pvp_enemy_sel"></select>
+        <button type="button" class="db-btn" onclick="loadTemplatePanelFromDB('pvp','enemy','tpl_pvp_enemy_sel')">← 載入套裝</button>
+        <button type="button" class="db-btn" onclick="saveTemplatePanelToDB('pvp','enemy')">存入套裝</button>
+        <button type="button" class="db-btn" onclick="loadTemplatePanelFromNeigong('pvp','enemy')">← 從內功/裝備比較的對手帶入</button>
+      </div>${renderTemplatePanelInputs('pvp', 'enemy')}`
+    : renderTemplateBossInputs();
+  return `
+  <div class="section" style="margin-bottom:16px;">
+    <div class="section-title">${label} 模板</div>
+    <div class="section-body">
+      <div class="tpl-subtitle">我方數值面板 <span class="tpl-note">填遊戲角色面板的數字（穿著身上的裝備與內功，沒有吃藥、沒有同心一力）</span></div>
+      <div class="tpl-row">
+        <select class="db-sel db-sel-set" id="tpl_${mode}_self_sel"></select>
+        <button type="button" class="db-btn" onclick="loadTemplatePanelFromDB('${mode}','self','tpl_${mode}_self_sel')">← 載入套裝</button>
+        <button type="button" class="db-btn" onclick="saveTemplatePanelToDB('${mode}','self')">存入套裝</button>
+        <button type="button" class="db-btn" onclick="loadTemplatePanelFromNeigong('${mode}','self')">← 從內功/裝備比較的我方帶入</button>
+      </div>
+      ${renderTemplatePanelInputs(mode, 'self')}
+      <div class="tpl-subtitle">職業標籤 <span class="tpl-note">最多 2 個；換算氣海、身法等基礎屬性時用</span></div>
+      <div class="tpl-check-row">${clsRow}</div>
+      <div class="tpl-subtitle">增益</div>
+      <div class="tpl-check-row">
+        <label><input type="checkbox" ${tpl.buffs.buff ? 'checked' : ''} onchange="setTemplateBuff('${mode}','buff',this.checked)"> 藥（buff增益）</label>
+        <label><input type="checkbox" ${tpl.buffs.tongxin ? 'checked' : ''} onchange="setTemplateBuff('${mode}','tongxin',this.checked)"> 同心一力</label>
+        <span class="tpl-note">數值在公式設定頁調整；${mode === 'pvp' ? '敵我雙方都加' : '只加我方'}，計算時才加上，不寫進數值面板</span>
+      </div>
+      <div class="tpl-subtitle">身上裝備 <button type="button" class="db-btn" onclick="openTemplatePicker('${mode}','gear')">選擇裝備</button></div>
+      <div id="tpl_${mode}_gear_list"></div>
+      <div class="tpl-subtitle">身上內功 <button type="button" class="db-btn" onclick="openTemplatePicker('${mode}','ng')">選擇內功</button></div>
+      <div id="tpl_${mode}_ng_list"></div>
+      <div class="tpl-subtitle">目前狀態</div>
+      <div id="tpl_${mode}_status"></div>
+      <div class="tpl-subtitle">裸面板 <span class="tpl-note">數值面板 − 身上裝備 − 身上內功，給依模板比較與最佳化用</span></div>
+      <div id="tpl_${mode}_bare"></div>
+      <div class="tpl-enemy-box">
+        <div class="tpl-subtitle">敵方${mode === 'pve' ? '（首領）' : ''}</div>
+        ${enemyBlock}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTemplateDerived(mode) {
+  const tpl = getTemplateState()[mode];
+  const { bare, missing, negative } = computeTemplateBare(mode, tpl);
+  const status = computeTemplateStatus(mode, tpl);
+  const missingText = missing.length ? `<div class="tpl-warn">資料庫找不到（可能改名或刪除），沒有扣：${missing.map(escHtml).join('、')}</div>` : '';
+  const gearEl = document.getElementById(`tpl_${mode}_gear_list`);
+  if (gearEl) {
+    const bySlot = {};
+    tpl.gear.forEach(name => {
+      const meta = templateGearMeta(name);
+      const slot = meta && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot] ? meta.slot : null;
+      if (slot) (bySlot[slot] = bySlot[slot] || []).push(name);
+    });
+    const slots = Object.keys(GEAR_SLOT_SORT_ORDER).sort((a, b) => GEAR_SLOT_SORT_ORDER[a] - GEAR_SLOT_SORT_ORDER[b]);
+    gearEl.innerHTML = `<div class="tpl-equip-grid">${slots.map(slot =>
+      `<div><span class="tpl-note">${OPTIMIZE_GEAR_SLOT_LABELS[slot]}</span> ${(bySlot[slot] || []).map(escHtml).join('、') || '—'}</div>`).join('')}</div>
+      ${status.gear.messages.map(msg => `<div class="tpl-warn">${escHtml(msg)}</div>`).join('')}`;
+  }
+  const ngEl = document.getElementById(`tpl_${mode}_ng_list`);
+  if (ngEl) {
+    ngEl.innerHTML = `<div class="tpl-equip-grid">${tpl.ng.map(name =>
+      `<div>${escHtml(name)} <span class="tpl-note">${templateTagText(templateNgTags(name))}</span></div>`).join('') || '<div class="tpl-note">還沒選</div>'}</div>
+      ${status.ng.messages.map(msg => `<div class="tpl-warn">${escHtml(msg)}</div>`).join('')}`;
+  }
+  const statusEl = document.getElementById(`tpl_${mode}_status`);
+  if (statusEl) {
+    const countText = NG_ELEMENT_KEYS.map(key => `${NG_ELEMENT_LABELS[key]} ${status.counts[key]}`).join('、');
+    const zhoutianText = NG_ELEMENT_KEYS.filter(key => status.zhoutian[key]).map(key => `${NG_ELEMENT_LABELS[key]} ${status.zhoutian[key]}`).join('、') || '無';
+    const setLabel = mode === 'pvp' ? 'PVP' : 'PVE';
+    const effects = [status.effect1 && '效果一', status.effect2 && '效果二', status.effect3 && '效果三'].filter(Boolean).join('、') || '無';
+    statusEl.innerHTML = `<div class="tpl-status-line">五行顆數：${countText}</div>
+      <div class="tpl-status-line">周天：${zhoutianText}，共 ${status.zhoutian.total}；土 4 顆以上受到傷害降低 1%：${status.earthBonus ? '生效' : '沒有'}</div>
+      <div class="tpl-status-line">${setLabel} 套裝件數：上半 ${status.upper} 件、下半 ${status.lower} 件；成立的套裝效果：${effects}</div>`;
+  }
+  const bareEl = document.getElementById(`tpl_${mode}_bare`);
+  if (bareEl) {
+    bareEl.innerHTML = `${missingText}${negative.length ? '<div class="tpl-warn">有欄位扣成負數：通常是數值面板沒有包含勾選的某件，或勾錯了</div>' : ''}
+      <div class="tpl-bare-grid">${TEMPLATE_PANEL_FIELDS.map(([key, label]) =>
+        `<div${negative.includes(key) ? ' class="neg"' : ''}><span class="tpl-note">${templateFieldLabel(mode, key, label)}</span> ${fmtTemplateValue(bare[key])}</div>`).join('')}</div>`;
+  }
+}
+
+function renderTemplatePage() {
+  TEMPLATE_MODES.forEach(mode => {
+    const box = document.getElementById(`tpl_${mode}_box`);
+    if (box) box.innerHTML = renderTemplateBox(mode);
+  });
+  refreshDBDropdowns();
+  TEMPLATE_MODES.forEach(renderTemplateDerived);
+}
+
+function setTemplateField(mode, side, key, value) {
+  getTemplateState()[mode][side][key] = templateNumber(value);
+  saveTemplates();
+  if (side === 'self') renderTemplateDerived(mode);
+}
+
+function setTemplateCls(mode, key, checked) {
+  const tpl = getTemplateState()[mode];
+  const set = new Set(tpl.cls);
+  if (checked) set.add(key);
+  else set.delete(key);
+  tpl.cls = TEMPLATE_CLS_KEYS.filter(k => set.has(k)).slice(0, 2);
+  saveTemplates();
+  renderTemplatePage();
+}
+
+function setTemplateBuff(mode, key, checked) {
+  getTemplateState()[mode].buffs[key] = !!checked;
+  saveTemplates();
+}
+
+function setTemplateBoss(idx) {
+  const b = PVE_BOSSES[idx];
+  if (!b) return;
+  const enemy = getTemplateState().pve.enemy;
+  [b.def, b.block, b.critRes, b.qiShield, b.elemRes, b.bossRes].forEach((v, i) => { enemy[TEMPLATE_BOSS_KEYS[i]] = templateNumber(v); });
+  saveTemplates();
+  renderTemplatePage();
+}
+
+function templatePanelHasValues(panel) {
+  return Object.values(panel || {}).some(v => templateNumber(v) !== 0);
+}
+
+function loadTemplatePanelFromDB(mode, side, selId) {
+  const name = document.getElementById(selId)?.value;
+  const entry = name ? DB.set.find(e => e.name === name) : null;
+  if (!entry) { alert('請先在下拉選單選一個套裝。'); return; }
+  const tpl = getTemplateState()[mode];
+  if (templatePanelHasValues(tpl[side]) && !confirm(`用套裝「${name}」覆蓋目前的${side === 'self' ? '我方' : '敵方'}數值面板？`)) return;
+  tpl[side] = templateSetPanel(entry.data);
+  saveTemplates();
+  renderTemplatePage();
+}
+
+// 我方與 PVP 敵方的數值面板可以存成套裝，在其他頁載入；PVE 敵方是首領，不存成套裝
+function saveTemplatePanelToDB(mode, side) {
+  _dbPromptSave('set', templateSetPanel(getTemplateState()[mode][side]));
+}
+
+// 內功/裝備比較頁勾選增益時，增益已經加進欄位；模板的數值面板不含增益，帶入時要扣掉
+function readNeigongPanelWithoutBuff(side) {
+  const map = DB_SET_FULL_ID_MAPS[side === 'self' ? 'ng_my' : 'ng_opp'];
+  const values = _dbReadDOM(map);
+  const delta = combatBuffAppliedDeltas.neigong || zeroCombatBuffDelta();
+  const buffMap = getCombatBuffFieldMap('neigong');
+  Object.entries(map).forEach(([key, id]) => {
+    const deltaKey = buffMap[id];
+    if (deltaKey) values[key] -= delta[deltaKey] || 0;
+  });
+  return templateSetPanel(values);
+}
+
+function loadTemplatePanelFromNeigong(mode, side) {
+  const tpl = getTemplateState()[mode];
+  if (templatePanelHasValues(tpl[side]) && !confirm(`用內功/裝備比較頁的${side === 'self' ? '我方' : '對手'}覆蓋目前的${side === 'self' ? '我方' : '敵方'}數值面板？`)) return;
+  tpl[side] = readNeigongPanelWithoutBuff(side);
+  if (side === 'self') {
+    const flags = getOptimizeClassFlags();
+    tpl.cls = TEMPLATE_CLS_KEYS.filter(key => flags[key]).slice(0, 2);
+  }
+  saveTemplates();
+  renderTemplatePage();
+}
+
+function templatePickerData(kind) {
+  const list = kind === 'gear' ? DB.gear : DB.ng;
+  const routines = [];
+  const groups = new Map();
+  const addTo = (key, label, order, item) => {
+    if (!groups.has(key)) groups.set(key, { key, label, order, items: [] });
+    groups.get(key).items.push(item);
+  };
+  list.forEach(entry => {
+    const name = entry?.name;
+    if (!name) return;
+    const meta = normalizeDBEntryMeta(entry).meta || {};
+    if (getNgDBStackItems(entry).length) {
+      const items = getNgDBExpandedStackItems(entry);
+      if (isInnerSkillRoutineEntry(entry) === (kind === 'ng')) routines.push({ name, count: items.length });
+      return;
+    }
+    if (kind === 'gear') {
+      if (OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot]) {
+        const capacity = OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot];
+        addTo(meta.slot, `${OPTIMIZE_GEAR_SLOT_LABELS[meta.slot]}${capacity > 1 ? `（可選 ${capacity} 件）` : ''}`, GEAR_SLOT_SORT_ORDER[meta.slot], { name, detail: OPTIMIZE_GEAR_CATEGORY_LABELS[meta.category] || '未補登類別' });
+      } else {
+        addTo('_unregistered', '未補登部位', 99, { name, detail: '' });
+      }
+    } else {
+      const core = getNgCoreName(name) || name;
+      addTo(core, core, 0, { name, detail: templateTagText(templateNgTags(name)) });
+    }
+  });
+  const sorted = [...groups.values()].sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label, 'zh-Hant'));
+  sorted.forEach(group => group.items.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant')));
+  return { routines: routines.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant')), groups: sorted };
+}
+
+function ensureTemplatePickerModal() {
+  if (document.getElementById('tpl_picker_overlay')) return;
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="tpl_picker_overlay" class="ng-stack-overlay" onclick="if(event.target===this) closeTemplatePicker()">
+      <div class="ng-stack-modal tpl-picker-modal" role="dialog" aria-modal="true" aria-labelledby="tpl_picker_title">
+        <div class="ng-stack-modal-head">
+          <div id="tpl_picker_title" class="ng-stack-modal-title"></div>
+          <input id="tpl_picker_search" class="tpl-picker-search" type="search" placeholder="搜尋名稱" oninput="renderTemplatePickerList()">
+          <div id="tpl_picker_msg" class="ng-stack-modal-msg"></div>
+        </div>
+        <div id="tpl_picker_list" class="ng-stack-modal-body"></div>
+        <div class="ng-stack-modal-actions">
+          <button type="button" class="ng-stack-modal-btn primary" onclick="confirmTemplatePicker()">確定</button>
+          <button type="button" class="ng-stack-modal-btn" onclick="closeTemplatePicker()">取消</button>
+        </div>
+      </div>
+    </div>
+  `);
+}
+
+function openTemplatePicker(mode, kind) {
+  ensureTemplatePickerModal();
+  const tpl = getTemplateState()[mode];
+  templatePicker = { mode, kind, selected: new Set(kind === 'gear' ? tpl.gear : tpl.ng) };
+  document.getElementById('tpl_picker_title').textContent = `${TEMPLATE_MODE_LABELS[mode]} 模板：選擇身上${kind === 'gear' ? '裝備' : '內功'}`;
+  document.getElementById('tpl_picker_search').value = '';
+  renderTemplatePickerList();
+  document.getElementById('tpl_picker_overlay').style.display = 'flex';
+}
+
+function closeTemplatePicker() {
+  const overlay = document.getElementById('tpl_picker_overlay');
+  if (overlay) overlay.style.display = 'none';
+  templatePicker = null;
+}
+
+function updateTemplatePickerMessage() {
+  if (!templatePicker) return;
+  const names = [...templatePicker.selected];
+  const warnings = templatePicker.kind === 'gear' ? templateGearWarnings(names) : templateNgWarnings(names);
+  const el = document.getElementById('tpl_picker_msg');
+  if (el) el.textContent = `已選 ${names.length} ${templatePicker.kind === 'gear' ? '件' : '顆'}${warnings.messages.length ? `｜${warnings.messages.join('｜')}` : ''}`;
+}
+
+function renderTemplatePickerList() {
+  if (!templatePicker) return;
+  const query = (document.getElementById('tpl_picker_search')?.value || '').trim();
+  const match = name => !query || name.includes(query);
+  const { routines, groups } = templatePickerData(templatePicker.kind);
+  const routineRows = routines.filter(r => match(r.name)).map(r =>
+    `<div class="ng-stack-option"><button type="button" class="db-btn" data-tpl-routine="${escHtml(r.name)}" onclick="applyTemplateRoutine(this.dataset.tplRoutine)">帶入</button><span>${escHtml(r.name)} <span class="tpl-note">（${r.count} ${templatePicker.kind === 'gear' ? '件' : '顆'}）</span></span></div>`).join('');
+  const groupHtml = groups.map(group => {
+    const rows = group.items.filter(item => match(item.name)).map(item =>
+      `<label class="ng-stack-option"><input type="checkbox" value="${escHtml(item.name)}" ${templatePicker.selected.has(item.name) ? 'checked' : ''} onchange="toggleTemplatePickerItem(this)"><span>${escHtml(item.name)} <span class="tpl-note">${escHtml(item.detail)}</span></span></label>`).join('');
+    return rows ? `<div class="tpl-picker-group-title">${escHtml(group.label)}</div>${rows}` : '';
+  }).join('');
+  const list = document.getElementById('tpl_picker_list');
+  if (list) {
+    list.innerHTML = (routineRows ? `<div class="tpl-picker-group-title">存好的套路（一次帶入，取代目前勾選）</div>${routineRows}` : '')
+      + (groupHtml || '<div class="ng-stack-modal-empty">資料庫裡沒有符合的項目。</div>');
+  }
+  updateTemplatePickerMessage();
+}
+
+function toggleTemplatePickerItem(el) {
+  if (!templatePicker || !el) return;
+  if (el.checked) templatePicker.selected.add(el.value);
+  else templatePicker.selected.delete(el.value);
+  updateTemplatePickerMessage();
+}
+
+function applyTemplateRoutine(name) {
+  if (!templatePicker) return;
+  const entry = findNgDBEntry(name);
+  templatePicker.selected = new Set(getNgDBExpandedStackItems(entry));
+  renderTemplatePickerList();
+}
+
+function confirmTemplatePicker() {
+  if (!templatePicker) return;
+  const { mode, kind } = templatePicker;
+  let names = [...templatePicker.selected];
+  if (kind === 'gear') {
+    const order = name => GEAR_SLOT_SORT_ORDER[templateGearMeta(name)?.slot] || 99;
+    names = names.sort((a, b) => order(a) - order(b));
+  }
+  getTemplateState()[mode][kind] = names;
+  saveTemplates();
+  closeTemplatePicker();
+  renderTemplateDerived(mode);
+}
+
 // ===================== INIT =====================
 window.onload = function() {
   const skEl = document.getElementById('show_storage_key');
@@ -11711,6 +12426,7 @@ window.onload = function() {
   calcNeigong();
   renderDB();
   refreshDBDropdowns();
+  renderTemplatePage();
   loadArtifactTreeAnnotation();
   renderArtifactTreeAnnotator();
   renderOptimizePage();
