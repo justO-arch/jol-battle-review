@@ -25,8 +25,11 @@
   - 由 `battle_review_mobile.html` 複製而來
   - 可直接作為 GitHub Pages 首頁
 - `desktop/index.html`
-  - 由 `battle_review.html` 複製而來
+  - 由主倉執行 `node tools/publish_pages_desktop.js` 產生：`battle_review.html` 去掉私有的「數據估算」
   - 作為桌機版入口
+- `calculator/index.html`
+  - 由 `calculator.html` 複製而來
+  - 傷害計算器
 - `desktop/public-data/latest.json`
   - 公開唯讀模式的資料來源
   - 直接沿用 `battle_review_export_*.json` 格式
@@ -38,20 +41,23 @@
 
 1. 將最新手機版同步到：
    - `github_pages_mobile/index.html`
-2. 將最新桌機版同步到：
+2. 在主倉執行 `node tools/publish_pages_desktop.js` 產生桌機版（不要直接複製，否則私有的數據估算分頁會公開）：
    - `github_pages_mobile/desktop/index.html`
-3. 若要更新公開唯讀資料，在主倉執行 `node tools/publish_public_data.js`：它把 `public-data/latest.json` 去掉內部註記後寫到下面這個檔案（不要直接複製，否則註記會公開）：
+3. 將最新計算機同步到：
+   - `github_pages_mobile/calculator/index.html`
+4. 若要更新公開唯讀資料，在主倉執行 `node tools/publish_public_data.js`：它把 `public-data/latest.json` 去掉內部註記後寫到下面這個檔案（不要直接複製，否則註記會公開）：
    - `github_pages_mobile/desktop/public-data/latest.json`
-4. 視需要同步文件到：
+5. 視需要同步文件到：
    - `github_pages_mobile/docs/`
-5. push 到：
+6. push 到：
    - `justO-arch/jol-battle-review`
-6. GitHub Pages 會自動更新
+7. GitHub Pages 會自動更新
 
 本機同步來源：
 
 - `/home/shen/JusticeOL/battle_review_mobile.html`
 - `/home/shen/JusticeOL/battle_review.html`
+- `/home/shen/JusticeOL/calculator.html`
 - `/home/shen/JusticeOL/幫戰/battle_review_export_*.json`
 - `/home/shen/JusticeOL/幫戰覆盤新頁規格.md`
 - `/home/shen/JusticeOL/版本內容.md`
@@ -60,6 +66,7 @@
 
 - `/home/shen/JusticeOL/github_pages_mobile/index.html`
 - `/home/shen/JusticeOL/github_pages_mobile/desktop/index.html`
+- `/home/shen/JusticeOL/github_pages_mobile/calculator/index.html`
 - `/home/shen/JusticeOL/github_pages_mobile/desktop/public-data/latest.json`
 - `/home/shen/JusticeOL/github_pages_mobile/docs/`
 
@@ -71,9 +78,10 @@
    - `/home/shen/JusticeOL/battle_review.html`
    - `/home/shen/JusticeOL/幫戰覆盤新頁規格.md`
    - `/home/shen/JusticeOL/版本內容.md`
-3. 再同步覆蓋：
+3. 再同步覆蓋（桌機版用 `node tools/publish_pages_desktop.js` 產生，不直接複製）：
    - `/home/shen/JusticeOL/github_pages_mobile/index.html`
    - `/home/shen/JusticeOL/github_pages_mobile/desktop/index.html`
+   - `/home/shen/JusticeOL/github_pages_mobile/calculator/index.html`
    - `/home/shen/JusticeOL/github_pages_mobile/desktop/public-data/latest.json`
    - `/home/shen/JusticeOL/github_pages_mobile/docs/`
 4. 進入：
@@ -81,6 +89,7 @@
 5. 執行：
    - `git add index.html`
    - `git add desktop/index.html`
+   - `git add calculator/index.html`
    - `git add desktop/public-data/latest.json`
    - `git add docs/*.md`
    - `git commit -m "update mobile page"`
