@@ -418,9 +418,14 @@
   .compare-result-row .label { flex: 1; font-size: 12px; color: #555555; }
   .compare-result-row .val { flex: 1; text-align: right; font-size: 16px; color: #0055aa; font-weight: bold; }
   .compare-result-row .diff { flex: 1; text-align: right; font-size: 16px; font-weight: bold; }
-  .diff.positive { color: #1a7c2a; text-shadow: 0 0 6px rgba(26,124,42,0.12); }
-  .diff.negative { color: #d93025; text-shadow: 0 0 6px rgba(217,48,37,0.12); }
-  .diff.neutral { color: #666666; }
+  /* .result-item.highlight .result-value 的特異度較高，PVE 裝備比較的差異要寫到同一層才會上色 */
+  .diff.positive, .result-item .result-value.diff.positive { color: #1a7c2a; text-shadow: 0 0 6px rgba(26,124,42,0.12); }
+  .diff.negative, .result-item .result-value.diff.negative { color: #d93025; text-shadow: 0 0 6px rgba(217,48,37,0.12); }
+  .diff.neutral, .result-item .result-value.diff.neutral { color: #666666; }
+  /* PVP 裝備比較「vs 基準」與素問「vs A」的表格數字，沿用內功/裝備比較表的好壞色 */
+  .positive { color: #2e6d8f; }
+  .negative { color: #b24842; }
+  .neutral { color: #8a7a63; }
 
   /* Utility */
   .mt-8 { margin-top: 8px; }
@@ -3462,7 +3467,7 @@
           <div class="field"><label>攻克係數 k₂</label><input type="number" id="set_pve_k2" value="1" step="0.01"></div>
           <div class="field"><label>元素傷害係數 k₃</label><input type="number" id="set_pve_k3" value="1" step="0.01"></div>
         </div>
-        <div class="formula-note" style="margin-top:10px;">PVE / PVP 目前使用相同係數</div>
+        <div class="formula-note" style="margin-top:10px;">PVE 與 PVP 係數分開設定，這組只用在 PVE 計算</div>
       </div>
     </div>
 
@@ -3485,7 +3490,7 @@
           <div class="field"><label>攻克係數 k₂</label><input type="number" id="set_pvp_k2" value="1" step="0.01"></div>
           <div class="field"><label>元素傷害係數 k₃</label><input type="number" id="set_pvp_k3" value="1" step="0.01"></div>
         </div>
-        <div class="formula-note" style="margin-top:10px;">PVE / PVP 目前使用相同係數</div>
+        <div class="formula-note" style="margin-top:10px;">PVE 與 PVP 係數分開設定，這組只用在 PVP 計算</div>
       </div>
     </div>
   </div>
@@ -3566,22 +3571,25 @@
     <div class="section-body">
       <div class="formula-note" style="font-size:12px;line-height:2.3;">
         <span style="color:#666666;">── Δ 定義 ──────────────────────────────────────</span><br>
-        Δ防禦　= 敵方防禦力 − 我方破防　　　　Δ抗性　= 敵方元素抗性 − 我方忽視元素抗性<br>
+        Δ防禦　= 敵方防禦力 − 我方破防（下限 0）　　Δ抗性　= 敵方元素抗性 − 我方忽視元素抗性（下限 0）<br>
         Δ會心　= 我方會心 − 敵方會心抗性　　　Δ命中　= 我方命中 − 敵方格擋<br>
+        攻擊　　= 面板攻擊 + 全技能增強<br>
         <span style="color:#666666;">── 穿透 ────────────────────────────────────────</span><br>
         <b style="color:#0066cc;">防禦穿透率</b>　= A<sub>防</sub> ÷ (Δ防禦 + A<sub>防</sub>) − B<sub>防</sub><br>
         <b style="color:#0066cc;">元素穿透率</b>　= A<sub>元</sub> ÷ (Δ抗性 + A<sub>元</sub>)<br>
         <span style="color:#666666;">── 命中 / 會心 ──────────────────────────────────</span><br>
-        <b style="color:#0066cc;">會心率</b>　　　= ( A<sub>會</sub> × Δ會心 + B<sub>會</sub> ) ÷ ( Δ會心 + C<sub>會</sub> ) + 基礎會心率<br>
-        <b style="color:#0066cc;">命中率</b>　　　= A<sub>命</sub> + ( B<sub>命</sub> × Δ命中 ) ÷ ( Δ命中 + C<sub>命</sub> )<br>
+        <b style="color:#0066cc;">會心率</b>　　　= ( A<sub>會</sub> × Δ會心 + B<sub>會</sub> ) ÷ ( Δ會心 + C<sub>會</sub> ) × 0.01 + 基礎會心率（限制在 0～100%）<br>
+        <b style="color:#0066cc;">命中率</b>　　　= A<sub>命</sub> + ( B<sub>命</sub> × Δ命中 ) ÷ ( Δ命中 + C<sub>命</sub> )（限制在 0～100%）<br>
         <span style="color:#666666;">── 傷害 ────────────────────────────────────────</span><br>
         <b style="color:#0066cc;">氣盾衰減</b>　　= 若 氣盾 ≥ 3×破盾：剩 氣盾−2×破盾；否則：剩 0.5×(氣盾−破盾)；下限 0<br>
-        <b style="color:#0066cc;">元素傷害</b>　　= k₃ × 元素攻擊 × 元素穿透率<br>
+        <b style="color:#0066cc;">元素傷害</b>　　= k₃ × 元素攻擊 × 元素穿透率 × (1 + 元素傷害加成)<br>
         <b style="color:#0066cc;">PVE 攻克基底</b>　= max(4000 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制 − 首領抵禦, (4000 + 攻擊 − 剩餘氣盾 + 首領克制 + 技巧克制) ÷ 6)<br>
         <b style="color:#0066cc;">PVE 攻克傷害</b>　= k₁ + k₂ × PVE 攻克基底 × 防禦穿透率<br>
         <b style="color:#0066cc;">PVP 攻克傷害</b>　= k₁ + k₂ × max(2868 + 攻擊 − 剩餘氣盾 + 流派克制 − 流派抵禦 + 技巧差, 0) × 防禦穿透率<br>
-        <b style="color:#0066cc;">PVE 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×會心倍率 + (1−會心率)) + 0.5×(1−命中率) ] × 獨立乘區<br>
-        <b style="color:#0066cc;">PVP 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×(會心倍率−抗會傷) + (1−會心率)) + 0.5×(1−命中率) ] × 獨立乘區
+        <b style="color:#0066cc;">PVE 獨立乘區</b>　= (1 + 乘區1%) × (1 + 乘區2%) × (1 + 首領克制%) × (1 + 攻擊特性%)<br>
+        <b style="color:#0066cc;">PVP 獨立乘區</b>　= (1 + 乘區1%) × (1 + 乘區2%) × (1 + 流派克制% − 對方流派抵禦%) × (1 + 攻擊特性% − 對方防禦特性%)<br>
+        <b style="color:#0066cc;">PVE 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×會心倍率 + (1−會心率)) + 0.5×(1−命中率) ] × PVE 獨立乘區<br>
+        <b style="color:#0066cc;">PVP 期望</b>　　= (攻克 + 元素) × [ 命中率×(會心率×(會心倍率−抗會傷) + (1−會心率)) + 0.5×(1−命中率) ] × PVP 獨立乘區
       </div>
     </div>
   </div>
@@ -3610,7 +3618,7 @@
       </div>
       <div class="section-body">
         <div id="db_list_set" style="border:1px solid #d0d0d0;border-radius:4px;min-height:60px;"></div>
-        <div style="color:#666666;font-size:12px;margin-top:8px;">儲存欄位：完整攻防面板（23 欄）</div>
+        <div style="color:#666666;font-size:12px;margin-top:8px;">儲存欄位：完整攻防面板</div>
       </div>
     </div>
 
@@ -5377,13 +5385,13 @@ function calcPVPCmp() {
   });
   const maxScore = Math.max(...scores);
   const fmtHits = v => isFinite(v) ? v.toFixed(1) : '∞';
-  // 擊殺次數比較：越少越好，基準 > 本次 → 正值（綠）
+  // 擊殺次數比較：越少越好，基準 > 本次 → 正值
   const fmtDiffKill = (val, base) => {
     if (!isFinite(val) || !isFinite(base) || base === 0) return '—';
     const p = ((base - val) / base * 100).toFixed(2) + '%';
     return val < base ? `<span class="positive">+${p}</span>` : val > base ? `<span class="negative">-${(((val - base) / base) * 100).toFixed(2)}%</span>` : `<span class="neutral">+0.00%</span>`;
   };
-  // 可承受次數比較：越多越好，本次 > 基準 → 正值（綠）
+  // 可承受次數比較：越多越好，本次 > 基準 → 正值
   const fmtDiffHits = (val, base) => {
     if (!isFinite(val) || !isFinite(base) || base === 0) return '—';
     const p = ((val - base) / base * 100).toFixed(2) + '%';
@@ -6753,7 +6761,52 @@ function dbPersist(type) {
   return false;
 }
 
+// 載入一律用名稱找第一筆，裝備配置與內功配置又共用同一個載入選單，所以同名要在這兩類一起檢查
+function findDBEntryByName(type, name) {
+  const types = (type === 'gear' || type === 'ng') ? ['gear', 'ng'] : [type];
+  for (const t of types) {
+    const index = DB[t].findIndex(e => e && e.name === name);
+    if (index >= 0) return { type: t, index };
+  }
+  return null;
+}
+
+function nextFreeDBName(type, name) {
+  for (let n = 2; ; n += 1) {
+    const suffix = ` (${n})`;
+    const room = 20 - suffix.length;
+    // 內功靠名稱裡的四位數字分類；截短會切掉數字時改留結尾，另存的那筆重新整理後才不會被歸到裝備配置
+    const base = name.length <= room || isInnerSkillName(name.slice(0, room)) || !isInnerSkillName(name)
+      ? name.slice(0, room)
+      : name.slice(-room);
+    const candidate = base + suffix;
+    if (!findDBEntryByName(type, candidate)) return candidate;
+  }
+}
+
+// 回傳實際存入的名稱；沒有存入時回傳 false
 function dbAdd(type, name, data, meta = null) {
+  const existing = findDBEntryByName(type, name);
+  if (existing) {
+    // 以前同名會多存一筆，之後載入永遠拿到舊的那筆（2026-10-21）
+    if (confirm(`資料庫已有「${name}」。\n\n按「確定」：用現在的數值覆蓋它${meta ? '' : '（補登的分類、部位與詞條保留）'}。\n按「取消」：不覆蓋。`)) {
+      const list = DB[existing.type];
+      const old = list[existing.index];
+      // 套路會帶自己的分類；覆蓋後若還留著原本的內功分類，最佳化會把整組套路當成一顆內功
+      list[existing.index] = normalizeDBEntryMeta({ ...old, name, data, ...(meta ? { meta } : {}) });
+      if (!dbPersist(existing.type)) {
+        list[existing.index] = old;
+        return false;
+      }
+      renderDB();
+      refreshDBDropdowns();
+      renderOptimizePage();
+      return name;
+    }
+    const altName = nextFreeDBName(type, name);
+    if (!confirm(`改存成新的一筆「${altName}」嗎？\n\n按「取消」就不儲存。`)) return false;
+    name = altName;
+  }
   const limit = getDBStorageTypeLimit(type);
   if (DB[type].length >= limit) { alert(`已達 ${limit} 筆上限，請先刪除不需要的項目。`); return false; }
   DB[type].push(normalizeDBEntryMeta({ name, data, ...(meta ? { meta } : {}) }));
@@ -6764,7 +6817,7 @@ function dbAdd(type, name, data, meta = null) {
   renderDB();
   refreshDBDropdowns();
   renderOptimizePage();
-  return true;
+  return name;
 }
 
 function dbDelete(type, idx) {
@@ -9879,7 +9932,8 @@ function saveNgOptimizeResultAsStack(resultKey, rank = 0) {
   const name = prompt('請輸入內功套路名稱（最多 20 字）：', defaultName);
   if (name === null || name.trim() === '') return;
   const trimmed = name.trim().slice(0, 20);
-  if (dbAdd('ng', trimmed, data, { category: 'set_build', slot: null, tags: null })) alert(`已儲存內功套路：${trimmed}`);
+  const savedName = dbAdd('ng', trimmed, data, { category: 'set_build', slot: null, tags: null });
+  if (savedName) alert(`已儲存內功套路：${savedName}`);
 }
 
 const OPTIMIZE_GEAR_STACK_LABELS = {
@@ -9929,7 +9983,8 @@ function saveGearOptimizeResultAsStack(kind, resultKey, rank = 0) {
   const name = prompt('請輸入裝備套路名稱（最多 20 字）：', defaultName);
   if (name === null || name.trim() === '') return;
   const trimmed = name.trim().slice(0, 20);
-  if (dbAdd('gear', trimmed, data, { category: 'set_build', slot: null, tags: null })) alert(`已儲存${label}套路：${trimmed}`);
+  const savedName = dbAdd('gear', trimmed, data, { category: 'set_build', slot: null, tags: null });
+  if (savedName) alert(`已儲存${label}套路：${savedName}`);
 }
 
 function runNgOptimize() {
@@ -11397,6 +11452,65 @@ function exportData() {
   URL.revokeObjectURL(url);
 }
 
+const DB_IMPORT_LABELS = { set: '套裝', healer: '素問套裝', gear: '裝備配置', ng: '內功配置', pve: '套裝（舊版 PVE 格式）', pvp: '套裝（舊版 PVP 格式）' };
+
+// 預覽與實際寫入共用同一份計算結果，確認視窗列出的筆數才會和匯入後相同
+function planDBMergeImport(dbType, currentArr, importArr) {
+  const limit = getDBStorageTypeLimit(dbType);
+  const merged = Array.isArray(currentArr) ? currentArr.slice() : [];
+  const added = [];
+  const duplicate = [];
+  const overLimit = [];
+  (Array.isArray(importArr) ? importArr : []).forEach(entry => {
+    const name = entry && typeof entry.name === 'string' ? entry.name : '';
+    if (!name) return;
+    if (merged.find(item => item && item.name === name)) duplicate.push(name);
+    else if (merged.length >= limit) overLimit.push(name);
+    else {
+      merged.push(entry);
+      added.push(name);
+    }
+  });
+  return { dbType, limit, merged, added, duplicate, overLimit };
+}
+
+function planCalculatorMergeImport(importEntries) {
+  const db = [];
+  const otherAdded = [];
+  const otherKept = [];
+  importEntries.forEach(([key, val]) => {
+    const dbMatch = key.match(new RegExp(`^${STORAGE_KEY}_db_(set|healer|pve|pvp|gear|ng)$`));
+    if (dbMatch) {
+      let currentArr = [];
+      let importArr = [];
+      try { currentArr = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch(e) { currentArr = []; }
+      try { importArr = JSON.parse(val) || []; } catch(e) { importArr = []; }
+      db.push({ key, ...planDBMergeImport(dbMatch[1], currentArr, importArr) });
+    } else if (localStorage.getItem(key) === null) {
+      otherAdded.push([key, val]);
+    } else {
+      otherKept.push(key);
+    }
+  });
+  return { db, otherAdded, otherKept };
+}
+
+function calculatorMergeImportSummary(plan) {
+  const lines = plan.db.map(item => {
+    const parts = [`新增 ${item.added.length} 筆`];
+    if (item.duplicate.length) parts.push(`同名略過 ${item.duplicate.length} 筆`);
+    if (item.overLimit.length) {
+      const names = item.overLimit.slice(0, 10).join('、') + (item.overLimit.length > 10 ? ` 等 ${item.overLimit.length} 筆` : '');
+      parts.push(`已到上限 ${item.limit} 筆，沒有匯入 ${item.overLimit.length} 筆（${names}）`);
+    }
+    return `${DB_IMPORT_LABELS[item.dbType] || item.dbType}：${parts.join('，')}`;
+  });
+  if (plan.otherAdded.length || plan.otherKept.length) {
+    lines.push(`其他設定：補入 ${plan.otherAdded.length} 項${plan.otherKept.length ? `，本機已有的 ${plan.otherKept.length} 項不覆蓋` : ''}`);
+  }
+  return lines.join('\n');
+}
+
 function importData() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -11409,9 +11523,18 @@ function importData() {
       try {
         const data = JSON.parse(ev.target.result);
         const importEntries = Object.entries(data).filter(([key, val]) => isCalculatorBackupKey(key) && typeof val === 'string');
-        const reviewNote = Object.keys(data).some(isBattleReviewStorageKey)
+        const hasReview = Object.keys(data).some(isBattleReviewStorageKey);
+        const reviewNote = hasReview
           ? '檔案裡的幫戰覆盤資料沒有匯入，覆盤請在覆盤頁用「批量匯入目前所有資料」。'
           : '';
+        const plan = planCalculatorMergeImport(importEntries);
+        if (!plan.db.length && !plan.otherAdded.length && !plan.otherKept.length) {
+          alert(`檔案裡沒有可匯入的計算機資料。${reviewNote}`);
+          return;
+        }
+        const summary = calculatorMergeImportSummary(plan);
+        // 以前超過上限的資料會直接消失，完成訊息的「N 筆」其實是儲存區塊數；先列出來讓使用者決定（2026-10-21）
+        if (!confirm(`合併匯入會保留本機現有資料，只加入本機沒有的項目：\n\n${summary}${hasReview ? '\n\n檔案裡的幫戰覆盤資料不會匯入。' : ''}\n\n要繼續匯入嗎？`)) return;
         // Keep a recovery snapshot before import so an older backup won't silently destroy newer local data.
         const currentSnapshot = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -11427,40 +11550,22 @@ function importData() {
           backupWarning = ' 但匯入前備份未建立，原因可能是瀏覽器本地儲存空間已滿。';
           console.warn('Failed to save pre-import backup:', backupErr);
         }
-        let count = 0;
-        importEntries.forEach(([key, val]) => {
-          const dbMatch = key.match(new RegExp(`^${STORAGE_KEY}_db_(set|healer|pve|pvp|gear|ng)$`));
-          if (dbMatch) {
-            const dbType = dbMatch[1];
-            const limit = getDBStorageTypeLimit(dbType);
-            let currentArr = [];
-            let importArr = [];
-            try { currentArr = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch(e) { currentArr = []; }
-            try { importArr = JSON.parse(val) || []; } catch(e) { importArr = []; }
-            const merged = Array.isArray(currentArr) ? currentArr.slice() : [];
-            if (Array.isArray(importArr)) {
-              importArr.forEach(entry => {
-                const name = entry && typeof entry.name === 'string' ? entry.name : '';
-                if (!name) return;
-                if (!merged.find(item => item && item.name === name) && merged.length < limit) merged.push(entry);
-              });
-            }
-            try {
-              localStorage.setItem(key, JSON.stringify(merged));
-            } catch (storeErr) {
-              throw new Error(`寫入 ${key} 失敗，原因可能是瀏覽器本地儲存空間已滿`);
-            }
-          } else if (localStorage.getItem(key) === null) {
-            // Non-DB data is imported only when absent locally, to avoid older backups overwriting newer state.
-            try {
-              localStorage.setItem(key, val);
-            } catch (storeErr) {
-              throw new Error(`寫入 ${key} 失敗，原因可能是瀏覽器本地儲存空間已滿`);
-            }
+        plan.db.forEach(item => {
+          try {
+            localStorage.setItem(item.key, JSON.stringify(item.merged));
+          } catch (storeErr) {
+            throw new Error(`寫入 ${item.key} 失敗，原因可能是瀏覽器本地儲存空間已滿`);
           }
-          count++;
         });
-        alert(`匯入成功（共 ${count} 筆）。本次為保留現有資料的合併匯入${backupWarning || '，並已建立匯入前備份。'}${reviewNote}頁面即將重新整理。`);
+        // Non-DB data is imported only when absent locally, to avoid older backups overwriting newer state.
+        plan.otherAdded.forEach(([key, val]) => {
+          try {
+            localStorage.setItem(key, val);
+          } catch (storeErr) {
+            throw new Error(`寫入 ${key} 失敗，原因可能是瀏覽器本地儲存空間已滿`);
+          }
+        });
+        alert(`匯入完成。本次為保留現有資料的合併匯入${backupWarning || '，並已建立匯入前備份。'}\n\n${summary}\n\n${reviewNote}頁面即將重新整理。`);
         location.reload();
       } catch (err) {
         alert('匯入失敗：' + err.message);

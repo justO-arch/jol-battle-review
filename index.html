@@ -638,6 +638,8 @@
     background: var(--tk-bg-fffdf8);
     padding: 14px;
     display: grid;
+    /* 沒有指定欄寬時，裡面的寬表會把欄撐開，右側被外層 panel 裁掉；限制欄寬後，寬表在自己的 table-wrap 內捲動 */
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
   .metric-table td:first-child { color: var(--muted); width: 160px; }
@@ -2078,6 +2080,7 @@
                     <option value="avgHeal">平均治療</option>
                     <option value="avgNetHeal">平均淨奶</option>
                     <option value="avgBurn">平均焚骨</option>
+                    <option value="avgSpring">平均清泉</option>
                     <option value="avgSave">平均化羽</option>
                     <option value="reviewSuggestCount">建議覆盤次數</option>
                   </select>
@@ -2124,6 +2127,7 @@
                       <th>平均治療</th>
                       <th>平均淨奶</th>
                       <th>平均焚骨</th>
+                      <th>平均清泉</th>
                       <th>平均化羽</th>
                       <th>建議覆盤次數</th>
                     </tr>
@@ -2852,7 +2856,8 @@ function fmtLarge(value) {
   const num = Number(value || 0);
   if (Math.abs(num) >= 100000000) return `${(num / 100000000).toFixed(2)} 億`;
   if (Math.abs(num) >= 10000) return `${(num / 10000).toFixed(1)} 萬`;
-  return fmtNumber(num);
+  // 1 萬以下顯示到個位數；以前會出現 8,177.253 這種小數第 3 位（2026-10-21）
+  return (Math.round(num) || 0).toLocaleString('zh-TW');
 }
 
 function fmtPvpPerKill(value) {
@@ -4062,6 +4067,14 @@ function renderPlayerCompareTable(comparisons) {
   `;
 }
 
+// 化羽與清泉在戰報是同一欄，淨奶是治療減承傷；不是該職業的數值沒有意義（DPS 的淨奶會是負的），和桌機一樣顯示「-」（2026-10-21）
+const PROFESSION_JOB_ONLY_COLUMNS = { avgHeal: '素問', avgNetHeal: '素問', avgSave: '素問', avgBurn: '九靈', avgSpring: '潮光' };
+function professionColumnApplies(key, job) {
+  return !PROFESSION_JOB_ONLY_COLUMNS[key] || PROFESSION_JOB_ONLY_COLUMNS[key] === job;
+}
+function professionJobOnlyValue(row, key, format) {
+  return professionColumnApplies(key, row.job) ? format(row[key]) : '-';
+}
 function professionRows() {
   const job = document.getElementById('profession_job_filter').value;
   const groupType = document.getElementById('profession_group_filter').value;
@@ -4099,6 +4112,7 @@ function professionRows() {
         avgNetHeal: sum(sample, 'netHeal') / history.length,
         avgBurn: sum(sample, 'burnCount') / history.length,
         avgSave: sum(sample, 'saveCount') / history.length,
+        avgSpring: sum(sample, 'saveCount') / history.length,
         reviewSuggestCount: history.filter(h => ['priority', 'secondary'].includes(h.raw.level)).length,
       };
       return row;
@@ -4106,6 +4120,10 @@ function professionRows() {
     .filter(Boolean)
     .filter(item => item.battles >= minBattles)
     .sort((a, b) => {
+      // 依治療類欄位排序時，不是該職業的列（顯示「-」）一律排在最後
+      const aFits = professionColumnApplies(sortField, a.job);
+      const bFits = professionColumnApplies(sortField, b.job);
+      if (aFits !== bFits) return aFits ? -1 : 1;
       const av = Number(a[sortField] || 0);
       const bv = Number(b[sortField] || 0);
       if (av !== bv) return sortOrder === 'asc' ? av - bv : bv - av;
@@ -4504,10 +4522,11 @@ function renderProfessionTable() {
       <td>${fmtLarge(row.avgBuildDamage)}</td>
       <td>${fmtLarge(row.avgTakenDamage)}</td>
       <td>${fmtLarge(row.avgTakenPerDeath)}</td>
-      <td>${fmtLarge(row.avgHeal)}</td>
-      <td>${fmtLarge(row.avgNetHeal)}</td>
-      <td>${fmtAvg(row.avgBurn)}</td>
-      <td>${fmtAvg(row.avgSave)}</td>
+      <td>${professionJobOnlyValue(row, 'avgHeal', fmtLarge)}</td>
+      <td>${professionJobOnlyValue(row, 'avgNetHeal', fmtLarge)}</td>
+      <td>${professionJobOnlyValue(row, 'avgBurn', fmtAvg)}</td>
+      <td>${professionJobOnlyValue(row, 'avgSpring', fmtAvg)}</td>
+      <td>${professionJobOnlyValue(row, 'avgSave', fmtAvg)}</td>
       <td>${fmtNumber(row.reviewSuggestCount)}</td>
     </tr>
   `).join('');

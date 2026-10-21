@@ -1559,6 +1559,8 @@
     background: var(--tk-bg-fffdf8);
     padding: 14px;
     display: grid;
+    /* 沒有指定欄寬時，裡面的寬表會把欄撐開，右側被外層 panel 裁掉；限制欄寬後，寬表在自己的 table-wrap 內捲動 */
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
   .metric-table td:first-child { color: var(--muted); width: 160px; }
@@ -5005,6 +5007,14 @@ const PROFESSION_TABLE_COLUMNS = [
   { label: '平均化羽', key: 'avgSave' },
   { label: '建議覆盤次數', key: 'reviewSuggestCount' },
 ];
+// 化羽與清泉在戰報是同一欄，淨奶是治療減承傷；不是該職業的數值沒有意義（DPS 的淨奶會是負的），和 PDF 一樣顯示「-」（2026-10-21）
+const PROFESSION_JOB_ONLY_COLUMNS = { avgHeal: '素問', avgNetHeal: '素問', avgSave: '素問', avgBurn: '九靈', avgSpring: '潮光' };
+function professionColumnApplies(key, job) {
+  return !PROFESSION_JOB_ONLY_COLUMNS[key] || PROFESSION_JOB_ONLY_COLUMNS[key] === job;
+}
+function professionJobOnlyValue(row, key, format) {
+  return professionColumnApplies(key, row.job) ? format(row[key]) : '-';
+}
 const DPS_PROFESSION_TABLE_COLUMNS = [
   { label: '職業', key: 'job', defaultOrder: 'asc' },
   { label: '人次', key: 'entries' },
@@ -5834,7 +5844,8 @@ function fmtLarge(value) {
   const num = Number(value || 0);
   if (Math.abs(num) >= 100000000) return `${(num / 100000000).toFixed(2)} 億`;
   if (Math.abs(num) >= 10000) return `${(num / 10000).toFixed(1)} 萬`;
-  return fmtNumber(num);
+  // 1 萬以下顯示到個位數；以前會出現 8,177.253 這種小數第 3 位（2026-10-21）
+  return (Math.round(num) || 0).toLocaleString('zh-TW');
 }
 
 function fmtPvpPerKill(value) {
@@ -8096,6 +8107,10 @@ function professionRows() {
         if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
         return a.name.localeCompare(b.name, 'zh-Hant');
       }
+      // 依治療類欄位排序時，不是該職業的列（顯示「-」）一律排在最後
+      const aFits = professionColumnApplies(sortField, a.job);
+      const bFits = professionColumnApplies(sortField, b.job);
+      if (aFits !== bFits) return aFits ? -1 : 1;
       const av = Number(a[sortField] || 0);
       const bv = Number(b[sortField] || 0);
       if (av !== bv) return sortOrder === 'asc' ? av - bv : bv - av;
@@ -10303,11 +10318,11 @@ function renderProfessionTable() {
       <td><span class="nowrap">${fmtLarge(row.avgBuildPerDeath)}</span></td>
       <td><span class="nowrap">${fmtLarge(row.avgTakenDamage)}</span></td>
       <td><span class="nowrap">${fmtLarge(row.avgTakenPerDeath)}</span></td>
-      <td><span class="nowrap">${fmtLarge(row.avgHeal)}</span></td>
-      <td><span class="nowrap">${fmtLarge(row.avgNetHeal)}</span></td>
-      <td><span class="nowrap">${fmtAvg(row.avgBurn)}</span></td>
-      <td><span class="nowrap">${fmtAvg(row.avgSpring)}</span></td>
-      <td><span class="nowrap">${fmtAvg(row.avgSave)}</span></td>
+      <td><span class="nowrap">${professionJobOnlyValue(row, 'avgHeal', fmtLarge)}</span></td>
+      <td><span class="nowrap">${professionJobOnlyValue(row, 'avgNetHeal', fmtLarge)}</span></td>
+      <td><span class="nowrap">${professionJobOnlyValue(row, 'avgBurn', fmtAvg)}</span></td>
+      <td><span class="nowrap">${professionJobOnlyValue(row, 'avgSpring', fmtAvg)}</span></td>
+      <td><span class="nowrap">${professionJobOnlyValue(row, 'avgSave', fmtAvg)}</span></td>
       <td><span class="nowrap">${fmtNumber(row.reviewSuggestCount)}</span></td>
     </tr>
   `).join('');
@@ -12671,7 +12686,21 @@ function handleAddBattle() {
     return;
   }
   refreshAll();
-  noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText}`;
+  resetImportFormAfterAdd();
+  noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText}${importedRoleRows.length ? ' 表單已清空，分工表保留給下一場。' : ' 表單已清空。'}`;
+}
+
+// 以前加入後表單不清空，連續加兩場時第二場會沿用上一場的勝敗與備註；分工表保留，同一天多場常共用一份（2026-10-21）
+function resetImportFormAfterAdd() {
+  importedSections = [];
+  importedBattleFileLabel = '';
+  importedBattleFileDate = '';
+  ['csv_file', 'import_date', 'import_note'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('import_result').value = 'unknown';
+  renderImportSections();
 }
 
 document.getElementById('btn_parse_csv').addEventListener('click', handleParseCsv);
