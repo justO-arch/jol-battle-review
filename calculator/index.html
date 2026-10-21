@@ -668,6 +668,79 @@
     color: #2f5e58;
     transform: translateY(-1px);
   }
+  /* 最佳化頁的浮動跳轉（使用者要求，2026-10-21）：寬螢幕放在內容左邊的空白處、跟著捲動；
+     內容寬 1240px，左邊空白不到 80px 時（約 1420px 以下，含手機）改成左下角的按鈕，按了才展開 */
+  .opt-float-nav {
+    position: fixed;
+    left: max(12px, calc((100vw - 1240px) / 2 - 76px));
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 6;
+  }
+  .opt-float-nav-list {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 80px;
+    box-sizing: border-box;
+    padding: 10px 6px;
+    border: 1px solid rgba(168, 122, 47, 0.24);
+    border-radius: 14px;
+    background: rgba(255, 252, 247, 0.94);
+    box-shadow: 0 10px 24px rgba(24, 33, 43, 0.12);
+  }
+  .opt-float-nav-label {
+    color: #6f6049;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .opt-float-nav a,
+  .opt-float-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 5px 6px;
+    border: 1px solid rgba(168, 122, 47, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    color: #355d7c;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .opt-float-nav a:hover,
+  .opt-float-nav-toggle:hover {
+    border-color: rgba(168, 122, 47, 0.46);
+    background: rgba(255, 249, 239, 0.96);
+    color: #2f5e58;
+  }
+  .opt-float-nav-toggle {
+    display: none;
+    padding: 8px 14px;
+    box-shadow: 0 10px 24px rgba(24, 33, 43, 0.16);
+  }
+  @media (max-width: 1419px) {
+    .opt-float-nav {
+      left: 12px;
+      top: auto;
+      bottom: 16px;
+      transform: none;
+    }
+    .opt-float-nav-toggle { display: flex; }
+    .opt-float-nav-list {
+      display: none;
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 8px);
+    }
+    .opt-float-nav.open .opt-float-nav-list { display: flex; }
+  }
   .opt-block .section-title {
     padding: 14px 18px;
     margin: -18px -18px 16px;
@@ -853,6 +926,10 @@
   .ng-stack-summary-list {
     min-height: 16px;
     word-break: break-word;
+  }
+  .ng-stack-kind {
+    color: #6d4f25;
+    font-weight: 700;
   }
   .ng-stack-clear-btn {
     background: rgba(255,252,247,0.98);
@@ -3010,16 +3087,30 @@
 
   <nav class="optimize-jump-nav" aria-label="最佳化區塊快速跳轉">
     <span class="optimize-jump-nav-label">快速跳轉</span>
-    <a href="#opt-section-lower">下半</a>
-    <a href="#opt-section-upper">上半</a>
-    <a href="#opt-section-joint">上下</a>
-    <a href="#opt-section-ng">內功</a>
-    <a href="#opt-section-final">最終</a>
+    <a href="#opt-section-exclude" onclick="return jumpOptimizeSection(this)">排除裝備</a>
+    <a href="#opt-section-lower" onclick="return jumpOptimizeSection(this)">下半</a>
+    <a href="#opt-section-upper" onclick="return jumpOptimizeSection(this)">上半</a>
+    <a href="#opt-section-joint" onclick="return jumpOptimizeSection(this)">上下</a>
+    <a href="#opt-section-ng" onclick="return jumpOptimizeSection(this)">內功</a>
+    <a href="#opt-section-final" onclick="return jumpOptimizeSection(this)">最終</a>
+  </nav>
+
+  <nav id="opt_float_nav" class="opt-float-nav" aria-label="最佳化區塊快速跳轉（浮動）">
+    <button type="button" class="opt-float-nav-toggle" aria-expanded="false" onclick="toggleOptimizeFloatNav()">快速跳轉</button>
+    <div class="opt-float-nav-list">
+      <span class="opt-float-nav-label">快速跳轉</span>
+      <a href="#opt-section-exclude" onclick="return jumpOptimizeSection(this)">排除裝備</a>
+      <a href="#opt-section-lower" onclick="return jumpOptimizeSection(this)">下半</a>
+      <a href="#opt-section-upper" onclick="return jumpOptimizeSection(this)">上半</a>
+      <a href="#opt-section-joint" onclick="return jumpOptimizeSection(this)">上下</a>
+      <a href="#opt-section-ng" onclick="return jumpOptimizeSection(this)">內功</a>
+      <a href="#opt-section-final" onclick="return jumpOptimizeSection(this)">最終</a>
+    </div>
   </nav>
 
   <div id="opt_base_box" class="section opt-block" style="margin-bottom:16px;"></div>
 
-  <div class="section opt-block opt-block-exclude" style="margin-bottom:16px;">
+  <div id="opt-section-exclude" class="section opt-block opt-block-exclude" style="margin-bottom:16px;">
     <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
       <span>排除裝備</span>
       <button type="button" id="opt_exclude_toggle_btn" onclick="toggleOptimizeExcludePanel()" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">展開排除清單</button>
@@ -7501,6 +7592,15 @@ function renameOptimizeGearReferences(oldName, newName) {
   if (activeStacksChanged) {
     if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   }
+  // 模板只存名稱；不跟著改，改名後模板會變成「資料庫找不到」
+  const templates = getTemplateState();
+  let templatesChanged = false;
+  TEMPLATE_MODES.forEach(mode => ['gear', 'ng'].forEach(kind => {
+    if (!templates[mode][kind].includes(oldName)) return;
+    templates[mode][kind] = templates[mode][kind].map(name => (name === oldName ? newName : name));
+    templatesChanged = true;
+  }));
+  if (templatesChanged) saveTemplates();
   return changedTypes;
 }
 
@@ -8175,6 +8275,29 @@ function clearNgAdjustCores() {
   optimizeNgCoreAdjustments = {};
   persistNgCoreAdjustments();
   renderNgAdjustCoreList();
+}
+
+// 最佳化頁的區塊跳轉。分頁列固定在頂端（桌機約 124px、手機約 256px），直接跳錨點會把區塊標題捲到分頁列底下，所以扣掉分頁列的高度
+function jumpOptimizeSection(link) {
+  const target = document.getElementById(String(link?.getAttribute('href') || '').replace(/^#/, ''));
+  if (!target) return true;
+  const bar = document.querySelector('.tab-bar');
+  const offset = (bar ? bar.getBoundingClientRect().height : 0) + 12;
+  window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset), behavior: 'smooth' });
+  setOptimizeFloatNavOpen(false);
+  return false;
+}
+
+function setOptimizeFloatNavOpen(open) {
+  const nav = document.getElementById('opt_float_nav');
+  if (!nav) return;
+  nav.classList.toggle('open', open);
+  nav.querySelector('.opt-float-nav-toggle')?.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function toggleOptimizeFloatNav() {
+  const nav = document.getElementById('opt_float_nav');
+  setOptimizeFloatNavOpen(!(nav && nav.classList.contains('open')));
 }
 
 function toggleOptimizeExcludePanel() {
@@ -9178,6 +9301,11 @@ const OPTIMIZE_BASE_NOTE_IDS = {
   lower: 'opt_lower_base_note', upper: 'opt_upper_base_note', joint: 'opt_joint_base_note', ng: 'opt_ng_base_note', final: 'opt_final_base_note',
 };
 
+// 全技能增強在計算時加進攻擊，但遊戲面板的攻擊不含它；合在一起寫會比遊戲面板高，使用者以為讀到舊模板（2026-10-21），所以分開寫
+function attackWithSkillEnhText(atkOnly, skillEnh, format) {
+  return Math.round(skillEnh) ? `攻擊 ${format(atkOnly)}＋全技能增強 ${format(skillEnh)}` : `攻擊 ${format(atkOnly + skillEnh)}`;
+}
+
 function describeOptimizeBase(mode, source) {
   let atk, breakDef, hp;
   if (mode === 'pvp') {
@@ -9191,7 +9319,9 @@ function describeOptimizeBase(mode, source) {
     breakDef = base.breakDef;
     hp = source.useTemplate ? source.panel.hp + getCombatBuffDeltaForToggles(source.tpl.buffs).hp : n('ng_myhp');
   }
-  const numbers = `攻擊 ${fmt(atk)}、破防 ${fmt(breakDef)}、氣血 ${fmt(hp)}`;
+  // 參數裡的攻擊已經含全技能增強（templateAttackParams、getOptimizePVPBase），扣回來分開寫
+  const skillEnh = source.useTemplate ? source.panel.skillEnh : n('ng_skillenh');
+  const numbers = `${attackWithSkillEnhText(atk - skillEnh, skillEnh, fmt)}、破防 ${fmt(breakDef)}、氣血 ${fmt(hp)}`;
   if (!source.useTemplate) return `內功/裝備比較頁（${numbers}，可能已包含裝備）`;
   const buffs = [source.tpl.buffs.buff && '藥', source.tpl.buffs.tongxin && '同心一力'].filter(Boolean);
   const what = OPTIMIZE_SECTION_BASE_TEXT[source.section] || OPTIMIZE_SECTION_BASE_TEXT.final;
@@ -9222,7 +9352,7 @@ function renderOptimizeBaseBox() {
     const fieldLabels = Object.fromEntries(TEMPLATE_PANEL_FIELDS.map(([key, text]) => [key, templateFieldLabel(mode, key, text)]));
     const warnings = [];
     if (missing.length) warnings.push(`${label} 模板身上穿戴沒填完整（${missing.join('；')}）：沒填的那幾件還留在裸面板裡，加上候選時會重複計算。`);
-    if (bareInfo.missing.length) warnings.push(`${label} 模板身上有資料庫找不到的項目（${bareInfo.missing.map(escHtml).join('、')}），沒有從數值面板扣掉。`);
+    if (bareInfo.missing.length) warnings.push(`${label} 模板身上有資料庫找不到的項目（${bareInfo.missing.map(escHtml).join('、')}），沒有從數值面板扣掉。到模板頁按「選擇裝備」或「選擇內功」，這幾件列在最上面，取消勾選就會拿掉。`);
     if (bareInfo.routines.length) warnings.push(`${label} 模板：${escHtml(templateRoutineMessage(bareInfo.routines))}。`);
     if (bareInfo.negative.length) warnings.push(`${label} 模板的裸面板有欄位扣成負數（${bareInfo.negative.map(key => fieldLabels[key]).join('、')}），通常是數值面板沒包含身上勾選的某件，或是勾錯了。`);
     return `<div class="opt-base-row"><b>${label} 最佳化</b>：${escHtml(describeOptimizeBase(mode, source))}；${mode === 'pvp' ? '對手用模板的敵方' : '首領用模板的首領'}；職業標籤 ${cls}。</div>`
@@ -9235,7 +9365,7 @@ function renderOptimizeBaseBox() {
     </div>
     <div class="section-body">
       ${rows}
-      <div class="formula-note" style="margin-top:8px;">模板設定好時，上面是最終最佳化的基底：模板的裸面板（數值面板扣掉身上的裝備與內功）加上模板勾的藥與同心一力，職業標籤也用模板的。其他各區把該區的身上穿戴換成候選，其他部位保留模板身上的：下半保留上半裝備與內功、上半保留下半裝備與內功、上下聯合保留內功、內功保留 11 件裝備，所以分區的數字就是「換掉這一區後的整套」。每區結果上方會記下執行時用的基底。</div>
+      <div class="formula-note" style="margin-top:8px;">模板設定好時，上面是最終最佳化的基底：模板的裸面板（數值面板扣掉身上的裝備與內功）加上模板勾的藥與同心一力，職業標籤也用模板的。其他各區把該區的身上穿戴換成候選，其他部位保留模板身上的：下半保留上半裝備與內功、上半保留下半裝備與內功、上下聯合保留內功、內功保留 11 件裝備，所以分區的數字就是「換掉這一區後的整套」。每區結果上方會記下執行時用的基底，改了模板要重跑那一區才會更新。攻擊和全技能增強分開寫：遊戲面板的攻擊不含全技能增強，計算時才把它加進攻擊。</div>
     </div>`;
 }
 
@@ -10951,7 +11081,6 @@ const NG_ATTR_ROWS = [
   { key: 'trait_def',   label: '本身特性（防守）', type: 'trait_def',                         step: '0.001' },
 ];
 const DB_NG_KEYS = NG_ATTR_ROWS.map(row => row.key);
-const NG_STACK_MAX_ITEMS = 12;
 
 let ng_active = ['a', 'b'];
 const ng_vals  = { a: {}, b: {}, c: {}, d: {} };
@@ -10959,7 +11088,6 @@ const ng_names = { a: '內功A', b: '內功B', c: '內功C', d: '內功D' };
 const ng_db_stacks = { a: [], b: [], c: [], d: [] };
 const NG_CLS_IDS = ['ng_cls_shenxiang','ng_cls_longyin','ng_cls_suimeng','ng_cls_xuanji','ng_cls_jiuling','ng_cls_xuehe','ng_cls_chaoguang'];
 const NG_SET_IDS = ['a', 'b', 'c', 'd'];
-let ng_stack_modal_set = null;
 
 function escHtml(v) {
   return String(v)
@@ -11102,7 +11230,11 @@ function clearNgStackSelection(set, shouldRender = true) {
 
 function getNgStackSummaryHtml(set) {
   const items = ng_db_stacks[set] || [];
-  const list = items.length ? escHtml(items.join('、')) : '<span style="color:#888888;">尚未疊加</span>';
+  const line = (kind, label, unit) => {
+    const names = items.filter(name => ngStackItemKind(name) === kind);
+    return names.length ? `<div><span class="ng-stack-kind">${label} ${names.length} ${unit}：</span>${escHtml(names.join('、'))}</div>` : '';
+  };
+  const list = items.length ? line('ng', '內功', '顆') + line('gear', '裝備', '件') : '<span style="color:#888888;">尚未疊加</span>';
   return `<div class="ng-stack-summary">
     <div class="ng-stack-summary-head">
       <span class="ng-stack-summary-label">已疊加</span>
@@ -11112,109 +11244,69 @@ function getNgStackSummaryHtml(set) {
   </div>`;
 }
 
-function ensureNgStackModal() {
-  if (document.getElementById('ng_stack_overlay')) return;
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="ng_stack_overlay" class="ng-stack-overlay" onclick="if(event.target===this) closeNgStackModal()">
-      <div class="ng-stack-modal" role="dialog" aria-modal="true" aria-labelledby="ng_stack_modal_title">
-        <div class="ng-stack-modal-head">
-          <div id="ng_stack_modal_title" class="ng-stack-modal-title">DB 疊加</div>
-          <div id="ng_stack_modal_note" class="ng-stack-modal-note"></div>
-          <div id="ng_stack_modal_msg" class="ng-stack-modal-msg"></div>
-        </div>
-        <div id="ng_stack_modal_list" class="ng-stack-modal-body"></div>
-        <div class="ng-stack-modal-actions">
-          <button type="button" class="ng-stack-modal-btn primary" onclick="confirmNgStackSelection()">確認疊加</button>
-          <button type="button" class="ng-stack-modal-btn" onclick="closeNgStackModal()">取消</button>
-        </div>
-      </div>
-    </div>
-  `);
+// 一欄的疊加清單只存名稱：在內功配置的算內功、在裝備配置的算裝備，資料庫找不到的看名稱有沒有四位數字
+function ngStackItemKind(name) {
+  if (DB.ng.some(entry => entry.name === name)) return 'ng';
+  if (DB.gear.some(entry => entry.name === name)) return 'gear';
+  return isInnerSkillName(name) ? 'ng' : 'gear';
 }
 
-function setNgStackModalMessage(msg = '') {
-  const el = document.getElementById('ng_stack_modal_msg');
-  if (el) el.textContent = msg;
-}
-
-function refreshNgStackModalList() {
-  if (!ng_stack_modal_set) return;
-  const set = ng_stack_modal_set;
-  const title = document.getElementById('ng_stack_modal_title');
-  const note = document.getElementById('ng_stack_modal_note');
-  const list = document.getElementById('ng_stack_modal_list');
-  if (!title || !note || !list) return;
-  const selected = new Set(ng_db_stacks[set] || []);
-  title.textContent = `${ng_names[set] || `欄位 ${set.toUpperCase()}`}：DB 疊加`;
-  note.textContent = `最多可勾選 ${NG_STACK_MAX_ITEMS} 件，確認後會覆蓋此欄目前輸入值。`;
-  const entries = getSortedNgDBEntries();
-  if (!entries.length) {
-    list.innerHTML = '<div class="ng-stack-modal-empty">裝備/內功 DB 目前沒有可疊加的資料。</div>';
-    return;
-  }
-  list.innerHTML = entries.map((entry, idx) => {
-    const name = entry && entry.name ? entry.name : `未命名 ${idx + 1}`;
-    const typeLabel = isInnerSkillName(name) || isInnerSkillRoutineEntry(entry) ? '內功' : '裝備';
-    const checked = selected.has(name) ? 'checked' : '';
-    return `<label class="ng-stack-option">
-      <input type="checkbox" class="ng-stack-check" value="${escHtml(name)}" ${checked} onchange="handleNgStackCheckbox(this)">
-      <span>${escHtml(name)} <span style="color:#8a7a63;font-size:11px;">(${typeLabel})</span></span>
-    </label>`;
-  }).join('');
-}
-
-function openNgStackModal(set) {
-  ngSaveCurrentVals();
-  ensureNgStackModal();
-  ng_stack_modal_set = set;
-  refreshNgStackModalList();
-  setNgStackModalMessage('');
-  const overlay = document.getElementById('ng_stack_overlay');
-  if (overlay) overlay.style.display = 'flex';
-}
-
-function closeNgStackModal() {
-  const overlay = document.getElementById('ng_stack_overlay');
-  if (overlay) overlay.style.display = 'none';
-  ng_stack_modal_set = null;
-  setNgStackModalMessage('');
-}
-
-function handleNgStackCheckbox(el) {
-  if (!el || !el.checked) {
-    setNgStackModalMessage('');
-    return;
-  }
-  const checked = document.querySelectorAll('#ng_stack_modal_list .ng-stack-check:checked');
-  if (checked.length > NG_STACK_MAX_ITEMS) {
-    el.checked = false;
-    setNgStackModalMessage(`最多只能勾選 ${NG_STACK_MAX_ITEMS} 件。`);
-    return;
-  }
-  setNgStackModalMessage('');
-}
-
-function confirmNgStackSelection() {
-  if (!ng_stack_modal_set) return;
-  const set = ng_stack_modal_set;
-  const selectedNames = Array.from(document.querySelectorAll('#ng_stack_modal_list .ng-stack-check:checked')).map(el => el.value);
-  const totals = {};
-  const selectedStackItems = [];
-  DB_NG_KEYS.forEach(key => { totals[key] = 0; });
-  selectedNames.forEach(name => {
+function expandNgStackRoutines(names) {
+  return names.flatMap(name => {
     const entry = findNgDBEntry(name);
-    const data = getNgDBData(entry);
-    DB_NG_KEYS.forEach(key => { totals[key] += parseFloat(data[key]) || 0; });
-    const expandedStack = getNgDBExpandedStackItems(entry);
-    if (expandedStack.length) selectedStackItems.push(...expandedStack);
-    else selectedStackItems.push(name);
+    return entry && isTemplateRoutineEntry(entry) ? getNgDBExpandedStackItems(entry) : [name];
   });
-  DB_NG_KEYS.forEach(key => { ng_vals[set][key] = totals[key]; });
-  ng_db_stacks[set] = selectedStackItems;
+}
+
+// 「+ 內功」「+ 裝備」用模板的挑選視窗（依核心或部位分組、可搜尋、套路按「帶入」），只換掉這一種，另一種保留（使用者要求，2026-10-21）
+function openNgStackModal(set, kind) {
+  ngSaveCurrentVals();
+  ensureTemplatePickerModal();
+  const stack = ng_db_stacks[set] || [];
+  const found = stack.filter(name => findNgDBEntry(name));
+  const otherCount = found.filter(name => ngStackItemKind(name) !== kind).length;
+  templatePicker = {
+    kind,
+    selected: new Set(expandNgStackRoutines(found.filter(name => ngStackItemKind(name) === kind))),
+    missing: stack.filter(name => !findNgDBEntry(name)),
+    target: { type: 'ngset', set },
+  };
+  const label = kind === 'gear' ? '裝備' : '內功';
+  const otherText = otherCount ? `已疊加的 ${otherCount} ${kind === 'gear' ? '顆內功' : '件裝備'}保留，` : '';
+  const notes = [`確定後只換掉這一欄的${label}，${otherText}這一欄的數值改成疊加清單的加總。`];
+  if (!templatePicker.missing.length && !ngStackMatchesValues(stack, ng_vals[set])) {
+    notes.push('這一欄目前的數值不是疊加清單的加總（例如用「載入」帶入單件、手動輸入或改過數值），會被取代。');
+  }
+  document.getElementById('tpl_picker_title').textContent = `${ng_names[set] || `欄位 ${set.toUpperCase()}`}：疊加${label}`;
+  document.getElementById('tpl_picker_note').textContent = notes.join('');
+  document.getElementById('tpl_picker_search').value = '';
+  renderTemplatePickerList();
+  document.getElementById('tpl_picker_overlay').style.display = 'flex';
+}
+
+// 這一欄＝另一種原本的疊加＋這次勾選的，數值由整份清單重新加總（和存DB 檢查疊加清單的 ngStackMatchesValues 同一套加法）。
+// 套路展開成成員、照成員目前的數值加；資料庫找不到的沒有數值可加，從清單拿掉
+function applyNgStackSelection(set, kind, names) {
+  const kept = (ng_db_stacks[set] || []).filter(name => ngStackItemKind(name) !== kind);
+  const byKind = { ng: [], gear: [] };
+  const seen = new Set();
+  [...kept, ...expandNgStackRoutines(names)].forEach(name => {
+    if (seen.has(name) || !findNgDBEntry(name)) return;
+    seen.add(name);
+    byKind[ngStackItemKind(name)].push(name);
+  });
+  const slotOrder = name => GEAR_SLOT_SORT_ORDER[templateGearMeta(name)?.slot] || 99;
+  byKind.gear.sort((a, b) => slotOrder(a) - slotOrder(b));
+  const stack = [...byKind.ng, ...byKind.gear];
+  DB_NG_KEYS.forEach(key => { ng_vals[set][key] = 0; });
+  stack.forEach(name => {
+    const data = getNgDBData(findNgDBEntry(name));
+    DB_NG_KEYS.forEach(key => { ng_vals[set][key] += parseFloat(data[key]) || 0; });
+  });
+  ng_db_stacks[set] = stack;
   if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   syncNgActiveSets();
   persistNeigongUiState();
-  closeNgStackModal();
   renderNeigongInputTable();
   calcNeigong();
 }
@@ -11268,9 +11360,10 @@ function renderNeigongInputTable() {
   ng_active.forEach(s => {
     const removable = s !== 'a' && s !== 'b';
     hRow += `<th style="${thS}"><div style="display:flex;flex-direction:column;gap:6px;align-items:stretch;">
-      <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;">
         <input type="text" id="ng_name_${s}" value="${escHtml(ng_names[s])}" onchange="ng_names['${s}']=this.value;calcNeigong()" style="${nmS}">
-        <button type="button" onclick="openNgStackModal('${s}')" class="db-btn" title="從 DB 選取多筆資料後加總覆蓋此欄">+ DB疊加</button>
+        <button type="button" onclick="openNgStackModal('${s}','ng')" class="db-btn" title="從資料庫勾選內功，和這一欄已疊加的裝備一起加總">+ 內功</button>
+        <button type="button" onclick="openNgStackModal('${s}','gear')" class="db-btn" title="從資料庫勾選裝備，和這一欄已疊加的內功一起加總">+ 裝備</button>
         ${removable ? `<button onclick="ngRemoveSet('${s}')" style="background:none;border:none;color:#b24842;cursor:pointer;font-size:15px;padding:0 2px;line-height:1;" title="移除">×</button>` : ''}
       </div>
       ${getNgStackSummaryHtml(s)}
@@ -12313,7 +12406,7 @@ function saveTemplates({ keepSwapHistory = false } = {}) {
 
 // 套路是好幾件加總成的一筆，要在挑選視窗按「帶入」展開；直接放在身上會和成員重複扣。
 // 補登成單件裝備（有類別與部位）或單顆內功（有五行）的，就算留有疊加清單也當成單件，和最佳化的候選相同
-// （例如在內功/裝備比較頁「+ DB疊加」後改了數值、再存成新的一件）
+// （例如在內功/裝備比較頁用「+ 內功」「+ 裝備」疊加後改了數值、再存成新的一件）
 function isTemplateRoutineEntry(entry) {
   if (!entry || !getNgDBStackItems(entry).length) return false;
   const meta = normalizeDBEntryMeta(entry).meta || {};
@@ -12554,7 +12647,7 @@ function renderTemplateDerived(mode) {
   const tpl = getTemplateState()[mode];
   const { bare, missing, negative } = computeTemplateBare(mode, tpl);
   const status = computeTemplateStatus(mode, tpl);
-  const missingText = missing.length ? `<div class="tpl-warn">資料庫找不到（可能改名或刪除），沒有扣：${missing.map(escHtml).join('、')}</div>` : '';
+  const missingText = missing.length ? `<div class="tpl-warn">資料庫找不到（可能改名或刪除），沒有扣：${missing.map(escHtml).join('、')}。按「選擇裝備」或「選擇內功」，這幾件列在最上面，取消勾選就會拿掉</div>` : '';
   const gearEl = document.getElementById(`tpl_${mode}_gear_list`);
   if (gearEl) {
     const bySlot = {};
@@ -12722,6 +12815,7 @@ function ensureTemplatePickerModal() {
       <div class="ng-stack-modal tpl-picker-modal" role="dialog" aria-modal="true" aria-labelledby="tpl_picker_title">
         <div class="ng-stack-modal-head">
           <div id="tpl_picker_title" class="ng-stack-modal-title"></div>
+          <div id="tpl_picker_note" class="ng-stack-modal-note"></div>
           <input id="tpl_picker_search" class="tpl-picker-search" type="search" placeholder="搜尋名稱" oninput="renderTemplatePickerList()">
           <div id="tpl_picker_msg" class="ng-stack-modal-msg"></div>
         </div>
@@ -12738,8 +12832,11 @@ function ensureTemplatePickerModal() {
 function openTemplatePicker(mode, kind) {
   ensureTemplatePickerModal();
   const tpl = getTemplateState()[mode];
-  templatePicker = { mode, kind, selected: new Set(kind === 'gear' ? tpl.gear : tpl.ng) };
+  const current = kind === 'gear' ? tpl.gear : tpl.ng;
+  // 資料庫已刪除或改名的項目不在清單裡，以前看不到也取消不了，按確定後又存回模板（使用者回報，2026-10-21）
+  templatePicker = { mode, kind, selected: new Set(current), missing: current.filter(name => !findNgDBEntry(name)) };
   document.getElementById('tpl_picker_title').textContent = `${TEMPLATE_MODE_LABELS[mode]} 模板：選擇身上${kind === 'gear' ? '裝備' : '內功'}`;
+  document.getElementById('tpl_picker_note').textContent = '';
   document.getElementById('tpl_picker_search').value = '';
   renderTemplatePickerList();
   document.getElementById('tpl_picker_overlay').style.display = 'flex';
@@ -12755,8 +12852,14 @@ function updateTemplatePickerMessage() {
   if (!templatePicker) return;
   const names = [...templatePicker.selected];
   const warnings = templatePicker.kind === 'gear' ? templateGearWarnings(names) : templateNgWarnings(names);
+  const missing = names.filter(name => !findNgDBEntry(name));
+  // 比較頁的一欄常常只放一兩顆試算，不提醒「身上要 6 顆」與五行
+  const kindMessages = templatePicker.target?.type === 'ngset' && templatePicker.kind === 'ng'
+    ? warnings.conflicts.map(pair => `同核心不能同時戴：${pair}`)
+    : warnings.messages;
+  const messages = missing.length ? [`${missing.length} ${templatePicker.kind === 'gear' ? '件' : '顆'}資料庫找不到，取消勾選就會從身上拿掉`, ...kindMessages] : kindMessages;
   const el = document.getElementById('tpl_picker_msg');
-  if (el) el.textContent = `已選 ${names.length} ${templatePicker.kind === 'gear' ? '件' : '顆'}${warnings.messages.length ? `｜${warnings.messages.join('｜')}` : ''}`;
+  if (el) el.textContent = `已選 ${names.length} ${templatePicker.kind === 'gear' ? '件' : '顆'}${messages.length ? `｜${messages.join('｜')}` : ''}`;
 }
 
 function renderTemplatePickerList() {
@@ -12771,9 +12874,16 @@ function renderTemplatePickerList() {
       `<label class="ng-stack-option"><input type="checkbox" value="${escHtml(item.name)}" ${templatePicker.selected.has(item.name) ? 'checked' : ''} onchange="toggleTemplatePickerItem(this)"><span>${escHtml(item.name)} <span class="tpl-note">${escHtml(item.detail)}</span></span></label>`).join('');
     return rows ? `<div class="tpl-picker-group-title">${escHtml(group.label)}</div>${rows}` : '';
   }).join('');
+  // 疊加到比較頁的一欄時，找不到的沒有數值可加，只列出來、按確定後拿掉
+  const forNgSet = templatePicker.target?.type === 'ngset';
+  const missingRows = (templatePicker.missing || []).map(name => (forNgSet
+    ? `<div class="ng-stack-option"><span>${escHtml(name)}</span></div>`
+    : `<label class="ng-stack-option"><input type="checkbox" value="${escHtml(name)}" ${templatePicker.selected.has(name) ? 'checked' : ''} onchange="toggleTemplatePickerItem(this)"><span>${escHtml(name)}</span></label>`)).join('');
+  const missingTitle = forNgSet ? '資料庫找不到（已刪除或改名）：按確定後會從這一欄拿掉' : '資料庫找不到（已刪除或改名）：取消勾選就從身上拿掉';
   const list = document.getElementById('tpl_picker_list');
   if (list) {
-    list.innerHTML = (routineRows ? `<div class="tpl-picker-group-title">存好的套路（一次帶入，取代目前勾選）</div>${routineRows}` : '')
+    list.innerHTML = (missingRows ? `<div class="tpl-picker-group-title">${missingTitle}</div>${missingRows}` : '')
+      + (routineRows ? `<div class="tpl-picker-group-title">存好的套路（一次帶入，取代目前勾選）</div>${routineRows}` : '')
       + (groupHtml || '<div class="ng-stack-modal-empty">資料庫裡沒有符合的項目。</div>');
   }
   updateTemplatePickerMessage();
@@ -12795,8 +12905,13 @@ function applyTemplateRoutine(name) {
 
 function confirmTemplatePicker() {
   if (!templatePicker) return;
-  const { mode, kind } = templatePicker;
+  const { mode, kind, target } = templatePicker;
   let names = [...templatePicker.selected];
+  if (target?.type === 'ngset') {
+    closeTemplatePicker();
+    applyNgStackSelection(target.set, kind, names);
+    return;
+  }
   if (kind === 'gear') {
     const order = name => GEAR_SLOT_SORT_ORDER[templateGearMeta(name)?.slot] || 99;
     names = names.sort((a, b) => order(a) - order(b));
@@ -13215,7 +13330,7 @@ function renderTemplateCompareSummary(contexts) {
     const buffs = [ctx.tpl.buffs.buff && '藥', ctx.tpl.buffs.tongxin && '同心一力'].filter(Boolean).join('、') || '無';
     const pvpEmpty = mode === 'pvp' && !templatePanelHasValues(ctx.tpl.enemy);
     return `<div class="tplcmp-summary-item">
-      <b>${TEMPLATE_MODE_LABELS[mode]} 模板</b>：身上裝備 ${ctx.gear.length} 件、內功 ${ctx.ng.length} 顆；裸面板 攻擊 ${fmtTemplateValue(bare.atk + bare.skillEnh)}、氣血 ${fmtTemplateValue(bare.hp)}；增益 ${buffs}
+      <b>${TEMPLATE_MODE_LABELS[mode]} 模板</b>：身上裝備 ${ctx.gear.length} 件、內功 ${ctx.ng.length} 顆；裸面板 ${attackWithSkillEnhText(bare.atk, bare.skillEnh, fmtTemplateValue)}、氣血 ${fmtTemplateValue(bare.hp)}；增益 ${buffs}
       ${warnings ? `<span class="tpl-warn">（模板頁有 ${warnings} 項提醒）</span>` : ''}
       ${pvpEmpty ? '<span class="tpl-warn">（敵方面板是空的，防禦算不出來）</span>' : ''}
     </div>`;
@@ -13497,6 +13612,8 @@ window.onload = function() {
     document.querySelectorAll('.tplcmp-multi[open]').forEach(menu => {
       if (!menu.contains(event.target)) menu.removeAttribute('open');
     });
+    const floatNav = document.getElementById('opt_float_nav');
+    if (floatNav && floatNav.classList.contains('open') && !floatNav.contains(event.target)) setOptimizeFloatNavOpen(false);
   });
   const skEl = document.getElementById('show_storage_key');
   if (skEl) skEl.textContent = STORAGE_KEY;
