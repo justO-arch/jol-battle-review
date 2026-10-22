@@ -1336,6 +1336,106 @@
     gap: 8px;
     margin: 4px 0 10px;
   }
+  .player-quadrant-card {
+    padding: 16px 18px 14px;
+  }
+  .player-quadrant-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--tk-line-e6dbcf);
+  }
+  .player-quadrant-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--accent);
+  }
+  .player-quadrant-axes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .player-quadrant-axes label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .player-quadrant-axes select {
+    width: auto;
+    min-width: 132px;
+  }
+  .player-quadrant-scroll {
+    overflow-x: auto;
+  }
+  .player-quadrant-svg {
+    min-width: 680px;
+  }
+  .player-quadrant-hit {
+    fill: transparent;
+    cursor: pointer;
+  }
+  .player-quadrant-point {
+    pointer-events: none;
+    transition: r 120ms ease;
+  }
+  .player-quadrant-dot.is-active .player-quadrant-point {
+    r: 7.5px;
+  }
+  .player-quadrant-corner {
+    font-size: 13px;
+    font-weight: 800;
+    fill: var(--accent);
+    opacity: 0.72;
+  }
+  .player-quadrant-axis-title {
+    font-size: 13px;
+    font-weight: 800;
+    fill: var(--muted);
+  }
+  .player-quadrant-label {
+    font-size: 12px;
+    font-weight: 700;
+    fill: var(--tk-fg-3a2b18);
+    pointer-events: none;
+  }
+  .player-quadrant-tooltip {
+    position: fixed;
+    z-index: 60;
+    max-width: 280px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--tk-fg-3a2b18);
+    color: var(--tk-bg-ffffff);
+    font-size: 12px;
+    line-height: 1.6;
+    box-shadow: 0 8px 22px rgba(58, 43, 24, 0.24);
+    pointer-events: none;
+  }
+  .player-quadrant-tooltip b {
+    font-size: 13px;
+  }
+  .profession-moved-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  @media (max-width: 640px) {
+    .player-quadrant-title {
+      font-size: 17px;
+    }
+    .player-quadrant-axes select {
+      min-width: 112px;
+    }
+  }
   .floating-header-table th {
     position: sticky;
     top: 0;
@@ -4043,7 +4143,7 @@
               <div class="step import-step">
                 <div>
                   <b>步驟 4：加入場次</b>
-                  <span class="subtle">加入後可到右側分頁查看分工、單場覆盤、玩家查詢、職業表現與小隊表現。</span>
+                  <span class="subtle">加入後可到右側分頁查看分工、單場覆盤、玩家查詢、職業表現、玩家象限與小隊表現。</span>
                 </div>
                 <div class="inline-actions import-step-actions">
                   <button class="btn-primary" id="btn_add_battle">加入場次</button>
@@ -4069,6 +4169,7 @@
             <button class="btn-secondary tab-btn" data-tab="matchup">單場對位</button>
             <button class="btn-secondary tab-btn" data-tab="opponents">重點人物</button>
             <button class="btn-secondary tab-btn" data-tab="profession">職業表現</button>
+            <button class="btn-secondary tab-btn" data-tab="quadrant">玩家象限</button>
             <button class="btn-secondary tab-btn" data-tab="squad">小隊表現</button>
             <button class="btn-secondary tab-btn" data-tab="players">玩家查詢</button>
             <button class="btn-secondary tab-btn" data-tab="rules">判讀說明</button>
@@ -4365,13 +4466,6 @@
                   <div style="margin-top:4px;color:var(--danger);font-size:12px;font-weight:800;line-height:1.5;">對手的分工是用塔傷和擊殺做推測可能非真實分工</div>
                 </div>
                 <div class="field">
-                  <label>職業</label>
-                  <select id="profession_job_filter">
-                    <option value="all">全部職業</option>
-                    <option value="non_suwen">素問外所有職業</option>
-                  </select>
-                </div>
-                <div class="field">
                   <label>團別</label>
                   <select id="profession_group_filter">
                     <option value="all">全部</option>
@@ -4385,6 +4479,7 @@
                 <div class="field">
                   <label>最低場次</label>
                   <input id="profession_min_battles" type="number" min="1" step="1" value="1">
+                  <div class="subtle" style="margin-top:4px;font-size:12px;">點職業名稱開象限圖時使用</div>
                 </div>
                 <div class="field" style="grid-column: span 4;">
                   <label>勾選要納入統計的場次</label>
@@ -4396,9 +4491,6 @@
                 </div>
               </div>
               <div style="height:12px;"></div>
-              <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
-                <button class="btn-primary" type="button" id="btn_export_profession_pdf">匯出 PDF</button>
-              </div>
               <div class="summary-section-head">
                 <span>DPS 職業平均比較</span>
                 <span class="subtle">只統計非鐵衣、非素問職業的人次平均</span>
@@ -4439,6 +4531,100 @@
                     <tbody id="profession_healer_average_body"></tbody>
                   </table>
                 </div>
+              </div>
+              <div class="note-box profession-moved-note">
+                各玩家的統計表與可自選 X、Y 軸的象限圖在「玩家象限」分頁。
+                <button class="btn-secondary" type="button" id="btn_goto_player_quadrant">前往玩家象限</button>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-tab-panel="quadrant">
+              <div class="grid-4">
+                <div class="field">
+                  <label>己方</label>
+                  <select id="quadrant_own_team_filter">
+                    <option value="all">全部</option>
+                    <option value="chensi">塵煙似夢</option>
+                    <option value="jianzhao">劍照霜寒</option>
+                    <option value="zouyu">驟雨初歇</option>
+                    <option value="daruniu">大汝牛</option>
+                    <option value="flower_other">花舞或其他</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>對手</label>
+                  <select id="quadrant_opponent_filter">
+                    <option value="all">全部</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>日期起</label>
+                  <input id="quadrant_date_from_filter" type="date">
+                </div>
+                <div class="field">
+                  <label>日期迄</label>
+                  <input id="quadrant_date_to_filter" type="date">
+                </div>
+                <div class="field">
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;color:var(--accent);">
+                    <input id="quadrant_analyze_opponent" type="checkbox" style="width:auto;">
+                    分析對手
+                  </label>
+                  <div style="margin-top:4px;color:var(--danger);font-size:12px;font-weight:800;line-height:1.5;">對手的分工是用塔傷和擊殺做推測可能非真實分工</div>
+                </div>
+                <div class="field">
+                  <label>職業</label>
+                  <select id="quadrant_job_filter">
+                    <option value="all">全部職業</option>
+                    <option value="non_suwen">素問外所有職業</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>團別</label>
+                  <select id="quadrant_group_filter">
+                    <option value="all">全部</option>
+                    <option value="attack">進攻</option>
+                    <option value="defense">防守</option>
+                    <option value="bodyguard">保鑣</option>
+                    <option value="defense_bodyguard">保鑣+防守</option>
+                    <option value="attack_bodyguard">保鑣+進攻</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>最低場次</label>
+                  <input id="quadrant_min_battles" type="number" min="1" step="1" value="1">
+                </div>
+                <div class="field" style="grid-column: span 4;">
+                  <label>勾選要納入統計的場次</label>
+                  <div class="inline-actions" style="margin-top:0;">
+                    <button class="btn-secondary" type="button" id="btn_quadrant_check_all">全勾</button>
+                    <button class="btn-ghost" type="button" id="btn_quadrant_uncheck_all">全不勾</button>
+                  </div>
+                  <div id="quadrant_battle_select" class="checklist-box"></div>
+                </div>
+              </div>
+              <div style="height:14px;"></div>
+              <div class="quadrant-card player-quadrant-card">
+                <div class="player-quadrant-head">
+                  <div class="player-quadrant-title" id="player_quadrant_title">玩家表現象限圖</div>
+                  <div class="player-quadrant-axes">
+                    <label for="player_quadrant_x">X 軸（橫向）</label>
+                    <select id="player_quadrant_x"></select>
+                    <label for="player_quadrant_y">Y 軸（直向）</label>
+                    <select id="player_quadrant_y"></select>
+                    <button class="btn-ghost" type="button" id="btn_player_quadrant_swap" title="交換 X、Y 軸">交換</button>
+                  </div>
+                </div>
+                <div id="player_quadrant_chart"></div>
+              </div>
+              <div class="player-quadrant-tooltip" id="player_quadrant_tooltip" hidden></div>
+              <div style="height:14px;"></div>
+              <div class="summary-section-head">
+                <span>玩家統計表</span>
+                <span class="subtle">點玩家名稱可看六角圖；表頭可排序</span>
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+                <button class="btn-primary" type="button" id="btn_export_profession_pdf">匯出 PDF</button>
               </div>
               <div class="top-scroll-wrap" id="profession_top_scroll"><div class="top-scroll-inner" id="profession_top_scroll_inner"></div></div>
               <div style="height:8px;"></div>
@@ -4612,7 +4798,7 @@
             <div class="tab-panel" data-tab-panel="rules">
               <div class="tool-intro">
                 <p>這一頁獨立處理幫戰戰報。核心流程固定依照覆盤規則：先切資料、再分工、再跑第一輪門檻篩選，最後用交集名單與特殊職責做人工判讀。</p>
-                <div class="tool-intro-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、小隊表現、別名合併、能力六邊形、多場統計、職業對位。</div>
+                <div class="tool-intro-note">已支援：CSV 匯入、本地儲存、分工設定、單場覆盤、玩家查詢、職業表現、玩家象限圖、小隊表現、別名合併、能力六邊形、多場統計、職業對位。</div>
               </div>
               <div class="explain-list" id="rules_explain_box"></div>
             </div>
@@ -5015,6 +5201,14 @@ function professionColumnApplies(key, job) {
 function professionJobOnlyValue(row, key, format) {
   return professionColumnApplies(key, row.job) ? format(row[key]) : '-';
 }
+// 玩家象限圖：每個點是玩家統計表的一列（同一份 professionRows），X、Y 軸可選表格的數值欄位
+const PLAYER_QUADRANT_NON_AXIS_KEYS = ['name', 'job', 'dominantGroupType', 'wins'];
+const PLAYER_QUADRANT_DEFAULT_AXES = { x: 'avgPvpDamage', y: 'avgKill' };
+const PLAYER_QUADRANT_LARGE_KEYS = new Set(['avgPvpDamage', 'avgPvpPerKill', 'avgBuildDamage', 'avgBuildPerDeath', 'avgTakenDamage', 'avgTakenPerDeath', 'avgHeal', 'avgNetHeal']);
+const PLAYER_QUADRANT_TOOLTIP_KEYS = ['avgKill', 'avgDeath', 'avgPvpDamage', 'avgBuildDamage', 'avgTakenDamage', 'avgHeal', 'avgNetHeal', 'avgSave', 'avgBurn', 'avgSpring'];
+const PLAYER_QUADRANT_LABEL_LIMIT = 120;
+let playerQuadrantAxes = { ...PLAYER_QUADRANT_DEFAULT_AXES };
+let playerQuadrantPoints = [];
 const DPS_PROFESSION_TABLE_COLUMNS = [
   { label: '職業', key: 'job', defaultOrder: 'asc' },
   { label: '人次', key: 'entries' },
@@ -5607,12 +5801,24 @@ function collectUiState() {
     professionDateFromFilter: document.getElementById('profession_date_from_filter')?.value || '',
     professionDateToFilter: document.getElementById('profession_date_to_filter')?.value || '',
     professionAnalyzeOpponent: !!document.getElementById('profession_analyze_opponent')?.checked,
-    professionJob: document.getElementById('profession_job_filter')?.value || 'all',
     professionGroup: document.getElementById('profession_group_filter')?.value || 'all',
     professionMinBattles: document.getElementById('profession_min_battles')?.value || '1',
     professionSortField: professionTableSort.field || 'reviewSuggestCount',
     professionSortOrder: professionTableSort.order || 'desc',
     professionBattleIds: selectedBattleIds('profession_battle_select'),
+    quadrantOwnTeamFilter: document.getElementById('quadrant_own_team_filter')?.value || 'all',
+    quadrantOpponentFilter: document.getElementById('quadrant_opponent_filter')?.value || 'all',
+    quadrantDateFromFilter: document.getElementById('quadrant_date_from_filter')?.value || '',
+    quadrantDateToFilter: document.getElementById('quadrant_date_to_filter')?.value || '',
+    quadrantAnalyzeOpponent: !!document.getElementById('quadrant_analyze_opponent')?.checked,
+    quadrantJob: document.getElementById('quadrant_job_filter')?.value || 'all',
+    // 手機頁的職業表現仍讀 professionJob；桌機匯出檔拿到手機頁匯入時沿用玩家象限的職業
+    professionJob: document.getElementById('quadrant_job_filter')?.value || 'all',
+    quadrantGroup: document.getElementById('quadrant_group_filter')?.value || 'all',
+    quadrantMinBattles: document.getElementById('quadrant_min_battles')?.value || '1',
+    quadrantBattleIds: selectedBattleIds('quadrant_battle_select'),
+    quadrantAxisX: playerQuadrantAxes.x,
+    quadrantAxisY: playerQuadrantAxes.y,
     matchupWeakPct: document.getElementById('matchup_weak_pct')?.value || '10',
     matchupRosterBottomPct: document.getElementById('matchup_roster_bottom_pct')?.value || '20',
     batchExportConfig: { ...(state.batchExportConfig || defaultBatchExportConfig()) },
@@ -5645,9 +5851,21 @@ function restoreUiState(uiState = {}) {
   if (document.getElementById('profession_date_from_filter')) document.getElementById('profession_date_from_filter').value = uiState.professionDateFromFilter || '';
   if (document.getElementById('profession_date_to_filter')) document.getElementById('profession_date_to_filter').value = uiState.professionDateToFilter || '';
   if (document.getElementById('profession_analyze_opponent')) document.getElementById('profession_analyze_opponent').checked = !!uiState.professionAnalyzeOpponent;
-  if (document.getElementById('profession_job_filter')) document.getElementById('profession_job_filter').value = uiState.professionJob || 'all';
   if (document.getElementById('profession_group_filter')) document.getElementById('profession_group_filter').value = uiState.professionGroup || 'all';
   if (document.getElementById('profession_min_battles')) document.getElementById('profession_min_battles').value = uiState.professionMinBattles || '1';
+  // 2026-10-22 前的匯出沒有玩家象限的欄位；玩家統計表原本在職業表現，沿用職業表現的篩選
+  const quadrantValue = (key, fallbackKey, fallback) => uiState[key] ?? uiState[fallbackKey] ?? fallback;
+  if (document.getElementById('quadrant_own_team_filter')) document.getElementById('quadrant_own_team_filter').value = restoredOwnTeamFilter(quadrantValue('quadrantOwnTeamFilter', 'professionOwnTeamFilter', 'all'));
+  if (document.getElementById('quadrant_opponent_filter')) document.getElementById('quadrant_opponent_filter').value = quadrantValue('quadrantOpponentFilter', 'professionOpponentFilter', 'all');
+  if (document.getElementById('quadrant_date_from_filter')) document.getElementById('quadrant_date_from_filter').value = quadrantValue('quadrantDateFromFilter', 'professionDateFromFilter', '');
+  if (document.getElementById('quadrant_date_to_filter')) document.getElementById('quadrant_date_to_filter').value = quadrantValue('quadrantDateToFilter', 'professionDateToFilter', '');
+  if (document.getElementById('quadrant_analyze_opponent')) document.getElementById('quadrant_analyze_opponent').checked = !!quadrantValue('quadrantAnalyzeOpponent', 'professionAnalyzeOpponent', false);
+  if (document.getElementById('quadrant_group_filter')) document.getElementById('quadrant_group_filter').value = quadrantValue('quadrantGroup', 'professionGroup', 'all');
+  if (document.getElementById('quadrant_min_battles')) document.getElementById('quadrant_min_battles').value = quadrantValue('quadrantMinBattles', 'professionMinBattles', '1');
+  playerQuadrantAxes = {
+    x: uiState.quadrantAxisX || PLAYER_QUADRANT_DEFAULT_AXES.x,
+    y: uiState.quadrantAxisY || PLAYER_QUADRANT_DEFAULT_AXES.y,
+  };
   const restoredSortField = uiState.professionSortField || professionTableSort.field || 'reviewSuggestCount';
   const restoredSortColumn = PROFESSION_TABLE_COLUMNS.find(column => column.key === restoredSortField);
   professionTableSort = {
@@ -5662,10 +5880,18 @@ function restoreUiState(uiState = {}) {
     renderBattleFilterOptions('player_battle_select');
     renderBattleFilterOptions('squad_battle_select');
     renderBattleFilterOptions('profession_battle_select');
+    renderBattleFilterOptions('quadrant_battle_select');
+  }
+  if (typeof refreshJobFilterOptions === 'function') refreshJobFilterOptions();
+  if (document.getElementById('quadrant_job_filter')) {
+    const select = document.getElementById('quadrant_job_filter');
+    const job = quadrantValue('quadrantJob', 'professionJob', 'all');
+    select.value = [...(select.options || [])].some(option => option.value === job) ? job : 'all';
   }
   restoreBattleCheckboxes('player_battle_select', uiState.playerBattleIds || []);
   restoreBattleCheckboxes('squad_battle_select', uiState.squadBattleIds || []);
   restoreBattleCheckboxes('profession_battle_select', uiState.professionBattleIds || []);
+  restoreBattleCheckboxes('quadrant_battle_select', uiState.quadrantBattleIds || uiState.professionBattleIds || []);
   renderPlayerLookup();
   if (typeof renderSquadPerformanceTable === 'function') renderSquadPerformanceTable();
   renderProfessionTable();
@@ -6980,8 +7206,8 @@ function aggregatePlayers(battleIds = null, { splitByJob = false, assignmentRost
 	  })).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 }
 
-function isProfessionOpponentMode() {
-  return !!document.getElementById('profession_analyze_opponent')?.checked;
+function isProfessionOpponentMode(scope = 'profession') {
+  return !!document.getElementById(`${scope}_analyze_opponent`)?.checked;
 }
 
 function inferAutoProfessionGroupType(player) {
@@ -7011,8 +7237,8 @@ function deriveOpponentProfessionPlayer(player) {
   });
 }
 
-function professionSourcePlayersForBattle(battle) {
-  if (!isProfessionOpponentMode()) return (battle?.players || []).map(derivePlayer);
+function professionSourcePlayersForBattle(battle, scope = 'profession') {
+  if (!isProfessionOpponentMode(scope)) return (battle?.players || []).map(derivePlayer);
   return (battle?.opponentPlayers || []).map(deriveOpponentProfessionPlayer);
 }
 
@@ -7102,14 +7328,14 @@ function aggregateOpponentProfessionPlayers(battleIds = null) {
   })).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 }
 
-function aggregateProfessionPlayers(battleIds = null) {
-  return isProfessionOpponentMode()
+function aggregateProfessionPlayers(battleIds = null, scope = 'profession') {
+  return isProfessionOpponentMode(scope)
     ? aggregateOpponentProfessionPlayers(battleIds)
     : aggregatePlayers(battleIds, { splitByJob: true });
 }
 
-function professionLookupRows(battleIds, groupFilter = 'all') {
-  return aggregateProfessionPlayers(battleIds)
+function professionLookupRows(battleIds, groupFilter = 'all', scope = 'profession') {
+  return aggregateProfessionPlayers(battleIds, scope)
     .map(item => {
       const history = item.history.filter(entry => historyMatchesPlayerGroupFilter(groupFilter, entry.groupType));
       if (!history.length) return null;
@@ -8035,14 +8261,15 @@ function renderPlayerCompareTable(comparisons) {
   `;
 }
 
+// 玩家統計表與玩家象限圖共用，讀「玩家象限」分頁的篩選
 function professionRows() {
-  const job = document.getElementById('profession_job_filter').value;
-  const groupType = document.getElementById('profession_group_filter').value;
-  const minBattles = Number(document.getElementById('profession_min_battles').value || 1);
+  const job = document.getElementById('quadrant_job_filter').value;
+  const groupType = document.getElementById('quadrant_group_filter').value;
+  const minBattles = Number(document.getElementById('quadrant_min_battles').value || 1);
   const sortField = professionTableSort.field || 'reviewSuggestCount';
   const sortOrder = professionTableSort.order || 'desc';
-  const battleIds = selectedProfessionBattleIds();
-  return aggregateProfessionPlayers(battleIds)
+  const battleIds = selectedProfessionBattleIds('quadrant');
+  return aggregateProfessionPlayers(battleIds, 'quadrant')
     .filter(item => {
       if (!job || job === 'all') return true;
       if (job === 'non_suwen') return item.job !== '素問';
@@ -8438,7 +8665,7 @@ function setProfessionSort(field) {
   } else {
     professionTableSort = { field, order: defaultOrder };
   }
-  renderProfessionTable();
+  renderProfessionPlayerTable();
 }
 
 function setDpsProfessionSort(field) {
@@ -8863,18 +9090,20 @@ function currentSquadReviewFilters() {
   };
 }
 
-function currentProfessionReviewFilters() {
+// 職業表現（profession）與玩家象限（quadrant）各有一組篩選，欄位 id 以分頁名稱開頭
+function currentProfessionReviewFilters(scope = 'profession') {
   return {
-    ownTeamFilter: document.getElementById('profession_own_team_filter')?.value || 'all',
-    opponentFilter: document.getElementById('profession_opponent_filter')?.value || 'all',
-    dateFrom: document.getElementById('profession_date_from_filter')?.value || '',
-    dateTo: document.getElementById('profession_date_to_filter')?.value || '',
-    analyzeOpponent: isProfessionOpponentMode(),
+    ownTeamFilter: document.getElementById(`${scope}_own_team_filter`)?.value || 'all',
+    opponentFilter: document.getElementById(`${scope}_opponent_filter`)?.value || 'all',
+    dateFrom: document.getElementById(`${scope}_date_from_filter`)?.value || '',
+    dateTo: document.getElementById(`${scope}_date_to_filter`)?.value || '',
+    analyzeOpponent: isProfessionOpponentMode(scope),
   };
 }
 
 function currentReviewFiltersForBattleSelect(selectId) {
   if (selectId === 'profession_battle_select') return currentProfessionReviewFilters();
+  if (selectId === 'quadrant_battle_select') return currentProfessionReviewFilters('quadrant');
   if (selectId === 'squad_battle_select') return currentSquadReviewFilters();
   if (selectId === 'player_battle_select') return currentPlayerReviewFilters();
   return { ownTeamFilter: 'all', opponentFilter: 'all', dateFrom: '', dateTo: '' };
@@ -8919,8 +9148,8 @@ function selectedSquadBattleIds() {
   return latestId ? [latestId] : [];
 }
 
-function selectedProfessionBattleIds() {
-  return selectedReviewBattleIds('profession_battle_select', currentProfessionReviewFilters());
+function selectedProfessionBattleIds(scope = 'profession') {
+  return selectedReviewBattleIds(`${scope}_battle_select`, currentProfessionReviewFilters(scope));
 }
 
 function markPlayerSearchPending(message = '') {
@@ -9350,17 +9579,19 @@ function closeProfessionJobQuadrantModal() {
 }
 
 function openProfessionPlayerRadarModal(playerName, options = {}) {
+  const scope = options.scope || 'profession';
   const sourceLabel = options.sourceLabel || '職業表現';
-  const filters = options.filters || currentProfessionReviewFilters();
+  const filters = options.filters || currentProfessionReviewFilters(scope);
   const { ownTeamFilter, opponentFilter, dateFrom, dateTo } = filters;
-  const groupFilter = options.groupFilter || document.getElementById('profession_group_filter')?.value || 'all';
-  const battleIds = Array.isArray(options.battleIds) ? options.battleIds : selectedProfessionBattleIds();
+  const groupFilter = options.groupFilter || document.getElementById(`${scope}_group_filter`)?.value || 'all';
+  const battleIds = Array.isArray(options.battleIds) ? options.battleIds : selectedProfessionBattleIds(scope);
   const lookupRows = options.assignmentRoster
     ? (ids, group) => lookupPlayerRows(ids, group, { assignmentRoster: true, splitByJob: true })
-    : professionLookupRows;
+    : (ids, group) => professionLookupRows(ids, group, scope);
   const rows = lookupRows(battleIds, groupFilter);
   const roleRows = ['attack', 'defense', 'bodyguard'].flatMap(key => lookupRows(battleIds, key));
-  const player = rows.find(item => item.name === playerName);
+  const player = rows.find(item => item.name === playerName && (!options.job || item.job === options.job))
+    || rows.find(item => item.name === playerName);
   if (!player) {
     window.alert('找不到該玩家目前可用的統計資料。');
     return;
@@ -9570,13 +9801,13 @@ function exportDateStamp() {
 }
 
 function currentProfessionExportContext() {
-  const { ownTeamFilter, opponentFilter, dateFrom, dateTo, analyzeOpponent } = currentProfessionReviewFilters();
-  const job = document.getElementById('profession_job_filter')?.value || 'all';
-  const groupType = document.getElementById('profession_group_filter')?.value || 'all';
-  const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
+  const { ownTeamFilter, opponentFilter, dateFrom, dateTo, analyzeOpponent } = currentProfessionReviewFilters('quadrant');
+  const job = document.getElementById('quadrant_job_filter')?.value || 'all';
+  const groupType = document.getElementById('quadrant_group_filter')?.value || 'all';
+  const minBattles = Number(document.getElementById('quadrant_min_battles')?.value || 1);
   const sortField = professionTableSort.field || 'reviewSuggestCount';
   const sortOrder = professionTableSort.order || 'desc';
-  const battleIds = selectedProfessionBattleIds();
+  const battleIds = selectedProfessionBattleIds('quadrant');
   return {
     ownTeamFilter,
     opponentFilter,
@@ -9920,8 +10151,8 @@ function renderProfessionExportSheet(context) {
     <div class="player-export-sheet">
       <div class="player-export-header">
         <div>
-          <h1 class="player-export-title">幫戰覆盤 職業表現</h1>
-          <div class="player-export-subtitle">依目前職業表現頁的篩選與排序條件匯出統計表。</div>
+          <h1 class="player-export-title">幫戰覆盤 玩家統計表</h1>
+          <div class="player-export-subtitle">依目前玩家象限頁的篩選與排序條件匯出玩家統計表（不含象限圖）。</div>
           <div class="player-export-subtitle">本表為目前篩選條件下的統計結果，不能單憑數據直接判定玩家表現。</div>
         </div>
         <div class="player-export-meta">
@@ -9948,7 +10179,7 @@ function renderProfessionExportSheet(context) {
       ${battles.length <= 5 ? renderExportBattleAppendix(battles, '納入統計場次') : renderExportBattleSummarySection(battles)}
 
       <div class="panel profession-export-panel" style="margin-bottom:16px;">
-        <div class="panel-title">職業表現統計表</div>
+        <div class="panel-title">玩家統計表</div>
         <div class="panel-body">
           ${renderProfessionExportTable(context.rows, context.job)}
         </div>
@@ -10073,7 +10304,7 @@ async function exportProfessionPdf(options = {}) {
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const exportNode = stage.firstElementChild;
     const jobLabel = context.job === 'all' ? '全部職業' : context.job === 'non_suwen' ? '素問外所有職業' : context.job;
-    const titleText = applyBatchExportPrefix(options.prefix || '', `職業表現_${jobLabel}_${exportDateStamp()}`);
+    const titleText = applyBatchExportPrefix(options.prefix || '', `玩家統計表_${jobLabel}_${exportDateStamp()}`);
     openPrintExportWindow({ titleText, exportNode, width: 1600, height: 1000, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
@@ -10288,12 +10519,25 @@ function renderSquadPerformanceTable() {
 }
 
 function renderProfessionTable() {
-  const body = document.getElementById('profession_body');
-  renderProfessionTableHeader();
+  renderProfessionAverageTables();
+  renderPlayerQuadrantTab();
+}
+
+function renderProfessionAverageTables() {
   renderDpsProfessionAverageTable();
   renderIronProfessionAverageTable();
   renderHealerProfessionAverageTable();
+}
+
+function renderPlayerQuadrantTab() {
   const rows = professionRows();
+  renderPlayerQuadrantChart(rows);
+  renderProfessionPlayerTable(rows);
+}
+
+function renderProfessionPlayerTable(rows = professionRows()) {
+  const body = document.getElementById('profession_body');
+  renderProfessionTableHeader();
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="${PROFESSION_TABLE_COLUMNS.length}" class="empty">目前沒有符合條件的職業資料。</td></tr>`;
     syncProfessionScrollbars();
@@ -10302,7 +10546,7 @@ function renderProfessionTable() {
   body.innerHTML = rows.map((row, index) => `
     <tr>
       <td><span class="nowrap">${index + 1}</span></td>
-      <td class="profession-name-cell"><button type="button" class="profession-player-btn" data-player-name="${escHtml(row.name)}">${professionNameWithBreaks(row.name)}</button></td>
+      <td class="profession-name-cell"><button type="button" class="profession-player-btn" data-player-name="${escHtml(row.name)}" data-player-job="${escHtml(row.job)}">${professionNameWithBreaks(row.name)}</button></td>
       <td><span class="nowrap">${jobIconHtml(row.job)}${escHtml(row.job)}</span></td>
       <td>${groupTag(row.dominantGroupType)}</td>
       <td><span class="nowrap">${fmtNumber(row.battles)}</span></td>
@@ -10327,9 +10571,324 @@ function renderProfessionTable() {
     </tr>
   `).join('');
   body.querySelectorAll('.profession-player-btn[data-player-name]').forEach(button => {
-    button.addEventListener('click', () => openProfessionPlayerRadarModal(button.dataset.playerName || ''));
+    button.addEventListener('click', () => openPlayerQuadrantRadar(button.dataset.playerName || '', button.dataset.playerJob || ''));
   });
   syncProfessionScrollbars();
+}
+
+function openPlayerQuadrantRadar(name, job) {
+  openProfessionPlayerRadarModal(name, { scope: 'quadrant', sourceLabel: '玩家象限', job });
+}
+
+
+// 治療、淨奶、化羽只給素問，焚骨只給九靈，清泉只給潮光；職業選「全部」時這些欄位不能當軸
+function playerQuadrantAxisOptions(jobFilter) {
+  return PROFESSION_TABLE_COLUMNS
+    .filter(column => column.key && !PLAYER_QUADRANT_NON_AXIS_KEYS.includes(column.key))
+    .filter(column => !PROFESSION_JOB_ONLY_COLUMNS[column.key] || PROFESSION_JOB_ONLY_COLUMNS[column.key] === jobFilter);
+}
+
+function playerQuadrantEffectiveAxes(jobFilter) {
+  const keys = playerQuadrantAxisOptions(jobFilter).map(column => column.key);
+  return {
+    x: keys.includes(playerQuadrantAxes.x) ? playerQuadrantAxes.x : PLAYER_QUADRANT_DEFAULT_AXES.x,
+    y: keys.includes(playerQuadrantAxes.y) ? playerQuadrantAxes.y : PLAYER_QUADRANT_DEFAULT_AXES.y,
+  };
+}
+
+function playerQuadrantAxisLabel(key) {
+  return PROFESSION_TABLE_COLUMNS.find(column => column.key === key)?.label || key;
+}
+
+function playerQuadrantShortLabel(key) {
+  return playerQuadrantAxisLabel(key).replace(/^平均/, '');
+}
+
+function formatPlayerQuadrantValue(key, value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '-';
+  if (key === 'winRate') return `${(num * 100).toFixed(0)}%`;
+  if (key === 'battles' || key === 'reviewSuggestCount') return fmtNumber(num);
+  if (key === 'avgKillPerDeath') return fmtF(num, 2);
+  if (PLAYER_QUADRANT_LARGE_KEYS.has(key)) return fmtLarge(num);
+  return fmtAvg(num);
+}
+
+// 刻度是整數萬、億，不用 fmtLarge 的固定小數位（避免「5000.0 萬」「1.00 億」）
+function formatPlayerQuadrantTick(key, value) {
+  const num = Number(value);
+  if (key === 'winRate') return `${Math.round(num * 100)}%`;
+  const plain = (number, digits) => number.toLocaleString('zh-TW', { maximumFractionDigits: digits });
+  if (PLAYER_QUADRANT_LARGE_KEYS.has(key)) {
+    if (Math.abs(num) >= 100000000) return `${plain(num / 100000000, 2)} 億`;
+    if (Math.abs(num) >= 10000) return `${plain(num / 10000, 1)} 萬`;
+    return plain(num, 0);
+  }
+  return plain(num, 2);
+}
+
+// 人傷/擊殺數在擊敗為 0 時是無限大，這種點不畫，另外寫出人數
+function playerQuadrantChartData(rows, xKey, yKey) {
+  const points = rows.filter(row => Number.isFinite(Number(row[xKey])) && Number.isFinite(Number(row[yKey])));
+  const mean = key => (points.length ? points.reduce((total, row) => total + Number(row[key]), 0) / points.length : 0);
+  return {
+    points,
+    excluded: rows.length - points.length,
+    xMean: mean(xKey),
+    yMean: mean(yKey),
+  };
+}
+
+function playerQuadrantNiceScale(values, tickCount = 5) {
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+  if (min === max) {
+    const pad = Math.abs(min) * 0.1 || 1;
+    min -= pad;
+    max += pad;
+  }
+  const raw = (max - min) / tickCount;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map(factor => factor * magnitude).find(candidate => candidate >= raw) || raw;
+  const start = Math.floor(min / step) * step;
+  const end = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let value = start; value <= end + step / 2; value += step) ticks.push(Number(value.toPrecision(12)));
+  return { min: start, max: end, ticks };
+}
+
+function playerQuadrantTextWidth(text) {
+  return Array.from(String(text || '')).reduce((total, char) => total + (char.charCodeAt(0) > 0x2e7f ? 12 : 7), 0);
+}
+
+function boxesOverlap(a, b) {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+}
+
+// 名字依序試放在點的右、左、上、下，和已放的名字或其他點重疊就換位置，都放不下就只留滑過顯示
+function placePlayerQuadrantLabels(points, plot, occupied) {
+  const order = points
+    .map((point, index) => ({ point, index, distance: Math.hypot(point.px - plot.cx, point.py - plot.cy) }))
+    .sort((a, b) => b.distance - a.distance);
+  const placed = new Map();
+  order.forEach(({ point, index }) => {
+    const w = playerQuadrantTextWidth(point.row.name);
+    const candidates = [
+      { x: point.px + 9, y: point.py + 4, anchor: 'start', box: { x: point.px + 9, y: point.py - 9, w, h: 14 } },
+      { x: point.px - 9, y: point.py + 4, anchor: 'end', box: { x: point.px - 9 - w, y: point.py - 9, w, h: 14 } },
+      { x: point.px, y: point.py - 10, anchor: 'middle', box: { x: point.px - w / 2, y: point.py - 22, w, h: 14 } },
+      { x: point.px, y: point.py + 20, anchor: 'middle', box: { x: point.px - w / 2, y: point.py + 8, w, h: 14 } },
+    ];
+    const fit = candidates.find(candidate => candidate.box.x >= plot.left
+      && candidate.box.x + candidate.box.w <= plot.right
+      && candidate.box.y >= plot.top
+      && candidate.box.y + candidate.box.h <= plot.bottom
+      && !occupied.some(box => boxesOverlap(box, candidate.box)));
+    if (!fit) return;
+    occupied.push(fit.box);
+    placed.set(index, fit);
+  });
+  return placed;
+}
+
+function renderPlayerQuadrantAxisSelects(jobFilter, axes) {
+  const options = playerQuadrantAxisOptions(jobFilter);
+  ['x', 'y'].forEach(axis => {
+    const select = document.getElementById(`player_quadrant_${axis}`);
+    if (!select) return;
+    select.innerHTML = options.map(column => `<option value="${escHtml(column.key)}">${escHtml(column.label)}</option>`).join('');
+    select.value = axes[axis];
+  });
+}
+
+function playerQuadrantJobLabel(jobFilter) {
+  if (!jobFilter || jobFilter === 'all') return '全部職業';
+  if (jobFilter === 'non_suwen') return '素問外所有職業';
+  return jobFilter;
+}
+
+function renderPlayerQuadrantChart(rows = professionRows()) {
+  const box = document.getElementById('player_quadrant_chart');
+  if (!box) return;
+  hidePlayerQuadrantTooltip();
+  const jobFilter = document.getElementById('quadrant_job_filter')?.value || 'all';
+  const axes = playerQuadrantEffectiveAxes(jobFilter);
+  renderPlayerQuadrantAxisSelects(jobFilter, axes);
+  const titleEl = document.getElementById('player_quadrant_title');
+  if (titleEl) titleEl.textContent = `${playerQuadrantJobLabel(jobFilter)}・玩家表現象限圖${isProfessionOpponentMode('quadrant') ? '（對手）' : ''}`;
+  const data = playerQuadrantChartData(rows, axes.x, axes.y);
+  playerQuadrantPoints = data.points;
+  if (!data.points.length) {
+    box.innerHTML = `<div class="empty">${rows.length ? `目前 ${fmtNumber(rows.length)} 人的${escHtml(playerQuadrantAxisLabel(axes.x))}或${escHtml(playerQuadrantAxisLabel(axes.y))}無法計算，換一個軸看看。` : '目前沒有符合條件的玩家資料。'}</div>`;
+    return;
+  }
+  const width = 1100;
+  const height = 620;
+  const padding = { top: 40, right: 24, bottom: 58, left: 86 };
+  const plot = {
+    left: padding.left,
+    right: width - padding.right,
+    top: padding.top,
+    bottom: height - padding.bottom,
+  };
+  plot.cx = (plot.left + plot.right) / 2;
+  plot.cy = (plot.top + plot.bottom) / 2;
+  const xScale = playerQuadrantNiceScale(data.points.map(row => Number(row[axes.x])));
+  const yScale = playerQuadrantNiceScale(data.points.map(row => Number(row[axes.y])));
+  const toX = value => plot.left + ((Number(value) - xScale.min) / (xScale.max - xScale.min)) * (plot.right - plot.left);
+  const toY = value => plot.bottom - ((Number(value) - yScale.min) / (yScale.max - yScale.min)) * (plot.bottom - plot.top);
+  const meanX = toX(data.xMean);
+  const meanY = toY(data.yMean);
+  const points = data.points.map(row => ({ row, px: toX(row[axes.x]), py: toY(row[axes.y]) }));
+  const xShort = playerQuadrantShortLabel(axes.x);
+  const yShort = playerQuadrantShortLabel(axes.y);
+  const corners = [
+    { text: `低 ${xShort}・高 ${yShort}`, x: plot.left + 10, y: plot.top + 20, anchor: 'start' },
+    { text: `高 ${xShort}・高 ${yShort}`, x: plot.right - 10, y: plot.top + 20, anchor: 'end' },
+    { text: `低 ${xShort}・低 ${yShort}`, x: plot.left + 10, y: plot.bottom - 10, anchor: 'start' },
+    { text: `高 ${xShort}・低 ${yShort}`, x: plot.right - 10, y: plot.bottom - 10, anchor: 'end' },
+  ];
+  const occupied = [
+    ...corners.map(corner => {
+      const w = playerQuadrantTextWidth(corner.text) * 13 / 12;
+      return { x: corner.anchor === 'end' ? corner.x - w : corner.x, y: corner.y - 13, w, h: 16 };
+    }),
+    ...points.map(point => ({ x: point.px - 6, y: point.py - 6, w: 12, h: 12 })),
+  ];
+  const labels = points.length <= PLAYER_QUADRANT_LABEL_LIMIT ? placePlayerQuadrantLabels(points, plot, occupied) : new Map();
+  const groups = [...new Set(points.map(point => point.row.dominantGroupType || 'unknown'))]
+    .sort((a, b) => groupTypeSortValue(a) - groupTypeSortValue(b));
+  const hiddenLabels = points.length - labels.size;
+  const notes = [
+    `共 ${fmtNumber(points.length)} 人，每人一個點，數值是所選場次的平均。虛線是這些人的平均：${escHtml(playerQuadrantAxisLabel(axes.x))} ${escHtml(formatPlayerQuadrantValue(axes.x, data.xMean))}、${escHtml(playerQuadrantAxisLabel(axes.y))} ${escHtml(formatPlayerQuadrantValue(axes.y, data.yMean))}。`,
+    data.excluded ? `另有 ${fmtNumber(data.excluded)} 人的數值無法計算（例如擊敗為 0 時的人傷/擊殺數），沒有畫出。` : '',
+    points.length > PLAYER_QUADRANT_LABEL_LIMIT
+      ? `超過 ${fmtNumber(PLAYER_QUADRANT_LABEL_LIMIT)} 人時不標名字。`
+      : (hiddenLabels ? `${fmtNumber(hiddenLabels)} 人的名字和其他點重疊，沒有標出。` : ''),
+    jobFilter === 'all' || jobFilter === 'non_suwen' ? '不同職業混在一起比較，建議先選一個職業。' : '',
+    '滑過圓點看數值，點圓點看六角圖。',
+  ].filter(Boolean);
+  box.innerHTML = `
+    <div class="player-quadrant-scroll">
+      <svg class="quadrant-svg player-quadrant-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escHtml(`${playerQuadrantJobLabel(jobFilter)}玩家象限圖，X 軸${playerQuadrantAxisLabel(axes.x)}，Y 軸${playerQuadrantAxisLabel(axes.y)}`)}">
+        <rect x="${plot.left}" y="${plot.top}" width="${plot.right - plot.left}" height="${plot.bottom - plot.top}" style="fill: var(--chart-plot); stroke: var(--chart-plot-line)" stroke-width="1" />
+        ${xScale.ticks.map(value => {
+          const x = toX(value);
+          return `<line x1="${x.toFixed(1)}" y1="${plot.top}" x2="${x.toFixed(1)}" y2="${plot.bottom}" style="stroke: var(--chart-tick)" stroke-width="1" /><text x="${x.toFixed(1)}" y="${plot.bottom + 18}" text-anchor="middle" class="quadrant-tick-label">${escHtml(formatPlayerQuadrantTick(axes.x, value))}</text>`;
+        }).join('')}
+        ${yScale.ticks.map(value => {
+          const y = toY(value);
+          return `<line x1="${plot.left}" y1="${y.toFixed(1)}" x2="${plot.right}" y2="${y.toFixed(1)}" style="stroke: var(--chart-tick)" stroke-width="1" /><text x="${plot.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" class="quadrant-tick-label">${escHtml(formatPlayerQuadrantTick(axes.y, value))}</text>`;
+        }).join('')}
+        <line x1="${meanX.toFixed(1)}" y1="${plot.top}" x2="${meanX.toFixed(1)}" y2="${plot.bottom}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
+        <line x1="${plot.left}" y1="${meanY.toFixed(1)}" x2="${plot.right}" y2="${meanY.toFixed(1)}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
+        ${corners.map(corner => `<text x="${corner.x}" y="${corner.y}" text-anchor="${corner.anchor}" class="player-quadrant-corner">${escHtml(corner.text)}</text>`).join('')}
+        <text x="${plot.left}" y="${plot.top - 14}" class="player-quadrant-axis-title">↑ Y 軸：${escHtml(playerQuadrantAxisLabel(axes.y))}</text>
+        <text x="${plot.right}" y="${height - 12}" text-anchor="end" class="player-quadrant-axis-title">X 軸：${escHtml(playerQuadrantAxisLabel(axes.x))} →</text>
+        ${points.map((point, index) => {
+          const color = PROFESSION_QUADRANT_COLORS[point.row.dominantGroupType] || PROFESSION_QUADRANT_COLORS.unknown;
+          const label = labels.get(index);
+          return `<g class="player-quadrant-dot" data-index="${index}" tabindex="0" role="button" aria-label="${escHtml(`${point.row.name}，${point.row.job}，${playerQuadrantAxisLabel(axes.x)} ${formatPlayerQuadrantValue(axes.x, point.row[axes.x])}，${playerQuadrantAxisLabel(axes.y)} ${formatPlayerQuadrantValue(axes.y, point.row[axes.y])}`)}">
+            <circle class="player-quadrant-hit" cx="${point.px.toFixed(1)}" cy="${point.py.toFixed(1)}" r="11" />
+            <circle class="player-quadrant-point" cx="${point.px.toFixed(1)}" cy="${point.py.toFixed(1)}" r="5" style="fill: ${color}; stroke: var(--chart-point-ring)${points.length > PLAYER_QUADRANT_LABEL_LIMIT ? '; fill-opacity: 0.72' : ''}" stroke-width="2" />
+            ${label ? `<text x="${label.x.toFixed(1)}" y="${label.y.toFixed(1)}" text-anchor="${label.anchor}" class="player-quadrant-label">${escHtml(point.row.name)}</text>` : ''}
+          </g>`;
+        }).join('')}
+      </svg>
+    </div>
+    <div class="quadrant-legend">
+      ${groups.map(group => `<span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS[group] || PROFESSION_QUADRANT_COLORS.unknown};"></span>${escHtml(GROUP_LABELS[group] || group)}</span>`).join('')}
+      <span class="subtle">顏色是該玩家在所選場次最常擔任的分工</span>
+    </div>
+    <div class="quadrant-note">${notes.join('<br>')}</div>
+  `;
+}
+
+function playerQuadrantTooltipHtml(row) {
+  const jobFilter = document.getElementById('quadrant_job_filter')?.value || 'all';
+  const axes = playerQuadrantEffectiveAxes(jobFilter);
+  const line = key => `${escHtml(playerQuadrantAxisLabel(key))}：${escHtml(formatPlayerQuadrantValue(key, row[key]))}`;
+  const extraKeys = PLAYER_QUADRANT_TOOLTIP_KEYS
+    .filter(key => key !== axes.x && key !== axes.y && professionColumnApplies(key, row.job));
+  return `
+    <b>${escHtml(row.name)}</b>・${escHtml(row.job)}
+    <div>${escHtml(GROUP_LABELS[row.dominantGroupType] || '未定')}・${fmtNumber(row.battles)} 場・勝率 ${(Number(row.winRate || 0) * 100).toFixed(0)}%</div>
+    <div><b>X</b> ${line(axes.x)}</div>
+    <div><b>Y</b> ${line(axes.y)}</div>
+    ${extraKeys.map(key => `<div>${line(key)}</div>`).join('')}
+  `;
+}
+
+function showPlayerQuadrantTooltip(dot) {
+  const tooltip = document.getElementById('player_quadrant_tooltip');
+  const row = playerQuadrantPoints[Number(dot?.dataset?.index)];
+  if (!tooltip || !row) return;
+  document.querySelectorAll('#player_quadrant_chart .player-quadrant-dot.is-active').forEach(item => item.classList.remove('is-active'));
+  dot.classList.add('is-active');
+  tooltip.innerHTML = playerQuadrantTooltipHtml(row);
+  tooltip.hidden = false;
+  const rect = dot.querySelector('.player-quadrant-point').getBoundingClientRect();
+  const tipRect = tooltip.getBoundingClientRect();
+  let left = rect.right + 12;
+  if (left + tipRect.width > window.innerWidth - 8) left = rect.left - tipRect.width - 12;
+  const top = Math.min(Math.max(8, rect.top - 12), window.innerHeight - tipRect.height - 8);
+  tooltip.style.left = `${Math.max(8, left)}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+function hidePlayerQuadrantTooltip() {
+  const tooltip = document.getElementById('player_quadrant_tooltip');
+  if (tooltip) tooltip.hidden = true;
+  document.querySelectorAll('#player_quadrant_chart .player-quadrant-dot.is-active').forEach(item => item.classList.remove('is-active'));
+}
+
+function setPlayerQuadrantAxis(axis, key) {
+  if (!key) return;
+  playerQuadrantAxes = { ...playerQuadrantAxes, [axis]: key };
+  renderPlayerQuadrantChart();
+}
+
+function swapPlayerQuadrantAxes() {
+  const jobFilter = document.getElementById('quadrant_job_filter')?.value || 'all';
+  const axes = playerQuadrantEffectiveAxes(jobFilter);
+  playerQuadrantAxes = { x: axes.y, y: axes.x };
+  renderPlayerQuadrantChart();
+}
+
+function bindPlayerQuadrantChartEvents() {
+  const box = document.getElementById('player_quadrant_chart');
+  if (!box) return;
+  const dotOf = event => event.target?.closest?.('.player-quadrant-dot');
+  box.addEventListener('mouseover', event => {
+    const dot = dotOf(event);
+    if (dot) showPlayerQuadrantTooltip(dot);
+  });
+  box.addEventListener('mouseout', event => {
+    const dot = dotOf(event);
+    if (dot && !dot.contains(event.relatedTarget)) hidePlayerQuadrantTooltip();
+  });
+  box.addEventListener('focusin', event => {
+    const dot = dotOf(event);
+    if (dot) showPlayerQuadrantTooltip(dot);
+  });
+  box.addEventListener('focusout', hidePlayerQuadrantTooltip);
+  const openDot = dot => {
+    const row = playerQuadrantPoints[Number(dot?.dataset?.index)];
+    if (!row) return;
+    hidePlayerQuadrantTooltip();
+    openPlayerQuadrantRadar(row.name, row.job);
+  };
+  box.addEventListener('click', event => {
+    const dot = dotOf(event);
+    if (dot) openDot(dot);
+  });
+  box.addEventListener('keydown', event => {
+    const dot = dotOf(event);
+    if (!dot || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    openDot(dot);
+  });
+  box.addEventListener('scroll', hidePlayerQuadrantTooltip, true);
 }
 
 function renderDpsProfessionAverageTable() {
@@ -10482,7 +11041,7 @@ function syncProfessionFloatingHeader() {
     headerWrapId: 'profession_floating_header',
     headerScrollId: 'profession_floating_header_scroll',
     headerTableId: 'profession_floating_header_table',
-    panelSelector: '[data-tab-panel="profession"]',
+    panelSelector: '[data-tab-panel="quadrant"]',
     requireOverflow: true,
     onHeaderRender: bindProfessionSortButtons,
   });
@@ -10507,7 +11066,7 @@ function syncProfessionScrollbars() {
   const floatingInner = document.getElementById('profession_floating_scroll_inner');
   const wrap = document.getElementById('profession_table_wrap');
   const table = document.getElementById('profession_table');
-  const professionPanel = document.querySelector('[data-tab-panel="profession"]');
+  const professionPanel = document.querySelector('[data-tab-panel="quadrant"]');
   if (!top || !inner || !wrap || !table || !floating || !floatingInner || !professionPanel) return;
   const scrollWidth = table.scrollWidth;
   inner.style.width = `${scrollWidth}px`;
@@ -11798,8 +12357,8 @@ function renderTeamFocus() {
 }
 
 function refreshJobFilterOptions() {
-  const jobs = [...new Set(aggregateProfessionPlayers().map(item => item.job))].sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
-  const select = document.getElementById('profession_job_filter');
+  const jobs = [...new Set(aggregateProfessionPlayers(null, 'quadrant').map(item => item.job))].sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
+  const select = document.getElementById('quadrant_job_filter');
   const currentValue = select.value || 'all';
   select.innerHTML = '<option value="all">全部職業</option><option value="non_suwen">素問外所有職業</option>' + jobs.map(job => `<option value="${escHtml(job)}">${escHtml(job)}</option>`).join('');
   select.value = [...select.options].some(option => option.value === currentValue) ? currentValue : 'all';
@@ -11823,6 +12382,7 @@ function refreshReviewOpponentFilterOptions() {
   refreshOpponentFilterOptions('player_opponent_filter');
   refreshOpponentFilterOptions('squad_opponent_filter');
   refreshOpponentFilterOptions('profession_opponent_filter');
+  refreshOpponentFilterOptions('quadrant_opponent_filter');
 }
 
 function renderBattleFilterOptions(selectId) {
@@ -11994,8 +12554,8 @@ function batchExportItems() {
     },
     {
       key: 'profession',
-      label: '職業表現',
-      baseTitle: `職業表現_${professionContext.job === 'all' ? '全部職業' : professionContext.job === 'non_suwen' ? '素問外所有職業' : professionContext.job}_${exportDateStamp()}`,
+      label: '玩家統計表（玩家象限）',
+      baseTitle: `玩家統計表_${professionContext.job === 'all' ? '全部職業' : professionContext.job === 'non_suwen' ? '素問外所有職業' : professionContext.job}_${exportDateStamp()}`,
       summary: `職業：${professionContext.job === 'all' ? '全部職業' : professionContext.job === 'non_suwen' ? '素問外所有職業' : professionContext.job}｜團別：${GROUP_LABELS[professionContext.groupType] || (professionContext.groupType === 'all' ? '全部' : professionContext.groupType)}｜資料：${fmtNumber(professionContext.rows.length)} 人`,
       valid: professionContext.rows.length > 0,
       reason: professionContext.rows.length > 0 ? '' : '目前沒有符合條件的職業資料',
@@ -12231,6 +12791,7 @@ function refreshAll() {
   renderBattleFilterOptions('player_battle_select');
   renderBattleFilterOptions('squad_battle_select');
   renderBattleFilterOptions('profession_battle_select');
+  renderBattleFilterOptions('quadrant_battle_select');
   renderAliasList();
   markPlayerSearchPending('請按「搜尋」更新玩家查詢結果。');
   renderSquadPerformanceTable();
@@ -12262,11 +12823,12 @@ function switchTab(tab) {
     tools.style.display = show ? 'flex' : 'none';
   }
   renderBattleMetaEditor();
-  if (tab === 'profession') {
+  if (tab === 'quadrant') {
     requestAnimationFrame(() => {
       syncProfessionScrollbars();
     });
   } else {
+    hidePlayerQuadrantTooltip();
     scheduleProfessionFloatingScrollbarSync();
   }
   if (tab === 'squad') {
@@ -12843,12 +13405,17 @@ function handleSquadBattleSelectionChange() {
 
 function handleProfessionBattleScopeChange() {
   renderBattleFilterOptions('profession_battle_select');
-  renderProfessionTable();
+  renderProfessionAverageTables();
 }
 
-function handleProfessionAnalyzeOpponentChange() {
+function handleQuadrantBattleScopeChange() {
+  renderBattleFilterOptions('quadrant_battle_select');
+  renderPlayerQuadrantTab();
+}
+
+function handleQuadrantAnalyzeOpponentChange() {
   refreshJobFilterOptions();
-  renderProfessionTable();
+  renderPlayerQuadrantTab();
 }
 
 document.getElementById('player_search').addEventListener('input', handlePlayerSearchInput);
@@ -12871,11 +13438,24 @@ document.getElementById('profession_own_team_filter').addEventListener('change',
 document.getElementById('profession_opponent_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_date_from_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_date_to_filter').addEventListener('change', handleProfessionBattleScopeChange);
-document.getElementById('profession_analyze_opponent').addEventListener('change', handleProfessionAnalyzeOpponentChange);
-document.getElementById('profession_job_filter').addEventListener('change', renderProfessionTable);
-document.getElementById('profession_group_filter').addEventListener('change', renderProfessionTable);
-document.getElementById('profession_min_battles').addEventListener('input', renderProfessionTable);
-document.getElementById('profession_battle_select').addEventListener('change', renderProfessionTable);
+document.getElementById('profession_analyze_opponent').addEventListener('change', renderProfessionAverageTables);
+document.getElementById('profession_group_filter').addEventListener('change', renderProfessionAverageTables);
+document.getElementById('profession_battle_select').addEventListener('change', renderProfessionAverageTables);
+document.getElementById('btn_goto_player_quadrant').addEventListener('click', () => switchTab('quadrant'));
+document.getElementById('quadrant_own_team_filter').addEventListener('change', handleQuadrantBattleScopeChange);
+document.getElementById('quadrant_opponent_filter').addEventListener('change', handleQuadrantBattleScopeChange);
+document.getElementById('quadrant_date_from_filter').addEventListener('change', handleQuadrantBattleScopeChange);
+document.getElementById('quadrant_date_to_filter').addEventListener('change', handleQuadrantBattleScopeChange);
+document.getElementById('quadrant_analyze_opponent').addEventListener('change', handleQuadrantAnalyzeOpponentChange);
+document.getElementById('quadrant_job_filter').addEventListener('change', renderPlayerQuadrantTab);
+document.getElementById('quadrant_group_filter').addEventListener('change', renderPlayerQuadrantTab);
+document.getElementById('quadrant_min_battles').addEventListener('input', renderPlayerQuadrantTab);
+document.getElementById('quadrant_battle_select').addEventListener('change', renderPlayerQuadrantTab);
+document.getElementById('player_quadrant_x').addEventListener('change', event => setPlayerQuadrantAxis('x', event.target.value));
+document.getElementById('player_quadrant_y').addEventListener('change', event => setPlayerQuadrantAxis('y', event.target.value));
+document.getElementById('btn_player_quadrant_swap').addEventListener('click', swapPlayerQuadrantAxes);
+bindPlayerQuadrantChartEvents();
+window.addEventListener('scroll', hidePlayerQuadrantTooltip, { passive: true });
 document.getElementById('btn_export_profession_pdf').addEventListener('click', exportProfessionPdf);
 document.getElementById('btn_export_focus_pdf').addEventListener('click', exportFocusPdf);
 document.getElementById('btn_export_review_pdf')?.addEventListener('click', exportBattleReviewPdf);
@@ -12987,11 +13567,19 @@ document.getElementById('btn_squad_uncheck_all').addEventListener('click', () =>
 });
 document.getElementById('btn_prof_check_all').addEventListener('click', () => {
   setBattleCheckboxes('profession_battle_select', true);
-  renderProfessionTable();
+  renderProfessionAverageTables();
 });
 document.getElementById('btn_prof_uncheck_all').addEventListener('click', () => {
   setBattleCheckboxes('profession_battle_select', false);
-  renderProfessionTable();
+  renderProfessionAverageTables();
+});
+document.getElementById('btn_quadrant_check_all').addEventListener('click', () => {
+  setBattleCheckboxes('quadrant_battle_select', true);
+  renderPlayerQuadrantTab();
+});
+document.getElementById('btn_quadrant_uncheck_all').addEventListener('click', () => {
+  setBattleCheckboxes('quadrant_battle_select', false);
+  renderPlayerQuadrantTab();
 });
 document.getElementById('btn_prof_delete_checked')?.addEventListener('click', () => deleteCheckedBattles('profession_battle_select'));
 document.getElementById('weak_pct').addEventListener('input', event => {
