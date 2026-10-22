@@ -1375,6 +1375,8 @@
   }
   .player-quadrant-svg {
     min-width: 680px;
+    max-width: 1160px;
+    margin: 0 auto;
   }
   .player-quadrant-hit {
     fill: transparent;
@@ -5204,6 +5206,8 @@ function professionJobOnlyValue(row, key, format) {
 // 玩家象限圖：每個點是玩家統計表的一列（同一份 professionRows），X、Y 軸可選表格的數值欄位
 const PLAYER_QUADRANT_NON_AXIS_KEYS = ['name', 'job', 'dominantGroupType', 'wins'];
 const PLAYER_QUADRANT_DEFAULT_AXES = { x: 'avgPvpDamage', y: 'avgKill' };
+// 重傷越少越好：軸反過來，重傷少的在右邊或上面（使用者要求，2026-10-22）
+const PLAYER_QUADRANT_REVERSED_KEYS = new Set(['avgDeath']);
 const PLAYER_QUADRANT_LARGE_KEYS = new Set(['avgPvpDamage', 'avgPvpPerKill', 'avgBuildDamage', 'avgBuildPerDeath', 'avgTakenDamage', 'avgTakenPerDeath', 'avgHeal', 'avgNetHeal']);
 const PLAYER_QUADRANT_TOOLTIP_KEYS = ['avgKill', 'avgDeath', 'avgPvpDamage', 'avgBuildDamage', 'avgTakenDamage', 'avgHeal', 'avgNetHeal', 'avgSave', 'avgBurn', 'avgSpring'];
 const PLAYER_QUADRANT_LABEL_LIMIT = 120;
@@ -10723,7 +10727,7 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
     return;
   }
   const width = 1100;
-  const height = 620;
+  const height = 600;
   const padding = { top: 40, right: 24, bottom: 58, left: 86 };
   const plot = {
     left: padding.left,
@@ -10735,18 +10739,28 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
   plot.cy = (plot.top + plot.bottom) / 2;
   const xScale = playerQuadrantNiceScale(data.points.map(row => Number(row[axes.x])));
   const yScale = playerQuadrantNiceScale(data.points.map(row => Number(row[axes.y])));
-  const toX = value => plot.left + ((Number(value) - xScale.min) / (xScale.max - xScale.min)) * (plot.right - plot.left);
-  const toY = value => plot.bottom - ((Number(value) - yScale.min) / (yScale.max - yScale.min)) * (plot.bottom - plot.top);
+  const reverseX = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.x);
+  const reverseY = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.y);
+  const fractionX = value => (Number(value) - xScale.min) / (xScale.max - xScale.min);
+  const fractionY = value => (Number(value) - yScale.min) / (yScale.max - yScale.min);
+  const toX = value => (reverseX
+    ? plot.right - fractionX(value) * (plot.right - plot.left)
+    : plot.left + fractionX(value) * (plot.right - plot.left));
+  const toY = value => (reverseY
+    ? plot.top + fractionY(value) * (plot.bottom - plot.top)
+    : plot.bottom - fractionY(value) * (plot.bottom - plot.top));
   const meanX = toX(data.xMean);
   const meanY = toY(data.yMean);
   const points = data.points.map(row => ({ row, px: toX(row[axes.x]), py: toY(row[axes.y]) }));
   const xShort = playerQuadrantShortLabel(axes.x);
   const yShort = playerQuadrantShortLabel(axes.y);
+  const [xLeft, xRight] = reverseX ? ['高', '低'] : ['低', '高'];
+  const [yTop, yBottom] = reverseY ? ['低', '高'] : ['高', '低'];
   const corners = [
-    { text: `低 ${xShort}・高 ${yShort}`, x: plot.left + 10, y: plot.top + 20, anchor: 'start' },
-    { text: `高 ${xShort}・高 ${yShort}`, x: plot.right - 10, y: plot.top + 20, anchor: 'end' },
-    { text: `低 ${xShort}・低 ${yShort}`, x: plot.left + 10, y: plot.bottom - 10, anchor: 'start' },
-    { text: `高 ${xShort}・低 ${yShort}`, x: plot.right - 10, y: plot.bottom - 10, anchor: 'end' },
+    { text: `${xLeft} ${xShort}・${yTop} ${yShort}`, x: plot.left + 10, y: plot.top + 20, anchor: 'start' },
+    { text: `${xRight} ${xShort}・${yTop} ${yShort}`, x: plot.right - 10, y: plot.top + 20, anchor: 'end' },
+    { text: `${xLeft} ${xShort}・${yBottom} ${yShort}`, x: plot.left + 10, y: plot.bottom - 10, anchor: 'start' },
+    { text: `${xRight} ${xShort}・${yBottom} ${yShort}`, x: plot.right - 10, y: plot.bottom - 10, anchor: 'end' },
   ];
   const occupied = [
     ...corners.map(corner => {
@@ -10761,6 +10775,7 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
   const hiddenLabels = points.length - labels.size;
   const notes = [
     `共 ${fmtNumber(points.length)} 人，每人一個點，數值是所選場次的平均。虛線是這些人的平均：${escHtml(playerQuadrantAxisLabel(axes.x))} ${escHtml(formatPlayerQuadrantValue(axes.x, data.xMean))}、${escHtml(playerQuadrantAxisLabel(axes.y))} ${escHtml(formatPlayerQuadrantValue(axes.y, data.yMean))}。`,
+    reverseX || reverseY ? `重傷越少越好，所以重傷軸反過來：越${reverseX ? '右' : '上'}重傷越少。` : '',
     data.excluded ? `另有 ${fmtNumber(data.excluded)} 人的數值無法計算（例如擊敗為 0 時的人傷/擊殺數），沒有畫出。` : '',
     points.length > PLAYER_QUADRANT_LABEL_LIMIT
       ? `超過 ${fmtNumber(PLAYER_QUADRANT_LABEL_LIMIT)} 人時不標名字。`
@@ -10783,8 +10798,8 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
         <line x1="${meanX.toFixed(1)}" y1="${plot.top}" x2="${meanX.toFixed(1)}" y2="${plot.bottom}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
         <line x1="${plot.left}" y1="${meanY.toFixed(1)}" x2="${plot.right}" y2="${meanY.toFixed(1)}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
         ${corners.map(corner => `<text x="${corner.x}" y="${corner.y}" text-anchor="${corner.anchor}" class="player-quadrant-corner">${escHtml(corner.text)}</text>`).join('')}
-        <text x="${plot.left}" y="${plot.top - 14}" class="player-quadrant-axis-title">↑ Y 軸：${escHtml(playerQuadrantAxisLabel(axes.y))}</text>
-        <text x="${plot.right}" y="${height - 12}" text-anchor="end" class="player-quadrant-axis-title">X 軸：${escHtml(playerQuadrantAxisLabel(axes.x))} →</text>
+        <text x="${plot.left}" y="${plot.top - 14}" class="player-quadrant-axis-title">↑ Y 軸：${escHtml(playerQuadrantAxisLabel(axes.y))}${reverseY ? '（越上越少）' : ''}</text>
+        <text x="${plot.right}" y="${height - 12}" text-anchor="end" class="player-quadrant-axis-title">X 軸：${escHtml(playerQuadrantAxisLabel(axes.x))}${reverseX ? '（越右越少）' : ''} →</text>
         ${points.map((point, index) => {
           const color = PROFESSION_QUADRANT_COLORS[point.row.dominantGroupType] || PROFESSION_QUADRANT_COLORS.unknown;
           const label = labels.get(index);
