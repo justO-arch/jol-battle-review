@@ -8135,6 +8135,21 @@ function scoreValueAgainstCohort(value, cohortRows, metric) {
   return count ? Math.round(((count - avgRank + 1) / count) * 100) : 0;
 }
 
+// 治療、淨奶、化羽固定和素問比，清泉和潮光比，焚骨和九靈比，不跟著「比較對象」變（使用者要求，2026-10-23）：
+// 比較對象選所有職業或 DPS 時，其他職業這幾項都是 0，排名會被灌水（例如九靈焚骨在 38 人裡排第 4）。
+// 比的範圍仍是同一批場次、同一個團別；這個職業在範圍裡沒有人時，退回原本的比較對象
+const JOB_FIXED_COMPARE_METRICS = { avgHeal: '素問', avgNetHeal: '素問', avgSave: '素問', avgSpring: '潮光', avgBurn: '九靈' };
+
+function comparePlayerMetrics(player, cohortRows, sourceRows = cohortRows) {
+  const base = cohortRows.length ? cohortRows : [player];
+  return PLAYER_COMPARE_METRICS.map(metric => {
+    const job = JOB_FIXED_COMPARE_METRICS[metric.key];
+    if (!job) return computeMetricComparison(player, base, metric);
+    const fixed = (sourceRows || []).filter(row => row.job === job);
+    return computeMetricComparison(player, fixed.length ? fixed : base, metric);
+  });
+}
+
 function computeMetricComparison(player, cohortRows, metric) {
   const values = cohortRows.map(row => Number(row[metric.key] || 0));
   const playerValue = Number(player?.[metric.key] || 0);
@@ -8376,7 +8391,7 @@ function roleFitOptionsForRow(row, roleKey, groupRows, cohortFilter = 'same_job'
 
 function computeRoleScoreFromRow(row, comparisonRows, roleKey, groupRows = null, cohortFilter = 'same_job') {
   if (!row?.battles) return null;
-  const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, comparisonRows, metric));
+  const comparisons = comparePlayerMetrics(row, comparisonRows, groupRows || comparisonRows);
   return computeRoleFitScores(row, comparisons, roleFitOptionsForRow(row, roleKey, groupRows, cohortFilter)).primary?.[roleKey] ?? null;
 }
 
@@ -8386,7 +8401,9 @@ function computeIronDpsScoreFromRow(row, comparisonRows, roleKey) {
   return computeRoleFitScores({ ...row, job: '破鐵' }, comparisons).primary?.[roleKey] ?? null;
 }
 
-function buildRoleFitScoresByGroup(player, roleRows, cohortFilter = 'same_job') {
+// strictJob：選了職業時只用這個職業的場次。以前找不到同職業那一列時會退回第一列，
+// 例如任秋狸選神相查詢，保鑣分卻顯示他打九靈保鑣的 3 場（使用者回報，2026-10-23）
+function buildRoleFitScoresByGroup(player, roleRows, cohortFilter = 'same_job', strictJob = false) {
   const byGroup = new Map(['attack', 'defense', 'bodyguard'].map(groupKey => {
     const rows = (roleRows || []).filter(row => row.groupFilter === groupKey);
     return [groupKey, rows];
@@ -8394,7 +8411,7 @@ function buildRoleFitScoresByGroup(player, roleRows, cohortFilter = 'same_job') 
   // 選了職業時同一人每個職業各一列，取和目前玩家同職業的那一列
   const rowFor = groupKey => {
     const named = (byGroup.get(groupKey) || []).filter(row => row.name === player.name);
-    return named.find(row => row.job === player.job) || named[0] || null;
+    return named.find(row => row.job === player.job) || (strictJob ? null : named[0]) || null;
   };
   const cohortFor = (groupKey, row) => {
     if (!row) return [];
@@ -8413,7 +8430,7 @@ function buildRoleFitScoresByGroup(player, roleRows, cohortFilter = 'same_job') 
   };
   const modeFor = (groupKey, row, cohort) => {
     if (!row?.battles || row.job !== '潮光') return '';
-    const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, cohort.length ? cohort : [row], metric));
+    const comparisons = comparePlayerMetrics(row, cohort.length ? cohort : [row], byGroup.get(groupKey));
     return computeRoleFitScores(row, comparisons, roleFitOptionsForRow(row, groupKey, byGroup.get(groupKey), cohortFilter)).primaryModes?.[groupKey] || '';
   };
   const primaryModes = {
@@ -10117,8 +10134,9 @@ function buildPlayerDetailContext(player, options = {}) {
   const roleRows = Array.isArray(options.roleRows) ? options.roleRows : ['attack', 'defense', 'bodyguard'].flatMap(key => lookupPlayerRows(battleIds, key));
   const cohortRows = filterPlayerCohortRows(allRows, player, cohortFilter);
   const comparisonRows = cohortRows.length ? cohortRows : [player];
-  const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(player, comparisonRows, metric));
-  const roleFitScores = buildRoleFitScoresByGroup(player, roleRows, cohortFilter);
+  const comparisons = comparePlayerMetrics(player, comparisonRows, allRows);
+  const strictJob = !!options.strictJob || (!!options.jobFilter && options.jobFilter !== 'all');
+  const roleFitScores = buildRoleFitScoresByGroup(player, roleRows, cohortFilter, strictJob);
   const focusSet = new Set(playerFocusMetrics(player));
   const focusComparisons = comparisons.filter(item => focusSet.has(item.metric.key));
   const warningLines = [];
@@ -10343,6 +10361,7 @@ function openProfessionPlayerRadarModal(playerName, options = {}) {
     allRows: cohortSourceRows,
     roleRows,
     battleIds,
+    strictJob: !!options.job,
   });
   const overlay = document.getElementById('profession_player_radar_modal');
   const title = document.getElementById('profession_player_radar_modal_title');
