@@ -1696,6 +1696,79 @@
     font-weight: 800;
     line-height: 1.5;
   }
+  .battle-scope-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+  }
+  .battle-scope-actions,
+  .battle-scope-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .field .battle-scope-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .battle-scope-select select {
+    width: auto;
+    min-width: 150px;
+    max-width: 220px;
+  }
+  .field .battle-scope-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .battle-scope-check input {
+    width: auto;
+  }
+  .battle-scope-note {
+    color: var(--danger);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.5;
+  }
+  .job-select {
+    position: relative;
+    display: grid;
+  }
+  .job-select-icon {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    pointer-events: none;
+  }
+  .job-select-icon .job-icon {
+    width: 22px;
+    height: 22px;
+    margin-right: 0;
+  }
+  .job-select.has-icon select {
+    padding-left: 38px;
+  }
+  @media (max-width: 640px) {
+    .battle-scope-filters,
+    .field .battle-scope-select {
+      width: 100%;
+    }
+    .battle-scope-select select {
+      flex: 1;
+      max-width: none;
+    }
+  }
   .squad-name-cell {
     font-weight: 900;
     color: var(--accent);
@@ -4364,34 +4437,12 @@
                 </div>
                 <div class="field">
                   <label>職業</label>
-                  <select id="player_job_filter" disabled>
-                    <option value="all">全部</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>己方</label>
-                  <select id="player_own_team_filter">
-                    <option value="all">全部</option>
-                    <option value="chensi">塵煙似夢</option>
-                    <option value="jianzhao">劍照霜寒</option>
-                    <option value="zouyu">驟雨初歇</option>
-                    <option value="daruniu">大汝牛</option>
-                    <option value="flower_other">花舞或其他</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>對手</label>
-                  <select id="player_opponent_filter">
-                    <option value="all">全部</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>日期起</label>
-                  <input id="player_date_from_filter" type="date">
-                </div>
-                <div class="field">
-                  <label>日期迄</label>
-                  <input id="player_date_to_filter" type="date">
+                  <div class="job-select">
+                    <span class="job-select-icon" id="player_job_filter_icon"></span>
+                    <select id="player_job_filter" disabled>
+                      <option value="all">全部</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="field">
                   <label>團別篩選</label>
@@ -4413,12 +4464,30 @@
                     <option value="dps2">所有DPS2（奶媽/鐵衣除外）</option>
                   </select>
                 </div>
-                <div class="field" style="grid-column: span 4;">
+                <div class="field" style="grid-column: 1 / -1;">
                   <label>勾選要納入統計的場次</label>
-                  <div class="inline-actions" style="margin-top:0;">
-                    <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
-                    <button class="btn-secondary" type="button" id="btn_player_check_attended">勾選出席場次</button>
-                    <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
+                  <div class="battle-scope-bar">
+                    <div class="battle-scope-actions">
+                      <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
+                      <button class="btn-secondary" type="button" id="btn_player_check_attended">勾選出席場次</button>
+                      <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
+                    </div>
+                    <div class="battle-scope-filters">
+                      <label class="battle-scope-select">己方
+                        <select id="player_own_team_filter">
+                          <option value="all">全部</option>
+                          <option value="zouyu">驟雨初歇</option>
+                          <option value="daruniu">大汝牛</option>
+                          <option value="yijian">一劍飛花</option>
+                          <option value="flower_other">花舞或其他</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-select">對手
+                        <select id="player_opponent_filter">
+                          <option value="all">全部</option>
+                        </select>
+                      </label>
+                    </div>
                   </div>
                   <div id="player_battle_select" class="checklist-box"></div>
                 </div>
@@ -4435,59 +4504,41 @@
 
             <div class="tab-panel" data-tab-panel="profession">
               <div class="grid-4">
-                <div class="field">
-                  <label>己方</label>
-                  <select id="profession_own_team_filter">
-                    <option value="all">全部</option>
-                    <option value="chensi">塵煙似夢</option>
-                    <option value="jianzhao">劍照霜寒</option>
-                    <option value="zouyu">驟雨初歇</option>
-                    <option value="daruniu">大汝牛</option>
-                    <option value="flower_other">花舞或其他</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>對手</label>
-                  <select id="profession_opponent_filter">
-                    <option value="all">全部</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>日期起</label>
-                  <input id="profession_date_from_filter" type="date">
-                </div>
-                <div class="field">
-                  <label>日期迄</label>
-                  <input id="profession_date_to_filter" type="date">
-                </div>
-                <div class="field">
-                  <label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;color:var(--accent);">
-                    <input id="profession_analyze_opponent" type="checkbox" style="width:auto;">
-                    分析對手
-                  </label>
-                  <div style="margin-top:4px;color:var(--danger);font-size:12px;font-weight:800;line-height:1.5;">對手的分工是用塔傷和擊殺做推測可能非真實分工</div>
-                </div>
-                <div class="field">
-                  <label>團別</label>
-                  <select id="profession_group_filter">
-                    <option value="all">全部</option>
-                    <option value="attack">進攻</option>
-                    <option value="defense">防守</option>
-                    <option value="bodyguard">保鑣</option>
-                    <option value="defense_bodyguard">保鑣+防守</option>
-                    <option value="attack_bodyguard">保鑣+進攻</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>最低場次</label>
-                  <input id="profession_min_battles" type="number" min="1" step="1" value="1">
-                  <div class="subtle" style="margin-top:4px;font-size:12px;">點職業名稱開象限圖時使用</div>
-                </div>
-                <div class="field" style="grid-column: span 4;">
+                <div class="field" style="grid-column: 1 / -1;">
                   <label>勾選要納入統計的場次</label>
-                  <div class="inline-actions" style="margin-top:0;">
-                    <button class="btn-secondary" type="button" id="btn_prof_check_all">全勾</button>
-                    <button class="btn-ghost" type="button" id="btn_prof_uncheck_all">全不勾</button>
+                  <div class="battle-scope-bar">
+                    <div class="battle-scope-actions">
+                      <button class="btn-secondary" type="button" id="btn_prof_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_prof_uncheck_all">全不勾</button>
+                    </div>
+                    <div class="battle-scope-filters">
+                      <label class="battle-scope-select">己方
+                        <select id="profession_own_team_filter">
+                          <option value="all">全部</option>
+                          <option value="zouyu">驟雨初歇</option>
+                          <option value="daruniu">大汝牛</option>
+                          <option value="yijian">一劍飛花</option>
+                          <option value="flower_other">花舞或其他</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-select">對手
+                        <select id="profession_opponent_filter">
+                          <option value="all">全部</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-select">團別
+                        <select id="profession_group_filter">
+                          <option value="all">全部</option>
+                          <option value="attack">進攻</option>
+                          <option value="defense">防守</option>
+                          <option value="bodyguard">保鑣</option>
+                          <option value="defense_bodyguard">保鑣+防守</option>
+                          <option value="attack_bodyguard">保鑣+進攻</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-check"><input id="profession_analyze_opponent" type="checkbox"> 分析對手</label>
+                      <span class="battle-scope-note">對手的分工是用資源、塔傷和擊殺推測，可能不是真實分工</span>
+                    </div>
                   </div>
                   <div id="profession_battle_select" class="checklist-box"></div>
                 </div>
@@ -4543,43 +4594,14 @@
             <div class="tab-panel" data-tab-panel="quadrant">
               <div class="grid-4">
                 <div class="field">
-                  <label>己方</label>
-                  <select id="quadrant_own_team_filter">
-                    <option value="all">全部</option>
-                    <option value="chensi">塵煙似夢</option>
-                    <option value="jianzhao">劍照霜寒</option>
-                    <option value="zouyu">驟雨初歇</option>
-                    <option value="daruniu">大汝牛</option>
-                    <option value="flower_other">花舞或其他</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>對手</label>
-                  <select id="quadrant_opponent_filter">
-                    <option value="all">全部</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>日期起</label>
-                  <input id="quadrant_date_from_filter" type="date">
-                </div>
-                <div class="field">
-                  <label>日期迄</label>
-                  <input id="quadrant_date_to_filter" type="date">
-                </div>
-                <div class="field">
-                  <label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;color:var(--accent);">
-                    <input id="quadrant_analyze_opponent" type="checkbox" style="width:auto;">
-                    分析對手
-                  </label>
-                  <div style="margin-top:4px;color:var(--danger);font-size:12px;font-weight:800;line-height:1.5;">對手的分工是用塔傷和擊殺做推測可能非真實分工</div>
-                </div>
-                <div class="field">
                   <label>職業</label>
-                  <select id="quadrant_job_filter">
-                    <option value="all">全部職業</option>
-                    <option value="non_suwen">素問外所有職業</option>
-                  </select>
+                  <div class="job-select">
+                    <span class="job-select-icon" id="quadrant_job_filter_icon"></span>
+                    <select id="quadrant_job_filter">
+                      <option value="all">全部職業</option>
+                      <option value="non_suwen">素問外所有職業</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="field">
                   <label>團別</label>
@@ -4596,11 +4618,31 @@
                   <label>最低場次</label>
                   <input id="quadrant_min_battles" type="number" min="1" step="1" value="1">
                 </div>
-                <div class="field" style="grid-column: span 4;">
+                <div class="field" style="grid-column: 1 / -1;">
                   <label>勾選要納入統計的場次</label>
-                  <div class="inline-actions" style="margin-top:0;">
-                    <button class="btn-secondary" type="button" id="btn_quadrant_check_all">全勾</button>
-                    <button class="btn-ghost" type="button" id="btn_quadrant_uncheck_all">全不勾</button>
+                  <div class="battle-scope-bar">
+                    <div class="battle-scope-actions">
+                      <button class="btn-secondary" type="button" id="btn_quadrant_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_quadrant_uncheck_all">全不勾</button>
+                    </div>
+                    <div class="battle-scope-filters">
+                      <label class="battle-scope-select">己方
+                        <select id="quadrant_own_team_filter">
+                          <option value="all">全部</option>
+                          <option value="zouyu">驟雨初歇</option>
+                          <option value="daruniu">大汝牛</option>
+                          <option value="yijian">一劍飛花</option>
+                          <option value="flower_other">花舞或其他</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-select">對手
+                        <select id="quadrant_opponent_filter">
+                          <option value="all">全部</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-check"><input id="quadrant_analyze_opponent" type="checkbox"> 分析對手</label>
+                      <span class="battle-scope-note">對手的分工是用資源、塔傷和擊殺推測，可能不是真實分工</span>
+                    </div>
                   </div>
                   <div id="quadrant_battle_select" class="checklist-box"></div>
                 </div>
@@ -4615,6 +4657,11 @@
                     <label for="player_quadrant_y">Y 軸（直向）</label>
                     <select id="player_quadrant_y"></select>
                     <button class="btn-ghost" type="button" id="btn_player_quadrant_swap" title="交換 X、Y 軸">交換</button>
+                    <label for="player_quadrant_center">分界線</label>
+                    <select id="player_quadrant_center">
+                      <option value="median">中位數</option>
+                      <option value="mean">平均數</option>
+                    </select>
                   </div>
                 </div>
                 <div id="player_quadrant_chart"></div>
@@ -4648,38 +4695,31 @@
 
             <div class="tab-panel" data-tab-panel="squad">
               <div class="grid-4">
-                <div class="field">
-                  <label>己方</label>
-                  <select id="squad_own_team_filter">
-                    <option value="all">全部</option>
-                    <option value="chensi">塵煙似夢</option>
-                    <option value="jianzhao">劍照霜寒</option>
-                    <option value="zouyu">驟雨初歇</option>
-                    <option value="daruniu">大汝牛</option>
-                    <option value="flower_other">花舞或其他</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>對手</label>
-                  <select id="squad_opponent_filter">
-                    <option value="all">全部</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>日期起</label>
-                  <input id="squad_date_from_filter" type="date">
-                </div>
-                <div class="field">
-                  <label>日期迄</label>
-                  <input id="squad_date_to_filter" type="date">
-                </div>
-                <div class="field" style="grid-column: span 4;">
+                <div class="field" style="grid-column: 1 / -1;">
                   <label>勾選要納入統計的場次</label>
-                  <div class="inline-actions" style="margin-top:0;">
-                    <button class="btn-secondary" type="button" id="btn_squad_check_all">全勾</button>
-                    <button class="btn-ghost" type="button" id="btn_squad_uncheck_all">全不勾</button>
-                    <span class="squad-selection-hint">建議只看單場較有價值，因為不同場的隊員組成很可能大不相同。</span>
+                  <div class="battle-scope-bar">
+                    <div class="battle-scope-actions">
+                      <button class="btn-secondary" type="button" id="btn_squad_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_squad_uncheck_all">全不勾</button>
+                    </div>
+                    <div class="battle-scope-filters">
+                      <label class="battle-scope-select">己方
+                        <select id="squad_own_team_filter">
+                          <option value="all">全部</option>
+                          <option value="zouyu">驟雨初歇</option>
+                          <option value="daruniu">大汝牛</option>
+                          <option value="yijian">一劍飛花</option>
+                          <option value="flower_other">花舞或其他</option>
+                        </select>
+                      </label>
+                      <label class="battle-scope-select">對手
+                        <select id="squad_opponent_filter">
+                          <option value="all">全部</option>
+                        </select>
+                      </label>
+                    </div>
                   </div>
+                  <div class="squad-selection-hint">建議只看單場較有價值，因為不同場的隊員組成很可能大不相同。</div>
                   <div id="squad_battle_select" class="checklist-box"></div>
                 </div>
               </div>
@@ -4904,6 +4944,15 @@ function jobIconHtml(job) {
   return src ? `<img class="job-icon" src="${src}" alt="" aria-hidden="true">` : '';
 }
 
+function syncJobSelectIcon(selectId) {
+  const select = document.getElementById(selectId);
+  const icon = document.getElementById(`${selectId}_icon`);
+  if (!select || !icon) return;
+  const html = jobIconHtml(select.value);
+  icon.innerHTML = html;
+  select.closest?.('.job-select')?.classList.toggle('has-icon', !!html);
+}
+
 function battleResultChipHtml(battle) {
   if (battle?.result === 'win') return '<span class="check-result win">勝</span>';
   if (battle?.result === 'loss') return '<span class="check-result loss">敗</span>';
@@ -5118,10 +5167,9 @@ const PLAYER_GROUP_FILTER_LABELS = {
 };
 const OWN_TEAM_FILTER_LABELS = {
   all: '全部',
-  chensi: '塵煙似夢',
-  jianzhao: '劍照霜寒',
   zouyu: '驟雨初歇',
   daruniu: '大汝牛',
+  yijian: '一劍飛花',
   flower_other: '花舞或其他',
 };
 // 頁面一載入就會讀存檔並套用對照（loadState），必須宣告在 `let state` 之前
@@ -5205,13 +5253,17 @@ function professionJobOnlyValue(row, key, format) {
 }
 // 玩家象限圖：每個點是玩家統計表的一列（同一份 professionRows），X、Y 軸可選表格的數值欄位
 const PLAYER_QUADRANT_NON_AXIS_KEYS = ['name', 'job', 'dominantGroupType', 'wins'];
-const PLAYER_QUADRANT_DEFAULT_AXES = { x: 'avgPvpDamage', y: 'avgKill' };
+// 預設看重傷對擊殺：重傷軸反過來，右上角就是重傷少、擊殺多（使用者決定，2026-10-22）
+const PLAYER_QUADRANT_DEFAULT_AXES = { x: 'avgDeath', y: 'avgKill' };
 // 重傷越少越好：軸反過來，重傷少的在右邊或上面（使用者要求，2026-10-22）
 const PLAYER_QUADRANT_REVERSED_KEYS = new Set(['avgDeath']);
 const PLAYER_QUADRANT_LARGE_KEYS = new Set(['avgPvpDamage', 'avgPvpPerKill', 'avgBuildDamage', 'avgBuildPerDeath', 'avgTakenDamage', 'avgTakenPerDeath', 'avgHeal', 'avgNetHeal']);
 const PLAYER_QUADRANT_TOOLTIP_KEYS = ['avgKill', 'avgDeath', 'avgPvpDamage', 'avgBuildDamage', 'avgTakenDamage', 'avgHeal', 'avgNetHeal', 'avgSave', 'avgBurn', 'avgSpring'];
 const PLAYER_QUADRANT_LABEL_LIMIT = 120;
 let playerQuadrantAxes = { ...PLAYER_QUADRANT_DEFAULT_AXES };
+// 分界線 X、Y 一起用中位數或平均數，預設中位數（使用者決定，2026-10-22）
+const PLAYER_QUADRANT_CENTER_LABELS = { median: '中位數', mean: '平均數' };
+let playerQuadrantCenter = 'median';
 let playerQuadrantPoints = [];
 const DPS_PROFESSION_TABLE_COLUMNS = [
   { label: '職業', key: 'job', defaultOrder: 'asc' },
@@ -5776,7 +5828,11 @@ function renderPublicModeUi() {
   ].forEach(id => setDisabled(id, publicMode));
 }
 
+// 塵煙似夢、劍照霜寒不再獨立列出，歸到花舞或其他（使用者決定，2026-10-22）
+const RETIRED_OWN_TEAM_FILTERS = { chensi: 'flower_other', jianzhao: 'flower_other' };
+
 function restoredOwnTeamFilter(value) {
+  if (Object.prototype.hasOwnProperty.call(RETIRED_OWN_TEAM_FILTERS, value)) return RETIRED_OWN_TEAM_FILTERS[value];
   return Object.prototype.hasOwnProperty.call(OWN_TEAM_FILTER_LABELS, value) ? value : 'all';
 }
 
@@ -5791,29 +5847,20 @@ function collectUiState() {
     playerBattleIds: selectedBattleIds('player_battle_select'),
     playerOwnTeamFilter: document.getElementById('player_own_team_filter')?.value || 'all',
     playerOpponentFilter: document.getElementById('player_opponent_filter')?.value || 'all',
-    playerDateFromFilter: document.getElementById('player_date_from_filter')?.value || '',
-    playerDateToFilter: document.getElementById('player_date_to_filter')?.value || '',
     playerGroupFilter: document.getElementById('player_group_filter')?.value || 'all',
     playerCohortFilter: document.getElementById('player_cohort_filter')?.value || 'same_job',
     squadOwnTeamFilter: document.getElementById('squad_own_team_filter')?.value || 'all',
     squadOpponentFilter: document.getElementById('squad_opponent_filter')?.value || 'all',
-    squadDateFromFilter: document.getElementById('squad_date_from_filter')?.value || '',
-    squadDateToFilter: document.getElementById('squad_date_to_filter')?.value || '',
     squadBattleIds: selectedSquadBattleIds(),
     professionOwnTeamFilter: document.getElementById('profession_own_team_filter')?.value || 'all',
     professionOpponentFilter: document.getElementById('profession_opponent_filter')?.value || 'all',
-    professionDateFromFilter: document.getElementById('profession_date_from_filter')?.value || '',
-    professionDateToFilter: document.getElementById('profession_date_to_filter')?.value || '',
     professionAnalyzeOpponent: !!document.getElementById('profession_analyze_opponent')?.checked,
     professionGroup: document.getElementById('profession_group_filter')?.value || 'all',
-    professionMinBattles: document.getElementById('profession_min_battles')?.value || '1',
     professionSortField: professionTableSort.field || 'reviewSuggestCount',
     professionSortOrder: professionTableSort.order || 'desc',
     professionBattleIds: selectedBattleIds('profession_battle_select'),
     quadrantOwnTeamFilter: document.getElementById('quadrant_own_team_filter')?.value || 'all',
     quadrantOpponentFilter: document.getElementById('quadrant_opponent_filter')?.value || 'all',
-    quadrantDateFromFilter: document.getElementById('quadrant_date_from_filter')?.value || '',
-    quadrantDateToFilter: document.getElementById('quadrant_date_to_filter')?.value || '',
     quadrantAnalyzeOpponent: !!document.getElementById('quadrant_analyze_opponent')?.checked,
     quadrantJob: document.getElementById('quadrant_job_filter')?.value || 'all',
     // 手機頁的職業表現仍讀 professionJob；桌機匯出檔拿到手機頁匯入時沿用玩家象限的職業
@@ -5823,6 +5870,7 @@ function collectUiState() {
     quadrantBattleIds: selectedBattleIds('quadrant_battle_select'),
     quadrantAxisX: playerQuadrantAxes.x,
     quadrantAxisY: playerQuadrantAxes.y,
+    quadrantCenter: playerQuadrantCenter,
     matchupWeakPct: document.getElementById('matchup_weak_pct')?.value || '10',
     matchupRosterBottomPct: document.getElementById('matchup_roster_bottom_pct')?.value || '20',
     batchExportConfig: { ...(state.batchExportConfig || defaultBatchExportConfig()) },
@@ -5842,27 +5890,18 @@ function restoreUiState(uiState = {}) {
   if (document.getElementById('player_search')) document.getElementById('player_search').value = uiState.playerSearch || '';
   if (document.getElementById('player_own_team_filter')) document.getElementById('player_own_team_filter').value = restoredOwnTeamFilter(uiState.playerOwnTeamFilter || 'all');
   if (document.getElementById('player_opponent_filter')) document.getElementById('player_opponent_filter').value = uiState.playerOpponentFilter || 'all';
-  if (document.getElementById('player_date_from_filter')) document.getElementById('player_date_from_filter').value = uiState.playerDateFromFilter || '';
-  if (document.getElementById('player_date_to_filter')) document.getElementById('player_date_to_filter').value = uiState.playerDateToFilter || '';
   if (document.getElementById('player_group_filter')) document.getElementById('player_group_filter').value = uiState.playerGroupFilter || 'all';
   if (document.getElementById('player_cohort_filter')) document.getElementById('player_cohort_filter').value = uiState.playerCohortFilter || 'same_job';
   if (document.getElementById('squad_own_team_filter')) document.getElementById('squad_own_team_filter').value = restoredOwnTeamFilter(uiState.squadOwnTeamFilter || 'all');
   if (document.getElementById('squad_opponent_filter')) document.getElementById('squad_opponent_filter').value = uiState.squadOpponentFilter || 'all';
-  if (document.getElementById('squad_date_from_filter')) document.getElementById('squad_date_from_filter').value = uiState.squadDateFromFilter || '';
-  if (document.getElementById('squad_date_to_filter')) document.getElementById('squad_date_to_filter').value = uiState.squadDateToFilter || '';
   if (document.getElementById('profession_own_team_filter')) document.getElementById('profession_own_team_filter').value = restoredOwnTeamFilter(uiState.professionOwnTeamFilter || 'all');
   if (document.getElementById('profession_opponent_filter')) document.getElementById('profession_opponent_filter').value = uiState.professionOpponentFilter || 'all';
-  if (document.getElementById('profession_date_from_filter')) document.getElementById('profession_date_from_filter').value = uiState.professionDateFromFilter || '';
-  if (document.getElementById('profession_date_to_filter')) document.getElementById('profession_date_to_filter').value = uiState.professionDateToFilter || '';
   if (document.getElementById('profession_analyze_opponent')) document.getElementById('profession_analyze_opponent').checked = !!uiState.professionAnalyzeOpponent;
   if (document.getElementById('profession_group_filter')) document.getElementById('profession_group_filter').value = uiState.professionGroup || 'all';
-  if (document.getElementById('profession_min_battles')) document.getElementById('profession_min_battles').value = uiState.professionMinBattles || '1';
   // 2026-10-22 前的匯出沒有玩家象限的欄位；玩家統計表原本在職業表現，沿用職業表現的篩選
   const quadrantValue = (key, fallbackKey, fallback) => uiState[key] ?? uiState[fallbackKey] ?? fallback;
   if (document.getElementById('quadrant_own_team_filter')) document.getElementById('quadrant_own_team_filter').value = restoredOwnTeamFilter(quadrantValue('quadrantOwnTeamFilter', 'professionOwnTeamFilter', 'all'));
   if (document.getElementById('quadrant_opponent_filter')) document.getElementById('quadrant_opponent_filter').value = quadrantValue('quadrantOpponentFilter', 'professionOpponentFilter', 'all');
-  if (document.getElementById('quadrant_date_from_filter')) document.getElementById('quadrant_date_from_filter').value = quadrantValue('quadrantDateFromFilter', 'professionDateFromFilter', '');
-  if (document.getElementById('quadrant_date_to_filter')) document.getElementById('quadrant_date_to_filter').value = quadrantValue('quadrantDateToFilter', 'professionDateToFilter', '');
   if (document.getElementById('quadrant_analyze_opponent')) document.getElementById('quadrant_analyze_opponent').checked = !!quadrantValue('quadrantAnalyzeOpponent', 'professionAnalyzeOpponent', false);
   if (document.getElementById('quadrant_group_filter')) document.getElementById('quadrant_group_filter').value = quadrantValue('quadrantGroup', 'professionGroup', 'all');
   if (document.getElementById('quadrant_min_battles')) document.getElementById('quadrant_min_battles').value = quadrantValue('quadrantMinBattles', 'professionMinBattles', '1');
@@ -5870,6 +5909,7 @@ function restoreUiState(uiState = {}) {
     x: uiState.quadrantAxisX || PLAYER_QUADRANT_DEFAULT_AXES.x,
     y: uiState.quadrantAxisY || PLAYER_QUADRANT_DEFAULT_AXES.y,
   };
+  playerQuadrantCenter = uiState.quadrantCenter === 'mean' ? 'mean' : 'median';
   const restoredSortField = uiState.professionSortField || professionTableSort.field || 'reviewSuggestCount';
   const restoredSortColumn = PROFESSION_TABLE_COLUMNS.find(column => column.key === restoredSortField);
   professionTableSort = {
@@ -7214,9 +7254,13 @@ function isProfessionOpponentMode(scope = 'profession') {
   return !!document.getElementById(`${scope}_analyze_opponent`)?.checked;
 }
 
+// 有拿資源的幾乎都是防守（己方 35 場真實分工：資源 > 0 的 507 人有 497 人是防守）；防守順手打塔時只看塔傷會被算成進攻（使用者決定，2026-10-22）
+const AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT = 10000000;
+
 function inferAutoProfessionGroupType(player) {
   const buildDamage = Number(player?.buildDamage || 0);
   const kill = Number(player?.kill || 0);
+  if (Number(player?.resource || 0) > 0 && buildDamage < AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT) return 'defense';
   const initialGroup = buildDamage >= AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD ? 'attack' : 'defense';
   if (initialGroup === 'attack' && buildDamage < 50000000 && kill > 5) return 'bodyguard';
   return initialGroup;
@@ -7414,19 +7458,6 @@ function median(values) {
   if (!nums.length) return 0;
   const mid = Math.floor(nums.length / 2);
   return nums.length % 2 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
-}
-
-function percentileValue(values, percentile) {
-  const nums = values.map(value => Number(value || 0)).filter(Number.isFinite).sort((a, b) => a - b);
-  if (!nums.length) return 0;
-  const clamped = Math.max(0, Math.min(100, Number(percentile || 0)));
-  if (nums.length === 1) return nums[0];
-  const rank = (clamped / 100) * (nums.length - 1);
-  const lower = Math.floor(rank);
-  const upper = Math.ceil(rank);
-  if (lower === upper) return nums[lower];
-  const weight = rank - lower;
-  return nums[lower] + ((nums[upper] - nums[lower]) * weight);
 }
 
 function dominantGroupType(row) {
@@ -7962,28 +7993,32 @@ function renderRadarCard(title, axes, scores, color, note) {
   `;
 }
 
-function quadrantScaleInfo(values, centerValue) {
-  const nums = (values || []).map(value => Number(value || 0));
-  if (!nums.length) {
-    return { min: 0, max: 1, center: Number(centerValue || 0), span: 1 };
+// 象限圖的座標範圍：資料兩端各留一點空白，點不會貼在圖框上或角落；刻度只標範圍內的整齊數字，
+// 資料沒有負數時不標負數，除了勝率都標整數（整數刻度不到 2 個時才用小數）（使用者要求，2026-10-22）
+function quadrantAxisScale(values, { padRatio = 0.06, tickCount = 5, allowFraction = false } = {}) {
+  const nums = (values || []).map(Number).filter(Number.isFinite);
+  let lo = nums.length ? Math.min(...nums) : 0;
+  let hi = nums.length ? Math.max(...nums) : 1;
+  const nonNegative = lo >= 0;
+  if (hi === lo) {
+    const spread = Math.abs(lo) * 0.1 || 1;
+    lo -= spread;
+    hi += spread;
   }
-  const rawMin = Math.min(...nums);
-  const rawMax = Math.max(...nums);
-  const center = Number.isFinite(centerValue) ? Number(centerValue) : median(nums);
-  const pad = Math.max((rawMax - rawMin) * 0.12, Math.abs(center) * 0.08, 1);
-  let min = Math.min(rawMin, center) - pad;
-  let max = Math.max(rawMax, center) + pad;
-  if (min === max) {
-    min -= 1;
-    max += 1;
+  const pad = (hi - lo) * padRatio;
+  const min = lo - pad;
+  const max = hi + pad;
+  const raw = (max - min) / tickCount;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const factors = magnitude >= 10 ? [1, 2, 2.5, 5, 10] : [1, 2, 5, 10];
+  let step = factors.map(factor => factor * magnitude).find(candidate => candidate >= raw) || raw;
+  const firstTickFloor = nonNegative ? Math.max(min, 0) : min;
+  if (step < 1 && !allowFraction && Math.floor(max) - Math.ceil(firstTickFloor) >= 1) step = 1;
+  const ticks = [];
+  for (let value = Math.ceil(firstTickFloor / step) * step; value <= max + step * 1e-9; value += step) {
+    ticks.push(Number(value.toPrecision(12)));
   }
-  return { min, max, center, span: max - min };
-}
-
-function quadrantTickValues(scale) {
-  const start = scale.min;
-  const step = scale.span / 4;
-  return [0, 1, 2, 3, 4].map(index => start + (step * index));
+  return { min, max, ticks };
 }
 
 function formatQuadrantAxisValue(axis, value) {
@@ -8009,14 +8044,14 @@ function renderQuadrantChartCard(title, chartData) {
   const padding = { top: 26, right: 18, bottom: 46, left: 62 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
-  const xScale = quadrantScaleInfo(rows.map(row => row.xValue), chartData.xThreshold);
-  const yScale = quadrantScaleInfo(rows.map(row => row.yValue), chartData.yThreshold);
-  const scaleX = value => padding.left + plotWidth - (((Number(value || 0) - xScale.min) / xScale.span) * plotWidth);
-  const scaleY = value => padding.top + plotHeight - (((Number(value || 0) - yScale.min) / yScale.span) * plotHeight);
-  const xThresholdX = scaleX(xScale.center);
-  const yThresholdY = scaleY(yScale.center);
-  const xTicks = quadrantTickValues(xScale);
-  const yTicks = quadrantTickValues(yScale);
+  const xScale = quadrantAxisScale([...rows.map(row => row.xValue), chartData.xThreshold]);
+  const yScale = quadrantAxisScale([...rows.map(row => row.yValue), chartData.yThreshold]);
+  const scaleX = value => padding.left + plotWidth - (((Number(value || 0) - xScale.min) / (xScale.max - xScale.min)) * plotWidth);
+  const scaleY = value => padding.top + plotHeight - (((Number(value || 0) - yScale.min) / (yScale.max - yScale.min)) * plotHeight);
+  const xThresholdX = scaleX(chartData.xThreshold);
+  const yThresholdY = scaleY(chartData.yThreshold);
+  const xTicks = xScale.ticks;
+  const yTicks = yScale.ticks;
   const subtitle = chartData.chartKey === 'attack'
     ? `橫軸：重傷（高 → 低）｜縱軸：${chartData.yLabel}`
     : `橫軸：重傷（高 → 低）｜縱軸：${chartData.yLabel}`;
@@ -8069,7 +8104,7 @@ function renderQuadrantChartCard(title, chartData) {
           ${allDpsView ? '' : `<span class="quadrant-legend-item"><span class="quadrant-legend-dot" style="background:${PROFESSION_QUADRANT_COLORS.unknown};"></span>未知</span>`}
         `}
       </div>
-      <div class="quadrant-note">${allDpsView ? `橫線與直線分別使用所有 DPS（${allDpsView.groupText}）樣本下的後段門檻與重傷門檻對應百分位。未知分工不列入。` : '橫線與直線分別使用目前職業樣本下的後段門檻與重傷門檻對應百分位。未知與保鑣分工會同時出現在兩張圖。'}</div>
+      <div class="quadrant-note">${allDpsView ? `橫線與直線是所有 DPS（${allDpsView.groupText}）樣本的中位數。未知分工不列入。` : '橫線與直線是這張圖樣本的中位數。未知與保鑣分工會同時出現在兩張圖。'}</div>
     </div>
   `;
 }
@@ -8560,7 +8595,6 @@ function allDpsQuadrantBattles() {
 }
 
 function professionQuadrantPointRows(job) {
-  const minBattles = Number(document.getElementById('profession_min_battles')?.value || 1);
   const battleIds = allDpsQuadrantView(job)
     ? allDpsQuadrantBattles().map(battle => battle.id)
     : selectedProfessionBattleIds();
@@ -8574,15 +8608,13 @@ function professionQuadrantPointRows(job) {
         unknown: item.history.filter(entry => entry.groupType === 'unknown'),
       };
       return Object.entries(histories)
-        .filter(([, history]) => history.length >= minBattles)
+        .filter(([, history]) => history.length > 0)
         .map(([groupType, history]) => summarizeProfessionHistory(item, history, groupType));
     });
 }
 
 function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
   const sourceRows = professionQuadrantPointRows(job);
-  const deathPct = Math.max(1, Math.min(99, Number(currentSettings().deathPct || 30)));
-  const weakPct = Math.max(1, Math.min(99, Number(currentSettings().weakPct || 30)));
   const allowedGroups = allDpsQuadrantView(job)?.groups
     || (chartKey === 'attack' ? ['attack', 'bodyguard', 'unknown'] : ['defense', 'bodyguard', 'unknown']);
   const rows = sourceRows
@@ -8597,8 +8629,9 @@ function professionQuadrantChartData(job, chartKey, metricMode = 'default') {
     chartKey,
     metricMode,
     rows,
-    xThreshold: percentileValue(rows.map(row => row.xValue), 100 - deathPct),
-    yThreshold: percentileValue(rows.map(row => row.yValue), weakPct),
+    // 分界線用中位數（使用者決定，2026-10-22；以前是單場覆盤的後段與重傷門檻百分位）
+    xThreshold: median(rows.map(row => row.xValue)),
+    yThreshold: median(rows.map(row => row.yValue)),
     yLabel: professionQuadrantYLabel(job, chartKey, metricMode),
   };
 }
@@ -9015,11 +9048,10 @@ function latestBattleIdFromIds(ids) {
 function ownTeamMatchesFilter(teamName, filterKey = 'all') {
   const value = String(teamName || '').trim();
   if (filterKey === 'all') return true;
-  if (filterKey === 'chensi') return value === '塵煙似夢';
-  if (filterKey === 'jianzhao') return value === '劍照霜寒';
   if (filterKey === 'zouyu') return value === '驟雨初歇';
   if (filterKey === 'daruniu') return value === '大汝牛';
-  if (filterKey === 'flower_other') return value !== '塵煙似夢' && value !== '劍照霜寒' && value !== '驟雨初歇' && value !== '大汝牛';
+  if (filterKey === 'yijian') return value === '一劍飛花';
+  if (filterKey === 'flower_other') return value !== '驟雨初歇' && value !== '大汝牛' && value !== '一劍飛花';
   return true;
 }
 
@@ -9080,8 +9112,6 @@ function currentPlayerReviewFilters() {
   return {
     ownTeamFilter: document.getElementById('player_own_team_filter')?.value || 'all',
     opponentFilter: document.getElementById('player_opponent_filter')?.value || 'all',
-    dateFrom: document.getElementById('player_date_from_filter')?.value || '',
-    dateTo: document.getElementById('player_date_to_filter')?.value || '',
   };
 }
 
@@ -9089,8 +9119,6 @@ function currentSquadReviewFilters() {
   return {
     ownTeamFilter: document.getElementById('squad_own_team_filter')?.value || 'all',
     opponentFilter: document.getElementById('squad_opponent_filter')?.value || 'all',
-    dateFrom: document.getElementById('squad_date_from_filter')?.value || '',
-    dateTo: document.getElementById('squad_date_to_filter')?.value || '',
   };
 }
 
@@ -9099,8 +9127,6 @@ function currentProfessionReviewFilters(scope = 'profession') {
   return {
     ownTeamFilter: document.getElementById(`${scope}_own_team_filter`)?.value || 'all',
     opponentFilter: document.getElementById(`${scope}_opponent_filter`)?.value || 'all',
-    dateFrom: document.getElementById(`${scope}_date_from_filter`)?.value || '',
-    dateTo: document.getElementById(`${scope}_date_to_filter`)?.value || '',
     analyzeOpponent: isProfessionOpponentMode(scope),
   };
 }
@@ -9213,6 +9239,7 @@ function syncPlayerJobFilter(player, jobCounts = []) {
   const selected = multi && jobCounts.some(([job]) => job === previous) ? previous : 'all';
   select.value = selected;
   select.disabled = !multi;
+  syncJobSelectIcon('player_job_filter');
   return selected;
 }
 
@@ -9444,7 +9471,7 @@ function renderPlayerDetailFromContext(context) {
       <div class="mini-grid">
         <div class="mini-stat">勝率<b>${(player.winRate * 100).toFixed(0)}%（${fmtNumber(player.wins)}/${fmtNumber(player.battles)}）</b></div>
         <div class="mini-stat">分工場次<b>${escHtml(buildGroupCountText(player))}</b></div>
-        <div class="mini-stat">母體比較條件<b>${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${opponentFilterLabel(opponentFilter)} × ${dateRangeFilterLabel(dateFrom, dateTo)} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
+        <div class="mini-stat">母體比較條件<b>${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${opponentFilterLabel(opponentFilter)} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
         <div class="mini-stat">母體玩家數<b>${fmtNumber(cohortRows.length)}</b></div>
         <div class="mini-stat">優先找幹部覆盤<b>${fmtNumber(player.priorityCount)}</b></div>
         <div class="mini-stat">歡迎找幹部覆盤<b>${fmtNumber(player.secondaryCount)}</b></div>
@@ -9643,8 +9670,8 @@ function openProfessionJobQuadrantModal(job) {
   title.innerHTML = `
     <div style="font-size:22px; font-weight:900; color:var(--accent);">${escHtml(job)}｜職業象限圖</div>
     <div class="subtle" style="margin-top:4px;">依目前職業表現頁的已選場次、己方與對手篩選繪製。${allDpsView ? '' : '進攻圖看主責進攻指標，防守圖合併防守與保鑣，未知分工會同時出現在兩張圖。'}</div>
-    ${allDpsBattles ? `<div class="subtle" style="margin-top:4px;">所有DPS：合併鐵衣、素問以外的職業，只看${allDpsView.groupText}（未知分工不列入），縱軸為${allDpsView.yText}，門檻線依這些樣本計算。最多只取 ${fmtNumber(ALL_DPS_QUADRANT_BATTLE_LIMIT)} 場：已選 ${fmtNumber(battleIds.length)} 場，使用日期最新的 ${fmtNumber(allDpsBattles.length)} 場。</div><div class="subtle" style="margin-top:4px;">${allDpsBattles.map(battle => escHtml(battleDisplayLabel(battle, { includePlayers: false }))).join('<br>')}</div>` : ''}
-    <div class="subtle" style="margin-top:4px;">己方：${escHtml(OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部')}；對手：${escHtml(opponentFilterLabel(opponentFilter))}；日期：${escHtml(dateRangeFilterLabel(dateFrom, dateTo))}。</div>
+    ${allDpsBattles ? `<div class="subtle" style="margin-top:4px;">所有DPS：合併鐵衣、素問以外的職業，只看${allDpsView.groupText}（未知分工不列入），縱軸為${allDpsView.yText}，中位數線依這些樣本計算。最多只取 ${fmtNumber(ALL_DPS_QUADRANT_BATTLE_LIMIT)} 場：已選 ${fmtNumber(battleIds.length)} 場，使用日期最新的 ${fmtNumber(allDpsBattles.length)} 場。</div><div class="subtle" style="margin-top:4px;">${allDpsBattles.map(battle => escHtml(battleDisplayLabel(battle, { includePlayers: false }))).join('<br>')}</div>` : ''}
+    <div class="subtle" style="margin-top:4px;">己方：${escHtml(OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部')}；對手：${escHtml(opponentFilterLabel(opponentFilter))}。</div>
     <div class="subtle" style="margin-top:4px;">對照樣本共 ${fmtNumber(allDpsBattles ? allDpsBattles.length : battleIds.length)} 場。</div>
   `;
   body.innerHTML = renderProfessionQuadrantModalBody(job, professionQuadrantMode.metric);
@@ -9690,10 +9717,9 @@ function renderPlayerExportSheet(context) {
       <div class="panel" style="margin-bottom:8px;">
         <div class="panel-title" style="font-size:15px; padding:10px 12px;">條件摘要</div>
         <div class="panel-body" style="padding:8px 10px;">
-          <div class="mini-grid" style="grid-template-columns:repeat(6, minmax(0, 1fr)); gap:5px;">
+          <div class="mini-grid" style="grid-template-columns:repeat(5, minmax(0, 1fr)); gap:5px;">
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">己方篩選<b style="font-size:14px; margin-top:2px;">${escHtml(OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部')}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">對手篩選<b style="font-size:14px; margin-top:2px;">${escHtml(opponentFilterLabel(opponentFilter))}</b></div>
-            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">日期篩選<b style="font-size:14px; margin-top:2px;">${escHtml(dateRangeFilterLabel(dateFrom, dateTo))}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">團別篩選<b style="font-size:14px; margin-top:2px;">${escHtml(PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部')}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">比較母體<b style="font-size:14px; margin-top:2px;">${escHtml(PLAYER_COHORT_LABELS[cohortFilter] || '同職業')}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體玩家數<b style="font-size:14px; margin-top:2px;">${fmtNumber(cohortRows.length)}</b></div>
@@ -9720,7 +9746,7 @@ function renderPlayerExportSheet(context) {
           <div class="mini-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:5px;">
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">勝率<b style="font-size:14px; margin-top:2px;">${(player.winRate * 100).toFixed(0)}%（${fmtNumber(player.wins)}/${fmtNumber(player.battles)}）</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">分工場次<b style="font-size:13px; margin-top:2px;">${escHtml(buildGroupCountText(player))}</b></div>
-            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體比較條件<b style="font-size:13px; margin-top:2px;">${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${opponentFilterLabel(opponentFilter)} × ${dateRangeFilterLabel(dateFrom, dateTo)} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
+            <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體比較條件<b style="font-size:13px; margin-top:2px;">${escHtml(`${OWN_TEAM_FILTER_LABELS[ownTeamFilter] || '全部'} × ${opponentFilterLabel(opponentFilter)} × ${PLAYER_GROUP_FILTER_LABELS[groupFilter] || '全部'} × ${PLAYER_COHORT_LABELS[cohortFilter] || '同職業'}`)}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">母體玩家數<b style="font-size:14px; margin-top:2px;">${fmtNumber(cohortRows.length)}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">優先找幹部覆盤<b style="font-size:14px; margin-top:2px;">${fmtNumber(player.priorityCount)}</b></div>
             <div class="mini-stat" style="padding:6px 7px; border-radius:10px;">歡迎找幹部覆盤<b style="font-size:14px; margin-top:2px;">${fmtNumber(player.secondaryCount)}</b></div>
@@ -9762,7 +9788,7 @@ function renderPlayerLeadersExportSheet(context) {
       <div class="player-export-header">
         <div>
           <h1 class="player-export-title">幫戰覆盤 建議覆盤名單</h1>
-          <div class="player-export-player">${escHtml(`${OWN_TEAM_FILTER_LABELS[context.ownTeamFilter] || '全部'}｜${opponentFilterLabel(context.opponentFilter)}｜${dateRangeFilterLabel(context.dateFrom, context.dateTo)}｜${PLAYER_GROUP_FILTER_LABELS[context.groupFilter] || '全部'}`)}</div>
+          <div class="player-export-player">${escHtml(`${OWN_TEAM_FILTER_LABELS[context.ownTeamFilter] || '全部'}｜${opponentFilterLabel(context.opponentFilter)}｜${PLAYER_GROUP_FILTER_LABELS[context.groupFilter] || '全部'}`)}</div>
           <div class="player-export-subtitle">依目前玩家查詢頁的己方、對手、日期、團別與勾選場次統計，列出建議覆盤比例最高的玩家。</div>
         </div>
         <div class="player-export-meta">
@@ -10172,7 +10198,6 @@ function renderProfessionExportSheet(context) {
             <div class="mini-stat">己方<b>${escHtml(OWN_TEAM_FILTER_LABELS[context.ownTeamFilter] || '全部')}</b></div>
             <div class="mini-stat">對手<b>${escHtml(opponentFilterLabel(context.opponentFilter))}</b></div>
             <div class="mini-stat">分析對象<b>${context.analyzeOpponent ? '對手' : '己方'}</b></div>
-            <div class="mini-stat">日期<b>${escHtml(dateRangeFilterLabel(context.dateFrom, context.dateTo))}</b></div>
             <div class="mini-stat">職業<b>${escHtml(jobLabel)}</b></div>
             <div class="mini-stat">團別<b>${escHtml(groupLabel)}</b></div>
             <div class="mini-stat">最低場次<b>${fmtNumber(context.minBattles)}</b></div>
@@ -10534,6 +10559,7 @@ function renderProfessionAverageTables() {
 }
 
 function renderPlayerQuadrantTab() {
+  syncJobSelectIcon('quadrant_job_filter');
   const rows = professionRows();
   renderPlayerQuadrantChart(rows);
   renderProfessionPlayerTable(rows);
@@ -10640,25 +10666,9 @@ function playerQuadrantChartData(rows, xKey, yKey) {
     excluded: rows.length - points.length,
     xMean: mean(xKey),
     yMean: mean(yKey),
+    xMedian: median(points.map(row => row[xKey])),
+    yMedian: median(points.map(row => row[yKey])),
   };
-}
-
-function playerQuadrantNiceScale(values, tickCount = 5) {
-  let min = Math.min(...values);
-  let max = Math.max(...values);
-  if (min === max) {
-    const pad = Math.abs(min) * 0.1 || 1;
-    min -= pad;
-    max += pad;
-  }
-  const raw = (max - min) / tickCount;
-  const magnitude = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map(factor => factor * magnitude).find(candidate => candidate >= raw) || raw;
-  const start = Math.floor(min / step) * step;
-  const end = Math.ceil(max / step) * step;
-  const ticks = [];
-  for (let value = start; value <= end + step / 2; value += step) ticks.push(Number(value.toPrecision(12)));
-  return { min: start, max: end, ticks };
 }
 
 function playerQuadrantTextWidth(text) {
@@ -10726,9 +10736,26 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
     box.innerHTML = `<div class="empty">${rows.length ? `目前 ${fmtNumber(rows.length)} 人的${escHtml(playerQuadrantAxisLabel(axes.x))}或${escHtml(playerQuadrantAxisLabel(axes.y))}無法計算，換一個軸看看。` : '目前沒有符合條件的玩家資料。'}</div>`;
     return;
   }
+  const reverseX = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.x);
+  const reverseY = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.y);
+  const xShort = playerQuadrantShortLabel(axes.x);
+  const yShort = playerQuadrantShortLabel(axes.y);
+  const [xLeft, xRight] = reverseX ? ['高', '低'] : ['低', '高'];
+  const [yTop, yBottom] = reverseY ? ['低', '高'] : ['高', '低'];
+  const cornerText = {
+    topLeft: `${xLeft} ${xShort}・${yTop} ${yShort}`,
+    topRight: `${xRight} ${xShort}・${yTop} ${yShort}`,
+    bottomLeft: `${xLeft} ${xShort}・${yBottom} ${yShort}`,
+    bottomRight: `${xRight} ${xShort}・${yBottom} ${yShort}`,
+  };
+  const xTitle = `X 軸：${playerQuadrantAxisLabel(axes.x)}${reverseX ? '（越右越少）' : ''} →`;
   const width = 1100;
-  const height = 600;
-  const padding = { top: 40, right: 24, bottom: 58, left: 86 };
+  // 四角說明放在圖框外，不和點重疊（使用者要求，2026-10-22）：上面兩個在圖框上方，下面兩個和 X 軸標題同一行，擠不下時 X 軸標題換到下一行
+  const textWidth13 = text => playerQuadrantTextWidth(text) * 13 / 12;
+  const plotHalfWidth = (width - 96 - 24) / 2;
+  const xTitleOwnRow = Math.max(textWidth13(cornerText.bottomLeft), textWidth13(cornerText.bottomRight)) + textWidth13(xTitle) / 2 + 24 > plotHalfWidth;
+  const height = 600 + (xTitleOwnRow ? 22 : 0);
+  const padding = { top: 40, right: 24, bottom: xTitleOwnRow ? 80 : 58, left: 96 };
   const plot = {
     left: padding.left,
     right: width - padding.right,
@@ -10737,10 +10764,8 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
   };
   plot.cx = (plot.left + plot.right) / 2;
   plot.cy = (plot.top + plot.bottom) / 2;
-  const xScale = playerQuadrantNiceScale(data.points.map(row => Number(row[axes.x])));
-  const yScale = playerQuadrantNiceScale(data.points.map(row => Number(row[axes.y])));
-  const reverseX = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.x);
-  const reverseY = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.y);
+  const xScale = quadrantAxisScale(data.points.map(row => Number(row[axes.x])), { allowFraction: axes.x === 'winRate' });
+  const yScale = quadrantAxisScale(data.points.map(row => Number(row[axes.y])), { allowFraction: axes.y === 'winRate' });
   const fractionX = value => (Number(value) - xScale.min) / (xScale.max - xScale.min);
   const fractionY = value => (Number(value) - yScale.min) / (yScale.max - yScale.min);
   const toX = value => (reverseX
@@ -10749,32 +10774,28 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
   const toY = value => (reverseY
     ? plot.top + fractionY(value) * (plot.bottom - plot.top)
     : plot.bottom - fractionY(value) * (plot.bottom - plot.top));
-  const meanX = toX(data.xMean);
-  const meanY = toY(data.yMean);
+  const centerMode = playerQuadrantCenter === 'mean' ? 'mean' : 'median';
+  const centerLabel = PLAYER_QUADRANT_CENTER_LABELS[centerMode];
+  const centerXValue = centerMode === 'mean' ? data.xMean : data.xMedian;
+  const centerYValue = centerMode === 'mean' ? data.yMean : data.yMedian;
+  const centerSelect = document.getElementById('player_quadrant_center');
+  if (centerSelect) centerSelect.value = centerMode;
+  const centerX = toX(centerXValue);
+  const centerY = toY(centerYValue);
   const points = data.points.map(row => ({ row, px: toX(row[axes.x]), py: toY(row[axes.y]) }));
-  const xShort = playerQuadrantShortLabel(axes.x);
-  const yShort = playerQuadrantShortLabel(axes.y);
-  const [xLeft, xRight] = reverseX ? ['高', '低'] : ['低', '高'];
-  const [yTop, yBottom] = reverseY ? ['低', '高'] : ['高', '低'];
   const corners = [
-    { text: `${xLeft} ${xShort}・${yTop} ${yShort}`, x: plot.left + 10, y: plot.top + 20, anchor: 'start' },
-    { text: `${xRight} ${xShort}・${yTop} ${yShort}`, x: plot.right - 10, y: plot.top + 20, anchor: 'end' },
-    { text: `${xLeft} ${xShort}・${yBottom} ${yShort}`, x: plot.left + 10, y: plot.bottom - 10, anchor: 'start' },
-    { text: `${xRight} ${xShort}・${yBottom} ${yShort}`, x: plot.right - 10, y: plot.bottom - 10, anchor: 'end' },
+    { text: cornerText.topLeft, x: plot.left, y: plot.top - 10, anchor: 'start' },
+    { text: cornerText.topRight, x: plot.right, y: plot.top - 10, anchor: 'end' },
+    { text: cornerText.bottomLeft, x: plot.left, y: plot.bottom + 44, anchor: 'start' },
+    { text: cornerText.bottomRight, x: plot.right, y: plot.bottom + 44, anchor: 'end' },
   ];
-  const occupied = [
-    ...corners.map(corner => {
-      const w = playerQuadrantTextWidth(corner.text) * 13 / 12;
-      return { x: corner.anchor === 'end' ? corner.x - w : corner.x, y: corner.y - 13, w, h: 16 };
-    }),
-    ...points.map(point => ({ x: point.px - 6, y: point.py - 6, w: 12, h: 12 })),
-  ];
+  const occupied = points.map(point => ({ x: point.px - 6, y: point.py - 6, w: 12, h: 12 }));
   const labels = points.length <= PLAYER_QUADRANT_LABEL_LIMIT ? placePlayerQuadrantLabels(points, plot, occupied) : new Map();
   const groups = [...new Set(points.map(point => point.row.dominantGroupType || 'unknown'))]
     .sort((a, b) => groupTypeSortValue(a) - groupTypeSortValue(b));
   const hiddenLabels = points.length - labels.size;
   const notes = [
-    `共 ${fmtNumber(points.length)} 人，每人一個點，數值是所選場次的平均。虛線是這些人的平均：${escHtml(playerQuadrantAxisLabel(axes.x))} ${escHtml(formatPlayerQuadrantValue(axes.x, data.xMean))}、${escHtml(playerQuadrantAxisLabel(axes.y))} ${escHtml(formatPlayerQuadrantValue(axes.y, data.yMean))}。`,
+    `共 ${fmtNumber(points.length)} 人，每人一個點，數值是所選場次的平均。虛線是這些人的${centerLabel}：${escHtml(playerQuadrantAxisLabel(axes.x))} ${escHtml(formatPlayerQuadrantValue(axes.x, centerXValue))}、${escHtml(playerQuadrantAxisLabel(axes.y))} ${escHtml(formatPlayerQuadrantValue(axes.y, centerYValue))}。`,
     reverseX || reverseY ? `重傷越少越好，所以重傷軸反過來：越${reverseX ? '右' : '上'}重傷越少。` : '',
     data.excluded ? `另有 ${fmtNumber(data.excluded)} 人的數值無法計算（例如擊敗為 0 時的人傷/擊殺數），沒有畫出。` : '',
     points.length > PLAYER_QUADRANT_LABEL_LIMIT
@@ -10795,11 +10816,11 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
           const y = toY(value);
           return `<line x1="${plot.left}" y1="${y.toFixed(1)}" x2="${plot.right}" y2="${y.toFixed(1)}" style="stroke: var(--chart-tick)" stroke-width="1" /><text x="${plot.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" class="quadrant-tick-label">${escHtml(formatPlayerQuadrantTick(axes.y, value))}</text>`;
         }).join('')}
-        <line x1="${meanX.toFixed(1)}" y1="${plot.top}" x2="${meanX.toFixed(1)}" y2="${plot.bottom}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
-        <line x1="${plot.left}" y1="${meanY.toFixed(1)}" x2="${plot.right}" y2="${meanY.toFixed(1)}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
+        <line x1="${centerX.toFixed(1)}" y1="${plot.top}" x2="${centerX.toFixed(1)}" y2="${plot.bottom}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
+        <line x1="${plot.left}" y1="${centerY.toFixed(1)}" x2="${plot.right}" y2="${centerY.toFixed(1)}" style="stroke: var(--chart-threshold)" stroke-width="1.4" stroke-dasharray="6 4" />
         ${corners.map(corner => `<text x="${corner.x}" y="${corner.y}" text-anchor="${corner.anchor}" class="player-quadrant-corner">${escHtml(corner.text)}</text>`).join('')}
-        <text x="${plot.left}" y="${plot.top - 14}" class="player-quadrant-axis-title">↑ Y 軸：${escHtml(playerQuadrantAxisLabel(axes.y))}${reverseY ? '（越上越少）' : ''}</text>
-        <text x="${plot.right}" y="${height - 12}" text-anchor="end" class="player-quadrant-axis-title">X 軸：${escHtml(playerQuadrantAxisLabel(axes.x))}${reverseX ? '（越右越少）' : ''} →</text>
+        <text x="22" y="${plot.cy.toFixed(1)}" transform="rotate(-90 22 ${plot.cy.toFixed(1)})" text-anchor="middle" class="player-quadrant-axis-title">Y 軸：${escHtml(playerQuadrantAxisLabel(axes.y))}${reverseY ? '（越上越少）' : ''} →</text>
+        <text x="${plot.cx.toFixed(1)}" y="${plot.bottom + (xTitleOwnRow ? 66 : 44)}" text-anchor="middle" class="player-quadrant-axis-title">${escHtml(xTitle)}</text>
         ${points.map((point, index) => {
           const color = PROFESSION_QUADRANT_COLORS[point.row.dominantGroupType] || PROFESSION_QUADRANT_COLORS.unknown;
           const label = labels.get(index);
@@ -10860,6 +10881,11 @@ function hidePlayerQuadrantTooltip() {
 function setPlayerQuadrantAxis(axis, key) {
   if (!key) return;
   playerQuadrantAxes = { ...playerQuadrantAxes, [axis]: key };
+  renderPlayerQuadrantChart();
+}
+
+function setPlayerQuadrantCenter(mode) {
+  playerQuadrantCenter = mode === 'mean' ? 'mean' : 'median';
   renderPlayerQuadrantChart();
 }
 
@@ -12080,7 +12106,7 @@ function renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs) {
           </div>
         `).join('')}
       </div>
-      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，對方分組依塔傷推測（規則見最下方說明）。${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
+      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，對方分組依資源與塔傷推測（規則見最下方說明）。${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
     </div>
   `;
 }
@@ -12138,7 +12164,7 @@ function renderSingleBattleMatchup() {
     </div>
     <div style="font-weight:800; color:var(--accent); margin:20px 0 8px;">門檻設定與說明</div>
     <div class="matchup-setting-stack">
-      <div class="note-box">對手分工採假設性規則：塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併比較，防守獨立比較。</div>
+      <div class="note-box">對手分工採假設性規則：有拿資源且塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT / 10000)}萬 歸類防守組；其餘塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併比較，防守獨立比較。</div>
       <div class="matchup-setting-row">
         <div class="field">
           <label>弱勢標紅門檻 %</label>
@@ -13439,28 +13465,21 @@ document.getElementById('btn_player_search_submit').addEventListener('click', su
 document.getElementById('player_battle_select').addEventListener('change', refreshPlayerLookupAfterControlChange);
 document.getElementById('player_own_team_filter').addEventListener('change', handlePlayerBattleScopeChange);
 document.getElementById('player_opponent_filter').addEventListener('change', handlePlayerBattleScopeChange);
-document.getElementById('player_date_from_filter').addEventListener('change', handlePlayerBattleScopeChange);
-document.getElementById('player_date_to_filter').addEventListener('change', handlePlayerBattleScopeChange);
 document.getElementById('player_group_filter').addEventListener('change', refreshPlayerLookupAfterControlChange);
 document.getElementById('player_cohort_filter').addEventListener('change', refreshPlayerLookupAfterControlChange);
 document.getElementById('player_job_filter').addEventListener('change', refreshPlayerLookupAfterControlChange);
+document.getElementById('player_job_filter').addEventListener('change', () => syncJobSelectIcon('player_job_filter'));
 document.getElementById('squad_battle_select').addEventListener('change', handleSquadBattleSelectionChange);
 document.getElementById('squad_own_team_filter').addEventListener('change', handleSquadBattleScopeChange);
 document.getElementById('squad_opponent_filter').addEventListener('change', handleSquadBattleScopeChange);
-document.getElementById('squad_date_from_filter').addEventListener('change', handleSquadBattleScopeChange);
-document.getElementById('squad_date_to_filter').addEventListener('change', handleSquadBattleScopeChange);
 document.getElementById('profession_own_team_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_opponent_filter').addEventListener('change', handleProfessionBattleScopeChange);
-document.getElementById('profession_date_from_filter').addEventListener('change', handleProfessionBattleScopeChange);
-document.getElementById('profession_date_to_filter').addEventListener('change', handleProfessionBattleScopeChange);
 document.getElementById('profession_analyze_opponent').addEventListener('change', renderProfessionAverageTables);
 document.getElementById('profession_group_filter').addEventListener('change', renderProfessionAverageTables);
 document.getElementById('profession_battle_select').addEventListener('change', renderProfessionAverageTables);
 document.getElementById('btn_goto_player_quadrant').addEventListener('click', () => switchTab('quadrant'));
 document.getElementById('quadrant_own_team_filter').addEventListener('change', handleQuadrantBattleScopeChange);
 document.getElementById('quadrant_opponent_filter').addEventListener('change', handleQuadrantBattleScopeChange);
-document.getElementById('quadrant_date_from_filter').addEventListener('change', handleQuadrantBattleScopeChange);
-document.getElementById('quadrant_date_to_filter').addEventListener('change', handleQuadrantBattleScopeChange);
 document.getElementById('quadrant_analyze_opponent').addEventListener('change', handleQuadrantAnalyzeOpponentChange);
 document.getElementById('quadrant_job_filter').addEventListener('change', renderPlayerQuadrantTab);
 document.getElementById('quadrant_group_filter').addEventListener('change', renderPlayerQuadrantTab);
@@ -13469,6 +13488,7 @@ document.getElementById('quadrant_battle_select').addEventListener('change', ren
 document.getElementById('player_quadrant_x').addEventListener('change', event => setPlayerQuadrantAxis('x', event.target.value));
 document.getElementById('player_quadrant_y').addEventListener('change', event => setPlayerQuadrantAxis('y', event.target.value));
 document.getElementById('btn_player_quadrant_swap').addEventListener('click', swapPlayerQuadrantAxes);
+document.getElementById('player_quadrant_center').addEventListener('change', event => setPlayerQuadrantCenter(event.target.value));
 bindPlayerQuadrantChartEvents();
 window.addEventListener('scroll', hidePlayerQuadrantTooltip, { passive: true });
 document.getElementById('btn_export_profession_pdf').addEventListener('click', exportProfessionPdf);
