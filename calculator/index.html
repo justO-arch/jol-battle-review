@@ -70,7 +70,7 @@
   }
   .side-watermark.left {
     left: max(8px, calc((100vw - 1240px) / 2 - 205px));
-    background-image: url('assets/calculator/watermark-calc-1.png');
+    background-image: url('assets/calculator/watermark-calc-1.jpg');
     background-size: cover;
     background-position: left center;
     mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.6) 24%, rgba(0,0,0,0.95) 65%, rgba(0,0,0,0.86) 100%);
@@ -78,7 +78,7 @@
   }
   .side-watermark.right {
     right: max(8px, calc((100vw - 1240px) / 2 - 205px));
-    background-image: url('assets/calculator/watermark-calc-2.png');
+    background-image: url('assets/calculator/watermark-calc-2.jpg');
     background-size: contain;
     background-position: right top;
     mask-image: linear-gradient(90deg, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.95) 35%, rgba(0,0,0,0.6) 76%, transparent 100%);
@@ -90,7 +90,7 @@
     background:
       linear-gradient(135deg, rgba(16, 29, 40, 0.82), rgba(27, 46, 60, 0.68)),
       linear-gradient(180deg, rgba(255, 250, 241, 0.08), rgba(255, 250, 241, 0.02)),
-      url('assets/calculator/wuxia-header-bg.png') center/cover no-repeat;
+      url('assets/calculator/wuxia-header-bg.jpg') center/cover no-repeat;
     border-bottom: 1px solid rgba(197, 154, 78, 0.55);
     box-shadow: 0 18px 34px rgba(23, 35, 45, 0.18);
     padding: 42px 24px 34px;
@@ -145,7 +145,7 @@
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    font-size: 11px;
+    font-size: 12px;
     color: rgba(248, 236, 212, 0.9);
     margin-top: 10px;
     letter-spacing: 3px;
@@ -312,7 +312,7 @@
     box-shadow: 0 0 0 3px rgba(168,122,47,0.14);
     background: #fffefb;
   }
-  .field input::placeholder { color: #999999; }
+  .field input::placeholder { color: #9a8c76; }
 
   /* Preset Buttons */
   .preset-group {
@@ -351,7 +351,7 @@
     box-shadow: 0 10px 24px rgba(28, 34, 44, 0.05);
   }
   .result-item .result-label {
-    font-size: 11px;
+    font-size: 12px;
     color: #6c5b40;
     letter-spacing: 1px;
     margin-bottom: 4px;
@@ -431,7 +431,7 @@
   .mt-8 { margin-top: 8px; }
   .mb-0 { margin-bottom: 0; }
   .text-gold { color: #996600; }
-  .text-small { font-size: 11px; color: #666666; }
+  .text-small { font-size: 12px; color: #666666; }
   .divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(168,122,47,0.35), transparent);
@@ -493,7 +493,7 @@
     background: rgba(255,255,255,0.78);
   }
   .pvpcmp-subtitle {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1.5px;
     margin-bottom: 6px;
@@ -603,10 +603,10 @@
     background: #e7f0ff;
   }
   .pvpcmp-results-table .muted {
-    color: #7a8695;
+    color: #5f6b7a;
   }
   .pvpcmp-results-table .take-hits {
-    color: #9d7a1c;
+    color: #7a5a12;
   }
   .pvpcmp-add-btn {
     background: #ffffff;
@@ -692,7 +692,7 @@
   }
   .opt-float-nav-label {
     color: #6f6049;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-align: center;
   }
@@ -863,8 +863,15 @@
     .form-grid-2 { grid-template-columns: 1fr; }
     .form-grid-2 .form-grid-2 { grid-template-columns: repeat(2, 1fr); }
     .form-grid-3 { grid-template-columns: repeat(2, 1fr); }
-    .tab-btn { padding: 10px 14px; font-size: 12px; }
-    .header h1 { font-size: 18px; }
+    /* 手機：頁首縮成一行；分頁列改成單行左右滑，原本 14 個分頁排成 5 行、固定在頂端時擋掉三成畫面 */
+    .header { padding: 12px 16px; }
+    .header h1 { flex-direction: row; align-items: baseline; gap: 10px; }
+    .header h1 .title-main { font-size: 22px; letter-spacing: 2px; }
+    .header h1 .title-sub { font-size: 16px; letter-spacing: 1px; }
+    .header p { display: none; }
+    .tab-bar { flex-wrap: nowrap; overflow-x: auto; padding: 8px 10px; gap: 6px; scrollbar-width: thin; }
+    .tab-btn { flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; font-size: 12px; }
+    .tab-btn:hover { transform: none; }
     .side-watermark { display: none; }
   }
   @media (max-width: 480px) {
@@ -872,9 +879,33 @@
     .form-grid-3 { grid-template-columns: repeat(2, 1fr); }
   }
 
+  /* 結果摘要列（C-03）：結果原本在頁尾，摘要放在儲存列下方；桌機固定在分頁列下方 */
+  .result-summary {
+    display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline;
+    margin: 0 0 14px; padding: 10px 14px;
+    background: rgba(255, 252, 246, 0.97);
+    border: 1px solid rgba(168, 122, 47, 0.3); border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(24, 33, 43, 0.06);
+    font-size: 13px; color: #4f4538;
+  }
+  .result-summary:empty { display: none; }
+  .result-summary .sum-item b { color: #7a5320; font-size: 15px; }
+  .result-summary .sum-verdict { font-weight: 700; }
+  .result-summary .sum-verdict.attacker-wins { color: #b24842; }
+  .result-summary .sum-verdict.defender-wins { color: #2e6d8f; }
+  .result-summary .sum-verdict.tie { color: #7b6a4e; }
+  @media (min-width: 769px) {
+    .result-summary { position: sticky; top: calc(var(--tabbar-h, 124px) + 8px); z-index: 4; }
+  }
+
+  /* 未儲存提示（C-23）與欄位範圍提醒（C-19） */
+  .dirty-flag { color: #b24842; font-size: 12px; font-weight: 700; margin-left: 4px; }
+  .field-range-warn { border-color: #b24842 !important; background: #fff4f2 !important; }
+  .field-range-msg { display: block; color: #b24842; font-size: 12px; margin-top: 3px; line-height: 1.4; }
+
   /* Tooltip / info note */
   .formula-note {
-    font-size: 11px;
+    font-size: 12px;
     color: #625741;
     margin-top: 6px;
     padding: 10px 12px;
@@ -891,7 +922,7 @@
     border-radius: 999px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
     transition: all 0.2s ease;
   }
@@ -899,7 +930,7 @@
   .db-sel {
     background: rgba(255,252,247,0.96); border: 1px solid rgba(124, 98, 60, 0.24); color: var(--ink-900);
     padding: 4px 8px; border-radius: 10px; font-family: inherit;
-    font-size: 11px; max-width: 130px;
+    font-size: 12px; max-width: 130px;
   }
   .ng-stack-summary {
     margin-top: 6px;
@@ -908,7 +939,7 @@
     border: 1px solid rgba(168, 122, 47, 0.16);
     border-radius: 10px;
     color: #4c4334;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.5;
     text-align: left;
   }
@@ -938,7 +969,7 @@
     padding: 1px 6px;
     border-radius: 3px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
   }
   .ng-stack-clear-btn:hover {
@@ -1523,7 +1554,7 @@
   #tab-neigong .section:first-of-type .divider {
     margin: 14px 0;
   }
-  #tab-neigong .section:first-of-type [style*="font-size:11px;color:#666666"] {
+  #tab-neigong .section:first-of-type [style*="font-size:12px;color:#666666"] {
     color: #75664d !important;
     letter-spacing: 1px;
     font-weight: 600;
@@ -1729,7 +1760,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     box-shadow: 0 0 0 3px rgba(255, 201, 92, 0.12), 0 0 16px rgba(255, 201, 92, 0.42);
     cursor: grab;
@@ -1792,7 +1823,7 @@
     min-height: 180px;
     max-height: 320px;
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.5;
     resize: vertical;
   }
@@ -1865,7 +1896,7 @@
             <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="pve_critdmg" value="1.803" step="0.001" oninput="calcPVE()"></div>
             <div class="field"><label>破盾</label><input type="number" id="pve_breakshield" value="0" oninput="calcPVE()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="pve_elemAtk" value="5729" oninput="calcPVE()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="pve_elemBonus" value="0" step="0.001" oninput="calcPVE()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="pve_elemBonus" value="0" step="0.001" oninput="calcPVE()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="pve_bossOver" value="15935" oninput="calcPVE()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="pve_ignoreElem" value="3081" oninput="calcPVE()"></div>
             <div class="field"><label>破防</label><input type="number" id="pve_breakDef" value="5765" oninput="calcPVE()"></div>
@@ -1970,6 +2001,7 @@
     <button onclick="resetTabInputs('pvp',calcPVP)" style="background:#ffffff;border:1px solid #d93025;color:#d93025;padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">恢復預設</button>
     <span id="pvp_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
   </div>
+  <div class="result-summary" id="pvp_result_summary" aria-live="polite"></div>
   <div id="combat_buff_pvp" class="combat-buff-panel"></div>
 
 
@@ -1995,7 +2027,7 @@
             <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="atk_critdmg" value="1.693" step="0.001" oninput="calcPVP()"></div>
             <div class="field"><label>破盾</label><input type="number" id="atk_breakshield" value="389" oninput="calcPVP()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="atk_elemAtk" value="6187" oninput="calcPVP()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="atk_elemBonus" value="0" step="0.001" oninput="calcPVP()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="atk_elemBonus" value="0" step="0.001" oninput="calcPVP()"></div>
             <div class="field"><label>流派克制</label><input type="number" id="atk_styleOver" value="6610" oninput="calcPVP()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="atk_ignoreElem" value="2922" oninput="calcPVP()"></div>
             <div class="field"><label>破防</label><input type="number" id="atk_breakDef" value="5540" oninput="calcPVP()"></div>
@@ -2070,7 +2102,7 @@
             <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="def_critdmg" value="1.693" step="0.001" oninput="calcPVP()"></div>
             <div class="field"><label>破盾</label><input type="number" id="def_breakshield" value="389" oninput="calcPVP()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="def_elemAtk" value="6187" oninput="calcPVP()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="def_elemBonus" value="0" step="0.001" oninput="calcPVP()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="def_elemBonus" value="0" step="0.001" oninput="calcPVP()"></div>
             <div class="field"><label>流派克制</label><input type="number" id="def_styleOver" value="6610" oninput="calcPVP()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="def_ignoreElem" value="2922" oninput="calcPVP()"></div>
             <div class="field"><label>破防</label><input type="number" id="def_breakDef" value="5540" oninput="calcPVP()"></div>
@@ -2141,6 +2173,7 @@
     <button onclick="resetTabInputs('cmp',calcCompare)" style="background:#ffffff;border:1px solid #d93025;color:#d93025;padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">恢復預設</button>
     <span id="cmp_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
   </div>
+  <div class="result-summary" id="cmp_result_summary" aria-live="polite"></div>
 
   <div class="pvp-columns">
     <!-- Before -->
@@ -2150,7 +2183,7 @@
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
           <span>更換前 · 我方屬性</span>
           <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
-            <button onclick="loadPVEtoCmp('a')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;">← 帶入 PVE 屬性</button>
+            <button onclick="loadPVEtoCmp('a')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">← 帶入 PVE 屬性</button>
             <button onclick="dbSaveSet('cmp_a')" class="db-btn">存入資料庫</button>
             <select class="db-sel-set db-sel" id="db_sel_set_cmp_a"></select>
             <button onclick="dbLoadSet('cmp_a','db_sel_set_cmp_a')" class="db-btn">← 載入</button>
@@ -2165,7 +2198,7 @@
             <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="cmp_a_critdmg" value="1.803" step="0.001" oninput="calcCompare()"></div>
             <div class="field"><label>破盾</label><input type="number" id="cmp_a_breakshield" value="0" oninput="calcCompare()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="cmp_a_elemAtk" value="5729" oninput="calcCompare()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="cmp_a_elemBonus" value="0" step="0.001" oninput="calcCompare()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="cmp_a_elemBonus" value="0" step="0.001" oninput="calcCompare()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="cmp_a_bossOver" value="15935" oninput="calcCompare()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="cmp_a_ignoreElem" value="3081" oninput="calcCompare()"></div>
             <div class="field"><label>破防</label><input type="number" id="cmp_a_breakDef" value="5765" oninput="calcCompare()"></div>
@@ -2189,7 +2222,7 @@
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
           <span>更換後 · 我方屬性</span>
           <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
-            <button onclick="loadPVEtoCmp('b')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;">← 帶入 PVE 屬性</button>
+            <button onclick="loadPVEtoCmp('b')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">← 帶入 PVE 屬性</button>
             <button onclick="dbSaveSet('cmp_b')" class="db-btn">存入資料庫</button>
             <select class="db-sel-set db-sel" id="db_sel_set_cmp_b"></select>
             <button onclick="dbLoadSet('cmp_b','db_sel_set_cmp_b')" class="db-btn">← 載入</button>
@@ -2204,7 +2237,7 @@
             <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="cmp_b_critdmg" value="1.803" step="0.001" oninput="calcCompare()"></div>
             <div class="field"><label>破盾</label><input type="number" id="cmp_b_breakshield" value="0" oninput="calcCompare()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="cmp_b_elemAtk" value="5729" oninput="calcCompare()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="cmp_b_elemBonus" value="0" step="0.001" oninput="calcCompare()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="cmp_b_elemBonus" value="0" step="0.001" oninput="calcCompare()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="cmp_b_bossOver" value="15935" oninput="calcCompare()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="cmp_b_ignoreElem" value="3081" oninput="calcCompare()"></div>
             <div class="field"><label>破防</label><input type="number" id="cmp_b_breakDef" value="5765" oninput="calcCompare()"></div>
@@ -2281,16 +2314,17 @@
     <button onclick="resetTabInputs('pvpcmp',calcPVPCmp)" style="background:#ffffff;border:1px solid #d93025;color:#d93025;padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">恢復預設</button>
     <span id="pvpcmp_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
   </div>
+  <div class="result-summary" id="pvpcmp_result_summary" aria-live="polite"></div>
   <div id="combat_buff_pvpcmp" class="combat-buff-panel"></div>
 
   <div class="section pvpcmp-panel pvpcmp-panel-opponent">
     <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
       <span class="pvpcmp-title-main"><span class="pvpcmp-badge">對手</span><span>對手屬性（固定）</span></span>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-        <select id="pvpcmp_load_attacker_sel" style="background:#ffffff;border:1px solid #cccccc;color:#333333;padding:3px 6px;border-radius:4px;font-family:inherit;font-size:11px;cursor:pointer;"></select>
-        <button onclick="loadAttackerToOpponent(parseInt(document.getElementById('pvpcmp_load_attacker_sel').value))" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;">← 從套裝帶入</button>
-        <button onclick="loadPVPtoOpponent('atk')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;">← 從PVP攻方帶入</button>
-        <button onclick="loadPVPtoOpponent('def')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;">← 從PVP守方帶入</button>
+        <select id="pvpcmp_load_attacker_sel" style="background:#ffffff;border:1px solid #cccccc;color:#333333;padding:3px 6px;border-radius:4px;font-family:inherit;font-size:12px;cursor:pointer;"></select>
+        <button onclick="loadAttackerToOpponent(parseInt(document.getElementById('pvpcmp_load_attacker_sel').value))" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">← 從套裝帶入</button>
+        <button onclick="loadPVPtoOpponent('atk')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">← 從PVP攻方帶入</button>
+        <button onclick="loadPVPtoOpponent('def')" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">← 從PVP守方帶入</button>
         <button onclick="dbSaveSet('pvpcmp_opp')" class="db-btn">存入資料庫</button>
         <select class="db-sel-set db-sel" id="db_sel_set_pvpcmp_opp"></select>
         <button onclick="dbLoadSet('pvpcmp_opp','db_sel_set_pvpcmp_opp')" class="db-btn">← 載入</button>
@@ -2310,7 +2344,7 @@
         <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="pvpcmp_ocritdmg" value="1.693" step="0.001" oninput="calcPVPCmp()"></div>
         <div class="field"><label>破盾</label><input type="number" id="pvpcmp_obreakshield" value="389" oninput="calcPVPCmp()"></div>
         <div class="field"><label>元素攻擊</label><input type="number" id="pvpcmp_oelemAtk" value="6187" oninput="calcPVPCmp()"></div>
-        <div class="field"><label>元素傷害加成</label><input type="number" id="pvpcmp_oelemBonus" value="0" step="0.001" oninput="calcPVPCmp()"></div>
+        <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="pvpcmp_oelemBonus" value="0" step="0.001" oninput="calcPVPCmp()"></div>
         <div class="field"><label>流派克制</label><input type="number" id="pvpcmp_ostyleOver" value="6610" oninput="calcPVPCmp()"></div>
         <div class="field"><label>忽視元素抗性</label><input type="number" id="pvpcmp_oignoreElem" value="2922" oninput="calcPVPCmp()"></div>
         <div class="field"><label>破防</label><input type="number" id="pvpcmp_obreakDef" value="5540" oninput="calcPVPCmp()"></div>
@@ -2473,7 +2507,7 @@
         <div class="field"><label>會心傷害 (倍率)</label><input type="number" id="sw_opp_critdmg" value="1.693" step="0.001" oninput="calcSuWenCompare()"></div>
         <div class="field"><label>破盾</label><input type="number" id="sw_opp_breakshield" value="389" oninput="calcSuWenCompare()"></div>
         <div class="field"><label>元素攻擊</label><input type="number" id="sw_opp_elemAtk" value="6187" oninput="calcSuWenCompare()"></div>
-        <div class="field"><label>元素傷害加成</label><input type="number" id="sw_opp_elemBonus" value="0" step="0.001" oninput="calcSuWenCompare()"></div>
+        <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="sw_opp_elemBonus" value="0" step="0.001" oninput="calcSuWenCompare()"></div>
         <div class="field"><label>流派克制</label><input type="number" id="sw_opp_styleOver" value="6610" oninput="calcSuWenCompare()"></div>
         <div class="field"><label>忽視元素抗性</label><input type="number" id="sw_opp_ignoreElem" value="2922" oninput="calcSuWenCompare()"></div>
         <div class="field"><label>破防</label><input type="number" id="sw_opp_breakDef" value="5540" oninput="calcSuWenCompare()"></div>
@@ -2532,7 +2566,7 @@
           <div class="result-value" id="xj_result_bdef">—</div>
         </div>
       </div>
-      <div class="formula-note" id="xj_capped" style="margin-top:8px;color:#ff8040;"></div>
+      <div class="formula-note" id="xj_capped" style="margin-top:8px;color:#b24842;"></div>
     </div>
   </div>
 
@@ -2548,7 +2582,7 @@
           <option value="pve">PVE 公式</option>
           <option value="pvp">PVP 公式</option>
         </select>
-        <span style="font-size:11px;color:#666666;">各屬性增量可在結果表格中單獨填寫</span>
+        <span style="font-size:12px;color:#666666;">各屬性增量可在結果表格中單獨填寫</span>
       </div>
 
       <!-- 我方 / 對手 兩欄 -->
@@ -2563,7 +2597,7 @@
               <button onclick="dbLoadSet('mgn_my','db_sel_set_mgn_my')" class="db-btn">← 載入</button>
             </div>
           </div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
           <div class="form-grid">
             <div class="field"><label>攻擊</label><input type="number" id="mgn_atk" value="10293" oninput="calcMarginal()"></div>
             <div class="field"><label>全技能增強</label><input type="number" id="mgn_skillenh" value="0" oninput="calcMarginal()"></div>
@@ -2571,7 +2605,7 @@
             <div class="field"><label>會心</label><input type="number" id="mgn_crit" value="5577" oninput="calcMarginal()"></div>
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="mgn_critdmg" value="1.803" step="0.001" oninput="calcMarginal()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="mgn_elementatk" value="5729" oninput="calcMarginal()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="mgn_elemBonus" value="0" step="0.001" oninput="calcMarginal()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="mgn_elemBonus" value="0" step="0.001" oninput="calcMarginal()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="mgn_bossover" value="15935" oninput="calcMarginal()"></div>
             <div class="field"><label>流派克制</label><input type="number" id="mgn_styleover" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="mgn_ignoreelem" value="3081" oninput="calcMarginal()"></div>
@@ -2580,7 +2614,7 @@
             <div class="field"><label>攻擊特性 (%)</label><input type="number" id="mgn_traitAtkPct" value="0" step="0.1" oninput="calcMarginal()"></div>
           </div>
           <div class="divider"></div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 防禦（供對手進攻計算用）—</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 防禦（供對手進攻計算用）—</div>
           <div class="form-grid">
             <div class="field"><label>防禦力</label><input type="number" id="mgn_mydef" value="17182" oninput="calcMarginal()"></div>
             <div class="field"><label>格擋</label><input type="number" id="mgn_myblock" value="3568" oninput="calcMarginal()"></div>
@@ -2604,7 +2638,7 @@
               <button onclick="dbLoadSet('mgn_opp','db_sel_set_mgn_opp')" class="db-btn">← 載入</button>
             </div>
           </div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
           <div class="form-grid">
             <div class="field"><label>攻擊</label><input type="number" id="mgn_eatk" value="10293" oninput="calcMarginal()"></div>
             <div class="field"><label>全技能增強</label><input type="number" id="mgn_eskillenh" value="0" oninput="calcMarginal()"></div>
@@ -2612,7 +2646,7 @@
             <div class="field"><label>會心</label><input type="number" id="mgn_ecrit" value="5577" oninput="calcMarginal()"></div>
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="mgn_ecritdmg" value="1.803" step="0.001" oninput="calcMarginal()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="mgn_eelemAtk" value="5729" oninput="calcMarginal()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="mgn_eelemBonus" value="0" step="0.001" oninput="calcMarginal()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="mgn_eelemBonus" value="0" step="0.001" oninput="calcMarginal()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="mgn_ebossover" value="15935" oninput="calcMarginal()"></div>
             <div class="field"><label>流派克制</label><input type="number" id="mgn_estyleover" value="0" oninput="calcMarginal()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="mgn_eignoreelem" value="3081" oninput="calcMarginal()"></div>
@@ -2621,7 +2655,7 @@
             <div class="field"><label>攻擊特性 (%)</label><input type="number" id="mgn_eTraitAtkPct" value="0" step="0.1" oninput="calcMarginal()"></div>
           </div>
           <div class="divider"></div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 防禦（作為我方攻擊目標）—</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 防禦（作為我方攻擊目標）—</div>
           <div class="form-grid">
             <div class="field"><label>防禦力</label><input type="number" id="mgn_bdef" value="17182" oninput="calcMarginal()"></div>
             <div class="field"><label>格擋</label><input type="number" id="mgn_bblock" value="3568" oninput="calcMarginal()"></div>
@@ -2663,9 +2697,9 @@
             <input type="checkbox" id="mgn_cls_chaoguang" onchange="enforceMgnCls();calcMarginal()">
             <span style="color:#0055aa;font-size:13px;">潮光</span></label>
         </div>
-        <div id="mgn_cls_warning" style="color:#d93025;font-size:11px;display:none;margin-bottom:6px;">已達 2 個上限</div>
+        <div id="mgn_cls_warning" style="color:#d93025;font-size:12px;display:none;margin-bottom:6px;">已達 2 個上限</div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-          <span style="font-size:11px;color:#666666;">填入要測試的基礎屬性增量</span>
+          <span style="font-size:12px;color:#666666;">填入要測試的基礎屬性增量</span>
           <button onclick="resetMgnBaseInputs()" style="background:#ffffff;border:1px solid #cccccc;color:#d93025;padding:3px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">清零增量</button>
         </div>
         <div class="form-grid" style="max-width:500px;">
@@ -2711,34 +2745,34 @@
         <div style="display:flex;flex-wrap:wrap;gap:12px;">
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_shenxiang" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">神相</span><span style="color:#666666;font-size:11px;">　身法→命中</span>
+            <span style="color:#0055aa;font-size:13px;">神相</span><span style="color:#666666;font-size:12px;">　身法→命中</span>
           </label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_longyin" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">龍吟</span><span style="color:#666666;font-size:11px;">　根骨→破防</span>
+            <span style="color:#0055aa;font-size:13px;">龍吟</span><span style="color:#666666;font-size:12px;">　根骨→破防</span>
           </label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_suimeng" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">碎夢</span><span style="color:#666666;font-size:11px;">　身法→會心+格擋</span>
+            <span style="color:#0055aa;font-size:13px;">碎夢</span><span style="color:#666666;font-size:12px;">　身法→會心+格擋</span>
           </label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_xuanji" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">玄機</span><span style="color:#666666;font-size:11px;">　身法→元素攻擊</span>
+            <span style="color:#0055aa;font-size:13px;">玄機</span><span style="color:#666666;font-size:12px;">　身法→元素攻擊</span>
           </label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_jiuling" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">九靈</span><span style="color:#666666;font-size:11px;">　耐力→攻擊</span>
+            <span style="color:#0055aa;font-size:13px;">九靈</span><span style="color:#666666;font-size:12px;">　耐力→攻擊</span>
           </label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_xuehe" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">血河</span><span style="color:#666666;font-size:11px;">　根骨→攻擊</span>
+            <span style="color:#0055aa;font-size:13px;">血河</span><span style="color:#666666;font-size:12px;">　根骨→攻擊</span>
           </label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
             <input type="checkbox" id="cls_chaoguang" onchange="enforceMaxCls();calcBaseAttr()">
-            <span style="color:#0055aa;font-size:13px;">潮光</span><span style="color:#666666;font-size:11px;">　耐力→會心</span>
+            <span style="color:#0055aa;font-size:13px;">潮光</span><span style="color:#666666;font-size:12px;">　耐力→會心</span>
           </label>
         </div>
-        <div id="cls_warning" style="color:#d93025;font-size:11px;margin-top:6px;display:none;">已達 2 個上限，如需更換請先取消已選標籤</div>
+        <div id="cls_warning" style="color:#d93025;font-size:12px;margin-top:6px;display:none;">已達 2 個上限，如需更換請先取消已選標籤</div>
       </div>
 
       <!-- Input -->
@@ -2816,7 +2850,7 @@
               <button onclick="dbLoadSet('ng_my','db_sel_set_ng_my')" class="db-btn">← 載入</button>
             </div>
           </div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
           <div class="form-grid">
             <div class="field"><label>攻擊</label><input type="number" id="ng_atk" value="10293" oninput="calcNeigong()"></div>
             <div class="field"><label>全技能增強</label><input type="number" id="ng_skillenh" value="0" oninput="calcNeigong()"></div>
@@ -2824,7 +2858,7 @@
             <div class="field"><label>會心</label><input type="number" id="ng_crit" value="5577" oninput="calcNeigong()"></div>
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="ng_critdmg" value="1.803" step="0.001" oninput="calcNeigong()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="ng_elementatk" value="5729" oninput="calcNeigong()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="ng_elemBonus" value="0" step="0.001" oninput="calcNeigong()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="ng_elemBonus" value="0" step="0.001" oninput="calcNeigong()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="ng_bossover" value="15935" oninput="calcNeigong()"></div>
             <div class="field"><label>流派克制</label><input type="number" id="ng_styleover" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="ng_ignoreelem" value="3081" oninput="calcNeigong()"></div>
@@ -2839,7 +2873,7 @@
             <div class="field"><label>流派抵禦 (%)</label><input type="number" id="ng_myStyleResPct" value="0" step="0.1" oninput="calcNeigong()"></div>
           </div>
           <div class="divider"></div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 防禦（供對手進攻計算用）—</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 防禦（供對手進攻計算用）—</div>
           <div class="form-grid">
             <div class="field"><label>防禦力</label><input type="number" id="ng_mydef" value="17182" oninput="calcNeigong()"></div>
             <div class="field"><label>格擋</label><input type="number" id="ng_myblock" value="3568" oninput="calcNeigong()"></div>
@@ -2863,7 +2897,7 @@
               <button onclick="dbLoadSet('ng_opp','db_sel_set_ng_opp')" class="db-btn">← 載入</button>
             </div>
           </div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 進攻 —</div>
           <div class="form-grid">
             <div class="field"><label>攻擊</label><input type="number" id="ng_eatk" value="10293" oninput="calcNeigong()"></div>
             <div class="field"><label>全技能增強</label><input type="number" id="ng_eskillenh" value="0" oninput="calcNeigong()"></div>
@@ -2871,7 +2905,7 @@
             <div class="field"><label>會心</label><input type="number" id="ng_ecrit" value="5577" oninput="calcNeigong()"></div>
             <div class="field"><label>會心傷害（倍率）</label><input type="number" id="ng_ecritdmg" value="1.803" step="0.001" oninput="calcNeigong()"></div>
             <div class="field"><label>元素攻擊</label><input type="number" id="ng_eelemAtk" value="5729" oninput="calcNeigong()"></div>
-            <div class="field"><label>元素傷害加成</label><input type="number" id="ng_eelemBonus" value="0" step="0.001" oninput="calcNeigong()"></div>
+            <div class="field"><label>元素傷害加成 (小數)</label><input type="number" id="ng_eelemBonus" value="0" step="0.001" oninput="calcNeigong()"></div>
             <div class="field"><label>首領克制</label><input type="number" id="ng_ebossover" value="15935" oninput="calcNeigong()"></div>
             <div class="field"><label>流派克制</label><input type="number" id="ng_estyleover" value="0" oninput="calcNeigong()"></div>
             <div class="field"><label>忽視元素抗性</label><input type="number" id="ng_eignoreelem" value="3081" oninput="calcNeigong()"></div>
@@ -2886,7 +2920,7 @@
             <div class="field"><label>流派抵禦 (%)</label><input type="number" id="ng_bStyleResPct" value="0" step="0.1" oninput="calcNeigong()"></div>
           </div>
           <div class="divider"></div>
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">— 防禦（作為我方攻擊目標）—</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">— 防禦（作為我方攻擊目標）—</div>
           <div class="form-grid">
             <div class="field"><label>防禦力</label><input type="number" id="ng_bdef" value="17182" oninput="calcNeigong()"></div>
             <div class="field"><label>格擋</label><input type="number" id="ng_bblock" value="3568" oninput="calcNeigong()"></div>
@@ -2914,7 +2948,7 @@
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="ng_cls_xuehe" onchange="enforceNgCls();calcNeigong()"><span style="color:#0055aa;font-size:13px;">血河</span></label>
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="ng_cls_chaoguang" onchange="enforceNgCls();calcNeigong()"><span style="color:#0055aa;font-size:13px;">潮光</span></label>
         </div>
-        <div id="ng_cls_warning" style="color:#d93025;font-size:11px;display:none;margin-bottom:6px;">已達 2 個上限</div>
+        <div id="ng_cls_warning" style="color:#d93025;font-size:12px;display:none;margin-bottom:6px;">已達 2 個上限</div>
       </div>
     </div>
   </div>
@@ -2971,13 +3005,13 @@
 <div id="tab-metadata" class="tab-pane">
 
   <div class="section opt-block opt-block-lower" style="margin-bottom:16px;">
-    <div class="section-title">最佳化頁面（第一階段）</div>
+    <div class="section-title">補登說明</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        此頁提供資料準備、metadata 補登，以及裝備名稱與數值修正；不直接改動既有公式、既有比較頁流程，也不做跨頁一鍵帶入。
+        這頁替資料庫裡的裝備和內功補上分類：裝備要有類別（PVP／PVE／獨珍）與部位，內功要有五行。補好分類的資料才會出現在模板、模板比較與最佳化。
       </div>
       <div class="formula-note">
-        進入此頁不會自動改寫舊資料；裝備 DB 可手動修改名稱與數值，內功仍只會補上分類資訊（<code>category</code> / <code>slot</code> / <code>tags</code>）。
+        打開這頁不會改動資料，按儲存才會寫入。裝備可以在這裡一併改名稱與數值；內功在這裡只改分類，數值請在內功/裝備比較頁載入、修改後用同名存回。
       </div>
     </div>
   </div>
@@ -3004,7 +3038,7 @@
     <div class="section-body">
       <div id="opt_pending_panel" style="display:none;">
       <div class="formula-note" style="margin-bottom:12px;">
-        系統會先依名稱提供建議值。裝備可一併修改名稱與數值；內功儲存時仍只更新 metadata。
+        系統會先依名稱猜類別與部位，確認後再儲存。裝備可一併修改名稱與數值；內功只存分類。
       </div>
       <div id="opt_bulk_panel" style="display:none;border:1px solid #d0d0d0;border-radius:6px;padding:12px;margin-bottom:12px;background:#fbfcfe;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
@@ -3034,7 +3068,7 @@
             <button type="button" onclick="applyOptimizeBulkMeta()" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">套用到勾選資料</button>
           </div>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:#666666;">只會套用你有選的欄位；類別、部位、五行留空就不會覆蓋該欄。</div>
+        <div style="margin-top:8px;font-size:12px;color:#666666;">只會套用你有選的欄位；類別、部位、五行留空就不會覆蓋該欄。</div>
       </div>
       <div id="opt_pending_empty" style="display:none;color:#1a7c2a;font-size:13px;">目前沒有待補登資料。</div>
       <div id="opt_pending_list"></div>
@@ -3050,7 +3084,7 @@
     <div class="section-body">
       <div id="opt_done_panel" style="display:none;">
         <div class="formula-note" style="margin-bottom:12px;">
-          已儲存 metadata 的資料會顯示在這裡；裝備可修改名稱、數值、類別與部位，內功則維持只修改 metadata。
+          已補好分類的資料列在這裡；裝備可修改名稱、數值、類別與部位，內功只能改分類。
         </div>
         <div id="opt_done_empty" style="display:none;color:#666666;font-size:13px;">目前沒有已補登資料。</div>
         <div id="opt_done_list"></div>
@@ -3165,13 +3199,13 @@
   </div>
 
   <div id="opt-section-lower" class="section opt-block opt-block-lower" style="margin-bottom:16px;">
-    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">下半裝備最佳化（第一版）</div>
+    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">下半裝備最佳化</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        第一版只搜尋下半 5 件：`戒 x2 / 手鐲 x2 / 項鍊 x1`。候選只吃已補登完成的裝備資料。
+        搜尋下半 5 件：戒 2、手鐲 2、項鍊 1，只用補登完成的裝備。
       </div>
       <div class="formula-note">
-        基底見本頁最上方「最佳化基底」：模板設定好時用模板的裸面板，否則用 `內功/裝備比較` 頁。要手動驗算推薦結果，在 `內功/裝備比較` 頁按「從模板帶入」帶入裸面板。
+        基底見本頁最上方「最佳化基底」：模板設定好時用模板的裸面板，否則用「內功/裝備比較」頁。要驗算推薦結果，按結果卡的「帶到比較頁」：我方換成模板的裸面板，整套放進一欄，看「PVP整套重算」。
       </div>
     </div>
   </div>
@@ -3232,10 +3266,10 @@
   </div>
 
   <div id="opt-section-upper" class="section opt-block opt-block-upper" style="margin-top:24px;margin-bottom:16px;">
-    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">上半裝備最佳化（第一版）</div>
+    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">上半裝備最佳化</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        第一版只搜尋上半 6 件：`頭 / 身 / 腰 / 手 / 鞋 / 臂`。候選只吃已補登完成的裝備資料。
+        搜尋上半 6 件：頭、身、腰、手、鞋、臂，只用補登完成的裝備。
       </div>
       <div class="formula-note">
         基底見本頁最上方「最佳化基底」；上半未觸發效果一（模式件數 < 2）的組合直接排除，效果二（模式件數 >= 4）永遠排序優先。
@@ -3370,13 +3404,13 @@
   </div>
 
   <div id="opt-section-ng" class="section opt-block opt-block-ng" style="margin-top:24px;margin-bottom:16px;">
-    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">內功最佳化（第一版）</div>
+    <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">內功最佳化</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        第一版固定搜尋 `6` 個已補登完成的內功。玩家可指定最多 `2` 種元素最低顆數門檻，例如 `金 >= 12`、`火 >= 12`。
+        從補登完成的內功中選 6 顆。最多可以指定 2 種五行的最低顆數，例如金至少 12、火至少 12。
       </div>
       <div class="formula-note">
-        周天規則為：每 `4` 個同元素算 `1` 周天、同元素最多 `3` 周天、整套最多 `7` 周天；土元素合計 `4` 顆以上時受到傷害降低 `1%`（只影響 PVP 承傷）；同核心名稱內功不可重複，且可指定必選核心類型，但結果會顯示完整名稱。
+        周天：同五行每 4 個算 1 周天，同五行最多 3 周天，整套最多 7 周天；土合計 4 個以上時受到傷害降低 1%（只影響 PVP 承傷）。同核心的內功不能重複；可以指定必選的核心類型，結果仍顯示完整名稱。
       </div>
     </div>
   </div>
@@ -3389,7 +3423,7 @@
     <div class="section-body">
       <div id="opt_ng_required_panel" style="display:none;">
         <div class="formula-note" style="margin-bottom:10px;">
-          勾選的是內功核心類型，例如 `日月`、`破釜`。系統會保證結果至少包含 1 顆該類型內功，實際顯示仍保留完整名稱。
+          勾選的是內功核心類型，例如「日月」「破釜」。結果至少會包含 1 顆該類型的內功，並顯示完整名稱。
         </div>
         <div style="display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:10px;align-items:end;">
           <div>
@@ -3443,7 +3477,7 @@
     <div class="section-body">
       <div id="opt_ng_adjust_panel" style="display:none;">
         <div class="formula-note" style="margin-bottom:10px;">
-          這裡是最佳化時的手動校正值，不會寫回內功資料本身。輸入格式與內功比較頁一致，`0.05 = 5%`。若結果同時選到 `A 5%` 與 `B 3%`，則進攻結果會乘上 `1.08`。
+          這裡是最佳化時的手動校正值，不會寫回內功資料本身。輸入格式和內功/裝備比較頁相同，0.05 = 5%。例如結果同時選到 A 5% 和 B 3%，進攻特性就多 8%。
         </div>
         <div style="display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:10px;align-items:end;">
           <div>
@@ -3570,7 +3604,7 @@
     <div class="section-title" style="font-weight:700;letter-spacing:0.5px;">最終最佳化（聯合裝備 x 內功）</div>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
-        先沿用已跑出的上下裝備聯合最佳化前 `500` 組，再沿用已跑出的內功最佳化前 `1000` 組，交叉後重新套公式計算完整結果。
+        用上下裝備聯合最佳化的前 500 組和內功最佳化的前 1000 組交叉組合，重新計算完整結果。
       </div>
       <div class="formula-note">
         請先跑完上下裝備聯合最佳化與內功最佳化；最終結果只沿用它們的候選清單，不沿用它們的分數，基底見本頁最上方「最佳化基底」。
@@ -3719,7 +3753,7 @@
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
               <button type="button" onclick="duplicateArtifactSelectedNode()" class="db-btn">複製節點</button>
-              <button type="button" onclick="deleteArtifactSelectedNode()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:5px 10px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:11px;">刪除節點</button>
+              <button type="button" onclick="deleteArtifactSelectedNode()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:5px 10px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:12px;">刪除節點</button>
             </div>
           </div>
 
@@ -3739,7 +3773,7 @@
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
               <button type="button" onclick="swapArtifactSelectedEdge()" class="db-btn">交換方向</button>
-              <button type="button" onclick="deleteArtifactSelectedEdge()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:5px 10px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:11px;">刪除邊</button>
+              <button type="button" onclick="deleteArtifactSelectedEdge()" style="background:#fff7f7;border:1px solid #d93025;color:#b3261e;padding:5px 10px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:12px;">刪除邊</button>
             </div>
           </div>
         </div>
@@ -3820,6 +3854,7 @@
     <button onclick="resetSettings()" style="background:#ffffff;border:1px solid #d93025;color:#d93025;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:1px;">恢復公式預設值</button>
     <span id="settings_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存至 localStorage</span>
   </div>
+  <div id="settings_migrated_note" class="formula-note" style="display:none;color:#7a5320;"></div>
 
   <div class="form-grid-2" style="align-items:start;">
     <!-- PVE Coefficients -->
@@ -3877,7 +3912,7 @@
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;min-width:600px;margin-bottom:16px;">
           <thead>
-            <tr style="background:#e8eef5;color:#555555;font-size:11px;">
+            <tr style="background:#e8eef5;color:#555555;font-size:12px;">
               <th style="padding:6px 8px;text-align:left;border-bottom:1px solid #d0d0d0;min-width:100px;">名稱（可改）</th>
               <th style="padding:6px 8px;border-bottom:1px solid #d0d0d0;">防禦力</th>
               <th style="padding:6px 8px;border-bottom:1px solid #d0d0d0;">格檔</th>
@@ -4739,6 +4774,11 @@ function calcPVP() {
     banner.className = 'winner-banner tie';
     banner.textContent = `雙方輸出相近　差距不到 2%`;
   }
+  const verdictClass = banner.className.replace('winner-banner', '').trim();
+  setResultSummary('pvp', `<span class="sum-item">攻方輸出期望 <b>${fmt(rAtk.expected)}</b></span>`
+    + `<span class="sum-item">守方反擊期望 <b>${fmt(rDef.expected)}</b></span>`
+    + `<span class="sum-item">攻方可承受 <b>${escHtml(resultTextById('atk_r_hits'))}</b>・守方可承受 <b>${escHtml(resultTextById('def_r_hits'))}</b></span>`
+    + `<span class="sum-verdict ${verdictClass}">${escHtml(banner.textContent)}</span>`);
 }
 
 
@@ -4797,6 +4837,9 @@ function calcCompare() {
   const diffClass = diff > 0 ? 'positive' : (diff < 0 ? 'negative' : 'neutral');
   diffEl.className = 'result-value diff ' + diffClass;
   pctEl.className = 'result-value diff ' + diffClass;
+  setResultSummary('cmp', `<span class="sum-item">更換前 <b>${fmt(rA.expected)}</b></span>`
+    + `<span class="sum-item">更換後 <b>${fmt(rB.expected)}</b></span>`
+    + `<span class="sum-item">差異 <b class="${diffClass}">${escHtml(diffEl.textContent)}（${escHtml(pctEl.textContent)}）</b></span>`);
 
   document.getElementById('cmp_breakdown').innerHTML =
     `更換前　穿透率: ${pct(rA.pen*100)}　會心率: ${pct(rA.critRate*100)}　命中率: ${pct(rA.hitRate*100)}　攻克: ${fmt(rA.breachDmg)}　元素: ${fmt(rA.elemDmg)}<br>` +
@@ -4833,9 +4876,23 @@ function switchTab(tab, evt) {
     (typeof event !== 'undefined' && event ? (event.currentTarget || event.target) : null) ||
     document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
   if (activeBtn) activeBtn.classList.add('active');
+  revealActiveTab(activeBtn);
   if (tab === 'template') renderTemplatePage();
+  if (typeof checkAllFieldRanges === 'function') checkAllFieldRanges(document.getElementById('tab-' + tab));
   if (tab === 'template-compare') renderTemplateComparePage();
   if (tab === 'optimize') renderOptimizeBaseBox();
+}
+
+// 切換分頁後：已經捲到下面時捲回分頁內容的頂端（不然會停在新分頁的中段）；手機的分頁列是單行左右滑，把選到的分頁捲到看得見
+function revealActiveTab(activeBtn) {
+  if (typeof window === 'undefined' || typeof window.scrollTo !== 'function') return;
+  const header = document.querySelector('.header');
+  const headerBottom = header ? header.offsetHeight : 0;
+  if ((window.scrollY || 0) > headerBottom) window.scrollTo({ top: headerBottom });
+  const bar = activeBtn?.parentElement;
+  if (bar && bar.scrollWidth > bar.clientWidth && typeof bar.scrollTo === 'function') {
+    bar.scrollTo({ left: Math.max(0, activeBtn.offsetLeft - (bar.clientWidth - activeBtn.offsetWidth) / 2) });
+  }
 }
 
 // ===================== TAB: 神器樹標註 =====================
@@ -5526,7 +5583,7 @@ function pvpCmpInpStyle() {
 
 function renderPVPCmpAttackers() {
   const container = document.getElementById('pvpcmp_attackers_container');
-  const btnStyle = 'background:#ffffff;border:1px solid rgba(68,84,108,0.24);color:#44546c;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;';
+  const btnStyle = 'background:#ffffff;border:1px solid rgba(68,84,108,0.24);color:#44546c;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;';
   const panelClasses = ['pvpcmp-panel-a', 'pvpcmp-panel-b', 'pvpcmp-panel-c', 'pvpcmp-panel-d'];
   container.innerHTML = pvpCmpAttackers.map((a, idx) => {
     const lbl = PVPCMP_LABELS[idx] || (idx+1);
@@ -5547,7 +5604,7 @@ function renderPVPCmpAttackers() {
           <button onclick="dbSavePVPCmpAtt(${a.id})" class="db-btn">存入資料庫</button>
           <select class="db-sel-set db-sel" id="db_sel_pvpcmp_${a.id}"></select>
           <button onclick="dbLoadPVPCmpAtt(${a.id},'db_sel_pvpcmp_${a.id}')" class="db-btn">← 載入</button>
-          ${canRemove ? `<button onclick="removePVPCmpAttacker(${a.id})" style="background:#fff7f6;border:1px solid #d6a09a;color:#b54b3c;padding:2px 8px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;">移除</button>` : ''}
+          ${canRemove ? `<button onclick="removePVPCmpAttacker(${a.id})" style="background:#fff7f6;border:1px solid #d6a09a;color:#b54b3c;padding:2px 8px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">移除</button>` : ''}
         </div>
       </div>
       <div class="section-body">
@@ -5560,7 +5617,7 @@ function renderPVPCmpAttackers() {
         <div class="form-grid">
           ${fld('atk','攻擊',a.atk)} ${fld('skillEnh','全技能增強',a.skillEnh||0)} ${fld('hit','命中',a.hit)} ${fld('crit','會心',a.crit)}
           ${fld('critDmg','會心傷害(倍率)',a.critDmg,'0.001')} ${fld('breakShield','破盾',a.breakShield)}
-          ${fld('elemAtk','元素攻擊',a.elemAtk)} ${fld('elemBonus','元素傷害加成',a.elemBonus||0,'0.001')} ${fld('styleOver','流派克制',a.styleOver)}
+          ${fld('elemAtk','元素攻擊',a.elemAtk)} ${fld('elemBonus','元素傷害加成 (小數)',a.elemBonus||0,'0.001')} ${fld('styleOver','流派克制',a.styleOver)}
           ${fld('ignoreElem','忽視元素抗性',a.ignoreElem)} ${fld('breakDef','破防',a.breakDef)}
           ${fld('techOver','技巧克制',a.techOver)} ${fld('traitAtkPct','攻擊特性(%)',a.traitAtkPct||0,'0.1')}
         </div>
@@ -5828,6 +5885,12 @@ function calcPVPCmp() {
     </tr>`;
   }).join('');
   document.getElementById('pvpcmp_results_table').innerHTML = `<thead>${ths}</thead><tbody>${trs}</tbody>`;
+  setResultSummary('pvpcmp', results.map((r, i) => {
+    const isMax = Math.abs(scores[i] - maxScore) < 0.0001;
+    const isBase = pvpCmpAttackers[i] && pvpCmpAttackers[i].id === pvpCmpBaseId;
+    const vs = isBase ? '（基準）' : `（輸出 ${fmtDiffHits(r.expected, baseExp)}・承傷 ${fmtDiffHits(r.hitsCanTake, baseHits)}）`;
+    return `<span class="sum-item">${escHtml(r.name)}${isMax ? ' ★' : ''}：輸出 <b>${fmt(r.expected)}</b>・可承受 <b>${fmtHits(r.hitsCanTake)}</b> 次${vs}</span>`;
+  }).join(''));
 }
 
 // ===================== TAB: 素問治療比較 =====================
@@ -6038,10 +6101,10 @@ function calcMarginal() {
     return `<td style="padding:4px 8px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;">` +
       `<input type="number" value="${d}" step="any" onchange="setMgnDelta('${key}',this.value)" ` +
       `style="width:68px;background:rgba(255,252,247,0.95);border:1px solid rgba(124,98,60,0.24);border-radius:6px;color:var(--ink-900);` +
-      `padding:2px 5px;font-size:11px;text-align:right;"></td>`;
+      `padding:2px 5px;font-size:12px;text-align:right;"></td>`;
   }
   function staticDelta(val) {
-    return `<td style="padding:4px 8px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;color:#7b6a4e;font-size:11px;">${fmtF(val,0)}</td>`;
+    return `<td style="padding:4px 8px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;color:#7b6a4e;font-size:12px;">${fmtF(val,0)}</td>`;
   }
   function cell(v, decimals, suffix) {
     if (v === null || v === undefined) return `<td style="padding:7px 10px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;color:#8a7a63;">—</td>`;
@@ -6324,7 +6387,7 @@ function calcBaseAttr() {
     <tr style="border-bottom:1px solid rgba(168,122,47,0.12);">
       <td style="padding:8px 12px;color:#4f4538;font-size:13px;">${row.name}</td>
       <td style="padding:8px 12px;text-align:right;font-size:15px;font-weight:bold;color:${row.val > 0 ? '#2e6d8f' : '#8a7a63'};">${row.val > 0 ? fmtF(row.val, 1) : '—'}</td>
-      <td style="padding:8px 12px;color:#7b6a4e;font-size:11px;">${row.src || '—'}</td>
+      <td style="padding:8px 12px;color:#7b6a4e;font-size:12px;">${row.src || '—'}</td>
     </tr>`).join('');
 }
 
@@ -6353,10 +6416,7 @@ function applySettings() {
 
 function saveSettings() {
   applySettings();
-  const saved = trySetItem(`${STORAGE_KEY}_calc_settings`, JSON.stringify({
-    pve: Object.assign({}, PVE_CONST), pvp: Object.assign({}, PVP_CONST),
-    pveBosses: PVE_BOSSES.map(b => Object.assign({}, b)),
-  }));
+  const saved = trySetItem(`${STORAGE_KEY}_calc_settings`, JSON.stringify(currentSettingsPayload()));
   if (!saved) { alertStorageFull('公式設定'); return; }
   const msg = document.getElementById('settings_saved_msg');
   if (msg) { msg.style.opacity = '1'; setTimeout(() => msg.style.opacity = '0', 2500); }
@@ -6437,10 +6497,20 @@ function isNanHaiPveConstSavedAsPvp(c) {
   return (c.bCrit === 0 || c.bCrit === 165) && isLegacyNanHaiNormalConst({ ...c, bCrit: 0 });
 }
 
+// 回傳有沒有真的改到值：PVP 的 19030 那組既是舊九光判斷的一種，也是目前的內建值，套回去等於沒改
 function migrateLegacyJiuGuangSettings() {
+  const before = JSON.stringify(currentSettingsPayload());
   if (isLegacyJiuGuangConst(PVE_CONST) || isLegacyNanHaiNormalConst(PVE_CONST)) Object.assign(PVE_CONST, DEFAULT_PVE_CONST);
   if (isLegacyJiuGuangConst(PVP_CONST) || isNanHaiPveConstSavedAsPvp(PVP_CONST)) Object.assign(PVP_CONST, DEFAULT_PVP_CONST);
   if (isLegacyJiuGuangBoss(PVE_BOSSES[0])) Object.assign(PVE_BOSSES[0], DEFAULT_PVE_BOSSES[0]);
+  return JSON.stringify(currentSettingsPayload()) !== before;
+}
+
+function currentSettingsPayload() {
+  return {
+    pve: Object.assign({}, PVE_CONST), pvp: Object.assign({}, PVP_CONST),
+    pveBosses: PVE_BOSSES.map(b => Object.assign({}, b)),
+  };
 }
 
 function loadSavedSettings() {
@@ -6451,7 +6521,14 @@ function loadSavedSettings() {
     if (d.pve) Object.assign(PVE_CONST, d.pve);
     if (d.pvp) Object.assign(PVP_CONST, d.pvp);
     if (d.pveBosses) d.pveBosses.forEach((b,i) => { if (PVE_BOSSES[i]) Object.assign(PVE_BOSSES[i], b); });
-    migrateLegacyJiuGuangSettings();
+    // 舊係數以前只在載入時改，存檔與匯出檔一直是舊值（C-34）；改到了就寫回存檔，公式設定頁提示一次
+    if (migrateLegacyJiuGuangSettings() && trySetItem(`${STORAGE_KEY}_calc_settings`, JSON.stringify(currentSettingsPayload()))) {
+      const note = document.getElementById('settings_migrated_note');
+      if (note) {
+        note.textContent = '已把存檔裡的舊公式係數更新成目前版本（PVP 維持 19030 那組），之後不會再提示。';
+        note.style.display = '';
+      }
+    }
   } catch(e) {}
   renderSettingsFields();
   updatePresetButtonLabels();
@@ -6526,6 +6603,7 @@ function saveTabInputs(tab) {
     ngSaveCurrentVals();
     persistNeigongUiState();
   }
+  let savedOk = false;
   try {
     const data = {};
     ids.forEach(id => {
@@ -6543,9 +6621,11 @@ function saveTabInputs(tab) {
     }
     const msg = document.getElementById(tab + '_saved_msg');
     if (msg) { msg.style.opacity = '1'; setTimeout(() => msg.style.opacity = '0', 2000); }
+    savedOk = true;
     return true;
   } finally {
     if (restoreCombatBuff) restoreCombatBuff();
+    if (savedOk) markTabInputsSaved(tab);
   }
 }
 
@@ -6800,6 +6880,7 @@ function resetTabInputs(tab, recalcFn) {
   refreshCombatBuffFields(tab);
   if (tab === 'pve' || tab === 'cmp') syncBossPresetButtons(tab);
   if (recalcFn) recalcFn();
+  markTabInputsSaved(tab);
 }
 
 function calcConvert() { calcXuanJi(); calcMarginal(); }
@@ -7846,7 +7927,7 @@ function renderOptimizePage() {
       const parsed = Number(gearValues?.[row.key]);
       const value = Number.isFinite(parsed) ? parsed : 0;
       return `<label style="display:block;">
-        <span style="display:block;font-size:11px;color:#555555;margin-bottom:3px;">${escHtml(row.label)}</span>
+        <span style="display:block;font-size:12px;color:#555555;margin-bottom:3px;">${escHtml(row.label)}</span>
         <input type="number" id="opt_gear_value_${key}_${row.key}" value="${value}" step="${escHtml(row.step || 'any')}" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:5px 7px;border-radius:4px;font-size:12px;box-sizing:border-box;">
       </label>`;
     }).join('') : '';
@@ -7869,7 +7950,7 @@ function renderOptimizePage() {
           </label>
           <div>
           <div style="font-size:14px;color:#0055aa;font-weight:bold;">${escHtml(item.entry.name || '未命名')}</div>
-          <div style="font-size:11px;color:#666666;">來源：${optimizeEntryLabel(item.type)}</div>
+          <div style="font-size:12px;color:#666666;">來源：${optimizeEntryLabel(item.type)}</div>
           </div>
         </div>
         <button onclick="saveOptimizeMeta('${item.type}',${item.index})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">${actionLabel}</button>
@@ -7894,7 +7975,7 @@ function renderOptimizePage() {
   const renderOptimizeGroup = (title, items, emptyText, saveLabel = '儲存 metadata') => `
     <div style="margin-bottom:14px;">
       <div style="font-size:12px;color:#0066cc;margin-bottom:8px;letter-spacing:1px;">${title}（${items.length}）</div>
-      ${items.length ? items.map(item => renderOptimizeCard(item, saveLabel)).join('') : `<div style="color:#999999;font-size:12px;padding:8px 0;">${emptyText}</div>`}
+      ${items.length ? items.map(item => renderOptimizeCard(item, saveLabel)).join('') : `<div style="color:#7b6a4e;font-size:12px;padding:8px 0;">${emptyText}</div>`}
     </div>`;
   const renderOptimizeDoneGroup = (kind, title, items, emptyText) => `
     <div style="margin-bottom:14px;border:1px solid #d0d0d0;border-radius:6px;background:#fbfcfe;">
@@ -7903,7 +7984,7 @@ function renderOptimizePage() {
         <button type="button" onclick="toggleOptimizeDoneSection('${kind}')" style="background:#ffffff;border:1px solid #cccccc;color:#555555;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">${optimizeDoneSectionState[kind] ? '收起' : '展開'}</button>
       </div>
       <div style="display:${optimizeDoneSectionState[kind] ? '' : 'none'};padding:12px 12px 0;">
-        ${items.length ? items.map(item => renderOptimizeCard(item, '更新 metadata')).join('') : `<div style="color:#999999;font-size:12px;padding:0 0 12px;">${emptyText}</div>`}
+        ${items.length ? items.map(item => renderOptimizeCard(item, '更新分類')).join('') : `<div style="color:#7b6a4e;font-size:12px;padding:0 0 12px;">${emptyText}</div>`}
       </div>
     </div>`;
   listEl.innerHTML =
@@ -8268,7 +8349,7 @@ function updateNgAdjustStatus(el, coreName) {
   const current = optimizeNgCoreAdjustments[coreName] || { traitAtk: 0, traitDef: 0 };
   const active = (parseFloat(current.traitAtk) || 0) || (parseFloat(current.traitDef) || 0);
   statusEl.textContent = active ? '已套用微調' : '未設定';
-  statusEl.style.color = active ? '#1a7c2a' : '#999999';
+  statusEl.style.color = active ? '#1a7c2a' : '#7b6a4e';
 }
 
 function clearNgAdjustCores() {
@@ -8383,10 +8464,10 @@ function renderOptimizeExcludeList() {
         <input type="checkbox" ${optimizeExcludedItems.has(item.key) ? 'checked' : ''} onchange="setOptimizeExcludedItem('gear',${item.index},this.checked)">
         <span style="min-width:0;">
           <span style="display:block;color:#333333;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(item.name)}</span>
-          <span style="display:block;color:#666666;font-size:11px;margin-top:2px;">${escHtml(item.categoryLabel)} / ${escHtml(item.slotLabel)}</span>
+          <span style="display:block;color:#666666;font-size:12px;margin-top:2px;">${escHtml(item.categoryLabel)} / ${escHtml(item.slotLabel)}</span>
         </span>
       </span>
-      <span style="font-size:11px;color:${optimizeExcludedItems.has(item.key) ? '#d93025' : '#999999'};">${optimizeExcludedItems.has(item.key) ? '已排除' : '可用'}</span>
+      <span style="font-size:12px;color:${optimizeExcludedItems.has(item.key) ? '#d93025' : '#7b6a4e'};">${optimizeExcludedItems.has(item.key) ? '已排除' : '可用'}</span>
     </label>
   `).join('');
 }
@@ -8417,17 +8498,17 @@ function renderOptimizeRequiredGearList() {
     const required = optimizeRequiredGearItems.has(item.key);
     const excluded = isOptimizeItemExcluded('gear', item.index);
     const status = required && excluded ? '同時排除' : required ? '必選' : '可選';
-    const color = required && excluded ? '#d93025' : required ? '#1a7c2a' : '#999999';
+    const color = required && excluded ? '#d93025' : required ? '#1a7c2a' : '#7b6a4e';
     return `
     <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid #e6e6e6;cursor:pointer;">
       <span style="display:flex;align-items:center;gap:10px;min-width:0;">
         <input type="checkbox" ${required ? 'checked' : ''} onchange="setOptimizeRequiredGearItem(${item.index},this.checked)">
         <span style="min-width:0;">
           <span style="display:block;color:#333333;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(item.name)}</span>
-          <span style="display:block;color:#666666;font-size:11px;margin-top:2px;">${escHtml(item.categoryLabel)} / ${escHtml(item.slotLabel)}</span>
+          <span style="display:block;color:#666666;font-size:12px;margin-top:2px;">${escHtml(item.categoryLabel)} / ${escHtml(item.slotLabel)}</span>
         </span>
       </span>
-      <span style="font-size:11px;color:${color};">${status}</span>
+      <span style="font-size:12px;color:${color};">${status}</span>
     </label>`;
   }).join('');
 }
@@ -8457,7 +8538,7 @@ function renderNgRequiredCoreList() {
         <input type="checkbox" data-core="${escHtml(coreName)}" ${optimizeNgRequiredCores.has(coreName) ? 'checked' : ''} onchange="setNgRequiredCore(this.dataset.core,this.checked)">
         <span style="display:block;color:#333333;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(coreName)}</span>
       </span>
-      <span style="font-size:11px;color:${optimizeNgRequiredCores.has(coreName) ? '#1a7c2a' : '#999999'};">${optimizeNgRequiredCores.has(coreName) ? '必選' : '可選'}</span>
+      <span style="font-size:12px;color:${optimizeNgRequiredCores.has(coreName) ? '#1a7c2a' : '#7b6a4e'};">${optimizeNgRequiredCores.has(coreName) ? '必選' : '可選'}</span>
     </label>
   `).join('');
 }
@@ -8487,7 +8568,7 @@ function renderNgExcludedCoreList() {
         <input type="checkbox" data-core="${escHtml(coreName)}" ${optimizeNgExcludedCores.has(coreName) ? 'checked' : ''} onchange="setNgExcludedCore(this.dataset.core,this.checked)">
         <span style="display:block;color:#333333;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(coreName)}</span>
       </span>
-      <span style="font-size:11px;color:${optimizeNgExcludedCores.has(coreName) ? '#d93025' : '#999999'};">${optimizeNgExcludedCores.has(coreName) ? '已排除' : '可用'}</span>
+      <span style="font-size:12px;color:${optimizeNgExcludedCores.has(coreName) ? '#d93025' : '#7b6a4e'};">${optimizeNgExcludedCores.has(coreName) ? '已排除' : '可用'}</span>
     </label>
   `).join('');
 }
@@ -8518,19 +8599,19 @@ function renderNgAdjustCoreList() {
       <div data-ng-adjust-row style="display:grid;grid-template-columns:minmax(120px,1fr) 110px 110px auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #e6e6e6;">
         <div style="min-width:0;">
           <div style="color:#333333;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(coreName)}</div>
-          <div data-ng-adjust-status style="color:${active ? '#1a7c2a' : '#999999'};font-size:11px;margin-top:2px;">${active ? '已套用微調' : '未設定'}</div>
+          <div data-ng-adjust-status style="color:${active ? '#1a7c2a' : '#7b6a4e'};font-size:12px;margin-top:2px;">${active ? '已套用微調' : '未設定'}</div>
         </div>
         <label style="display:block;">
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">進攻特性</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">進攻特性</div>
           <input type="number" value="${current.traitAtk || 0}" step="0.001" oninput="setNgCoreAdjustment('${escJs(coreName)}','traitAtk',this.value);updateNgAdjustStatus(this,'${escJs(coreName)}')"
             style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;box-sizing:border-box;">
         </label>
         <label style="display:block;">
-          <div style="font-size:11px;color:#666666;margin-bottom:4px;">防守特性</div>
+          <div style="font-size:12px;color:#666666;margin-bottom:4px;">防守特性</div>
           <input type="number" value="${current.traitDef || 0}" step="0.001" oninput="setNgCoreAdjustment('${escJs(coreName)}','traitDef',this.value);updateNgAdjustStatus(this,'${escJs(coreName)}')"
             style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;box-sizing:border-box;">
         </label>
-        <div style="font-size:11px;color:#666666;white-space:nowrap;">0.05 = 5%</div>
+        <div style="font-size:12px;color:#666666;white-space:nowrap;">0.05 = 5%</div>
       </div>
     `;
   }).join('');
@@ -9273,16 +9354,23 @@ function prefilterNgOptimizeCandidates(candidates, mode, sort, bases, requiremen
 // 上下聯合保留內功、內功保留 11 件裝備，最終從裸面板開始。所以分區的數字就是「換掉這一區後的整套」，也不會把裝備重複算（評估報告 C-17）。
 // 保留的內功湊到土 4 顆時，PVP 的受到傷害降低 1% 也算進基底（候選組合不含內功的區不會再算一次）。
 // cls 是換算候選基礎屬性的職業標籤，要和裸面板扣除時用的相同，否則氣海、根骨等換算出來的數值不一致
+// 各區保留模板身上這區沒換的部位：下半保留上半裝備與內功、上半保留下半裝備與內功、上下聯合保留內功、內功保留 11 件裝備，最終全部換
+function getOptimizeKeptTemplateEntries(tpl, section) {
+  const keepSlots = { lower: UPPER_OPT_SLOTS, upper: LOWER_OPT_SLOTS, ng: [...UPPER_OPT_SLOTS, ...LOWER_OPT_SLOTS] }[section] || [];
+  const keepNg = ['lower', 'upper', 'joint'].includes(section);
+  const resolve = names => names.map(name => findNgDBEntry(name)).filter(entry => entry && !isTemplateRoutineEntry(entry));
+  return {
+    gear: resolve(tpl.gear).filter(entry => keepSlots.includes(normalizeDBEntryMeta(entry).meta?.slot)),
+    ng: keepNg ? resolve(tpl.ng) : [],
+  };
+}
+
 function getOptimizeBaseSource(mode, section = 'final') {
   const tpl = getTemplateState()[mode];
   if (!isTemplateModeReady(mode, tpl)) return { useTemplate: false, mode, section, cls: getOptimizeClassFlags() };
   const cls = templateClassFlags(tpl.cls);
   const panel = computeTemplateBare(mode, tpl).bare;
-  const keepSlots = { lower: UPPER_OPT_SLOTS, upper: LOWER_OPT_SLOTS, ng: [...UPPER_OPT_SLOTS, ...LOWER_OPT_SLOTS] }[section] || [];
-  const keepNg = ['lower', 'upper', 'joint'].includes(section);
-  const resolve = names => names.map(name => findNgDBEntry(name)).filter(entry => entry && !isTemplateRoutineEntry(entry));
-  const keptGear = resolve(tpl.gear).filter(entry => keepSlots.includes(normalizeDBEntryMeta(entry).meta?.slot));
-  const keptNg = keepNg ? resolve(tpl.ng) : [];
+  const { gear: keptGear, ng: keptNg } = getOptimizeKeptTemplateEntries(tpl, section);
   [...keptGear, ...keptNg].forEach(entry => addTemplateItemToPanel(panel, mode, entry, cls, 1));
   const counts = keptNg.reduce((acc, entry) => templateCountsAdd(acc, templateNgTags(entry.name), 1), { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 });
   const earthTraitDef = mode === 'pvp' ? getNgElementTraitDefBonus(counts) : 0;
@@ -9857,6 +9945,7 @@ function renderLowerOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">${effectLabel}：有（模式件數 ${result.modeCount}）</div>
+          <button type="button" onclick="carryOptimizeResultToNeigong('lower','${mode}','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">帶到比較頁</button>
           <button type="button" onclick="saveGearOptimizeResultAsStack('lower','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('lower', result)}
         </div>
@@ -9904,6 +9993,7 @@ function renderUpperOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">效果一：${result.effect1 ? '有' : '無'}　效果二：${result.effect2 ? '有' : '無'}　模式件數 ${result.modeCount}</div>
+          <button type="button" onclick="carryOptimizeResultToNeigong('upper','${mode}','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">帶到比較頁</button>
           <button type="button" onclick="saveGearOptimizeResultAsStack('upper','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('upper', result)}
         </div>
@@ -10165,6 +10255,7 @@ function renderJointOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">上半效果一：${result.effect1 ? '有' : '無'}　上半效果二：${result.effect2 ? '有' : '無'}　下半效果三：有</div>
+          <button type="button" onclick="carryOptimizeResultToNeigong('joint','${mode}','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">帶到比較頁</button>
           <button type="button" onclick="saveGearOptimizeResultAsStack('joint','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('joint', result)}
         </div>
@@ -10466,7 +10557,7 @@ function renderNgOptimizeResults(mode, results) {
     const resultKey = getOptimizeResultKey(result);
     const namesHtml = result.items.map((item, itemIdx) => {
       const requiredTag = optimizeNgRequiredCores.has(item.coreName)
-        ? ' <span style="font-size:11px;color:#1a7c2a;">（必選類型）</span>'
+        ? ' <span style="font-size:12px;color:#1a7c2a;">（必選類型）</span>'
         : '';
       return `內功 ${itemIdx + 1}：${escHtml(item.name)}${requiredTag}`;
     }).join('<br>');
@@ -10483,6 +10574,7 @@ function renderNgOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">總周天 ${result.zhoutianCounts.total}</div>
+          <button type="button" onclick="carryOptimizeResultToNeigong('ng','${mode}','${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">帶到比較頁</button>
           <button type="button" onclick="saveNgOptimizeResultAsStack('${escJs(resultKey)}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('ng', result)}
         </div>
@@ -10587,6 +10679,110 @@ function saveGearOptimizeResultAsStack(kind, resultKey, rank = 0) {
   const trimmed = name.trim().slice(0, 20);
   const savedName = dbAdd('gear', trimmed, data, { category: 'set_build', slot: null, tags: null });
   if (savedName) alert(`已儲存${label}套路：${savedName}`);
+}
+
+// ===================== 最佳化結果帶到內功/裝備比較（C-22）=====================
+// 模板設定好時，我方換成模板的裸面板，一欄放整套：這組推薦＋模板身上這區沒換的部位（和最佳化的基底相同），
+// 推薦內功的核心微調加進本身特性；這樣 PVP 整套重算的數字就和最佳化相同
+const OPTIMIZE_SECTION_LABELS = { lower: '下半', upper: '上半', joint: '上下聯合', ng: '內功', final: '最終' };
+
+function findOptimizeResult(section, resultKey) {
+  const list = section === 'ng' ? optimizeLastNgResults
+    : section === 'final' ? optimizeLastFinalResults
+      : getGearOptimizeResultsByKind(section);
+  const key = String(resultKey || '');
+  return (Array.isArray(list) ? list : []).find(item => getOptimizeResultKey(item) === key) || null;
+}
+
+function optimizeResultCoreAdjust(section, result) {
+  const ngItems = section === 'final' ? result.ngItems : section === 'ng' ? result.items : [];
+  return (Array.isArray(ngItems) ? ngItems : []).reduce((acc, item) => {
+    const adjust = getNgCoreAdjustment(item?.coreName || getNgCoreName(item?.name || ''));
+    return { traitAtk: acc.traitAtk + adjust.traitAtk, traitDef: acc.traitDef + adjust.traitDef };
+  }, { traitAtk: 0, traitDef: 0 });
+}
+
+// 先找空欄（沒有疊加清單、數值全 0），沒有就新增 C、D 欄；四欄都有內容時問要蓋掉哪一欄
+function pickNgColumnForCarry() {
+  ngSaveCurrentVals();
+  const isEmpty = set => !(ng_db_stacks[set] || []).length
+    && DB_NG_KEYS.every(key => !(parseFloat(ng_vals[set]?.[key]) || 0));
+  const empty = ng_active.find(isEmpty);
+  if (empty) return empty;
+  const unused = NG_SET_IDS.find(set => !ng_active.includes(set));
+  if (unused) return unused;
+  const answer = prompt('內功/裝備比較的 A～D 四欄都有內容，要放到哪一欄？輸入 A、B、C 或 D（會蓋掉那一欄）：', 'D');
+  if (answer === null) return null;
+  const set = answer.trim().toLowerCase();
+  if (NG_SET_IDS.includes(set)) return set;
+  alert('請輸入 A、B、C 或 D。');
+  return null;
+}
+
+function carryOptimizeResultToNeigong(section, mode, resultKey, rank = 0) {
+  const result = findOptimizeResult(section, resultKey);
+  if (!result) {
+    alert('找不到這筆結果，請重新執行這一區的最佳化。');
+    return;
+  }
+  const set = pickNgColumnForCarry();
+  if (!set) return;
+  const source = getOptimizeBaseSource(mode, section);
+  const kept = source.useTemplate ? getOptimizeKeptTemplateEntries(source.tpl, section) : { gear: [], ng: [] };
+  const resultNames = (Array.isArray(result.items) ? result.items : []).map(item => item?.name).filter(Boolean);
+  const names = [...kept.ng.map(entry => entry.name), ...kept.gear.map(entry => entry.name), ...resultNames];
+  const notes = [];
+  if (source.useTemplate) {
+    if (!loadNeigongFromTemplate(mode, 'bare')) return;
+    notes.push(`我方換成 ${TEMPLATE_MODE_LABELS[mode]} 模板的裸面板`);
+  } else {
+    document.getElementById('ng_mode').value = mode;
+    notes.push(`${TEMPLATE_MODE_LABELS[mode]} 模板還沒設定好，最佳化用的是本頁的我方與${mode === 'pvp' ? '對手' : '首領'}，沒有改`);
+  }
+  ngSaveCurrentVals();
+  if (!ng_active.includes(set)) ng_active.push(set);
+  ng_db_stacks[set] = [];
+  ng_names[set] = `${OPTIMIZE_SECTION_LABELS[section] || ''}第${rank}名`;
+  applyNgStackSelection(set, 'ng', names);
+  const adjust = optimizeResultCoreAdjust(section, result);
+  if (adjust.traitAtk || adjust.traitDef) {
+    ng_vals[set].trait_atk = (parseFloat(ng_vals[set].trait_atk) || 0) + adjust.traitAtk;
+    ng_vals[set].trait_def = (parseFloat(ng_vals[set].trait_def) || 0) + adjust.traitDef;
+    persistNeigongUiState();
+    renderNeigongInputTable();
+    calcNeigong();
+    notes.push('推薦內功的核心微調已加進這一欄的本身特性');
+  }
+  const keptCount = kept.gear.length + kept.ng.length;
+  notes.unshift(`已把「${OPTIMIZE_SECTION_LABELS[section] || ''}第 ${rank} 名」放進 ${set.toUpperCase()} 欄：推薦的 ${resultNames.length} 件${keptCount ? `＋模板身上這區沒換的 ${keptCount} 件` : ''}`);
+  notes.push(mode === 'pvp'
+    ? `看下方「PVP整套重算」的 ${set.toUpperCase()} 欄，數字應和最佳化結果相同`
+    : '本頁的 PVE 只有比較結果（邊際加總），數字不會和最佳化完全相同');
+  const noteEl = document.getElementById('ng_tpl_note');
+  if (noteEl) noteEl.textContent = `${notes.join('；')}。`;
+  switchTab('neigong');
+}
+
+// 最終最佳化的「儲存套路」：裝備 11 件、內功 6 顆分開存兩筆，各自可以在比較頁或模板帶入
+function saveFinalOptimizeResultAsStacks(resultKey, rank = 0) {
+  const result = findOptimizeResult('final', resultKey);
+  if (!result) {
+    alert('找不到這筆最終最佳化結果，請重新執行最終最佳化後再儲存。');
+    return;
+  }
+  const gearData = getGearOptimizeResultStackData({ items: result.gearItems || [...(result.upperItems || []), ...(result.lowerItems || [])] });
+  const ngData = getNgOptimizeResultStackData({ items: result.ngItems || [] });
+  if (!gearData.stackItems.length || !isInnerSkillRoutineStack(ngData.stackItems)) {
+    alert('這筆結果的裝備或內功不完整，無法儲存。');
+    return;
+  }
+  const name = prompt('請輸入套路名稱（最多 18 字；會存成「名稱裝備」「名稱內功」兩筆）：', `最終第${rank || 1}名`);
+  if (name === null || name.trim() === '') return;
+  const base = name.trim().slice(0, 18);
+  const gearName = dbAdd('gear', `${base}裝備`, gearData, { category: 'set_build', slot: null, tags: null });
+  if (!gearName) return;
+  const ngName = dbAdd('ng', `${base}內功`, ngData, { category: 'set_build', slot: null, tags: null });
+  if (ngName) alert(`已儲存裝備套路：${gearName}\n已儲存內功套路：${ngName}`);
 }
 
 function runNgOptimize() {
@@ -10997,6 +11193,8 @@ function renderFinalOptimizeResults(mode, results) {
         <div style="font-size:14px;color:#0055aa;font-weight:bold;">第 ${idx + 1} 名</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div style="font-size:12px;color:#1a7c2a;">上半效果二：${result.effect2 ? '有' : '無'}　下半效果三：有　總周天 ${result.zhoutianCounts?.total || 0}</div>
+          <button type="button" onclick="carryOptimizeResultToNeigong('final','${mode}','${escJs(getOptimizeResultKey(result))}',${idx + 1})" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">帶到比較頁</button>
+          <button type="button" onclick="saveFinalOptimizeResultAsStacks('${escJs(getOptimizeResultKey(result))}',${idx + 1})" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;">儲存套路</button>
           ${getOptimizeIgnoreControl('final', result)}
         </div>
       </div>
@@ -11180,6 +11378,7 @@ function persistNeigongUiState() {
       vals: ng_vals,
       names: ng_names,
     }));
+    ngPersistedColumns = ngColumnsSnapshot(false);
   } catch(e) {}
 }
 
@@ -11234,7 +11433,7 @@ function getNgStackSummaryHtml(set) {
     const names = items.filter(name => ngStackItemKind(name) === kind);
     return names.length ? `<div><span class="ng-stack-kind">${label} ${names.length} ${unit}：</span>${escHtml(names.join('、'))}</div>` : '';
   };
-  const list = items.length ? line('ng', '內功', '顆') + line('gear', '裝備', '件') : '<span style="color:#888888;">尚未疊加</span>';
+  const list = items.length ? line('ng', '內功', '顆') + line('gear', '裝備', '件') : '<span style="color:#7b6a4e;">尚未疊加</span>';
   return `<div class="ng-stack-summary">
     <div class="ng-stack-summary-head">
       <span class="ng-stack-summary-label">已疊加</span>
@@ -11377,11 +11576,11 @@ function renderNeigongInputTable() {
   NG_ATTR_ROWS.forEach(row => {
     if (row.type === 'base' && !sepBase) {
       sepBase = true;
-      rows += `<tr><td colspan="${1+ng_active.length}" style="padding:8px 12px;color:#6d4f25;font-size:11px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 基礎屬性（依職業標籤換算）—</td></tr>`;
+      rows += `<tr><td colspan="${1+ng_active.length}" style="padding:8px 12px;color:#6d4f25;font-size:12px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 基礎屬性（依職業標籤換算）—</td></tr>`;
     }
     if ((row.type === 'trait_atk' || row.type === 'trait_def') && !sepTrait) {
       sepTrait = true;
-      rows += `<tr><td colspan="${1+ng_active.length}" style="padding:8px 12px;color:#6d4f25;font-size:11px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 本身特性（直接加入合計，輸入 0.1 = 10%）—</td></tr>`;
+      rows += `<tr><td colspan="${1+ng_active.length}" style="padding:8px 12px;color:#6d4f25;font-size:12px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 本身特性（直接加入合計，輸入 0.1 = 10%）—</td></tr>`;
     }
     const bgS = (row.type === 'base' || row.type === 'trait_atk' || row.type === 'trait_def')
       ? 'background:rgba(247,241,231,0.92);'
@@ -11391,7 +11590,7 @@ function renderNeigongInputTable() {
       const rawVal = ng_vals[s][row.key] || 0;
       const showHint = row.type !== 'base' && row.type !== 'trait_atk' && row.type !== 'trait_def';
       const hintHtml = showHint
-        ? `<div id="ng_hint_${s}_${row.key}" style="margin-top:5px;font-size:10px;color:#86643a;line-height:1.35;min-height:13px;"></div>`
+        ? `<div id="ng_hint_${s}_${row.key}" style="margin-top:5px;font-size:12px;color:#86643a;line-height:1.35;min-height:13px;"></div>`
         : '';
       rows += `<td style="${tdS}"><input type="number" id="ng_d_${s}_${row.key}" value="${rawVal}" step="${row.step||'1'}" oninput="calcNeigong()" style="${inS}">${hintHtml}</td>`;
     });
@@ -11769,7 +11968,7 @@ function calcNeigong() {
 
   const tdS  = 'padding:8px 10px;border-bottom:1px solid rgba(168,122,47,0.12);text-align:right;background:rgba(255,252,247,0.86);';
   const ltdS = 'padding:8px 12px;border-bottom:1px solid rgba(168,122,47,0.12);color:#4f4538;font-size:12px;font-weight:600;background:rgba(255,250,242,0.94);';
-  const ttpS = 'padding:8px 10px;border-bottom:1px solid rgba(168,122,47,0.12);color:#7b6a4e;font-size:11px;text-align:right;background:rgba(255,250,242,0.94);';
+  const ttpS = 'padding:8px 10px;border-bottom:1px solid rgba(168,122,47,0.12);color:#7b6a4e;font-size:12px;text-align:right;background:rgba(255,250,242,0.94);';
   function cmpCell(v, decimals, suffix) {
     if (v === null) return `<td style="${tdS}color:#8a7a63;">—</td>`;
     const color = v > 0 ? '#2e6d8f' : v < 0 ? '#b24842' : '#8a7a63';
@@ -11782,11 +11981,11 @@ function calcNeigong() {
   NG_ATTR_ROWS.forEach((row, i) => {
     if (row.type === 'base' && !cmpSepBase) {
       cmpSepBase = true;
-      bodyHtml += `<tr><td colspan="${cols}" style="padding:8px 12px;color:#6d4f25;font-size:11px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 基礎屬性（依職業標籤換算）—</td></tr>`;
+      bodyHtml += `<tr><td colspan="${cols}" style="padding:8px 12px;color:#6d4f25;font-size:12px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 基礎屬性（依職業標籤換算）—</td></tr>`;
     }
     if ((row.type === 'trait_atk' || row.type === 'trait_def') && !cmpSepTrait) {
       cmpSepTrait = true;
-      bodyHtml += `<tr><td colspan="${cols}" style="padding:8px 12px;color:#6d4f25;font-size:11px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 本身特性（直接加入合計）—</td></tr>`;
+      bodyHtml += `<tr><td colspan="${cols}" style="padding:8px 12px;color:#6d4f25;font-size:12px;letter-spacing:1.4px;background:linear-gradient(90deg, rgba(232,219,194,0.92), rgba(247,239,226,0.96));border-bottom:1px solid rgba(168,122,47,0.18);font-weight:700;">— 本身特性（直接加入合計）—</td></tr>`;
     }
     const isBg = row.type === 'base' || row.type === 'trait_atk' || row.type === 'trait_def';
     const dispType = row.type === 'base' ? row.display : (row.type === 'trait_atk' ? 'atk' : row.type === 'trait_def' ? 'def' : row.type);
@@ -11839,7 +12038,7 @@ function calcNeigong() {
     const bdr = td.first ? 'border-top:1px solid rgba(168,122,47,0.26);' : 'border-top:1px solid rgba(168,122,47,0.12);';
     footHtml += `<tr style="background:linear-gradient(180deg, rgba(249,241,224,0.98), rgba(243,232,210,0.94));">
       <td style="padding:8px 12px;${bdr}color:#7a5320;font-size:12px;font-weight:bold;">${td.label}</td>
-      <td style="padding:8px 10px;${bdr}color:#7b6a4e;font-size:11px;text-align:right;">${td.type}</td>`;
+      <td style="padding:8px 10px;${bdr}color:#7b6a4e;font-size:12px;text-align:right;">${td.type}</td>`;
     ng_active.forEach(s => {
       const v = results[s][td.key];
       const color = v > 0 ? '#7a5320' : v < 0 ? '#b24842' : '#8a7a63';
@@ -11856,7 +12055,7 @@ function calcNeigong() {
     return;
   }
 
-  fullNote.textContent = '以下結果為各配置整包加到目前左側我方屬性後，與右側對手進行完整雙向 PVP 重算。';
+  fullNote.textContent = '以下結果為各配置整包加到目前左側我方屬性後，與右側對手進行完整雙向 PVP 重算。疊加清單裡的內功土合計 4 個以上時，算入受到傷害降低 1%（和最佳化相同）。';
   let fullH = `<tr><th style="${lthS}">項目</th>`;
   ng_active.forEach(s => {
     const name = document.getElementById(`ng_name_${s}`)?.value || ng_names[s];
@@ -11916,7 +12115,7 @@ function calcNeigong() {
         antiCrit: fullMy.antiCrit || 0,
         oppTechOver: fullMy.techOver || 0,
         bStyleResPct: fullMy.bStyleResPct || 0,
-        traitDef: fullMy.traitDef
+        traitDef: fullMy.traitDef + ngColumnEarthTraitDef(s)
       }).expected;
       const oppExpected = oppExpectedRaw;
       const enemyHp = n('ng_bhp');
@@ -11942,6 +12141,17 @@ function calcNeigong() {
     fullHtml += `</tr>`;
   });
   fullBody.innerHTML = fullHtml;
+}
+
+// 疊加清單裡內功的土合計 4 個以上，受到傷害降低 1%（和最佳化、模板比較相同）；直接打的數字看不出五行，不算
+function ngColumnEarthTraitDef(set) {
+  const counts = (ng_db_stacks[set] || [])
+    .filter(name => ngStackItemKind(name) === 'ng')
+    .reduce((acc, name) => {
+      const tags = templateNgTags(name);
+      return tags ? templateCountsAdd(acc, tags, 1) : acc;
+    }, { metal: 0, wood: 0, water: 0, fire: 0, earth: 0 });
+  return getNgElementTraitDefBonus(counts);
 }
 
 function loadNeigongFromPVE() {
@@ -11991,13 +12201,13 @@ function loadNeigongFromPVP() {
 
 // 把模板帶到本頁。裸面板是最佳化的基底，帶入後把推薦的組合放進一欄，看「PVP整套重算」即可驗算；數值面板是身上穿戴都算進去的遊戲面板。
 // 模板勾的藥與同心一力直接加進數值（PVP 敵我雙方，PVE 只加我方），本頁的增益改成不勾：本頁的增益在 PVE 也會加到首領欄，和模板的算法不同
-function loadNeigongFromTemplate() {
-  const [mode, kind] = (document.getElementById('ng_tpl_source')?.value || 'pvp:bare').split(':');
+function loadNeigongFromTemplate(modeArg, kindArg) {
+  const [mode, kind] = modeArg ? [modeArg, kindArg || 'bare'] : (document.getElementById('ng_tpl_source')?.value || 'pvp:bare').split(':');
   const tpl = getTemplateState()[mode];
   const label = TEMPLATE_MODE_LABELS[mode];
   if (!isTemplateModeReady(mode, tpl)) {
     alert(`${label} 模板還沒設定好（${mode === 'pvp' ? '我方或敵方' : '我方'}數值面板是空的），請先到模板頁設定。`);
-    return;
+    return null;
   }
   const panel = kind === 'bare' ? computeTemplateBare(mode, tpl).bare : templateSetPanel(tpl.self);
   const buffPage = combatBuffState.pages.neigong;
@@ -12044,9 +12254,9 @@ function loadNeigongFromTemplate() {
   if (turnedOff || tpl.buffs.buff || tpl.buffs.tongxin) notes.push('本頁的增益勾選改成不勾，不要再勾，否則會重複加');
   const multipliers = [panel, mode === 'pvp' ? tpl.enemy : null].some(p => p && (p.lei || p.xinsui));
   if (multipliers) notes.push('本頁沒有乘區1、乘區2 欄位，模板填的乘區沒有帶過來，期望傷害會和最佳化不同');
-  if (mode === 'pvp') notes.push('本頁的整套重算不含土 4 顆的受到傷害降低 1%，土 4 顆以上時對手期望傷害會比最佳化高');
   const noteEl = document.getElementById('ng_tpl_note');
   if (noteEl) noteEl.textContent = `${notes.join('；')}。`;
+  return notes;
 }
 
 // ===================== 匯出/匯入 =====================
@@ -12304,7 +12514,7 @@ const TEMPLATE_BOSS_LABELS = { bDef: '防禦力', bBlock: '格檔', bCritRes: '�
 const TEMPLATE_BOSS_BUTTON_ORDER = [0, 4, 1, 2, 3];
 const TEMPLATE_PANEL_FIELDS = [
   ['atk', '攻擊'], ['skillEnh', '全技能增強'], ['hit', '命中'], ['crit', '會心'], ['critDmg', '會心傷害(倍率)', '0.001'],
-  ['breakShield', '破盾'], ['elemAtk', '元素攻擊'], ['elemBonus', '元素傷害加成', '0.001'], ['styleOver', '流派克制'],
+  ['breakShield', '破盾'], ['elemAtk', '元素攻擊'], ['elemBonus', '元素傷害加成(小數)', '0.001'], ['styleOver', '流派克制'],
   ['ignoreElem', '忽視元素抗性'], ['breakDef', '破防'], ['techOver', '技巧克制'], ['traitAtkPct', '攻擊特性(%)', '0.1'],
   ['lei', '乘區1(%)', '0.1'], ['xinsui', '乘區2(%)', '0.1'], ['stylePct', '流派克制(%)', '0.1'],
   ['bDef', '防禦力'], ['bBlock', '格檔'], ['bCritRes', '會心抗性'], ['bQiShield', '氣盾'], ['bElemRes', '元素抗性'],
@@ -13606,6 +13816,158 @@ function undoTemplateSwap() {
   renderTemplateComparePage();
 }
 
+// ===================== 結果摘要列（C-03）=====================
+function setResultSummary(tab, html) {
+  const el = document.getElementById(`${tab}_result_summary`);
+  if (el) el.innerHTML = html;
+}
+
+function resultTextById(id) {
+  return document.getElementById(id)?.textContent || '—';
+}
+
+// ===================== 未儲存提示（C-23）=====================
+// 各頁輸入和上次儲存（或載入、恢復預設）時不同，就在「儲存此頁」旁顯示「未儲存」。
+// 增益勾選會把數值加進欄位，但存檔存的是沒加增益的數值，所以比對前先扣掉目前套用的增益
+const tabSavedSnapshots = {};
+let ngPersistedColumns = null;
+
+function pvpCmpAttackersWithoutBuff() {
+  const delta = combatBuffAppliedDeltas.pvpcmp || zeroCombatBuffDelta();
+  if (isZeroCombatBuffDelta(delta)) return JSON.stringify(pvpCmpAttackers);
+  const current = pvpCmpAttackers;
+  pvpCmpAttackers = JSON.parse(JSON.stringify(current));
+  try {
+    applyCombatBuffToPVPCmpAttackers(delta, zeroCombatBuffDelta());
+    return JSON.stringify(pvpCmpAttackers);
+  } finally {
+    pvpCmpAttackers = current;
+  }
+}
+
+// 內功/裝備比較 A–D 欄：fromDom 為 true 時讀畫面上的輸入（打字還沒同步到 ng_vals），否則讀 ng_vals（已寫入存檔的內容）
+function ngColumnsSnapshot(fromDom) {
+  const out = { active: ng_active.slice(), vals: {}, names: {} };
+  ng_active.forEach(set => {
+    out.vals[set] = NG_ATTR_ROWS.map(row => {
+      const el = fromDom ? document.getElementById(`ng_d_${set}_${row.key}`) : null;
+      return el ? (parseFloat(el.value) || 0) : (parseFloat(ng_vals[set]?.[row.key]) || 0);
+    });
+    const nameEl = fromDom ? document.getElementById(`ng_name_${set}`) : null;
+    out.names[set] = nameEl ? nameEl.value : (ng_names[set] || '');
+  });
+  return JSON.stringify(out);
+}
+
+function tabInputSnapshot(tab) {
+  const ids = TAB_INPUT_IDS[tab] || [];
+  const fieldMap = COMBAT_BUFF_PAGES[tab] ? getCombatBuffFieldMap(tab) : {};
+  const delta = combatBuffAppliedDeltas[tab] || zeroCombatBuffDelta();
+  const data = {};
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') { data[id] = !!el.checked; return; }
+    const buffKey = fieldMap[id];
+    const num = parseFloat(el.value);
+    data[id] = buffKey && delta[buffKey] && Number.isFinite(num)
+      ? String(Math.round((num - delta[buffKey]) * 1e6) / 1e6)
+      : String(el.value);
+  });
+  if (tab === 'pvpcmp') data.__attackers = pvpCmpAttackersWithoutBuff();
+  return JSON.stringify(data);
+}
+
+function isTabInputDirty(tab) {
+  if (!(tab in tabSavedSnapshots)) return false;
+  if (tabInputSnapshot(tab) !== tabSavedSnapshots[tab]) return true;
+  return tab === 'neigong' && ngPersistedColumns !== null && ngColumnsSnapshot(true) !== ngPersistedColumns;
+}
+
+function updateTabDirtyFlag(tab) {
+  const flag = document.getElementById(`${tab}_dirty_flag`);
+  if (flag) flag.hidden = !isTabInputDirty(tab);
+}
+
+function markTabInputsSaved(tab) {
+  if (!TAB_INPUT_IDS[tab]) return;
+  tabSavedSnapshots[tab] = tabInputSnapshot(tab);
+  if (tab === 'neigong') ngPersistedColumns = ngColumnsSnapshot(true);
+  updateTabDirtyFlag(tab);
+}
+
+// 各頁的分頁區塊對到 TAB_INPUT_IDS 的哪一組：找該頁「儲存此頁」按鈕所在的分頁
+function tabInputKeyForElement(el) {
+  const pane = el?.closest?.('.tab-pane');
+  if (!pane) return null;
+  return Object.keys(TAB_INPUT_IDS).find(tab => pane.querySelector(`button[onclick="saveTabInputs('${tab}')"]`)) || null;
+}
+
+function initTabDirtyFlags() {
+  Object.keys(TAB_INPUT_IDS).forEach(tab => {
+    const msg = document.getElementById(`${tab}_saved_msg`);
+    if (msg && !document.getElementById(`${tab}_dirty_flag`)) {
+      const flag = document.createElement('span');
+      flag.id = `${tab}_dirty_flag`;
+      flag.className = 'dirty-flag';
+      flag.hidden = true;
+      flag.textContent = '未儲存';
+      msg.insertAdjacentElement('beforebegin', flag);
+    }
+    markTabInputsSaved(tab);
+  });
+  const recheck = event => {
+    const tab = tabInputKeyForElement(event.target);
+    if (tab) updateTabDirtyFlag(tab);
+  };
+  ['input', 'change', 'click'].forEach(type => document.addEventListener(type, recheck));
+}
+
+// ===================== 欄位範圍提醒（C-19）=====================
+// 單位填錯時照樣會算出數字（例如會心傷害填成 204.9），所以明顯超出範圍的欄位加紅框並寫出正確填法；不阻擋計算
+const FIELD_RANGE_RULES = [
+  { test: key => /^ng_d_.*_trait_(atk|def)$/.test(key), max: 1, msg: '本身特性填小數：0.1 = 10%' },
+  { test: key => !key.startsWith('ng_d_') && /crit_?dmg$/i.test(key), max: 10, msg: '會心傷害填倍率，例如 2.049' },
+  { test: key => !key.startsWith('ng_d_') && /anti_?crit$/i.test(key), max: 1, msg: '抗會傷填倍率，例如 0.1' },
+  { test: key => !key.startsWith('ng_d_') && /elem_?bonus$/i.test(key), max: 2, msg: '元素傷害加成填小數：0.1 = 10%' },
+  { test: key => !key.startsWith('ng_d_') && /(trait(atk|def)pct|stylepct|stylerespct|(^|_)lei|(^|_)xinsui)$/i.test(key), max: 100, msg: '這欄填百分比：10% 填 10' },
+];
+
+function fieldRangeKey(el) {
+  if (el.id) return el.id;
+  const match = String(el.getAttribute?.('oninput') || '').match(/pvpCmpUpdate\(\d+,'(\w+)'/);
+  return match ? match[1] : '';
+}
+
+function fieldRangeProblem(key, value) {
+  const num = parseFloat(value);
+  if (!key || !Number.isFinite(num)) return '';
+  const rule = FIELD_RANGE_RULES.find(item => item.test(key));
+  return rule && Math.abs(num) > rule.max ? rule.msg : '';
+}
+
+function checkFieldRange(el) {
+  if (!el || el.tagName !== 'INPUT' || el.type !== 'number') return;
+  const problem = fieldRangeProblem(fieldRangeKey(el), el.value);
+  el.classList.toggle('field-range-warn', !!problem);
+  let note = el.nextElementSibling;
+  if (!note || !note.classList.contains('field-range-msg')) note = null;
+  if (problem) {
+    if (!note) {
+      note = document.createElement('span');
+      note.className = 'field-range-msg';
+      el.insertAdjacentElement('afterend', note);
+    }
+    note.textContent = problem;
+  } else if (note) {
+    note.remove();
+  }
+}
+
+function checkAllFieldRanges(root) {
+  (root || document).querySelectorAll('input[type="number"]').forEach(checkFieldRange);
+}
+
 // ===================== INIT =====================
 window.onload = function() {
   document.addEventListener('click', event => {
@@ -13692,6 +14054,15 @@ window.onload = function() {
   const adjustBtn = document.getElementById('opt_ng_adjust_toggle_btn');
   if (adjustPanel) adjustPanel.style.display = optimizeNgAdjustCorePanelExpanded ? '' : 'none';
   if (adjustBtn) adjustBtn.textContent = optimizeNgAdjustCorePanelExpanded ? '收起微調清單' : '展開微調清單';
+  initTabDirtyFlags();
+  checkAllFieldRanges();
+  const syncTabBarHeight = () => {
+    const bar = document.querySelector('.tab-bar');
+    if (bar) document.documentElement.style.setProperty('--tabbar-h', `${bar.offsetHeight}px`);
+  };
+  syncTabBarHeight();
+  window.addEventListener('resize', syncTabBarHeight);
+  ['input', 'change'].forEach(type => document.addEventListener(type, event => checkFieldRange(event.target)));
 };
 </script>
 </body>

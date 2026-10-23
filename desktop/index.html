@@ -240,6 +240,11 @@
     border-color: var(--tk-line-e8b6aa);
   }
   .btn-danger:hover { background: var(--tk-bg-f6d5cc); }
+  .player-match-choices { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .player-match-title { font-weight: 700; }
+  .player-match-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .player-match-btn { display: inline-flex; align-items: center; gap: 8px; }
+  .player-match-meta { color: var(--muted); font-size: 12px; display: inline-flex; align-items: center; gap: 2px; }
   .btn-ghost {
     background: var(--tk-bg-ffffff);
     border-color: var(--tk-line-d5cabd);
@@ -1820,7 +1825,18 @@
     gap: 14px;
   }
   .metric-table td:first-child { color: var(--muted); width: 160px; }
-  .metric-table td:last-child { font-weight: 700; }
+  .player-compare-metrics td:last-child { font-weight: 700; }
+  /* 表格數字靠右、等寬數字、垂直置中（2026-10-23，評估報告 B-44）；只套畫面上的分頁，PDF 匯出照舊 */
+  .tab-panel th, .tab-panel td { vertical-align: middle; font-variant-numeric: tabular-nums; }
+  .th-sort-btn { text-align: inherit; }
+  #profession_table th:nth-child(1), #profession_table td:nth-child(1),
+  #profession_table th:nth-child(n+5), #profession_table td:nth-child(n+5),
+  #profession_dps_average_table th:nth-child(n+2), #profession_dps_average_table td:nth-child(n+2),
+  #profession_iron_average_table th:nth-child(n+2), #profession_iron_average_table td:nth-child(n+2),
+  #profession_healer_average_table th:nth-child(n+2), #profession_healer_average_table td:nth-child(n+2),
+  #squad_performance_table > thead th:nth-child(n+3), #squad_performance_table > tbody > tr > td:nth-child(n+3),
+  .player-compare-metrics th:nth-child(n+2):not(:last-child), .player-compare-metrics td:nth-child(n+2):not(:last-child) { text-align: right; }
+  #profession_dps_average_table td .empty, #profession_table td .empty { text-align: center; }
   .squad-detail-toggle-cell { text-align: center; white-space: nowrap; }
   #squad_performance_table > thead > tr > th:first-child,
   #squad_performance_table > tbody > tr:not(.squad-detail-row) > td.squad-detail-toggle-cell,
@@ -4304,6 +4320,7 @@
               <button class="btn-ghost data-menu-toggle" id="btn_data_menu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="data_menu_panel">資料</button>
               <div class="data-menu-panel" id="data_menu_panel" hidden>
                 <button class="btn-secondary" id="btn_open_batch_export" type="button">批次匯出 PDF</button>
+                <button class="btn-secondary" id="btn_copy_page_link" type="button" hidden>複製本頁連結</button>
                 <button class="btn-secondary" id="btn_export_snapshot">批量匯出目前所有資料</button>
                 <button class="btn-danger" id="btn_import_snapshot">批量匯入目前所有資料</button>
                 <div class="hero-tools-note">匯入時可以選擇只加入缺少的場次，或整份覆蓋。</div>
@@ -4657,8 +4674,8 @@
                   <label>勾選要納入統計的場次</label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
-                      <button class="btn-secondary" type="button" id="btn_player_check_all">全勾</button>
-                      <button class="btn-secondary" type="button" id="btn_player_check_attended">勾選出席場次</button>
+                      <button class="btn-ghost" type="button" id="btn_player_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_player_check_attended">勾選出席場次</button>
                       <button class="btn-ghost" type="button" id="btn_player_uncheck_all">全不勾</button>
                     </div>
                     <div class="battle-scope-filters">
@@ -4697,7 +4714,7 @@
                   <label>勾選要納入統計的場次</label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
-                      <button class="btn-secondary" type="button" id="btn_prof_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_prof_check_all">全勾</button>
                       <button class="btn-ghost" type="button" id="btn_prof_uncheck_all">全不勾</button>
                     </div>
                     <div class="battle-scope-filters">
@@ -4811,7 +4828,7 @@
                   <label>勾選要納入統計的場次</label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
-                      <button class="btn-secondary" type="button" id="btn_quadrant_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_quadrant_check_all">全勾</button>
                       <button class="btn-ghost" type="button" id="btn_quadrant_uncheck_all">全不勾</button>
                     </div>
                     <div class="battle-scope-filters">
@@ -4901,7 +4918,7 @@
                   <label>勾選要納入統計的場次</label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
-                      <button class="btn-secondary" type="button" id="btn_squad_check_all">全勾</button>
+                      <button class="btn-ghost" type="button" id="btn_squad_check_all">全勾</button>
                       <button class="btn-ghost" type="button" id="btn_squad_uncheck_all">全不勾</button>
                     </div>
                     <div class="battle-scope-filters">
@@ -4974,7 +4991,7 @@
                     <div class="focus-battle-picker-hint">用上方「切換場次」選對局，預設只看那一場；同組合的其他場次可以勾選一起平均（都不勾時視為全部）。</div>
                   </div>
                   <div class="inline-actions" style="margin-top:0;">
-                    <button class="btn-secondary" type="button" id="btn_focus_check_all">全勾</button>
+                    <button class="btn-ghost" type="button" id="btn_focus_check_all">全勾</button>
                     <button class="btn-ghost" type="button" id="btn_focus_uncheck_all">全不勾</button>
                   </div>
                 </div>
@@ -5849,6 +5866,55 @@ function publicLandscapeViewUrl() {
   }
 }
 
+// 公開版網址可以指定分頁與場次（&tab=、&battle=），切換時網址跟著改，「資料」選單有「複製本頁連結」（2026-10-23，評估報告 B-30）
+const PUBLIC_LINK_TABS = ['review', 'matchup', 'opponents', 'profession', 'quadrant', 'squad', 'players', 'rules'];
+
+// 套用網址指定的場次（找不到就用最新一場），回傳要開的分頁
+function applyPublicLinkTarget() {
+  const battleId = queryParamValue('battle');
+  if (battleId) {
+    state.activeBattleId = state.battles.some(battle => battle.id === battleId)
+      ? battleId
+      : (latestBattleIdFromIds(state.battles.map(battle => battle.id)) || state.activeBattleId);
+  }
+  const tab = queryParamValue('tab');
+  return PUBLIC_LINK_TABS.includes(tab) ? tab : 'review';
+}
+
+function publicPageLinkUrl() {
+  const url = new URL(currentLocationHref());
+  url.searchParams.set('tab', document.querySelector('.tab-btn.active')?.dataset?.tab || 'review');
+  if (state.activeBattleId) url.searchParams.set('battle', state.activeBattleId);
+  else url.searchParams.delete('battle');
+  url.searchParams.delete('v');
+  return url;
+}
+
+function syncPublicLinkUrl() {
+  if (!isPublicReadOnlyMode() || typeof history === 'undefined' || typeof history.replaceState !== 'function') return;
+  try {
+    const url = publicPageLinkUrl();
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  } catch (err) {
+    // 網址改不了不影響使用
+  }
+}
+
+async function copyCurrentPageLink() {
+  let link = currentLocationHref();
+  try {
+    link = publicPageLinkUrl().href;
+  } catch (err) {
+    // 用目前網址
+  }
+  try {
+    await navigator.clipboard.writeText(link);
+    showImportToast('已複製本頁連結：打開會是同一個分頁與場次。');
+  } catch (err) {
+    window.prompt('複製這個連結：', link);
+  }
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -6128,6 +6194,7 @@ function renderPublicModeUi() {
     }
   }
   toggleElement('btn_export_snapshot', publicMode);
+  toggleElement('btn_copy_page_link', !publicMode);
   toggleElement('btn_import_snapshot', publicMode);
   toggleElement('btn_view_public_mode', publicMode);
   toggleElement('btn_back_to_personal_tool', !publicMode);
@@ -8755,7 +8822,7 @@ function renderPlayerCompareTable(comparisons) {
   return `
     <div class="table-wrap">
       <div style="margin-bottom:10px; color:var(--tk-fg-b42318); font-weight:800;">以下 PR 值大致上是越高越好。</div>
-      <table class="metric-table">
+      <table class="metric-table player-compare-metrics">
         <thead>
           <tr>
             <th>指標</th>
@@ -9760,7 +9827,13 @@ function renderPlayerLookup() {
     renderPlayerDetail(null, '找不到符合條件的玩家，或該玩家在目前選取場次內沒有資料。');
     return;
   }
-  const exact = rows.find(item => item.name === search) || rows[0];
+  const exactMatch = rows.find(item => item.name === search);
+  if (!exactMatch && rows.length > 1) {
+    syncPlayerJobFilter(null);
+    renderPlayerMatchChoices(search, rows);
+    return;
+  }
+  const exact = exactMatch || rows[0];
   const jobCounts = playerJobCounts(exact);
   const jobFilter = syncPlayerJobFilter(exact, jobCounts);
   // 選了職業：這位玩家只算該職業的場次，比較比較對象也改成每人每個職業各一列
@@ -9862,7 +9935,7 @@ function renderPlayerLeaders(battleIds, options = {}) {
     <details>
       <summary class="panel-title" style="margin:0 0 10px; border-radius:16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px;">
         <span>建議覆盤場次統計 <span style="font-weight:400; font-size:0.85em; color:#888;">（至少出場 ${fmtNumber(minBattles)} 場；點擊可展開）</span></span>
-        <button class="btn-primary" type="button" onclick="event.preventDefault(); event.stopPropagation(); exportCurrentPlayerLeadersPdf();">匯出 PDF</button>
+        <button class="btn-primary" type="button" onclick="event.preventDefault(); event.stopPropagation(); exportCurrentPlayerLeadersPdf();">匯出建議覆盤統計</button>
       </summary>
       <div class="summary-grid">
         ${groupLeaders.map(group => {
@@ -9882,6 +9955,36 @@ function renderPlayerLeaders(battleIds, options = {}) {
       </div>
     </details>
   `;
+}
+
+// 名字只打一部分、又有好幾人符合時，以前默默挑第一位；改成列出來讓人選（2026-10-23，評估報告 B-06）
+const PLAYER_MATCH_CHOICE_LIMIT = 30;
+
+// 別名合併後顯示的是統一名字；打的字只出現在別名裡時，把符合的別名寫在後面，不然看不出為什麼會列出這個人
+function playerMatchAliasText(row, search) {
+  if (String(row.name).includes(search)) return '';
+  const aliases = (row.aliasNames || []).filter(alias => alias.includes(search));
+  return aliases.length ? `（${escHtml(aliases.join('、'))}）` : '';
+}
+
+function renderPlayerMatchChoices(search, rows) {
+  const box = document.getElementById('player_detail_box');
+  if (!box) return;
+  const sorted = rows.slice().sort((a, b) => (b.battles || 0) - (a.battles || 0) || String(a.name).localeCompare(String(b.name), 'zh-Hant'));
+  const shown = sorted.slice(0, PLAYER_MATCH_CHOICE_LIMIT);
+  const more = sorted.length - shown.length;
+  box.innerHTML = `<div class="player-match-choices">
+    <div class="player-match-title">有 ${sorted.length} 位玩家的名字含「${escHtml(search)}」，請選一位：</div>
+    <div class="player-match-list">${shown.map(row => `<button type="button" class="btn-ghost player-match-btn" data-player-pick="${escHtml(row.name)}">${escHtml(row.name)}${playerMatchAliasText(row, search)}<span class="player-match-meta">${jobIconHtml(row.job)}${escHtml(row.job || '')}・${row.battles || 0} 場</span></button>`).join('')}</div>
+    ${more > 0 ? `<div class="subtle">還有 ${more} 位，請多打幾個字。</div>` : ''}
+  </div>`;
+  box.querySelectorAll('[data-player-pick]').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById('player_search');
+      if (input) input.value = button.dataset.playerPick || '';
+      renderPlayerLookup();
+    });
+  });
 }
 
 function renderPlayerDetail(player, emptyText = '輸入玩家名稱後，這裡會顯示該玩家在指定場次內的個人數據。', options = {}) {
@@ -9957,7 +10060,7 @@ function renderPlayerDetailFromContext(context) {
     <div>
       <div class="panel-title" style="margin:-14px -14px 10px; border-radius:16px 16px 0 0;">
         <span>${escHtml(player.name)}｜${jobIconHtml(player.job)}${escHtml(player.job)} <small>${player.battles} 場</small></span>
-        <button class="btn-primary" type="button" onclick="exportCurrentPlayerPdf()">匯出 PDF</button>
+        <button class="btn-primary" type="button" onclick="exportCurrentPlayerPdf()">匯出玩家報表</button>
       </div>
       ${(player.aliasNames || []).length > 1 ? `<div class="subtle" style="margin-bottom:8px;">合併原名：${escHtml(player.aliasNames.join('、'))}</div>` : ''}
       <div class="mini-grid">
@@ -13512,12 +13615,14 @@ function switchTab(tab) {
   if (tab === 'matchup') {
     requestAnimationFrame(syncMatchupTableWidthToRoster);
   }
+  syncPublicLinkUrl();
 }
 
 function setActiveBattle(id) {
   state.activeBattleId = id;
   saveState();
   refreshAll();
+  syncPublicLinkUrl();
 }
 
 function deleteBattle(id) {
@@ -14388,6 +14493,10 @@ document.getElementById('btn_delete_current_battle').addEventListener('click', (
   if (battle) deleteBattle(battle.id);
 });
 document.getElementById('btn_delete_battles_by_date').addEventListener('click', deleteBattlesByDateRange);
+document.getElementById('btn_copy_page_link').addEventListener('click', () => {
+  setDataMenuOpen(false);
+  copyCurrentPageLink();
+});
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
@@ -14415,10 +14524,12 @@ async function bootstrapBattleReviewApp() {
       state = emptyState();
     }
   }
+  const publicLinkTab = isPublicReadOnlyMode() ? applyPublicLinkTarget() : null;
   refreshAll();
   if (isPublicReadOnlyMode()) {
-    // Public data should open in a predictable state instead of replaying the publisher's private filters.
-    switchTab('review');
+    // Public data should open in a predictable state instead of replaying the publisher's private filters;
+    // 網址有指定分頁、場次時照網址開
+    switchTab(publicLinkTab);
   } else if (publicShareUiState) {
     restoreUiState(publicShareUiState);
   } else {
