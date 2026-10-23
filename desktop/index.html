@@ -1650,17 +1650,34 @@
     align-items: center;
     margin-bottom: 10px;
   }
-  .table-actions-left {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
   .auto-role-row {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    flex-basis: 100%;
+  }
+  .assignment-actions {
+    display: grid;
+    grid-template-columns: auto auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .assignment-actions > button {
+    white-space: nowrap;
+  }
+  .assignment-actions .assignment-stats {
+    grid-column: 4;
+    grid-row: 1 / span 3;
+    align-self: end;
+  }
+  @media (max-width: 1240px) {
+    .assignment-actions { grid-template-columns: auto auto auto; }
+    .assignment-actions .assignment-stats { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; margin-left: 0; }
+  }
+  @media (max-width: 900px) {
+    .assignment-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .assignment-actions .auto-role-row { grid-column: 1 / -1; }
+    .assignment-actions > button { white-space: normal; }
   }
   .assignment-stats {
     display: flex;
@@ -4348,43 +4365,40 @@
                 <button class="btn-ghost" id="btn_download_role_template_assignment" type="button">下載空白分工表模板</button>
                 <span class="subtle" id="assignment_role_status">匯入後套用到目前場次；格式不對或對不上這場一半的人會略過並提醒。</span>
               </div>
-              <div class="table-actions">
-                <div class="table-actions-left">
-                  <button class="btn-secondary" id="btn_group_attack">將選取玩家設為進攻</button>
-                  <button class="btn-secondary" id="btn_group_defense">將選取玩家設為防守</button>
-                  <button class="btn-secondary" id="btn_group_bodyguard">將選取玩家設為保鑣</button>
-                  <button class="btn-ghost" id="btn_group_unknown">將選取玩家設為未定</button>
-                  <div class="auto-role-row">
-                    <button class="btn-secondary" id="btn_auto_infer_assignments">一鍵自動分進攻防守</button>
-                    <button class="btn-danger" id="btn_reset_all_assignments">重置所有分工</button>
-                  </div>
-                  <div class="auto-role-row">
-                    <span class="subtle" style="align-self:center;">進攻擊殺 &gt;</span>
-                    <input id="auto_bodyguard_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
-                    <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
-                    <input id="auto_bodyguard_build_threshold_yi" type="number" min="0" step="100" value="500" style="width:86px; padding:7px 9px;">
-                    <span class="subtle" style="align-self:center;">萬</span>
-                    <button class="btn-secondary" id="btn_auto_attack_kill_bodyguard">自動轉保鑣</button>
-                  </div>
-                  <div class="auto-role-row">
-                    <span class="subtle" style="align-self:center;">未知擊殺 &gt;</span>
-                    <input id="auto_defense_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
-                    <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
-                    <input id="auto_defense_build_threshold_yi" type="number" min="0" step="100" value="500" style="width:86px; padding:7px 9px;">
-                    <span class="subtle" style="align-self:center;">萬</span>
-                    <button class="btn-secondary" id="btn_auto_unknown_kill_defense">自動轉防守</button>
-                  </div>
-	                  <div class="auto-role-row">
-	                    <span class="subtle" style="align-self:center;">未知擊殺 &lt;</span>
-	                    <input id="auto_attack_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
-	                    <span class="subtle" style="align-self:center;">且塔傷 &gt;</span>
-	                    <input id="auto_attack_build_threshold_yi" type="number" min="0" step="100" value="500" style="width:86px; padding:7px 9px;">
-	                    <span class="subtle" style="align-self:center;">萬</span>
-	                    <button class="btn-secondary" id="btn_auto_unknown_lowkill_attack">自動轉進攻</button>
-	                  </div>
-	                </div>
-	                <div class="assignment-stats" id="assignment_stats"></div>
-	              </div>
+              <!-- 每排：自動轉某團別、把選取玩家設為同一團別（白色），第三欄是會大量改動的一鍵自動分、設為未定、重置（紅色）；人數在最右（使用者要求，2026-10-23） -->
+              <div class="table-actions assignment-actions">
+                <div class="auto-role-row">
+                  <span class="subtle" style="align-self:center;">進攻擊殺 &gt;</span>
+                  <input id="auto_bodyguard_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+                  <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
+                  <input id="auto_bodyguard_build_threshold_yi" type="number" min="0" step="100" value="500" style="width:86px; padding:7px 9px;">
+                  <span class="subtle" style="align-self:center;">萬</span>
+                  <button class="btn-secondary" id="btn_auto_attack_kill_bodyguard">自動轉保鑣</button>
+                </div>
+                <button class="btn-ghost" id="btn_group_bodyguard">將選取玩家設為保鑣</button>
+                <button class="btn-danger" id="btn_auto_infer_assignments">一鍵自動分進攻防守</button>
+                <div class="auto-role-row">
+                  <span class="subtle" style="align-self:center;">未知擊殺 &gt;</span>
+                  <input id="auto_defense_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+                  <span class="subtle" style="align-self:center;">且塔傷 &lt;</span>
+                  <input id="auto_defense_build_threshold_yi" type="number" min="0" step="100" value="500" style="width:86px; padding:7px 9px;">
+                  <span class="subtle" style="align-self:center;">萬</span>
+                  <button class="btn-secondary" id="btn_auto_unknown_kill_defense">自動轉防守</button>
+                </div>
+                <button class="btn-ghost" id="btn_group_defense">將選取玩家設為防守</button>
+                <button class="btn-danger" id="btn_group_unknown">將選取玩家設為未定</button>
+                <div class="auto-role-row">
+                  <span class="subtle" style="align-self:center;">未知擊殺 &lt;</span>
+                  <input id="auto_attack_kill_threshold" type="number" min="0" step="1" value="10" style="width:86px; padding:7px 9px;">
+                  <span class="subtle" style="align-self:center;">且塔傷 &gt;</span>
+                  <input id="auto_attack_build_threshold_yi" type="number" min="0" step="100" value="500" style="width:86px; padding:7px 9px;">
+                  <span class="subtle" style="align-self:center;">萬</span>
+                  <button class="btn-secondary" id="btn_auto_unknown_lowkill_attack">自動轉進攻</button>
+                </div>
+                <button class="btn-ghost" id="btn_group_attack">將選取玩家設為進攻</button>
+                <button class="btn-danger" id="btn_reset_all_assignments">重置所有分工</button>
+                <div class="assignment-stats" id="assignment_stats"></div>
+              </div>
               <div class="table-wrap">
                 <table id="assignment_table">
                   <thead>
