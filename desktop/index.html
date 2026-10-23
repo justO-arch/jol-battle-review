@@ -369,8 +369,44 @@
     width: auto;
     margin-top: 3px;
   }
-  .role-import-controls.disabled {
-    opacity: 0.55;
+  .role-import-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .role-import-status .import-infer-note {
+    color: var(--tk-fg-b42318);
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .role-import-skip {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .role-import-status .btn-ghost {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .import-more summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .import-more-body {
+    display: grid;
+    gap: 9px;
+    margin-top: 9px;
+  }
+  .import-add-btn {
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 16px;
+    font-weight: 900;
   }
   .checklist-box {
     border: 1px solid var(--tk-line-ddd2c6);
@@ -4167,14 +4203,14 @@
         <button class="btn-ghost" id="btn_close_import_drawer" type="button">關閉</button>
       </div>
       <section class="panel import-panel">
-        <div class="panel-title">從這裡開始新增場次 <small>依序選檔、讀取、確認、加入</small></div>
+        <div class="panel-title">從這裡開始新增場次 <small>選好戰報就能加入；分工表可不選</small></div>
         <div class="panel-body">
           <div class="import-flow-box">
             <div class="steps">
               <div class="step import-step">
                 <div>
-                  <b>步驟 1：匯入戰報 CSV</b>
-                  <span class="subtle">先選擇單場戰報檔案。</span>
+                  <b>步驟 1：選擇戰報 CSV</b>
+                  <span class="subtle">選好就自動讀取，己方、對手與日期（取自檔名）會自動帶入。</span>
                 </div>
                 <div class="field">
                   <label>戰報 CSV</label>
@@ -4184,37 +4220,27 @@
 
               <div class="step import-step">
                 <div>
-                  <b>步驟 2：匯入分工 CSV</b>
-                  <span class="subtle">有分工表就讀取分工；沒有分工表就勾選自動推測。</span>
+                  <b>步驟 2：選擇分工 CSV（選配）</b>
+                  <span class="subtle">有這場的分工表才選，每場各自選、不沿用到下一場。格式不對或對不上這場的人會自動略過；推測依資源、塔傷和擊殺，加入後可到「分工」分頁修改。</span>
                 </div>
-                <label class="inline-check">
-                  <input id="import_auto_assign_without_roles" type="checkbox">
-                  若無分工表請打勾，加入場次時自動推測分工
-                </label>
-                <div id="role_import_controls" class="role-import-controls">
-                  <div class="field">
-                    <label>分工 CSV</label>
-                    <input id="role_csv_file" type="file" accept=".csv,text/csv">
-                  </div>
-                  <div class="inline-actions import-step-actions">
-                    <button class="btn-primary" id="btn_parse_role_csv">讀取分工</button>
-                  </div>
+                <div class="field">
+                  <label>分工 CSV</label>
+                  <input id="role_csv_file" type="file" accept=".csv,text/csv">
+                </div>
+                <div class="role-import-skip" id="role_import_skip_notice" hidden></div>
+                <div class="role-import-status">
+                  <span id="role_import_status_text" class="import-infer-note">沒有分工表，加入時由數據自動推測分工。</span>
+                  <button class="btn-ghost" id="btn_clear_role_csv" type="button" hidden>移除這份分工表</button>
                 </div>
               </div>
 
               <div class="step import-step">
                 <div>
-                  <b>步驟 3：讀取戰報並確認資料</b>
-                  <span class="subtle">讀取後可修正區段、日期、對手、己方名稱、勝敗與備註。</span>
+                  <b>步驟 3：確認並加入場次</b>
+                  <span class="subtle">勝敗（依雙方總塔傷）與日期（取自檔名）已自動判讀，不對再改；其他資料也已帶入，加入後還能用「編輯場次資訊」修改。</span>
                 </div>
-                <div class="inline-actions import-step-actions">
-                  <button class="btn-primary" id="btn_parse_csv">讀取戰報</button>
-                </div>
+                <div class="note-box" id="import_note_box">尚未選擇戰報 CSV。</div>
                 <div class="grid-2">
-                  <div class="field">
-                    <label>戰報區段</label>
-                    <select id="import_section"></select>
-                  </div>
                   <div class="field">
                     <label>結果</label>
                     <select id="import_result">
@@ -4223,42 +4249,41 @@
                       <option value="loss">敗</option>
                     </select>
                   </div>
-                </div>
-                <div class="grid-2">
                   <div class="field">
                     <label>日期</label>
                     <input id="import_date" type="date">
                   </div>
-                  <div class="field">
-                    <label>對手</label>
-                    <select id="import_opponent">
-                      <option value="">請先讀取戰報</option>
-                    </select>
+                </div>
+                <details class="import-more">
+                  <summary>其他場次資料（已自動帶入，需要時再改）</summary>
+                  <div class="import-more-body">
+                    <div class="grid-2">
+                      <div class="field">
+                        <label>戰報區段（己方那一段）</label>
+                        <select id="import_section"></select>
+                      </div>
+                      <div class="field">
+                        <label>對手</label>
+                        <select id="import_opponent">
+                          <option value="">請先選擇戰報</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>己方名稱</label>
+                      <select id="import_team_name">
+                        <option value="">請先選擇戰報</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>備註</label>
+                      <textarea id="import_note" placeholder="例如：0418 幫戰、分工按圖片手動指定"></textarea>
+                    </div>
                   </div>
-                </div>
-                <div class="field">
-                  <label>己方名稱</label>
-                  <select id="import_team_name">
-                    <option value="">請先讀取戰報</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>備註</label>
-                  <textarea id="import_note" placeholder="例如：0418 幫戰、分工按圖片手動指定"></textarea>
-                </div>
-              </div>
-
-              <div class="step import-step">
-                <div>
-                  <b>步驟 4：加入場次</b>
-                  <span class="subtle">加入後可到右側分頁查看分工、單場覆盤、玩家查詢、職業表現、玩家象限與小隊表現。</span>
-                </div>
-                <div class="inline-actions import-step-actions">
-                  <button class="btn-primary" id="btn_add_battle">加入場次</button>
-                </div>
+                </details>
+                <button class="btn-primary import-add-btn" id="btn_add_battle" type="button">加入場次</button>
               </div>
             </div>
-            <div class="note-box" id="import_note_box">尚未讀取戰報 CSV。</div>
           </div>
         </div>
       </section>
@@ -4752,7 +4777,7 @@
                       </label>
                     </div>
                   </div>
-                  <div class="squad-selection-hint">建議只看單場較有價值，因為不同場的隊員組成很可能大不相同。</div>
+                  <div class="squad-selection-hint">建議只看單場或同一次約戰較有價值，因為不同場的隊員/對手組成很可能大不相同。</div>
                   <div id="squad_battle_select" class="checklist-box"></div>
                 </div>
               </div>
@@ -5379,7 +5404,108 @@ let importedSections = [];
 let importedRoleRows = [];
 let importedBattleFileLabel = '';
 let importedBattleFileDate = '';
+let importedRoleFileName = '';
+let importedBattleAutoResult = 'unknown';
+let importRoleSkipNotice = '';
+let importReadingCount = 0;
 let selectedPlayer = '';
+
+// 分工表是選配：沒有分工表、格式不對、或對上有團別的人不到己方人數一半，都改由數據推測分工（使用者要求，2026-10-23）
+// 別幫或別天的分工表常常只對上一兩人，照用的話其他人全是未定；對上的人算兩側（混編時分工名單跨兩側）
+function importRoleMatchCount(players) {
+  const names = new Set(importedRoleRows.filter(row => row.groupType !== 'unknown').map(row => row.name));
+  return (players || []).filter(player => names.has(player.name)).length;
+}
+
+function importRoleCoverage(ownPlayers, opponentPlayers) {
+  const matched = importRoleMatchCount([...(ownPlayers || []), ...(opponentPlayers || [])]);
+  const needed = Math.max(1, Math.ceil((ownPlayers || []).length / 2));
+  return { matched, needed, usable: matched >= needed, total: (ownPlayers || []).length };
+}
+
+function currentImportSides() {
+  const sectionIndex = Number(document.getElementById('import_section')?.value || 0);
+  const section = importedSections[sectionIndex];
+  const opponentName = (document.getElementById('import_opponent')?.value || '').trim();
+  const opponentSection = importedSections.find((item, idx) => idx !== sectionIndex && (!opponentName || item.teamName === opponentName));
+  return { sectionIndex, section, opponentSection, opponentName };
+}
+
+// 勝敗依雙方總塔傷判讀：己方 35 場用這條規則全部判對（2026-10-23 驗證）；同分或沒有對手資料時判不出來
+function inferImportResult(ownPlayers, opponentPlayers) {
+  if (!Array.isArray(opponentPlayers) || !opponentPlayers.length) return 'unknown';
+  const own = sum(ownPlayers || [], 'buildDamage');
+  const opp = sum(opponentPlayers, 'buildDamage');
+  if (own > opp) return 'win';
+  if (own < opp) return 'loss';
+  return 'unknown';
+}
+
+// 手動改過的勝敗不蓋掉；上一次自動帶入的換成這次判讀的（和日期取自檔名同一套）
+function syncImportAutoResult() {
+  const select = document.getElementById('import_result');
+  if (!select) return;
+  const { section, opponentSection } = currentImportSides();
+  const inferred = section ? inferImportResult(section.players, opponentSection?.players) : 'unknown';
+  if (!select.value || select.value === 'unknown' || select.value === importedBattleAutoResult) select.value = inferred;
+  importedBattleAutoResult = inferred;
+}
+
+function renderRoleImportStatus() {
+  const text = document.getElementById('role_import_status_text');
+  const notice = document.getElementById('role_import_skip_notice');
+  const clearButton = document.getElementById('btn_clear_role_csv');
+  const unknownCount = importedRoleRows.filter(row => row.groupType === 'unknown').length;
+  if (text) {
+    text.textContent = importedRoleRows.length
+      ? `已選分工表${importedRoleFileName ? ` ${importedRoleFileName}` : ''}（${fmtNumber(importedRoleRows.length)} 筆${unknownCount ? `，團別未定 ${fmtNumber(unknownCount)} 筆` : ''}）。`
+      : '沒有分工表，加入時由數據自動推測分工。';
+    text.classList.toggle('import-infer-note', !importedRoleRows.length);
+  }
+  if (notice) {
+    notice.textContent = importRoleSkipNotice;
+    notice.hidden = !importRoleSkipNotice;
+  }
+  if (clearButton) clearButton.hidden = !importedRoleRows.length;
+}
+
+function clearImportedRoleRows(skipNotice = '') {
+  importedRoleRows = [];
+  importedRoleFileName = '';
+  importRoleSkipNotice = skipNotice;
+  const roleInput = document.getElementById('role_csv_file');
+  if (roleInput) roleInput.value = '';
+  renderRoleImportStatus();
+  renderImportNote();
+}
+
+// 讀取結果放在步驟 3 上方：讀到哪兩幫、日期與勝敗怎麼判讀、分工表對上幾人
+function renderImportNote() {
+  const noteBox = document.getElementById('import_note_box');
+  if (!noteBox) return;
+  if (!importedSections.length) {
+    noteBox.textContent = '尚未選擇戰報 CSV。';
+    return;
+  }
+  const { section, opponentSection } = currentImportSides();
+  if (!section) return;
+  const dateInput = document.getElementById('import_date');
+  const dateFromFile = !!importedBattleFileDate && dateInput?.value === importedBattleFileDate;
+  const parts = [`已讀取：己方 ${section.teamName}（${section.players.length} 人）${opponentSection ? ` vs ${opponentSection.teamName}（${opponentSection.players.length} 人）` : ''}${importedBattleFileLabel ? `；場次標記 ${importedBattleFileLabel}` : ''}${dateFromFile ? `；日期 ${importedBattleFileDate}（取自檔名）` : ''}。`];
+  if (importedSections.length > 1) parts.push('己方不是這一段時，展開「其他場次資料」改戰報區段。');
+  const inferred = inferImportResult(section.players, opponentSection?.players);
+  parts.push(inferred === 'unknown'
+    ? '勝敗判讀不出來（沒有對手資料或雙方塔傷相同），請自己選。'
+    : `勝敗依雙方總塔傷判讀為「${inferred === 'win' ? '勝' : '敗'}」（己方 ${fmtLarge(sum(section.players, 'buildDamage'))}、對手 ${fmtLarge(sum(opponentSection.players, 'buildDamage'))}），不對再改。`);
+  if (importedRoleRows.length) {
+    const coverage = importRoleCoverage(section.players, opponentSection?.players);
+    parts.push(coverage.usable
+      ? `會套用分工表：對上 ${fmtNumber(coverage.matched)} 人。`
+      : `分工表只對上 ${fmtNumber(coverage.matched)}／${fmtNumber(coverage.total)} 人（不到一半），加入時會略過，改由數據自動推測分工。`);
+  }
+  noteBox.textContent = parts.join('');
+}
+
 let playerJobFilterName = '';
 let professionTableSort = { field: 'reviewSuggestCount', order: 'desc' };
 let dpsProfessionTableSort = { field: 'avgBuildDamage', order: 'desc' };
@@ -6073,7 +6199,7 @@ function applyReviewSnapshot(parsed, mode = 'overwrite') {
     return null;
   }
   importedSections = [];
-  importedRoleRows = [];
+  clearImportedRoleRows();
   refreshAll();
   if (mode !== 'merge') restoreUiState(parsed.ui_state || {});
   if (previousLoadError) renderPublicModeUi();
@@ -6374,11 +6500,13 @@ function applyRoleRowsToBattle(battle, roleRows) {
   };
 }
 
+// 沒有分工表時分隊就用推測的團別（進攻／防守／保鑣），小隊表現也就分成這三組（使用者要求，2026-10-23）
 function applyInferredProfessionAssignmentsToBattle(battle) {
   const counts = { attack: 0, defense: 0, bodyguard: 0 };
   (battle?.players || []).forEach(player => {
     const groupType = inferAutoProfessionGroupType(player);
     player.groupType = groupType;
+    player.subgroup = GROUP_LABELS[groupType] || '';
     counts[groupType] = (counts[groupType] || 0) + 1;
   });
   return counts;
@@ -8791,8 +8919,8 @@ function renderTeamOpponentOptions() {
   const oppSelect = document.getElementById('import_opponent');
   if (!teamSelect || !oppSelect) return;
   if (!importedSections.length) {
-    teamSelect.innerHTML = '<option value="">請先讀取戰報</option>';
-    oppSelect.innerHTML = '<option value="">請先讀取戰報</option>';
+    teamSelect.innerHTML = '<option value="">請先選擇戰報</option>';
+    oppSelect.innerHTML = '<option value="">請先選擇戰報</option>';
     return;
   }
   const names = importedSections.map(section => section.teamName || '未命名區段');
@@ -13203,7 +13331,6 @@ function showImportBlockingMessage(message) {
 async function handleParseCsv() {
   if (preventPublicWrite('匯入戰報 CSV')) return;
   const input = document.getElementById('csv_file');
-  const noteBox = document.getElementById('import_note_box');
   if (!input.files?.length) {
     showImportBlockingMessage('請先選擇戰報 CSV。');
     return;
@@ -13216,7 +13343,6 @@ async function handleParseCsv() {
     showImportBlockingMessage('讀不到有效戰報區段。');
     return;
   }
-  const first = importedSections[0];
   document.getElementById('import_section').value = '0';
   syncTeamOpponentFromSection();
   const fileDate = extractBattleFileDate(input.files[0].name || '');
@@ -13225,10 +13351,44 @@ async function handleParseCsv() {
   const fillDate = !!fileDate && !!dateInput && (!dateInput.value || dateInput.value === importedBattleFileDate);
   if (fillDate) dateInput.value = fileDate;
   importedBattleFileDate = fileDate;
-  const roleStatus = useInferredImportAssignments()
-    ? ' 已設定為無分工表，加入場次時會自動推測分工。'
-    : (importedRoleRows.length ? ` 已載入分工 ${importedRoleRows.length} 筆。` : '');
-  noteBox.textContent = `已讀取 ${importedSections.length} 個戰報區段；目前預設 ${first.teamName}（${first.players.length} 人）${importedBattleFileLabel ? `；場次標記 ${importedBattleFileLabel}` : ''}${fillDate ? `；日期 ${fileDate}（取自檔名）` : ''}。${roleStatus}`;
+  syncImportAutoResult();
+  renderImportNote();
+}
+
+// 選好檔案就讀取，不用再按讀取按鈕（使用者要求，2026-10-23）；取消選檔時不跳提示。讀取中先停用加入按鈕
+function setImportReading(reading) {
+  importReadingCount = Math.max(0, importReadingCount + (reading ? 1 : -1));
+  const button = document.getElementById('btn_add_battle');
+  if (button) button.disabled = importReadingCount > 0;
+}
+
+async function handleBattleCsvFileChange() {
+  if (!document.getElementById('csv_file')?.files?.length) {
+    importedSections = [];
+    importedBattleFileLabel = '';
+    renderImportSections();
+    renderImportNote();
+    return;
+  }
+  setImportReading(true);
+  try {
+    await handleParseCsv();
+  } finally {
+    setImportReading(false);
+  }
+}
+
+async function handleRoleCsvFileChange() {
+  if (!document.getElementById('role_csv_file')?.files?.length) {
+    clearImportedRoleRows();
+    return;
+  }
+  setImportReading(true);
+  try {
+    await handleParseRoleCsv();
+  } finally {
+    setImportReading(false);
+  }
 }
 
 async function readBattleCsvFile(file) {
@@ -13248,50 +13408,28 @@ function looksLikeBattleCsvText(text) {
   return text.includes('玩家名字') && parseCsvSections(text).length > 0;
 }
 
-function useInferredImportAssignments() {
-  return !!document.getElementById('import_auto_assign_without_roles')?.checked;
-}
-
-function updateRoleImportControls() {
-  const disabled = useInferredImportAssignments();
-  const roleInput = document.getElementById('role_csv_file');
-  const roleButton = document.getElementById('btn_parse_role_csv');
-  const controls = document.getElementById('role_import_controls');
-  if (roleInput) roleInput.disabled = disabled;
-  if (roleButton) roleButton.disabled = disabled;
-  controls?.classList.toggle('disabled', disabled);
-}
-
-function handleImportAutoAssignToggle() {
-  if (useInferredImportAssignments()) {
-    importedRoleRows = [];
-    const roleInput = document.getElementById('role_csv_file');
-    if (roleInput) roleInput.value = '';
-    document.getElementById('import_note_box').textContent = '已設定為無分工表，加入場次時會自動推測分工。';
-  }
-  updateRoleImportControls();
-}
-
 async function handleParseRoleCsv() {
   if (preventPublicWrite('匯入分工 CSV')) return;
   const input = document.getElementById('role_csv_file');
-  const noteBox = document.getElementById('import_note_box');
-  if (useInferredImportAssignments()) {
-    showImportBlockingMessage('已勾選無分工表，分工 CSV 不會使用。');
-    return;
-  }
   if (!input.files?.length) {
     showImportBlockingMessage('請先選擇分工 CSV。');
     return;
   }
+  const fileName = input.files[0].name || '';
   const text = await input.files[0].text();
-  importedRoleRows = parseRoleCsv(text);
-  if (!importedRoleRows.length) {
-    showImportBlockingMessage('讀不到有效分工資料。');
+  const rows = parseRoleCsv(text);
+  // 格式不對或沒有任何人標團別：自動略過，不跳提示
+  if (!rows.some(row => row.groupType !== 'unknown')) {
+    clearImportedRoleRows(rows.length
+      ? `分工表 ${fileName} 沒有任何人標團別（進攻／防守／保鑣），已略過。`
+      : `分工表 ${fileName} 格式不對（讀不到 name、group_type 欄位），已略過。`);
     return;
   }
-  const unknownCount = importedRoleRows.filter(row => row.groupType === 'unknown').length;
-  noteBox.textContent = `已讀取分工 ${importedRoleRows.length} 筆。${unknownCount ? ` 其中 ${unknownCount} 筆團別未定。` : ''}${importedSections.length ? ` 戰報區段目前 ${importedSections.length} 個。` : ''}`;
+  importedRoleRows = rows;
+  importedRoleFileName = fileName;
+  importRoleSkipNotice = '';
+  renderRoleImportStatus();
+  renderImportNote();
 }
 
 function handleApplyRolesToActiveBattle() {
@@ -13303,7 +13441,7 @@ function handleApplyRolesToActiveBattle() {
     return;
   }
   if (!importedRoleRows.length) {
-    showImportBlockingMessage('請先讀取分工 CSV。');
+    showImportBlockingMessage('請先在「新增場次」選擇分工 CSV。');
     return;
   }
   const result = applyRoleRowsToBattle(battle, importedRoleRows);
@@ -13316,19 +13454,11 @@ function handleAddBattle() {
   if (preventPublicWrite('加入場次')) return;
   const noteBox = document.getElementById('import_note_box');
   if (!importedSections.length) {
-    showImportBlockingMessage('請先讀取 CSV。');
+    showImportBlockingMessage('請先選擇戰報 CSV。');
     return;
   }
-  const useInferredAssignments = useInferredImportAssignments();
-  if (!useInferredAssignments && !importedRoleRows.length) {
-    showImportBlockingMessage('請先讀取分工 CSV，或勾選「若無分工表請打勾」。');
-    return;
-  }
-  const sectionIndex = Number(document.getElementById('import_section').value || 0);
-  const section = importedSections[sectionIndex];
+  const { section, opponentSection, opponentName } = currentImportSides();
   if (!section) return;
-  const opponentName = document.getElementById('import_opponent').value.trim();
-  const opponentSection = importedSections.find((item, idx) => idx !== sectionIndex && (!opponentName || item.teamName === opponentName));
   const battle = {
     id: makeBattleId(),
     date: document.getElementById('import_date').value || '',
@@ -13342,9 +13472,11 @@ function handleAddBattle() {
     opponentSummary: opponentSection ? summarizePlayers(opponentSection.players) : null,
   };
   let resultText = '';
-  if (useInferredAssignments) {
+  const coverage = importRoleCoverage(battle.players, battle.opponentPlayers);
+  const roleSkipped = importedRoleRows.length > 0 && !coverage.usable;
+  if (!importedRoleRows.length || roleSkipped) {
     const counts = applyInferredProfessionAssignmentsToBattle(battle);
-    resultText = ` 已自動推測分工：進攻 ${fmtNumber(counts.attack || 0)} 人，防守 ${fmtNumber(counts.defense || 0)} 人，保鑣 ${fmtNumber(counts.bodyguard || 0)} 人。`;
+    resultText = `${roleSkipped ? ` 分工表只對上 ${fmtNumber(coverage.matched)}／${fmtNumber(coverage.total)} 人，已略過。` : ''} 已自動推測分工：進攻 ${fmtNumber(counts.attack || 0)} 人，防守 ${fmtNumber(counts.defense || 0)} 人，保鑣 ${fmtNumber(counts.bodyguard || 0)} 人。`;
   } else {
     const applyResult = applyRoleRowsToBattle(battle, importedRoleRows);
     resultText = ` 分工跨兩側對上 ${applyResult.matched} 人，分工表未出場 ${applyResult.unmatchedRoles} 人；另有 ${applyResult.battleOnly} 人保留為非分工戰場資料。`;
@@ -13365,15 +13497,41 @@ function handleAddBattle() {
     return;
   }
   refreshAll();
+  checkOnlyNewBattleInStatsTabs(battle);
   resetImportFormAfterAdd();
-  noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText}${importedRoleRows.length ? ' 表單已清空，分工表保留給下一場。' : ' 表單已清空。'}`;
+  noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText} 表單已清空。`;
 }
 
-// 以前加入後表單不清空，連續加兩場時第二場會沿用上一場的勝敗與備註；分工表保留，同一天多場常共用一份（2026-10-21）
+// 加入新場次後，職業表現、玩家象限、小隊表現都改成只勾這一場（使用者要求，2026-10-23）；重點人物跟著「切換場次」自己換到這場。
+// 己方或對手篩選會把這場擋掉時改回全部，不然勾不到
+const NEW_BATTLE_STATS_SCOPES = [
+  { selectId: 'profession_battle_select', scope: 'profession' },
+  { selectId: 'quadrant_battle_select', scope: 'quadrant' },
+  { selectId: 'squad_battle_select', scope: 'squad' },
+];
+
+function checkOnlyNewBattleInStatsTabs(battle) {
+  if (!battle?.id) return;
+  NEW_BATTLE_STATS_SCOPES.forEach(({ selectId, scope }) => {
+    const ownSelect = document.getElementById(`${scope}_own_team_filter`);
+    const opponentSelect = document.getElementById(`${scope}_opponent_filter`);
+    if (ownSelect && !ownTeamMatchesFilter(battle.teamName, ownSelect.value || 'all')) ownSelect.value = 'all';
+    if (opponentSelect && !opponentMatchesFilter(battle.opponent, opponentSelect.value || 'all')) opponentSelect.value = 'all';
+    renderBattleFilterOptions(selectId);
+    setBattleCheckboxesByIds(selectId, [battle.id]);
+  });
+  squadOpenDetailKeys.clear();
+  renderSquadPerformanceTable();
+  renderProfessionTable();
+}
+
+// 以前加入後表單不清空，連續加兩場時第二場會沿用上一場的勝敗與備註（2026-10-21）；分工表也不沿用到下一場，有選才有（使用者要求，2026-10-23）
 function resetImportFormAfterAdd() {
   importedSections = [];
   importedBattleFileLabel = '';
   importedBattleFileDate = '';
+  importedBattleAutoResult = 'unknown';
+  clearImportedRoleRows();
   ['csv_file', 'import_date', 'import_note'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -13382,8 +13540,9 @@ function resetImportFormAfterAdd() {
   renderImportSections();
 }
 
-document.getElementById('btn_parse_csv').addEventListener('click', handleParseCsv);
-document.getElementById('btn_parse_role_csv').addEventListener('click', handleParseRoleCsv);
+document.getElementById('csv_file').addEventListener('change', handleBattleCsvFileChange);
+document.getElementById('role_csv_file').addEventListener('change', handleRoleCsvFileChange);
+document.getElementById('btn_clear_role_csv').addEventListener('click', () => clearImportedRoleRows());
 document.getElementById('btn_add_battle').addEventListener('click', handleAddBattle);
 function setDataMenuOpen(open) {
   const panel = document.getElementById('data_menu_panel');
@@ -13437,7 +13596,6 @@ document.getElementById('btn_add_battle').addEventListener('click', () => {
 window.addEventListener('keydown', event => {
   if (event.key === 'Escape' && document.body.classList.contains?.('import-drawer-open')) setImportDrawerOpen(false);
 });
-document.getElementById('import_auto_assign_without_roles').addEventListener('change', handleImportAutoAssignToggle);
 document.getElementById('btn_apply_roles')?.addEventListener('click', handleApplyRolesToActiveBattle);
 document.getElementById('btn_export_snapshot').addEventListener('click', exportReviewSnapshot);
 document.getElementById('btn_import_snapshot').addEventListener('click', () => {
@@ -13703,8 +13861,10 @@ document.getElementById('death_pct').addEventListener('input', event => {
   saveState();
   refreshAll();
 });
-document.getElementById('import_section').addEventListener('change', syncTeamOpponentFromSection);
-document.getElementById('import_team_name').addEventListener('change', syncSectionFromTeam);
+document.getElementById('import_section').addEventListener('change', () => { syncTeamOpponentFromSection(); syncImportAutoResult(); renderImportNote(); });
+document.getElementById('import_team_name').addEventListener('change', () => { syncSectionFromTeam(); syncImportAutoResult(); renderImportNote(); });
+document.getElementById('import_opponent').addEventListener('change', () => { syncImportAutoResult(); renderImportNote(); });
+document.getElementById('import_date').addEventListener('change', renderImportNote);
 document.getElementById('current_battle_select').addEventListener('change', event => setActiveBattle(event.target.value));
 document.getElementById('btn_toggle_battle_meta_editor').addEventListener('click', toggleBattleMetaEditor);
 document.getElementById('btn_delete_current_battle').addEventListener('click', () => {
@@ -13728,7 +13888,7 @@ document.getElementById('battle_manual_note').addEventListener('input', event =>
 });
 
 async function bootstrapBattleReviewApp() {
-  updateRoleImportControls();
+  renderRoleImportStatus();
   renderPublicModeUi();
   if (isPublicReadOnlyMode()) {
     try {
