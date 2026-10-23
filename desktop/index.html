@@ -1731,6 +1731,14 @@
     background: var(--tk-bg-fff9f1);
     line-height: 1.6;
   }
+  #profession_table tr.player-compare-pinned td {
+    background: rgba(var(--accent-rgb), 0.08);
+    font-weight: 800;
+  }
+  #profession_table tr.player-compare-toggle-row td {
+    text-align: left;
+    padding: 6px 10px;
+  }
   .player-compare-battles summary {
     cursor: pointer;
     color: var(--muted);
@@ -4858,7 +4866,7 @@
                     </div>
                   </details>
                   <button class="btn-ghost" id="btn_player_compare_clear" type="button">清除比較</button>
-                  <span class="subtle">名單是上方篩選出來的玩家。勾兩位以上時，下表只列這些人，數據只算他們都有出場的場次。</span>
+                  <span class="subtle">名單是上方篩選出來的玩家。勾選後下表只算他們都有出場的場次：勾選的人排在最上面，同場次的其他人收在下面、點了展開。</span>
                 </div>
                 <div class="player-compare-status" id="player_compare_status"></div>
               </div>
@@ -10341,8 +10349,8 @@ function currentProfessionExportContext() {
     rows: playerTableRows(),
     compare: (() => {
       const compare = playerCompareState(professionRows());
-      return compare && compare.picked.length >= 2
-        ? { names: compare.picked.map(row => `${row.name}｜${row.job}`), battleIds: compare.commonBattleIds }
+      return compare
+        ? { names: compare.picked.map(row => `${row.name}｜${row.job}`), battleIds: compare.commonBattleIds, othersShown: playerCompareOthersOpen ? compare.others.length : 0 }
         : null;
     })(),
   };
@@ -10682,7 +10690,7 @@ function renderProfessionExportSheet(context) {
           <h1 class="player-export-title">幫戰覆盤 玩家統計表</h1>
           <div class="player-export-subtitle">依目前玩家象限頁的篩選與排序條件匯出玩家統計表（不含象限圖）。</div>
           <div class="player-export-subtitle">本表為目前篩選條件下的統計結果，不能單憑數據直接判定玩家表現。</div>
-          ${context.compare ? `<div class="player-export-subtitle">比較玩家：${escHtml(context.compare.names.join('、'))}；只算共同出場的 ${fmtNumber(context.compare.battleIds.length)} 場。</div>` : ''}
+          ${context.compare ? `<div class="player-export-subtitle">比較玩家：${escHtml(context.compare.names.join('、'))}；只算共同出場的 ${fmtNumber(context.compare.battleIds.length)} 場${context.compare.othersShown ? `，表格前 ${fmtNumber(context.compare.names.length)} 列是比較的玩家，後面是同場次的其他 ${fmtNumber(context.compare.othersShown)} 位` : ''}。</div>` : ''}
         </div>
         <div class="player-export-meta">
           <div class="player-export-meta-item">資料筆數<b>${fmtNumber(context.rows.length)} 人</b></div>
@@ -11062,12 +11070,13 @@ function renderPlayerQuadrantTab() {
   const rows = professionRows();
   renderPlayerQuadrantChart(rows);
   renderPlayerCompareBox(rows);
-  renderProfessionPlayerTable(playerTableRows(rows));
+  renderProfessionPlayerTable(rows);
 }
 
 // 比較玩家（使用者要求，2026-10-23）：名單是玩家象限上方篩出來的玩家；勾兩位以上時，下表只列這些人，
 // 數據只算他們都有出場的場次，比較才公平。同名不同職業各算一位
 let playerCompareKeys = new Set();
+let playerCompareOthersOpen = false;
 
 // 鍵放進 data-* 屬性，不能用 \u0000（HTML 解析會換成 U+FFFD）；職業名稱固定不含「｜」，放前面就不會和名字混淆
 function playerCompareKey(row) {
@@ -11083,15 +11092,25 @@ function playerCompareState(baseRows) {
     (ids, row) => ids.filter(id => row.battleIds.includes(id)),
     [...new Set(picked[0].battleIds)],
   );
-  const rows = commonBattleIds.length
-    ? professionRows({ battleIds: commonBattleIds, keys: playerCompareKeys, ignoreMinBattles: true })
+  // 共同場次裡上方篩出來的人都列（例如那幾場出場的全部九靈），勾選的人排最上面，其他人收起來、點了才展開（使用者要求，2026-10-23）
+  const all = commonBattleIds.length
+    ? professionRows({ battleIds: commonBattleIds, ignoreMinBattles: true })
     : [];
-  return { picked, commonBattleIds, rows };
+  const pinned = all.filter(row => playerCompareKeys.has(playerCompareKey(row)));
+  const others = all.filter(row => !playerCompareKeys.has(playerCompareKey(row)));
+  return { picked, commonBattleIds, pinned, others, rows: [...pinned, ...others] };
 }
 
+// 畫面上看得到的列：比較時是勾選的人，展開後再加上同場次的其他人
 function playerTableRows(baseRows = professionRows()) {
   const compare = playerCompareState(baseRows);
-  return compare ? compare.rows : baseRows;
+  if (!compare) return baseRows;
+  return playerCompareOthersOpen ? compare.rows : compare.pinned;
+}
+
+function playerCompareJobLabel() {
+  const job = document.getElementById('quadrant_job_filter')?.value || 'all';
+  return job && job !== 'all' && job !== 'non_suwen' ? job : '玩家';
 }
 
 function renderPlayerCompareBox(baseRows = professionRows()) {
@@ -11123,12 +11142,12 @@ function renderPlayerCompareStatus(baseRows = professionRows()) {
   }
   const names = compare.picked.map(row => `${row.name}｜${row.job}`).join('、');
   if (compare.picked.length === 1) {
-    status.innerHTML = `<b>只選了 ${escHtml(names)}</b>：下表只列這位玩家（他的全部場次）；再勾一位以上，就只算大家都有出場的場次。`;
+    status.innerHTML = `<b>只選了 ${escHtml(names)}</b>：表格只算他出場的場次，他排最上面，同場次的其他${escHtml(playerCompareJobLabel())}收在下面；再勾一位以上，就只算大家都有出場的場次。`;
     return;
   }
   const battles = sortBattlesByDateDescending(filteredBattlesByIds(compare.commonBattleIds));
   status.innerHTML = battles.length
-    ? `<b>比較 ${fmtNumber(compare.picked.length)} 人</b>：${escHtml(names)}；只算共同出場的 <b>${fmtNumber(battles.length)} 場</b>。
+    ? `<b>比較 ${fmtNumber(compare.picked.length)} 人</b>：${escHtml(names)}；只算共同出場的 <b>${fmtNumber(battles.length)} 場</b>。表格最上面是勾選的人，這幾場有出場的其他${escHtml(playerCompareJobLabel())}（${fmtNumber(compare.others.length)} 位）收在下面，點「顯示」展開。
       <details class="player-compare-battles"><summary>共同出場的場次</summary>${battles.map(battle => `<div>${escHtml(battleDisplayLabel(battle, { includePlayers: false }))}</div>`).join('')}</details>`
     : `<b>比較 ${fmtNumber(compare.picked.length)} 人</b>：${escHtml(names)}；在目前勾選的場次裡沒有共同出場的場次。`;
 }
@@ -11136,21 +11155,34 @@ function renderPlayerCompareStatus(baseRows = professionRows()) {
 function setPlayerCompareKey(key, checked) {
   if (checked) playerCompareKeys.add(key);
   else playerCompareKeys.delete(key);
+  playerCompareOthersOpen = false;
   const rows = professionRows();
   renderPlayerCompareStatus(rows);
-  renderProfessionPlayerTable(playerTableRows(rows));
+  renderProfessionPlayerTable(rows);
 }
 
-function renderProfessionPlayerTable(rows = playerTableRows()) {
+// baseRows 是上方篩出來的列；比較玩家時改成共同場次的數據，勾選的人在上、其他人預設收起
+function renderProfessionPlayerTable(baseRows = professionRows()) {
   const body = document.getElementById('profession_body');
   renderProfessionTableHeader();
+  const compare = playerCompareState(baseRows);
+  const rows = compare ? compare.rows : baseRows;
+  const pinnedCount = compare ? compare.pinned.length : 0;
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="${PROFESSION_TABLE_COLUMNS.length}" class="empty">${playerCompareKeys.size >= 2 ? '勾選的玩家在目前勾選的場次裡沒有共同出場的場次。' : '目前沒有符合條件的職業資料。'}</td></tr>`;
     syncProfessionScrollbars();
     return;
   }
-  body.innerHTML = rows.map((row, index) => `
-    <tr>
+  const toggleRow = compare && compare.others.length
+    ? `<tr class="player-compare-toggle-row"><td colspan="${PROFESSION_TABLE_COLUMNS.length}"><button type="button" class="btn-ghost" id="btn_player_compare_others">${playerCompareOthersOpen ? '收起' : '顯示'}這幾場有出場的其他${escHtml(playerCompareJobLabel())}（${fmtNumber(compare.others.length)} 位）</button></td></tr>`
+    : '';
+  const rowAttrs = index => {
+    if (!compare) return '';
+    if (index < pinnedCount) return ' class="player-compare-pinned"';
+    return ` class="player-compare-other"${playerCompareOthersOpen ? '' : ' hidden'}`;
+  };
+  body.innerHTML = rows.map((row, index) => `${index === pinnedCount && compare ? toggleRow : ''}
+    <tr${rowAttrs(index)}>
       <td><span class="nowrap">${index + 1}</span></td>
       <td class="profession-name-cell"><button type="button" class="profession-player-btn" data-player-name="${escHtml(row.name)}" data-player-job="${escHtml(row.job)}">${professionNameWithBreaks(row.name)}</button></td>
       <td><span class="nowrap">${jobIconHtml(row.job)}${escHtml(row.job)}</span></td>
@@ -11179,11 +11211,19 @@ function renderProfessionPlayerTable(rows = playerTableRows()) {
   body.querySelectorAll('.profession-player-btn[data-player-name]').forEach(button => {
     button.addEventListener('click', () => openPlayerQuadrantRadar(button.dataset.playerName || '', button.dataset.playerJob || ''));
   });
+  body.querySelector?.('#btn_player_compare_others')?.addEventListener('click', () => {
+    playerCompareOthersOpen = !playerCompareOthersOpen;
+    renderProfessionPlayerTable();
+  });
   syncProfessionScrollbars();
 }
 
 function openPlayerQuadrantRadar(name, job) {
-  openProfessionPlayerRadarModal(name, { scope: 'quadrant', sourceLabel: '玩家象限', job });
+  // 比較玩家時，六角圖也只算共同出場的場次，和表格一致
+  const compare = playerCompareState(professionRows());
+  openProfessionPlayerRadarModal(name, compare?.commonBattleIds.length
+    ? { scope: 'quadrant', sourceLabel: '玩家象限（比較玩家的共同場次）', job, battleIds: compare.commonBattleIds }
+    : { scope: 'quadrant', sourceLabel: '玩家象限', job });
 }
 
 
@@ -14122,12 +14162,28 @@ function handleProfessionBattleScopeChange() {
   renderProfessionAverageTables();
 }
 
+// 上方的職業、團別、最低場次、場次、己方、對手改了，比較玩家一律清掉重選（使用者要求，2026-10-23）：
+// 以前勾選會沿用到新的篩選，只剩部分人或場次變了，表格默默變成另一種比較
+function resetPlayerCompare() {
+  playerCompareKeys = new Set();
+  playerCompareOthersOpen = false;
+  const search = document.getElementById('player_compare_search');
+  if (search) search.value = '';
+}
+
+function handleQuadrantFilterChange() {
+  resetPlayerCompare();
+  renderPlayerQuadrantTab();
+}
+
 function handleQuadrantBattleScopeChange() {
+  resetPlayerCompare();
   renderBattleFilterOptions('quadrant_battle_select');
   renderPlayerQuadrantTab();
 }
 
 function handleQuadrantAnalyzeOpponentChange() {
+  resetPlayerCompare();
   refreshJobFilterOptions();
   renderPlayerQuadrantTab();
 }
@@ -14154,10 +14210,10 @@ document.getElementById('btn_goto_player_quadrant').addEventListener('click', ()
 document.getElementById('quadrant_own_team_filter').addEventListener('change', handleQuadrantBattleScopeChange);
 document.getElementById('quadrant_opponent_filter').addEventListener('change', handleQuadrantBattleScopeChange);
 document.getElementById('quadrant_analyze_opponent').addEventListener('change', handleQuadrantAnalyzeOpponentChange);
-document.getElementById('quadrant_job_filter').addEventListener('change', renderPlayerQuadrantTab);
-document.getElementById('quadrant_group_filter').addEventListener('change', renderPlayerQuadrantTab);
-document.getElementById('quadrant_min_battles').addEventListener('input', renderPlayerQuadrantTab);
-document.getElementById('quadrant_battle_select').addEventListener('change', renderPlayerQuadrantTab);
+document.getElementById('quadrant_job_filter').addEventListener('change', handleQuadrantFilterChange);
+document.getElementById('quadrant_group_filter').addEventListener('change', handleQuadrantFilterChange);
+document.getElementById('quadrant_min_battles').addEventListener('input', handleQuadrantFilterChange);
+document.getElementById('quadrant_battle_select').addEventListener('change', handleQuadrantFilterChange);
 document.getElementById('player_quadrant_x').addEventListener('change', event => setPlayerQuadrantAxis('x', event.target.value));
 document.getElementById('player_quadrant_y').addEventListener('change', event => setPlayerQuadrantAxis('y', event.target.value));
 document.getElementById('btn_player_quadrant_swap').addEventListener('click', swapPlayerQuadrantAxes);
@@ -14174,9 +14230,10 @@ document.getElementById('player_compare_search').addEventListener('input', () =>
 });
 document.getElementById('btn_player_compare_clear').addEventListener('click', () => {
   playerCompareKeys = new Set();
+  playerCompareOthersOpen = false;
   const rows = professionRows();
   renderPlayerCompareBox(rows);
-  renderProfessionPlayerTable(playerTableRows(rows));
+  renderProfessionPlayerTable(rows);
 });
 window.addEventListener('click', event => {
   const picker = document.getElementById('player_compare_picker');
@@ -14303,11 +14360,11 @@ document.getElementById('btn_prof_uncheck_all').addEventListener('click', () => 
 });
 document.getElementById('btn_quadrant_check_all').addEventListener('click', () => {
   setBattleCheckboxes('quadrant_battle_select', true);
-  renderPlayerQuadrantTab();
+  handleQuadrantFilterChange();
 });
 document.getElementById('btn_quadrant_uncheck_all').addEventListener('click', () => {
   setBattleCheckboxes('quadrant_battle_select', false);
-  renderPlayerQuadrantTab();
+  handleQuadrantFilterChange();
 });
 document.getElementById('btn_prof_delete_checked')?.addEventListener('click', () => deleteCheckedBattles('profession_battle_select'));
 document.getElementById('weak_pct').addEventListener('input', event => {
