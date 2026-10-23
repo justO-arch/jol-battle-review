@@ -382,6 +382,20 @@
     font-size: 14px;
     font-weight: 800;
   }
+  .role-template-row,
+  .assignment-role-file {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+  .role-template-row .btn-ghost {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .assignment-role-file {
+    margin: 10px 0;
+  }
   .role-import-skip {
     font-size: 13px;
     font-weight: 700;
@@ -4227,6 +4241,10 @@
                   <label>分工 CSV</label>
                   <input id="role_csv_file" type="file" accept=".csv,text/csv">
                 </div>
+                <div class="role-template-row">
+                  <button class="btn-ghost" id="btn_download_role_template" type="button">下載空白分工表模板</button>
+                  <span class="subtle">別幫可以把模板和自家分工截圖交給 AI 填好再匯入。</span>
+                </div>
                 <div class="role-import-skip" id="role_import_skip_notice" hidden></div>
                 <div class="role-import-status">
                   <span id="role_import_status_text" class="import-infer-note">沒有分工表，加入時由數據自動推測分工。</span>
@@ -4324,6 +4342,12 @@
               <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮；輸入 lag 則不列入自動覆盤觀察名單）</span></div>
               <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
               <div class="assignment-commander-box" id="assignment_unknown_box" style="margin-top:-2px;">目前沒有分工未知的玩家。</div>
+              <div class="assignment-role-file">
+                <button class="btn-secondary" id="btn_import_assignment_csv" type="button">匯入分工表</button>
+                <input id="assignment_role_csv_file" type="file" accept=".csv,text/csv" hidden>
+                <button class="btn-ghost" id="btn_download_role_template_assignment" type="button">下載空白分工表模板</button>
+                <span class="subtle" id="assignment_role_status">匯入後套用到目前場次；格式不對或對不上這場一半的人會略過並提醒。</span>
+              </div>
               <div class="table-actions">
                 <div class="table-actions-left">
                   <button class="btn-secondary" id="btn_group_attack">將選取玩家設為進攻</button>
@@ -5412,15 +5436,15 @@ let selectedPlayer = '';
 
 // 分工表是選配：沒有分工表、格式不對、或對上有團別的人不到己方人數一半，都改由數據推測分工（使用者要求，2026-10-23）
 // 別幫或別天的分工表常常只對上一兩人，照用的話其他人全是未定；對上的人算兩側（混編時分工名單跨兩側）
-function importRoleMatchCount(players) {
-  const names = new Set(importedRoleRows.filter(row => row.groupType !== 'unknown').map(row => row.name));
-  return (players || []).filter(player => names.has(player.name)).length;
+function roleRowsCoverage(roleRows, ownPlayers, opponentPlayers) {
+  const names = new Set((roleRows || []).filter(row => row.groupType !== 'unknown').map(row => row.name));
+  const matched = [...(ownPlayers || []), ...(opponentPlayers || [])].filter(player => names.has(player.name)).length;
+  const needed = Math.max(1, Math.ceil((ownPlayers || []).length / 2));
+  return { matched, needed, usable: matched >= needed, total: (ownPlayers || []).length };
 }
 
 function importRoleCoverage(ownPlayers, opponentPlayers) {
-  const matched = importRoleMatchCount([...(ownPlayers || []), ...(opponentPlayers || [])]);
-  const needed = Math.max(1, Math.ceil((ownPlayers || []).length / 2));
-  return { matched, needed, usable: matched >= needed, total: (ownPlayers || []).length };
+  return roleRowsCoverage(importedRoleRows, ownPlayers, opponentPlayers);
 }
 
 function currentImportSides() {
@@ -6420,34 +6444,96 @@ function parsePlayerRow(row) {
   return player;
 }
 
-function parseRoleCsv(text) {
-  const rows = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean).map(line => splitCsvLine(line));
-  if (!rows.length) return [];
-  const headers = rows[0].map(h => String(h || '').trim());
-  return rows.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((header, idx) => { obj[header] = row[idx] || ''; });
-    return {
-      name: (obj.name || '').trim(),
-      job: (obj.job || '').trim(),
-      groupType: normalizeGroupType(obj.group_type || obj.groupType || ''),
-      subgroup: (obj.subgroup || '').trim(),
-      specialRoles: String(obj.special_roles || obj.specialRoles || '')
-        .split(',')
-        .map(item => item.trim())
-        .filter(Boolean),
-      note: (obj.note || '').trim(),
-      confidence: (obj.confidence || '').trim(),
-    };
-  }).filter(row => row.name && row.name.trim());
+// 分工表欄位名稱（2026-10-23 放寬）：英文是本工具匯出的格式；中文是別幫自己做、或拿模板交給 AI 填時常見的寫法。
+// 括號裡的說明不算，模板就把填法寫在欄位名稱的括號裡；欄位順序不限，標題前面多幾行（例如表名）也找得到
+const ROLE_CSV_HEADER_ALIASES = {
+  name: ['name', '玩家名字', '玩家名稱', '玩家', '玩家id', 'id', '名字', '角色名', '角色名稱', '遊戲名稱', '暱稱'],
+  job: ['job', '職業'],
+  group_type: ['group_type', 'grouptype', '團別', '分組', '組別', '分工'],
+  subgroup: ['subgroup', '隊伍', '小隊', '分隊', '隊別'],
+  special_roles: ['special_roles', 'specialroles', '特殊身分', '特殊身份', '特殊職責', '職責', '身分', '身份'],
+  note: ['note', '備註', '說明'],
+  confidence: ['confidence', '信心'],
+};
+
+function normalizeRoleCsvHeader(header) {
+  const text = String(header || '').replace(/[（(][^）)]*[）)]/g, '').replace(/\s+/g, '').toLowerCase();
+  return Object.keys(ROLE_CSV_HEADER_ALIASES).find(key => ROLE_CSV_HEADER_ALIASES[key].includes(text)) || '';
 }
 
+function parseRoleCsv(text) {
+  const lines = String(text || '').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(line => line.trim());
+  if (!lines.length) return [];
+  const delimiter = detectBattleCsvDelimiter(lines);
+  const rows = lines.map(line => splitCsvLine(line, delimiter));
+  // 標題列要同時有玩家名字和團別；只有名字的（例如把戰報檔當分工表選）算格式不對
+  const headerIndex = rows.findIndex(row => {
+    const keys = row.map(normalizeRoleCsvHeader);
+    return keys.includes('name') && keys.includes('group_type');
+  });
+  if (headerIndex < 0) return [];
+  const keys = rows[headerIndex].map(normalizeRoleCsvHeader);
+  return rows.slice(headerIndex + 1).map(row => {
+    const obj = {};
+    keys.forEach((key, idx) => {
+      if (key && obj[key] === undefined) obj[key] = String(row[idx] || '').trim();
+    });
+    return {
+      name: obj.name || '',
+      job: obj.job || '',
+      groupType: normalizeGroupType(obj.group_type),
+      subgroup: obj.subgroup || '',
+      specialRoles: String(obj.special_roles || '')
+        .split(/[,，、;；/|]/)
+        .map(item => item.trim())
+        .filter(Boolean),
+      note: obj.note || '',
+      confidence: obj.confidence || '',
+    };
+  }).filter(row => row.name);
+}
+
+// 「進攻團」「防守二隊」「保鏢」「攻」「守塔」都認得；同時寫到保鑣時算保鑣（整隊是保鑣的寫法常是「進攻保鑣隊」）
 function normalizeGroupType(value) {
   const raw = String(value || '').trim().toLowerCase();
-  if (['attack', '進攻'].includes(raw)) return 'attack';
-  if (['defense', '防守'].includes(raw)) return 'defense';
-  if (['bodyguard', '保鑣'].includes(raw)) return 'bodyguard';
+  if (!raw) return 'unknown';
+  if (/bodyguard|保鑣|保鏢|保镖/.test(raw)) return 'bodyguard';
+  if (/attack|offen[cs]e|進攻|进攻/.test(raw) || raw.startsWith('攻')) return 'attack';
+  if (/defen[cs]e|防守/.test(raw) || raw.startsWith('守')) return 'defense';
   return 'unknown';
+}
+
+// 分工表也可能是 Excel 存的 Big5；UTF-8 讀不出人名或有亂碼時改用 Big5（和戰報 CSV 相同）
+async function readRoleCsvText(file) {
+  const buffer = await file.arrayBuffer();
+  const utf8Text = new TextDecoder('utf-8').decode(buffer);
+  if (parseRoleCsv(utf8Text).length && !utf8Text.includes('\uFFFD')) return utf8Text;
+  try {
+    const big5Text = new TextDecoder('big5').decode(buffer);
+    if (parseRoleCsv(big5Text).length) return big5Text;
+  } catch (err) {
+    console.warn('Big5 decode fallback failed', err);
+  }
+  return utf8Text;
+}
+
+// 空白分工表模板：給別幫連同自家分工截圖交給 AI 填好再匯入；填法寫在欄位名稱的括號裡，讀取時括號不算
+const ROLE_TEMPLATE_HEADER = ['玩家名字（和遊戲內完全相同）', '職業', '團別（進攻/防守/保鑣）', '隊伍（例如 進攻一隊）', '特殊身分（指揮）', '備註'];
+
+function roleTemplateCsvText() {
+  return `\uFEFF${ROLE_TEMPLATE_HEADER.join(',')}\n`;
+}
+
+function downloadRoleTemplate() {
+  const blob = new Blob([roleTemplateCsvText()], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '分工表模板.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function makeBattleId() {
@@ -13408,6 +13494,56 @@ function looksLikeBattleCsvText(text) {
   return text.includes('玩家名字') && parseCsvSections(text).length > 0;
 }
 
+function roleCsvSkipReason(fileName, rows) {
+  return rows.length
+    ? `分工表 ${fileName} 沒有任何人標團別（進攻／防守／保鑣），已略過。`
+    : `分工表 ${fileName} 格式不對（讀不到玩家名字與團別欄位，可下載空白分工表模板照著填），已略過。`;
+}
+
+// 分工頁的「匯入分工表」：套用到目前場次。格式不對、沒人標團別或對上不到己方一半時略過並提醒，目前場次的分工不動（使用者要求，2026-10-23）
+async function handleAssignmentRoleCsvChange() {
+  const input = document.getElementById('assignment_role_csv_file');
+  const file = input?.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('assignment_role_status');
+  const report = (message, warn = false) => {
+    if (status) status.textContent = message;
+    if (warn) window.alert(message);
+  };
+  try {
+    if (preventPublicWrite('匯入分工表')) return;
+    const battle = activeBattle();
+    if (!battle) {
+      report('請先選取場次。', true);
+      return;
+    }
+    const fileName = file.name || '分工表';
+    const rows = parseRoleCsv(await readRoleCsvText(file));
+    if (!rows.some(row => row.groupType !== 'unknown')) {
+      report(`${roleCsvSkipReason(fileName, rows)}目前場次的分工沒有改。`, true);
+      return;
+    }
+    const coverage = roleRowsCoverage(rows, battle.players, battle.opponentPlayers);
+    if (!coverage.usable) {
+      report(`分工表 ${fileName} 只對上目前場次 ${fmtNumber(coverage.matched)}／${fmtNumber(coverage.total)} 人（不到一半），已略過，目前場次的分工沒有改。`, true);
+      return;
+    }
+    const label = battleDisplayLabel(battle, { includeResult: false });
+    if (!window.confirm(`分工表 ${fileName} 對上 ${fmtNumber(coverage.matched)} 人。套用後會覆蓋這些人的團別、分隊與特殊職責，要套用到「${label}」嗎？`)) {
+      report('沒有套用分工表。');
+      return;
+    }
+    const roleNames = new Set(rows.map(row => row.name));
+    const ownOutside = (battle.players || []).filter(player => !roleNames.has(player.name)).length;
+    const result = applyRoleRowsToBattle(battle, rows);
+    saveState();
+    refreshAll();
+    report(`已套用分工表 ${fileName}：對上 ${fmtNumber(result.matched)} 人${result.unmatchedRoles ? `，分工表另有 ${fmtNumber(result.unmatchedRoles)} 人沒出場` : ''}${ownOutside ? `；己方另有 ${fmtNumber(ownOutside)} 人不在分工表，分工不變` : ''}。`);
+  } finally {
+    if (input) input.value = '';
+  }
+}
+
 async function handleParseRoleCsv() {
   if (preventPublicWrite('匯入分工 CSV')) return;
   const input = document.getElementById('role_csv_file');
@@ -13416,13 +13552,10 @@ async function handleParseRoleCsv() {
     return;
   }
   const fileName = input.files[0].name || '';
-  const text = await input.files[0].text();
-  const rows = parseRoleCsv(text);
+  const rows = parseRoleCsv(await readRoleCsvText(input.files[0]));
   // 格式不對或沒有任何人標團別：自動略過，不跳提示
   if (!rows.some(row => row.groupType !== 'unknown')) {
-    clearImportedRoleRows(rows.length
-      ? `分工表 ${fileName} 沒有任何人標團別（進攻／防守／保鑣），已略過。`
-      : `分工表 ${fileName} 格式不對（讀不到 name、group_type 欄位），已略過。`);
+    clearImportedRoleRows(roleCsvSkipReason(fileName, rows));
     return;
   }
   importedRoleRows = rows;
@@ -13543,6 +13676,10 @@ function resetImportFormAfterAdd() {
 document.getElementById('csv_file').addEventListener('change', handleBattleCsvFileChange);
 document.getElementById('role_csv_file').addEventListener('change', handleRoleCsvFileChange);
 document.getElementById('btn_clear_role_csv').addEventListener('click', () => clearImportedRoleRows());
+document.getElementById('btn_download_role_template').addEventListener('click', downloadRoleTemplate);
+document.getElementById('btn_download_role_template_assignment').addEventListener('click', downloadRoleTemplate);
+document.getElementById('btn_import_assignment_csv').addEventListener('click', () => document.getElementById('assignment_role_csv_file')?.click());
+document.getElementById('assignment_role_csv_file').addEventListener('change', handleAssignmentRoleCsvChange);
 document.getElementById('btn_add_battle').addEventListener('click', handleAddBattle);
 function setDataMenuOpen(open) {
   const panel = document.getElementById('data_menu_panel');
