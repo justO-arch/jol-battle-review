@@ -891,6 +891,13 @@
   .result-summary:empty { display: none; }
   .result-summary .sum-item b { color: #7a5320; font-size: 15px; }
   .result-summary .sum-verdict { font-weight: 700; }
+  /* PVP 裝備比較：每套一格，桌機四套排一列（使用者問為什麼只看到兩個一排） */
+  .result-summary.sets { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+  .result-summary .sum-set { padding: 6px 10px; border-radius: 8px; background: rgba(168, 122, 47, 0.06); line-height: 1.6; }
+  .result-summary .sum-set.best { background: rgba(0, 85, 170, 0.08); }
+  .result-summary .sum-set-name { font-weight: 700; color: #4f4538; overflow-wrap: anywhere; }
+  .result-summary .sum-set b { color: #7a5320; font-size: 15px; }
+  .result-summary .sum-set-vs { font-size: 12px; }
   .result-summary .sum-verdict.attacker-wins { color: #b24842; }
   .result-summary .sum-verdict.defender-wins { color: #2e6d8f; }
   .result-summary .sum-verdict.tie { color: #7b6a4e; }
@@ -2174,6 +2181,7 @@
     <span id="cmp_saved_msg" style="color:#1a7c2a;font-size:12px;opacity:0;transition:opacity 0.5s;">✓ 已儲存</span>
   </div>
   <div class="result-summary" id="cmp_result_summary" aria-live="polite"></div>
+  <div id="cmp_carry_note" class="formula-note" style="margin:0 0 14px;color:#7a5320;" hidden></div>
 
   <div class="pvp-columns">
     <!-- Before -->
@@ -3205,7 +3213,7 @@
         搜尋下半 5 件：戒 2、手鐲 2、項鍊 1，只用補登完成的裝備。
       </div>
       <div class="formula-note">
-        基底見本頁最上方「最佳化基底」：模板設定好時用模板的裸面板，否則用「內功/裝備比較」頁。要驗算推薦結果，按結果卡的「帶到比較頁」：我方換成模板的裸面板，整套放進一欄，看「PVP整套重算」。
+        基底見本頁最上方「最佳化基底」：模板設定好時用模板的裸面板，否則用「內功/裝備比較」頁。要驗算推薦結果，按結果卡的「帶到比較頁」：PVP 帶到內功/裝備比較（我方換成模板的裸面板，整套放進一欄，看「PVP整套重算」），PVE 帶到 PVE 裝備比較（更換前是模板身上那套、更換後是這組推薦）。
       </div>
     </div>
   </div>
@@ -5889,8 +5897,9 @@ function calcPVPCmp() {
     const isMax = Math.abs(scores[i] - maxScore) < 0.0001;
     const isBase = pvpCmpAttackers[i] && pvpCmpAttackers[i].id === pvpCmpBaseId;
     const vs = isBase ? '（基準）' : `（輸出 ${fmtDiffHits(r.expected, baseExp)}・承傷 ${fmtDiffHits(r.hitsCanTake, baseHits)}）`;
-    return `<span class="sum-item">${escHtml(r.name)}${isMax ? ' ★' : ''}：輸出 <b>${fmt(r.expected)}</b>・可承受 <b>${fmtHits(r.hitsCanTake)}</b> 次${vs}</span>`;
+    return `<div class="sum-set${isMax ? ' best' : ''}"><div class="sum-set-name">${escHtml(r.name)}${isMax ? ' ★' : ''}</div><div>輸出 <b>${fmt(r.expected)}</b>・可承受 <b>${fmtHits(r.hitsCanTake)}</b> 次</div><div class="sum-set-vs">${vs.replace(/^（|）$/g, '')}</div></div>`;
   }).join(''));
+  document.getElementById('pvpcmp_result_summary')?.classList.add('sets');
 }
 
 // ===================== TAB: 素問治療比較 =====================
@@ -10719,12 +10728,58 @@ function pickNgColumnForCarry() {
   return null;
 }
 
+// PVE 的結果帶到 PVE 裝備比較（使用者要求；內功/裝備比較的 PVE 只有邊際加總）：更換前是模板身上那套（數值面板），
+// 更換後是裸面板＋這組推薦＋模板身上這區沒換的部位＋核心微調；兩邊都加模板勾的增益（PVE 只加我方）、首領用模板的
+function carryOptimizeResultToPveCompare(section, result, rank) {
+  const source = getOptimizeBaseSource('pve', section);
+  if (!source.useTemplate) return false;
+  const tpl = source.tpl;
+  const after = { ...source.panel };
+  const resultEntries = (Array.isArray(result.items) ? result.items : [])
+    .map(item => findNgDBEntry(item?.name))
+    .filter(Boolean);
+  resultEntries.forEach(entry => addTemplateItemToPanel(after, 'pve', entry, source.cls, 1));
+  const adjust = optimizeResultCoreAdjust(section, result);
+  after.traitAtkPct = (after.traitAtkPct || 0) + adjust.traitAtk * 100;
+  const before = templateSetPanel(tpl.self);
+  const buff = getCombatBuffDeltaForToggles(tpl.buffs);
+  const write = (prefix, panel) => {
+    const values = {
+      atk: panel.atk + buff.atk, skillEnh: panel.skillEnh, traitAtkPct: panel.traitAtkPct, hit: panel.hit + buff.hit,
+      crit: panel.crit + buff.crit, critdmg: panel.critDmg, breakshield: panel.breakShield, elemAtk: panel.elemAtk + buff.elemAtk,
+      elemBonus: panel.elemBonus, bossOver: panel.styleOver, ignoreElem: panel.ignoreElem, breakDef: panel.breakDef + buff.breakDef,
+      techOver: panel.techOver, lei: panel.lei, xinsui: panel.xinsui, bossOverPct: 0,
+    };
+    Object.entries(values).forEach(([key, value]) => {
+      const el = document.getElementById(`${prefix}_${key}`);
+      if (el) el.value = Number((Number(value) || 0).toFixed(6));
+    });
+  };
+  write('cmp_a', before);
+  write('cmp_b', after);
+  const boss = tpl.enemy;
+  [['cmp_bdef', boss.bDef], ['cmp_bblock', boss.bBlock], ['cmp_bcritres', boss.bCritRes], ['cmp_bqishield', boss.bQiShield], ['cmp_belemres', boss.bElemRes], ['cmp_bbossdef', boss.bBossRes]]
+    .forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.value = Number(value) || 0; });
+  syncBossPresetButtons('cmp');
+  calcCompare();
+  const kept = getOptimizeKeptTemplateEntries(tpl, section);
+  const keptCount = kept.gear.length + kept.ng.length;
+  const note = document.getElementById('cmp_carry_note');
+  if (note) {
+    note.hidden = false;
+    note.textContent = `已帶入「${OPTIMIZE_SECTION_LABELS[section] || ''}第 ${rank} 名」：更換前是 PVE 模板身上那套（數值面板），更換後是裸面板＋推薦的 ${resultEntries.length} 件${keptCount ? `＋模板身上這區沒換的 ${keptCount} 件` : ''}${adjust.traitAtk ? '＋核心微調' : ''}；兩邊都加了模板勾的增益，首領用模板的。更換後的輸出期望就是最佳化的數字，差異是和目前身上那套比。`;
+  }
+  switchTab('compare');
+  return true;
+}
+
 function carryOptimizeResultToNeigong(section, mode, resultKey, rank = 0) {
   const result = findOptimizeResult(section, resultKey);
   if (!result) {
     alert('找不到這筆結果，請重新執行這一區的最佳化。');
     return;
   }
+  if (mode === 'pve' && carryOptimizeResultToPveCompare(section, result, rank)) return;
   const set = pickNgColumnForCarry();
   if (!set) return;
   const source = getOptimizeBaseSource(mode, section);
@@ -10757,7 +10812,7 @@ function carryOptimizeResultToNeigong(section, mode, resultKey, rank = 0) {
   notes.unshift(`已把「${OPTIMIZE_SECTION_LABELS[section] || ''}第 ${rank} 名」放進 ${set.toUpperCase()} 欄：推薦的 ${resultNames.length} 件${keptCount ? `＋模板身上這區沒換的 ${keptCount} 件` : ''}`);
   notes.push(mode === 'pvp'
     ? `看下方「PVP整套重算」的 ${set.toUpperCase()} 欄，數字應和最佳化結果相同`
-    : '本頁的 PVE 只有比較結果（邊際加總），數字不會和最佳化完全相同');
+    : 'PVE 模板還沒設定好才會帶到這一頁；本頁的 PVE 只有比較結果（邊際加總），數字不會和最佳化完全相同');
   const noteEl = document.getElementById('ng_tpl_note');
   if (noteEl) noteEl.textContent = `${notes.join('；')}。`;
   switchTab('neigong');
