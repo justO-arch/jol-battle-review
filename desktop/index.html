@@ -447,11 +447,11 @@
     line-height: 1.15;
   }
   #opponent_focus_cards.summary-grid {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 8px;
   }
   #team_focus_cards.summary-grid {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 6px;
   }
   #opponent_focus_cards .stat {
@@ -1734,7 +1734,7 @@
     width: auto;
   }
   .battle-scope-note {
-    color: var(--danger);
+    color: var(--tk-fg-b42318);
     font-size: 12px;
     font-weight: 800;
     line-height: 1.5;
@@ -2483,10 +2483,6 @@
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
-  }
-  body.public-landscape #opponent_focus_cards.summary-grid,
-  body.public-landscape #team_focus_cards.summary-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   body.public-landscape #opponent_focus_cards .stat,
   body.public-landscape #team_focus_cards .stat {
@@ -3512,6 +3508,11 @@
     font-size: 13px;
     color: var(--muted);
   }
+  .vs-sub-warn {
+    color: var(--tk-fg-b42318);
+    font-size: 1.15em;
+    font-weight: 800;
+  }
   .vs-mid {
     display: flex;
     flex-direction: column;
@@ -3786,6 +3787,11 @@
     letter-spacing: 0.02em;
     color: var(--accent-2);
     font-variant-numeric: tabular-nums;
+  }
+  .focus-leader-suffix {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
     white-space: nowrap;
   }
   body [data-tab-panel="opponents"] .focus-detail-grid {
@@ -3834,13 +3840,17 @@
   body [data-tab-panel="opponents"] .detail-box .note-box:last-child {
     border-bottom: 0;
   }
+  @media (max-width: 1100px) {
+    .focus-leader-name { font-size: 16px; }
+    .focus-leader-value { font-size: 15px; }
+  }
   @media (max-width: 640px) {
-    body [data-tab-panel="opponents"] .summary-grid {
+    body [data-tab-panel="opponents"] .summary-grid,
+    body [data-tab-panel="opponents"] #team_focus_cards.summary-grid,
+    body [data-tab-panel="opponents"] #opponent_focus_cards.summary-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 0 10px;
     }
-    .focus-leader-name { font-size: 16px; }
-    .focus-leader-value { font-size: 15px; }
   }
   .review-head-meta:empty {
     display: none;
@@ -4338,7 +4348,7 @@
                 </div>
               </div>
               <div class="note-box" id="review_batch_delete_controls">
-                <div style="font-weight:800; color:var(--danger); margin-bottom:10px;">依日期批量刪除場次</div>
+                <div style="font-weight:800; color:var(--tk-fg-b42318); margin-bottom:10px;">依日期批量刪除場次</div>
                 <div class="settings-strip" style="margin-bottom:8px;">
                   <div class="field">
                     <label>開始日期（包含）</label>
@@ -4959,13 +4969,14 @@ function battleResultChipHtml(battle) {
   return '';
 }
 
-function focusLeaderHtml(label, row, valueText) {
+// suffix 用小字並和數字分開，欄位窄時整段換到下一行（九欄排一列時，「/ 1重傷」接在數字後面會超出欄寬）
+function focusLeaderHtml(label, row, valueText, suffix = '') {
   return `
     <div class="focus-leader">
       <span class="focus-leader-label">${escHtml(label)}</span>
       <span class="focus-leader-name">${row ? escHtml(row.name) : '-'}</span>
       ${row ? `<span class="focus-leader-job">${jobIconHtml(row.job)}${escHtml(row.job || '')}</span>` : ''}
-      <span class="focus-leader-value">${row ? escHtml(valueText) : ''}</span>
+      <span class="focus-leader-value">${row ? `${escHtml(valueText)}${suffix ? ` <span class="focus-leader-suffix">${escHtml(suffix)}</span>` : ''}` : ''}</span>
     </div>
   `;
 }
@@ -8245,7 +8256,7 @@ function renderPlayerFocusCards(comparisons) {
     return '<div class="empty">目前沒有可顯示的重點對比。</div>';
   }
   return `
-    <div style="margin-bottom:10px; color:var(--danger); font-weight:800;">以下 PR 值大致上是越高越好，但承傷高低哪個好要看職業和具體生存狀況判定。</div>
+    <div style="margin-bottom:10px; color:var(--tk-fg-b42318); font-weight:800;">以下 PR 值大致上是越高越好，但承傷高低哪個好要看職業和具體生存狀況判定。</div>
     <div class="summary-grid">
       ${comparisons.map(item => `
         <div class="summary-card">
@@ -8265,7 +8276,7 @@ function renderPlayerFocusCards(comparisons) {
 function renderPlayerCompareTable(comparisons) {
   return `
     <div class="table-wrap">
-      <div style="margin-bottom:10px; color:var(--danger); font-weight:800;">以下 PR 值大致上是越高越好。</div>
+      <div style="margin-bottom:10px; color:var(--tk-fg-b42318); font-weight:800;">以下 PR 值大致上是越高越好。</div>
       <table class="metric-table">
         <thead>
           <tr>
@@ -9874,6 +9885,8 @@ function focusSummaryCardsFromRows(rows) {
   const topIronRatio = topBy(row => row.job === '鐵衣', (a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'));
   const topHealerSave = topBy(row => row.job === '素問', (a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'));
   const topHealerNet = topBy(row => row.job === '素問', (a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topBurn = topBy(row => row.job === '九靈', (a, b) => b.avgBurn - a.avgBurn || a.name.localeCompare(b.name, 'zh-Hant'));
+  const topSpring = topBy(row => row.job === '潮光', (a, b) => b.avgSpring - a.avgSpring || a.name.localeCompare(b.name, 'zh-Hant'));
   return [
     { title: '拆塔最強', row: topBuild, valueText: topBuild ? `塔傷 ${fmtLarge(topBuild.avgBuildDamage)}` : '-' },
     { title: '打人最強', row: topPvp, valueText: topPvp ? `人傷 ${fmtLarge(topPvp.avgPvpDamage)}` : '-' },
@@ -9882,6 +9895,8 @@ function focusSummaryCardsFromRows(rows) {
     { title: '鐵衣最硬', row: topIronRatio, valueText: topIronRatio ? `承傷 ${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : '-' },
     { title: '化羽最強', row: topHealerSave, valueText: topHealerSave ? `化羽 ${fmtAvg(topHealerSave.avgSave)}` : '-' },
     { title: '淨治療最高', row: topHealerNet, valueText: topHealerNet ? `淨治療 ${fmtLarge(topHealerNet.avgNetHeal)}` : '-' },
+    { title: '焚骨最多', row: topBurn, valueText: topBurn ? `焚骨 ${fmtAvg(topBurn.avgBurn)}` : '-' },
+    { title: '清泉最多', row: topSpring, valueText: topSpring ? `清泉 ${fmtAvg(topSpring.avgSpring)}` : '-' },
   ];
 }
 
@@ -9984,7 +9999,7 @@ function renderFocusExportHeroCards(title, cards, emptyText) {
     <div style="margin-bottom:8px;">
       <div style="font-weight:800; color:var(--ok); margin-bottom:5px; font-size:13px; line-height:1.2;">${escHtml(title)}</div>
       ${validCards.length ? `
-        <div class="summary-grid" style="grid-template-columns:repeat(7, minmax(0, 1fr)); gap:6px;">
+        <div class="summary-grid" style="grid-template-columns:repeat(9, minmax(0, 1fr)); gap:6px;">
           ${validCards.map(card => `
             <div class="summary-card" style="padding:8px 8px 7px; border-color:#cfe6dc; background:linear-gradient(180deg, #f9fdfb 0%, #f2faf6 100%); border-radius:12px;">
               <div class="summary-label" style="color:var(--text); font-size:10px; margin-bottom:3px; line-height:1.25;">${escHtml(card.title)}</div>
@@ -10070,8 +10085,8 @@ function renderFocusExportSheet(context) {
             <div class="mini-stat">匯出時間<b>${escHtml(buildExportTimestamp())}</b></div>
           </div>
           <div style="height:8px;"></div>
-          ${renderFocusExportHeroCards('我方重點人物七人', context.teamSummaryCards, '目前沒有可用的己方資料。')}
-          ${renderFocusExportHeroCards('對方重點人物七人', context.opponentSummaryCards, '目前沒有可用的對手原始名單資料。')}
+          ${renderFocusExportHeroCards('我方重點人物九人', context.teamSummaryCards, '目前沒有可用的己方資料。')}
+          ${renderFocusExportHeroCards('對方重點人物九人', context.opponentSummaryCards, '目前沒有可用的對手原始名單資料。')}
         </div>
       </div>
 
@@ -12106,7 +12121,7 @@ function renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs) {
           </div>
         `).join('')}
       </div>
-      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，對方分組依資源與塔傷推測（規則見最下方說明）。${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
+      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，<span class="vs-sub-warn">對方分組依資源與塔傷推測</span>（規則見最下方說明）。${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
     </div>
   `;
 }
@@ -12307,23 +12322,28 @@ function renderOpponentFocus() {
       : `目前沒有 ${teamName} 對上 ${target} 的可用戰報資料。`;
   }
   if (cards) {
-    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage)[0];
-    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage)[0];
-    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill)[0];
+    // 同分依名字排，和前五榜單、PDF 摘要一致
+    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill || a.name.localeCompare(b.name, 'zh-Hant'))[0];
     const ironRows = [...data.rows].filter(row => row.job === '鐵衣');
     const healerRows = [...data.rows].filter(row => row.job === '素問');
-    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage)[0];
-    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath)[0];
-    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave)[0];
-    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal)[0];
+    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topBurn = [...data.rows].filter(row => row.job === '九靈').sort((a, b) => b.avgBurn - a.avgBurn || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topSpring = [...data.rows].filter(row => row.job === '潮光').sort((a, b) => b.avgSpring - a.avgSpring || a.name.localeCompare(b.name, 'zh-Hant'))[0];
     cards.innerHTML = data.battleCount ? `
       ${focusLeaderHtml('拆塔最強', topBuild, topBuild ? fmtLarge(topBuild.avgBuildDamage) : '')}
       ${focusLeaderHtml('打人最強', topPvp, topPvp ? fmtLarge(topPvp.avgPvpDamage) : '')}
       ${focusLeaderHtml('擊殺最多', topKill, topKill ? fmtAvg(topKill.avgKill) : '')}
       ${focusLeaderHtml('鐵衣最扛', topIronTaken, topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : '')}
-      ${focusLeaderHtml('鐵衣最硬', topIronRatio, topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : '')}
+      ${focusLeaderHtml('鐵衣最硬', topIronRatio, topIronRatio ? fmtLarge(topIronRatio.avgTakenPerDeath) : '', '/ 1重傷')}
       ${focusLeaderHtml('化羽最強', topHealerSave, topHealerSave ? fmtAvg(topHealerSave.avgSave) : '')}
       ${focusLeaderHtml('淨治療最高', topHealerNet, topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : '')}
+      ${focusLeaderHtml('焚骨最多', topBurn, topBurn ? fmtAvg(topBurn.avgBurn) : '')}
+      ${focusLeaderHtml('清泉最多', topSpring, topSpring ? fmtAvg(topSpring.avgSpring) : '')}
     ` : '<div class="empty">目前沒有可用的對手原始名單資料。舊場次若未保存 opponentPlayers，需重新加入場次後才會顯示。</div>';
   }
   renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { title: '拆塔前 5', limit: 5 });
@@ -12363,23 +12383,28 @@ function renderTeamFocus() {
   }
   const data = aggregateTeamPlayers(target, selectedIds);
   if (cards) {
-    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage)[0];
-    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage)[0];
-    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill)[0];
+    // 同分依名字排，和前五榜單、PDF 摘要一致
+    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill || a.name.localeCompare(b.name, 'zh-Hant'))[0];
     const ironRows = [...data.rows].filter(row => row.job === '鐵衣');
     const healerRows = [...data.rows].filter(row => row.job === '素問');
-    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage)[0];
-    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath)[0];
-    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave)[0];
-    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal)[0];
+    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topBurn = [...data.rows].filter(row => row.job === '九靈').sort((a, b) => b.avgBurn - a.avgBurn || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const topSpring = [...data.rows].filter(row => row.job === '潮光').sort((a, b) => b.avgSpring - a.avgSpring || a.name.localeCompare(b.name, 'zh-Hant'))[0];
     cards.innerHTML = data.battleCount ? `
       ${focusLeaderHtml('拆塔最強', topBuild, topBuild ? fmtLarge(topBuild.avgBuildDamage) : '')}
       ${focusLeaderHtml('打人最強', topPvp, topPvp ? fmtLarge(topPvp.avgPvpDamage) : '')}
       ${focusLeaderHtml('擊殺最多', topKill, topKill ? fmtAvg(topKill.avgKill) : '')}
       ${focusLeaderHtml('鐵衣最扛', topIronTaken, topIronTaken ? fmtLarge(topIronTaken.avgTakenDamage) : '')}
-      ${focusLeaderHtml('鐵衣最硬', topIronRatio, topIronRatio ? `${fmtLarge(topIronRatio.avgTakenPerDeath)} / 1重傷` : '')}
+      ${focusLeaderHtml('鐵衣最硬', topIronRatio, topIronRatio ? fmtLarge(topIronRatio.avgTakenPerDeath) : '', '/ 1重傷')}
       ${focusLeaderHtml('化羽最強', topHealerSave, topHealerSave ? fmtAvg(topHealerSave.avgSave) : '')}
       ${focusLeaderHtml('淨治療最高', topHealerNet, topHealerNet ? fmtLarge(topHealerNet.avgNetHeal) : '')}
+      ${focusLeaderHtml('焚骨最多', topBurn, topBurn ? fmtAvg(topBurn.avgBurn) : '')}
+      ${focusLeaderHtml('清泉最多', topSpring, topSpring ? fmtAvg(topSpring.avgSpring) : '')}
     ` : '<div class="empty">目前沒有可用的己方名單資料。</div>';
   }
   renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { title: '拆塔前 5', limit: 5 });
@@ -12426,6 +12451,9 @@ function refreshReviewOpponentFilterOptions() {
   refreshOpponentFilterOptions('quadrant_opponent_filter');
 }
 
+// 小隊表現、職業表現、玩家象限沒有勾任何場次時（例如重新整理後）預設勾最新一場
+const LATEST_DEFAULT_BATTLE_SELECTS = new Set(['squad_battle_select', 'profession_battle_select', 'quadrant_battle_select']);
+
 function renderBattleFilterOptions(selectId) {
   const box = document.getElementById(selectId);
   if (!box) return;
@@ -12443,7 +12471,7 @@ function renderBattleFilterOptions(selectId) {
     return;
   }
   const hasVisibleChecked = visibleBattles.some(battle => checkedIds.has(battle.id));
-  const defaultCheckedId = selectId === 'squad_battle_select' && !hasVisibleChecked
+  const defaultCheckedId = LATEST_DEFAULT_BATTLE_SELECTS.has(selectId) && !hasVisibleChecked
     ? latestBattleIdFromIds(visibleBattles.map(battle => battle.id))
     : '';
   box.innerHTML = visibleBattles.map((battle) => {
