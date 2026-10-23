@@ -2355,13 +2355,14 @@ function reviewDeathPlaceText(info, death) {
 }
 
 function reviewPrimaryCohortLabel(player) {
+  if (isSupportChaoguang(player)) return '防守/保鑣潮光';
   if (isHealer(player)) return { attack: '進攻團素問', bodyguard: '進攻/保鑣素問', defense: '防守團素問' }[player.groupType] || '本組';
   return { attack: '進攻團 DPS', bodyguard: '防守/保鑣 DPS', defense: '防守/保鑣 DPS' }[player.groupType] || '本組';
 }
 
 function reviewPlayerStats(player) {
   // 有計入判定的標記，對應的數值會上色
-  const hitKeys = { 塔傷: '塔傷後', 人傷: '人傷後', 擊殺: '擊殺後', 化羽: '化羽後', 淨奶: '淨奶量後', 承傷: '承傷後', '承傷/重傷': '承傷/死後', 重傷: '重傷前' };
+  const hitKeys = { 塔傷: '塔傷後', 人傷: '人傷後', 擊殺: '擊殺後', 助攻: '助攻後', 化羽: '化羽後', 淨奶: '淨奶量後', 承傷: '承傷後', '承傷/重傷': '承傷/死後', 重傷: '重傷前' };
   const counted = (player.hits || []).filter(hit => !(player.markOnlyHits || []).includes(hit));
   const flagged = label => !!hitKeys[label] && counted.some(hit => hit.includes(hitKeys[label]));
   const rows = player.job === '素問'
@@ -3264,6 +3265,16 @@ function computeBattleReview(battle) {
   };
   const attackDps = players.filter(player => player.groupType === 'attack' && isDps(player));
   const defenseDps = players.filter(player => (player.groupType === 'defense' || player.groupType === 'bodyguard') && isDps(player));
+  const supportChaoguang = players.filter(isSupportChaoguang);
+  const supportChaoguangNames = new Set(supportChaoguang.map(player => player.name));
+  const middleValue = values => {
+    const sorted = values.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+    if (!sorted.length) return Infinity;
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+  const defenseDpsPvpMedian = middleValue(defenseDps.map(player => player.pvpDamage));
+  const defenseDpsKillMedian = middleValue(defenseDps.map(player => player.kill));
   const attackHealers = players.filter(player => player.groupType === 'attack' && isHealer(player));
   const defenseHealers = players.filter(player => player.groupType === 'defense' && isHealer(player));
   const bodyguardHealers = players.filter(player => player.groupType === 'bodyguard' && isHealer(player));
@@ -3282,6 +3293,7 @@ function computeBattleReview(battle) {
   addScreen(`進攻團DPS・塔傷後${settings.weakPct}%`, reviewCutNames(attackDps, 'buildDamage', settings.weakPct / 100));
   addScreen(`防守/保鑣DPS・人傷後${settings.weakPct}%`, reviewCutNames(defenseDps, 'pvpDamage', settings.weakPct / 100));
   addScreen(`防守/保鑣DPS・擊殺後${settings.weakPct}%`, reviewCutNames(defenseDps, 'kill', settings.weakPct / 100));
+  addScreen(`防守/保鑣潮光・助攻後${settings.weakPct}%`, reviewCutNames(supportChaoguang, 'assist', settings.weakPct / 100));
   addScreen(`進攻/保鑣素問・化羽後${settings.weakPct}%`, reviewCutNames(attackLikeHealers, 'saveCount', settings.weakPct / 100));
   addScreen(`進攻/保鑣素問・淨奶量後${settings.weakPct}%`, reviewCutNames(attackLikeHealers, 'netHeal', settings.weakPct / 100));
   addScreen(`防守團素問・化羽後${settings.weakPct}%`, reviewCutNames(defenseHealers, 'saveCount', settings.weakPct / 100));
@@ -3296,13 +3308,15 @@ function computeBattleReview(battle) {
   const hitMap = Object.fromEntries(players.map(player => [player.name, []]));
   Object.entries(screenMap).forEach(([label, names]) => {
     names.forEach(name => {
+      // 輔助潮光的人傷、擊殺低是常態，不算弱項（防守 DPS 的比較組不變，其他職業的名單不受影響）
+      if (supportChaoguangNames.has(name) && /^防守\/保鑣DPS・(人傷|擊殺)後/.test(label)) return;
       if (!hitMap[name]) hitMap[name] = [];
       hitMap[name].push(label);
     });
   });
 
   const summaries = players.map(player => {
-    const cohort = getPrimaryCohort(player, { attackDps, defenseDps, attackHealers, defenseHealers, attackLikeHealers });
+    const cohort = getPrimaryCohort(player, { attackDps, defenseDps, attackHealers, defenseHealers, attackLikeHealers, supportChaoguang });
     const primaryMetric = getPrimaryMetric(player);
     const primaryPct = primaryMetric ? percentile(cohort, primaryMetric.key, player.name, true) : null;
     const deathCohort = (player.groupType === 'attack' || player.groupType === 'bodyguard') ? attackLikePlayers : (player.groupType === 'defense' ? defensePlayers : players);
@@ -3344,11 +3358,19 @@ function computeBattleReview(battle) {
     const springProtected = player.job === '潮光'
       && Number(player.saveCount || 0) > Number(player.death || 0)
       && (Number(player.saveCount || 0) > 12 || specialTop);
+    const supportCg = isSupportChaoguang(player);
+    const chaoguangDpsLevel = supportCg
+      && (Number(player.pvpDamage || 0) >= defenseDpsPvpMedian || Number(player.kill || 0) >= defenseDpsKillMedian);
     const protectedAuto = hasUniversalProtection(player, { topBuildNames }) || hasHealerTopProtection(player, {
       attackHealers,
       defenseHealers,
       attackLikeHealers,
-    }) || springProtected;
+    }) || springProtected || chaoguangDpsLevel;
+    const specialText = specialCut
+      ? (specialCut.size <= 5
+        ? `${specialMetric.label}是同側${player.job} ${fmtNumber(specialCut.size)} 人中${specialCut.names.length > 1 ? '並列' : ''}最低`
+        : `${specialMetric.label}在同側${player.job}後 30%（${reviewRankText(reviewRank(specialCohort, specialMetric.key, player))}）`)
+      : '';
     const pvpPct = percentile(cohort, 'pvpDamage', player.name, true);
     const assistPct = percentile(cohort, 'assist', player.name, true);
     const buildPct = percentile(cohort, 'buildDamage', player.name, true);
@@ -3394,6 +3416,23 @@ function computeBattleReview(battle) {
       } else if (healerPrimaryHitCount === 1 && hasHighDeath) {
         level = 'secondary';
         reason = `${healerText}，重傷也多`;
+      }
+    } else if (supportCg) {
+      const assistHits = countedHits.filter(hit => hit.includes('潮光・助攻後'));
+      const weakParts = [
+        ...(assistHits.length ? [reviewWeakText(assistHits, screenMap, screenSizes, settings.weakPct, '同側潮光')] : []),
+        ...(specialBottom ? [specialText] : []),
+      ];
+      // 同側潮光只有 6 人左右，助攻最低的人百分位一定是 0，不另用「最後 5%」升級
+      if (weakParts.length >= 2 && hasHighDeath) {
+        level = 'priority';
+        reason = `${weakParts.join('，')}，重傷也多`;
+      } else if (weakParts.length >= 2) {
+        level = 'secondary';
+        reason = weakParts.join('，');
+      } else if (weakParts.length === 1 && hasHighDeath) {
+        level = 'secondary';
+        reason = `${weakParts[0]}，重傷也多`;
       }
     } else {
       if (primaryHitCount >= 2 && (hasHighDeath || (primaryPct !== null && primaryPct <= 5))) {
@@ -3444,11 +3483,8 @@ function computeBattleReview(battle) {
       }
     }
 
-    if (!excludedAuto && !protectedAuto && specialMetric && specialBottom && primaryPct !== null && primaryPct < 50) {
+    if (!excludedAuto && !protectedAuto && !supportCg && specialMetric && specialBottom && primaryPct !== null && primaryPct < 50) {
       const singleWeak = countedHits.length === 1;
-      const specialText = specialCut.size <= 5
-        ? `${specialMetric.label}是同側${player.job} ${fmtNumber(specialCut.size)} 人中${specialCut.names.length > 1 ? '並列' : ''}最低`
-        : `${specialMetric.label}在同側${player.job}後 30%（${reviewRankText(reviewRank(specialCohort, specialMetric.key, player))}）`;
       if (primaryHitCount >= 1 && hasHighDeath) {
         level = 'priority';
         reason = `${weakText}，重傷也多，${specialText}`;
@@ -3522,7 +3558,14 @@ function sum(list, key) {
   return list.reduce((acc, item) => acc + Number(item[key] || 0), 0);
 }
 
+// 防守／保鑣的潮光主流打輔助：人傷、擊殺低是常態，不算弱項，只往好的方向算（達同側 DPS 中位數就保護）；
+// 弱項改看助攻（和防守／保鑣潮光比）與清泉（使用者決定，2026-10-23）。進攻團的潮光照舊看塔傷
+function isSupportChaoguang(player) {
+  return player?.job === '潮光' && (player.groupType === 'defense' || player.groupType === 'bodyguard');
+}
+
 function getPrimaryCohort(player, pools) {
+  if (isSupportChaoguang(player)) return pools.supportChaoguang?.length ? pools.supportChaoguang : [player];
   if (player.groupType === 'attack' && isDps(player)) return pools.attackDps.length ? pools.attackDps : [player];
   if ((player.groupType === 'defense' || player.groupType === 'bodyguard') && isDps(player)) return pools.defenseDps.length ? pools.defenseDps : [player];
   if (player.groupType === 'attack' && isHealer(player)) return pools.attackHealers.length ? pools.attackHealers : [player];
@@ -3533,6 +3576,7 @@ function getPrimaryCohort(player, pools) {
 
 function getPrimaryMetric(player) {
   if (player.job === '素問') return { key: 'saveCount', label: '化羽' };
+  if (isSupportChaoguang(player)) return { key: 'assist', label: '助攻' };
   if (player.groupType === 'attack') return { key: 'buildDamage', label: '塔傷' };
   if (player.groupType === 'defense' || player.groupType === 'bodyguard') return { key: 'kill', label: '擊殺' };
   return null;
@@ -4698,7 +4742,7 @@ function renderRulesExplain() {
     <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把重傷成本補回來。</span></div>
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">DPS：兩項主指標都在後 30% 進歡迎，再加上重傷多，或主指標在最後 5%，進優先。只有一項在後 30% 時，防守 / 保鑣另有擊殺、人傷或助攻在最後 20% 進歡迎（又重傷多、主指標也在最後 20% 則進優先），只是重傷多就列系統難以判定；進攻團重傷多進歡迎（主指標也在最後 20% 則進優先），重傷不多但人傷或助攻在最後 20% 也進歡迎；都不符合但主指標在最後 20% 時，列系統難以判定。進攻 / 保鑣團沒有弱項標記，但重傷多、主指標在最後 40%，進歡迎。素問：化羽、淨奶量都在後 30% 進歡迎，再加上重傷多進優先；只有一項但重傷多，進歡迎；化羽與淨奶量的排名都在最後 30% 時，列系統難以判定。鐵衣：輸出（進攻看塔傷、防守看人傷或擊殺）和坦度（承傷、承傷/重傷）都在後 30% 進歡迎，再加上重傷多進優先；進攻鐵衣塔傷偏弱又重傷多，進歡迎；分工沒有標坦、承傷或承傷/重傷卻在同側鐵衣前 30% 的，列系統難以判定。九靈 / 潮光：焚骨 / 清泉在同側同職業後 30%、主指標在後半時，已有弱項又重傷多進優先，只有一個標記進歡迎，沒有進其他名單時列系統難以判定。名單卡的最後一行「判定」寫出命中的是哪一條。</span></div>
     <div class="explain-item"><b>同分與人數少的比較組</b><span class="subtle">後 30%（重傷是前 30%）的切線如果剛好落在同分之間，同分的人一起標記；同分有 3 人以上時，這個標記只顯示、不拿來判定名單，卡片上標「同分」。比較組只有 5 人以下時（例如防守團素問每場通常 4 人），只標最低（重傷是最多）的 1 人，同分照上面處理。清泉保護看的「同側同職業前 30%」，同分的人一起算。</span></div>
-    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；潮光補看清泉；鐵衣補看承傷與承傷/重傷。未定分工、指揮與 lag 不進自動名單，交由人工備註補充。潮光若清泉 > 12 或清泉位於同側同職業前 30%，且清泉數 > 自身重傷數，視為清泉有補回成本，不進自動名單。坦度門檻目前定為：承傷 > 5250萬 且 承傷/重傷 > 600萬，或承傷 > 3750萬 且 承傷/重傷 > 900萬；素問不適用，因為素問的承傷已經從淨奶量扣掉。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5。塔傷門檻定為單場塔傷排名前 10 名，或單場塔傷 > 4000萬。承傷與塔傷門檻依 7/20 改版後的數值訂定。達標以上任一門檻，即使其他數據不佳也不會進入自動名單。</span></div>
+    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；進攻團的潮光補看清泉；鐵衣補看承傷與承傷/重傷。防守／保鑣的潮光多半打輔助，人傷、擊殺低不算弱項，改看助攻與清泉是否在同側潮光後 30%：兩項都低進歡迎，再加上重傷多進優先，只有一項低時要重傷也多才進歡迎；人傷或擊殺達到同側 DPS 中位數，視為打出 DPS 水準，不進名單（2026-10-23）。未定分工、指揮與 lag 不進自動名單，交由人工備註補充。潮光若清泉 > 12 或清泉位於同側同職業前 30%，且清泉數 > 自身重傷數，視為清泉有補回成本，不進自動名單。坦度門檻目前定為：承傷 > 5250萬 且 承傷/重傷 > 600萬，或承傷 > 3750萬 且 承傷/重傷 > 900萬；素問不適用，因為素問的承傷已經從淨奶量扣掉。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5。塔傷門檻定為單場塔傷排名前 10 名，或單場塔傷 > 4000萬。承傷與塔傷門檻依 7/20 改版後的數值訂定。達標以上任一門檻，即使其他數據不佳也不會進入自動名單。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。單一弱項通常不直接進名單，但若再疊加高重傷仍會進待查；若化羽或淨奶量是該分組第一，則直接排除，不進自動名單。素問不適用坦度保護。需要時再由人工備註補充。</span></div>
   `;
 }
