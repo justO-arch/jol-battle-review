@@ -5198,6 +5198,52 @@ function battleResultChipHtml(battle) {
 }
 
 // suffix 用小字並和數字分開，欄位窄時整段換到下一行（九欄排一列時，「/ 1重傷」接在數字後面會超出欄寬）
+// 重點人物的九項最強（同分依名字排，和前五榜單、PDF 摘要一致）；分享預覽圖也用這一份
+function focusLeaderRows(rows) {
+  const pick = (list, key) => [...list].sort((a, b) => b[key] - a[key] || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+  const ofJob = job => rows.filter(row => row.job === job);
+  return {
+    topBuild: pick(rows, 'avgBuildDamage'),
+    topPvp: pick(rows, 'avgPvpDamage'),
+    topKill: pick(rows, 'avgKill'),
+    topIronTaken: pick(ofJob('鐵衣'), 'avgTakenDamage'),
+    topIronRatio: pick(ofJob('鐵衣'), 'avgTakenPerDeath'),
+    topHealerSave: pick(ofJob('素問'), 'avgSave'),
+    topHealerNet: pick(ofJob('素問'), 'avgNetHeal'),
+    topBurn: pick(ofJob('九靈'), 'avgBurn'),
+    topSpring: pick(ofJob('潮光'), 'avgSpring'),
+  };
+}
+
+// 分享預覽（2026-10-23 使用者要求）：預覽卡寫「10/22 一劍飛花 vs 輪迴（勝）」和己方九項重點人物，不寫數據
+const SHARE_LEADER_LABELS = [
+  ['topBuild', '拆塔'], ['topPvp', '人傷'], ['topKill', '擊殺'], ['topIronTaken', '鐵衣最扛'], ['topIronRatio', '鐵衣最硬'],
+  ['topHealerSave', '化羽'], ['topHealerNet', '淨治療'], ['topBurn', '焚骨'], ['topSpring', '清泉'],
+];
+
+function battleShareTitle(battle) {
+  if (!battle) return '';
+  const [, month, day] = String(battle.date || '').split('-');
+  const date = month && day ? `${Number(month)}/${Number(day)}` : String(battle.date || '');
+  const result = battle.result === 'win' ? '（勝）' : battle.result === 'loss' ? '（敗）' : '';
+  // 同一天同一組對局有好幾場時，依場次清單的先後加上第幾場，不然預覽看起來一樣
+  const sameDay = sortBattlesByDateDescending(state.battles)
+    .filter(item => item.date === battle.date && item.teamName === battle.teamName && item.opponent === battle.opponent)
+    .reverse();
+  const order = sameDay.length > 1 ? ` 第${sameDay.findIndex(item => item.id === battle.id) + 1}場` : '';
+  return `${date} ${battle.teamName || '己方'} vs ${battle.opponent || '對手'}${order}${result}`;
+}
+
+function battleShareLeaders(battle) {
+  if (!battle) return [];
+  const rows = aggregateTeamPlayers(battle.teamName, [battle.id]).rows || [];
+  if (!rows.length) return [];
+  const leaders = focusLeaderRows(rows);
+  return SHARE_LEADER_LABELS
+    .map(([key, label]) => leaders[key] ? { label, name: leaders[key].name, job: leaders[key].job } : null)
+    .filter(Boolean);
+}
+
 function focusLeaderHtml(label, row, valueText, suffix = '') {
   return `
     <div class="focus-leader">
@@ -5924,18 +5970,48 @@ function syncPublicLinkUrl() {
   }
 }
 
-async function copyCurrentPageLink() {
+// 有場次時複製「場次標題＋分享頁網址」：分享頁（desktop/s/<場次>.html，發布時由 tools/publish_share_pages.js 產生）
+// 有這場的預覽卡，打開後跳回這一頁與分頁
+function publicShareText() {
+  const battle = activeBattle();
   let link = currentLocationHref();
   try {
     link = publicPageLinkUrl().href;
+    if (battle?.id) {
+      const share = new URL(`s/${encodeURIComponent(battle.id)}.html`, currentLocationHref());
+      share.searchParams.set('tab', document.querySelector('.tab-btn.active')?.dataset?.tab || 'review');
+      link = share.href;
+    }
   } catch (err) {
     // 用目前網址
   }
+  return battle ? `${battleShareTitle(battle)}\n${link}` : link;
+}
+
+async function shareLinkAvailable(text) {
+  const url = String(text).split('\n').pop();
+  if (!/\/s\/[^/]+\.html/.test(url)) return true;
   try {
-    await navigator.clipboard.writeText(link);
-    showImportToast('已複製本頁連結：打開會是同一個分頁與場次。');
+    const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    return response.ok;
   } catch (err) {
-    window.prompt('複製這個連結：', link);
+    return false;
+  }
+}
+
+async function copyCurrentPageLink() {
+  let text = publicShareText();
+  // 新場次還沒產生分享頁時（發布時漏跑 tools/publish_share_pages.js），改複製原本的網址，不給會 404 的連結
+  if (!(await shareLinkAvailable(text))) {
+    const battle = activeBattle();
+    const link = publicPageLinkUrl().href;
+    text = battle ? `${battleShareTitle(battle)}\n${link}` : link;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    showImportToast('已複製本頁連結：貼到 LINE、Discord 會顯示這一場的預覽，打開是同一個分頁與場次。');
+  } catch (err) {
+    window.prompt('複製這段文字：', text);
   }
 }
 
@@ -13135,18 +13211,7 @@ function renderOpponentFocus() {
       : `目前沒有 ${teamName} 對上 ${target} 的可用戰報資料。`;
   }
   if (cards) {
-    // 同分依名字排，和前五榜單、PDF 摘要一致
-    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const ironRows = [...data.rows].filter(row => row.job === '鐵衣');
-    const healerRows = [...data.rows].filter(row => row.job === '素問');
-    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topBurn = [...data.rows].filter(row => row.job === '九靈').sort((a, b) => b.avgBurn - a.avgBurn || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topSpring = [...data.rows].filter(row => row.job === '潮光').sort((a, b) => b.avgSpring - a.avgSpring || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const { topBuild, topPvp, topKill, topIronTaken, topIronRatio, topHealerSave, topHealerNet, topBurn, topSpring } = focusLeaderRows(data.rows);
     cards.innerHTML = data.battleCount ? `
       ${focusLeaderHtml('拆塔最強', topBuild, topBuild ? fmtLarge(topBuild.avgBuildDamage) : '')}
       ${focusLeaderHtml('打人最強', topPvp, topPvp ? fmtLarge(topPvp.avgPvpDamage) : '')}
@@ -13197,18 +13262,7 @@ function renderTeamFocus() {
   }
   const data = aggregateTeamPlayers(target, selectedIds);
   if (cards) {
-    // 同分依名字排，和前五榜單、PDF 摘要一致
-    const topBuild = [...data.rows].sort((a, b) => b.avgBuildDamage - a.avgBuildDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topPvp = [...data.rows].sort((a, b) => b.avgPvpDamage - a.avgPvpDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topKill = [...data.rows].sort((a, b) => b.avgKill - a.avgKill || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const ironRows = [...data.rows].filter(row => row.job === '鐵衣');
-    const healerRows = [...data.rows].filter(row => row.job === '素問');
-    const topIronTaken = [...ironRows].sort((a, b) => b.avgTakenDamage - a.avgTakenDamage || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topIronRatio = [...ironRows].sort((a, b) => b.avgTakenPerDeath - a.avgTakenPerDeath || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topHealerSave = [...healerRows].sort((a, b) => b.avgSave - a.avgSave || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topHealerNet = [...healerRows].sort((a, b) => b.avgNetHeal - a.avgNetHeal || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topBurn = [...data.rows].filter(row => row.job === '九靈').sort((a, b) => b.avgBurn - a.avgBurn || a.name.localeCompare(b.name, 'zh-Hant'))[0];
-    const topSpring = [...data.rows].filter(row => row.job === '潮光').sort((a, b) => b.avgSpring - a.avgSpring || a.name.localeCompare(b.name, 'zh-Hant'))[0];
+    const { topBuild, topPvp, topKill, topIronTaken, topIronRatio, topHealerSave, topHealerNet, topBurn, topSpring } = focusLeaderRows(data.rows);
     cards.innerHTML = data.battleCount ? `
       ${focusLeaderHtml('拆塔最強', topBuild, topBuild ? fmtLarge(topBuild.avgBuildDamage) : '')}
       ${focusLeaderHtml('打人最強', topPvp, topPvp ? fmtLarge(topPvp.avgPvpDamage) : '')}
