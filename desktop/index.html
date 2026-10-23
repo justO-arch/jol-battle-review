@@ -1661,6 +1661,80 @@
     gap: 8px;
     flex-wrap: wrap;
   }
+  .player-compare {
+    margin: 14px 0;
+    display: grid;
+    gap: 8px;
+  }
+  .player-compare-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .player-compare-picker {
+    position: relative;
+  }
+  .player-compare-picker > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 8px 14px;
+    border: 1px solid var(--tk-line-cbbfac);
+    border-radius: 12px;
+    background: var(--tk-bg-fffdfa);
+    font-weight: 800;
+  }
+  .player-compare-panel {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 6px);
+    left: 0;
+    width: min(360px, calc(100vw - 48px));
+    padding: 10px;
+    border: 1px solid var(--tk-line-cbbfac);
+    border-radius: 12px;
+    background: var(--tk-bg-fffdfa);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    display: grid;
+    gap: 8px;
+  }
+  .player-compare-options {
+    max-height: 300px;
+    overflow-y: auto;
+    display: grid;
+    gap: 2px;
+  }
+  .player-compare-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 2px;
+    cursor: pointer;
+  }
+  .player-compare-option[hidden] {
+    display: none;
+  }
+  .player-compare-option input {
+    width: auto;
+  }
+  .player-compare-option .subtle {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .player-compare-status:empty {
+    display: none;
+  }
+  .player-compare-status {
+    padding: 10px 12px;
+    border: 1px solid var(--tk-line-e0d4c6);
+    border-radius: 12px;
+    background: var(--tk-bg-fff9f1);
+    line-height: 1.6;
+  }
+  .player-compare-battles summary {
+    cursor: pointer;
+    color: var(--muted);
+  }
   .assignment-actions {
     display: grid;
     grid-template-columns: auto auto auto minmax(0, 1fr);
@@ -4774,7 +4848,20 @@
                 <div id="player_quadrant_chart"></div>
               </div>
               <div class="player-quadrant-tooltip" id="player_quadrant_tooltip" hidden></div>
-              <div style="height:14px;"></div>
+              <div class="player-compare">
+                <div class="player-compare-controls">
+                  <details class="player-compare-picker" id="player_compare_picker">
+                    <summary id="player_compare_summary">比較玩家：未選</summary>
+                    <div class="player-compare-panel">
+                      <input type="search" id="player_compare_search" placeholder="搜尋名字或職業">
+                      <div class="player-compare-options" id="player_compare_options"></div>
+                    </div>
+                  </details>
+                  <button class="btn-ghost" id="btn_player_compare_clear" type="button">清除比較</button>
+                  <span class="subtle">名單是上方篩選出來的玩家。勾兩位以上時，下表只列這些人，數據只算他們都有出場的場次。</span>
+                </div>
+                <div class="player-compare-status" id="player_compare_status"></div>
+              </div>
               <div class="summary-section-head">
                 <span>玩家統計表</span>
                 <span class="subtle">點玩家名稱可看六角圖；表頭可排序</span>
@@ -6928,6 +7015,16 @@ function inferPlayerAssignment(player) {
   };
 }
 
+// 九靈焚骨弱項（使用者決定，2026-10-23）：同側九靈常只有 4～6 人，後 30% 一定會標到人；
+// 改成比同側第二名少 40% 以上才算弱（不跟第一名比，免得一位特別會燒的人把大家都比下去；不到 3 人時才和第一名比）
+function burnGapCut(cohort) {
+  const sorted = cohort.map(player => Number(player.burnCount || 0)).sort((a, b) => b - a);
+  const useSecond = sorted.length >= 3;
+  const reference = useSecond ? sorted[1] : (sorted[0] || 0);
+  const names = reference > 0 ? cohort.filter(player => Number(player.burnCount || 0) < reference * 0.6).map(player => player.name) : [];
+  return { names, markOnly: [], size: cohort.length, reference, referenceLabel: useSecond ? '第二名' : '第一名' };
+}
+
 function computeBattleReview(battle) {
   if (!battle) return null;
   const players = battle.players.map(derivePlayer);
@@ -7029,7 +7126,9 @@ function computeBattleReview(battle) {
     const specialCohort = specialMetric
       ? players.filter(item => sideKey(item.groupType) === sideKey(player.groupType) && item.job === player.job)
       : [];
-    const specialCut = specialMetric ? reviewCutNames(specialCohort, specialMetric.key, 0.3) : null;
+    const specialCut = specialMetric
+      ? (player.job === '九靈' ? burnGapCut(specialCohort) : reviewCutNames(specialCohort, specialMetric.key, 0.3))
+      : null;
     const specialBottom = !!specialCut && specialCut.names.includes(player.name) && !specialCut.markOnly.includes(player.name);
     const specialTop = specialMetric ? topNames(specialCohort, specialMetric.key, 0.3).includes(player.name) : false;
     const springProtected = player.job === '潮光'
@@ -7044,7 +7143,9 @@ function computeBattleReview(battle) {
       attackLikeHealers,
     }) || springProtected || chaoguangDpsLevel;
     const specialText = specialCut
-      ? (specialCut.size <= 5
+      ? (player.job === '九靈'
+        ? `焚骨 ${fmtNumber(player.burnCount)} 比同側九靈${specialCut.referenceLabel}（${fmtNumber(specialCut.reference)}）少 40% 以上`
+        : specialCut.size <= 5
         ? `${specialMetric.label}是同側${player.job} ${fmtNumber(specialCut.size)} 人中${specialCut.names.length > 1 ? '並列' : ''}最低`
         : `${specialMetric.label}在同側${player.job}後 30%（${reviewRankText(reviewRank(specialCohort, specialMetric.key, player))}）`)
       : '';
@@ -7319,7 +7420,7 @@ function buildSquadRoleScoreMap(battleIds, cohortFilter = 'same_job') {
     const rows = lookupPlayerRows(battleIds, groupKey, { assignmentRoster: true });
     rows.forEach(row => {
       const cohort = filterPlayerCohortRows(rows, row, cohortFilter);
-      const score = computeRoleScoreFromRow(row, cohort.length ? cohort : [row], groupKey, rows);
+      const score = computeRoleScoreFromRow(row, cohort.length ? cohort : [row], groupKey, rows, cohortFilter);
       scoreMap.set(squadScoreKey(row.name, groupKey), score == null ? 0 : score);
     });
   });
@@ -7970,35 +8071,37 @@ function weightedPrScore(parts) {
 
 function computeRoleFitScores(player, comparisons, options = {}) {
   const pr = comparisonPrMap(comparisons);
+  // options.killComparisons：擊殺改和同類職業一起比（見 ROLE_KILL_GROUPS）
+  const killPr = comparisonPrMap(options.killComparisons || comparisons);
+  const pvpPr = comparisonPrMap(options.pvpComparisons || comparisons);
   const assist = metricPr(pr, 'avgAssist');
   const survival = survivalPr(pr);
+  // 進攻不看擊敗（使用者決定，2026-10-23；原本擊敗 15%，併入塔傷）
   const dpsAttack = weightedPrScore([
-    { value: metricPr(pr, 'avgBuildDamage'), weight: 0.50 },
-    { value: metricPr(pr, 'avgKill'), weight: 0.15 },
+    { value: metricPr(pr, 'avgBuildDamage'), weight: 0.65 },
     { value: assist, weight: 0.10 },
     { value: survival, weight: 0.25 },
   ]);
-  const dpsDefenseBase = [
-    { value: metricPr(pr, 'avgKill'), weight: 0.40 },
-    { value: metricPr(pr, 'avgPvpDamage'), weight: 0.25 },
+  const dpsDefenseBase = weightedPrScore([
+    { value: metricPr(killPr, 'avgKill'), weight: 0.40 },
+    { value: metricPr(pvpPr, 'avgPvpDamage'), weight: 0.25 },
     { value: assist, weight: 0.10 },
     { value: survival, weight: 0.25 },
-  ];
-  const dpsDefense = weightedPrScore(player.job === '九靈'
-    ? [...dpsDefenseBase, { value: metricPr(pr, 'avgBurn'), weight: 0.30 }]
-    : dpsDefenseBase);
+  ]);
+  // 九靈焚骨改成額外加分（使用者決定，2026-10-23）：有燒就 +5，再加焚骨 PR × 0.10，最多 +15、總分上限 100；
+  // 以前焚骨 30% 放進加權平均，焚骨排名低會把擊殺、人傷和其他 DPS 一樣好的九靈拉到比他們低
+  const burnBonus = player.job === '九靈' && Number(player.avgBurn || 0) > 0 ? 5 + Math.round(metricPr(pr, 'avgBurn') * 0.10) : 0;
+  const dpsDefense = Math.min(100, dpsDefenseBase + burnBonus);
   if (player.job === '潮光') {
     const spring = metricPr(pr, 'avgSpring');
     const attackOutput = weightedPrScore([
-      { value: metricPr(pr, 'avgBuildDamage'), weight: 50 },
-      { value: metricPr(pr, 'avgKill'), weight: 15 },
+      { value: metricPr(pr, 'avgBuildDamage'), weight: 65 },
       { value: assist, weight: 10 },
       { value: survival, weight: 25 },
       { value: spring, weight: 15 },
     ]);
     const attackSpring = weightedPrScore([
-      { value: metricPr(pr, 'avgBuildDamage'), weight: 40 },
-      { value: metricPr(pr, 'avgKill'), weight: 5 },
+      { value: metricPr(pr, 'avgBuildDamage'), weight: 45 },
       { value: assist, weight: 10 },
       { value: survival, weight: 25 },
       { value: spring, weight: 35 },
@@ -8068,17 +8171,33 @@ function roleScoreValue(score) {
   return score == null ? 'NA' : `PR${fmtNumber(score)}`;
 }
 
-// 潮光的防守／保鑣分要另外和同組全部 DPS 比擊敗、人傷；groupRows 是這一組（進攻／防守／保鑣）的全部列
-function roleFitOptionsForRow(row, roleKey, groupRows) {
-  if (row?.job !== '潮光' || roleKey === 'attack' || !Array.isArray(groupRows) || !groupRows.length) return {};
-  const dpsRows = filterPlayerCohortRows(groupRows, row, 'dps1');
-  return { dpsComparisons: PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, dpsRows.length ? dpsRows : [row], metric)) };
+// 分工分數的擊殺比較組（使用者決定，2026-10-23）：比較對象是同職業時人太少，擊殺改和同類職業一起比；人傷照舊只比同職業。
+// 防守：碎夢、神相是主力擊殺一組，血河、九靈、玄機、龍吟一組；保鑣：六個 DPS 一組。進攻不看擊殺
+const ROLE_KILL_GROUPS = {
+  defense: [['碎夢', '神相'], ['血河', '九靈', '玄機', '龍吟']],
+  bodyguard: [['碎夢', '神相', '血河', '九靈', '玄機', '龍吟']],
+};
+
+function roleKillGroupJobs(job, roleKey) {
+  return (ROLE_KILL_GROUPS[roleKey] || []).find(jobs => jobs.includes(job)) || null;
 }
 
-function computeRoleScoreFromRow(row, comparisonRows, roleKey, groupRows = null) {
+// groupRows 是這一組（進攻／防守／保鑣）的全部列。潮光的防守／保鑣分另外和同組全部 DPS 比擊敗、人傷
+function roleFitOptionsForRow(row, roleKey, groupRows, cohortFilter = 'same_job') {
+  if (!row || roleKey === 'attack' || !Array.isArray(groupRows) || !groupRows.length) return {};
+  const compareWith = rows => PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, rows.length ? rows : [row], metric));
+  if (row.job === '潮光') return { dpsComparisons: compareWith(filterPlayerCohortRows(groupRows, row, 'dps1')) };
+  const killJobs = cohortFilter === 'same_job' ? roleKillGroupJobs(row.job, roleKey) : null;
+  if (!killJobs) return {};
+  const killComparisons = compareWith(groupRows.filter(item => killJobs.includes(item.job)));
+  // 保鑣的人傷也和保鑣的六個 DPS 一起比（使用者決定，2026-10-23），壓低碎夢人傷低、擊殺高的優勢；防守的人傷照舊只比同職業
+  return roleKey === 'bodyguard' ? { killComparisons, pvpComparisons: killComparisons } : { killComparisons };
+}
+
+function computeRoleScoreFromRow(row, comparisonRows, roleKey, groupRows = null, cohortFilter = 'same_job') {
   if (!row?.battles) return null;
   const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, comparisonRows, metric));
-  return computeRoleFitScores(row, comparisons, roleFitOptionsForRow(row, roleKey, groupRows)).primary?.[roleKey] ?? null;
+  return computeRoleFitScores(row, comparisons, roleFitOptionsForRow(row, roleKey, groupRows, cohortFilter)).primary?.[roleKey] ?? null;
 }
 
 function computeIronDpsScoreFromRow(row, comparisonRows, roleKey) {
@@ -8108,14 +8227,14 @@ function buildRoleFitScoresByGroup(player, roleRows, cohortFilter = 'same_job') 
   const defenseCohort = cohortFor('defense', defenseRow);
   const bodyguardCohort = cohortFor('bodyguard', bodyguardRow);
   const primary = {
-    attack: computeRoleScoreFromRow(attackRow, attackCohort.length ? attackCohort : (attackRow ? [attackRow] : []), 'attack', byGroup.get('attack')),
-    defense: computeRoleScoreFromRow(defenseRow, defenseCohort.length ? defenseCohort : (defenseRow ? [defenseRow] : []), 'defense', byGroup.get('defense')),
-    bodyguard: computeRoleScoreFromRow(bodyguardRow, bodyguardCohort.length ? bodyguardCohort : (bodyguardRow ? [bodyguardRow] : []), 'bodyguard', byGroup.get('bodyguard')),
+    attack: computeRoleScoreFromRow(attackRow, attackCohort.length ? attackCohort : (attackRow ? [attackRow] : []), 'attack', byGroup.get('attack'), cohortFilter),
+    defense: computeRoleScoreFromRow(defenseRow, defenseCohort.length ? defenseCohort : (defenseRow ? [defenseRow] : []), 'defense', byGroup.get('defense'), cohortFilter),
+    bodyguard: computeRoleScoreFromRow(bodyguardRow, bodyguardCohort.length ? bodyguardCohort : (bodyguardRow ? [bodyguardRow] : []), 'bodyguard', byGroup.get('bodyguard'), cohortFilter),
   };
   const modeFor = (groupKey, row, cohort) => {
     if (!row?.battles || row.job !== '潮光') return '';
     const comparisons = PLAYER_COMPARE_METRICS.map(metric => computeMetricComparison(row, cohort.length ? cohort : [row], metric));
-    return computeRoleFitScores(row, comparisons, roleFitOptionsForRow(row, groupKey, byGroup.get(groupKey))).primaryModes?.[groupKey] || '';
+    return computeRoleFitScores(row, comparisons, roleFitOptionsForRow(row, groupKey, byGroup.get(groupKey), cohortFilter)).primaryModes?.[groupKey] || '';
   };
   const primaryModes = {
     attack: modeFor('attack', attackRow, attackCohort),
@@ -8663,14 +8782,16 @@ function renderPlayerCompareTable(comparisons) {
 }
 
 // 玩家統計表與玩家象限圖共用，讀「玩家象限」分頁的篩選
-function professionRows() {
+// options.battleIds／keys／ignoreMinBattles 給「比較玩家」用：只算共同出場的場次、只列勾選的玩家
+function professionRows(options = {}) {
   const job = document.getElementById('quadrant_job_filter').value;
   const groupType = document.getElementById('quadrant_group_filter').value;
-  const minBattles = Number(document.getElementById('quadrant_min_battles').value || 1);
+  const minBattles = options.ignoreMinBattles ? 1 : Number(document.getElementById('quadrant_min_battles').value || 1);
   const sortField = professionTableSort.field || 'reviewSuggestCount';
   const sortOrder = professionTableSort.order || 'desc';
-  const battleIds = selectedProfessionBattleIds('quadrant');
+  const battleIds = options.battleIds || selectedProfessionBattleIds('quadrant');
   return aggregateProfessionPlayers(battleIds, 'quadrant')
+    .filter(item => !options.keys || options.keys.has(playerCompareKey(item)))
     .filter(item => {
       if (!job || job === 'all') return true;
       if (job === 'non_suwen') return item.job !== '素問';
@@ -8690,6 +8811,7 @@ function professionRows() {
       const row = {
         name: item.name,
         job: item.job,
+        battleIds: history.map(h => h.battleId),
         attackCount,
         defenseCount,
         bodyguardCount,
@@ -10216,7 +10338,13 @@ function currentProfessionExportContext() {
     sortField,
     sortOrder,
     battleIds,
-    rows: professionRows(),
+    rows: playerTableRows(),
+    compare: (() => {
+      const compare = playerCompareState(professionRows());
+      return compare && compare.picked.length >= 2
+        ? { names: compare.picked.map(row => `${row.name}｜${row.job}`), battleIds: compare.commonBattleIds }
+        : null;
+    })(),
   };
 }
 
@@ -10543,7 +10671,7 @@ function renderProfessionExportTable(rows, jobFilter = 'all') {
 }
 
 function renderProfessionExportSheet(context) {
-  const battles = filteredBattlesByIds(context.battleIds || []);
+  const battles = filteredBattlesByIds(context.compare ? context.compare.battleIds : (context.battleIds || []));
   const showBattleAppendix = battles.length > 5;
   const jobLabel = context.job === 'all' ? '全部職業' : context.job === 'non_suwen' ? '素問外所有職業' : context.job;
   const groupLabel = context.groupType === 'all' ? '全部' : (GROUP_LABELS[context.groupType] || context.groupType);
@@ -10554,6 +10682,7 @@ function renderProfessionExportSheet(context) {
           <h1 class="player-export-title">幫戰覆盤 玩家統計表</h1>
           <div class="player-export-subtitle">依目前玩家象限頁的篩選與排序條件匯出玩家統計表（不含象限圖）。</div>
           <div class="player-export-subtitle">本表為目前篩選條件下的統計結果，不能單憑數據直接判定玩家表現。</div>
+          ${context.compare ? `<div class="player-export-subtitle">比較玩家：${escHtml(context.compare.names.join('、'))}；只算共同出場的 ${fmtNumber(context.compare.battleIds.length)} 場。</div>` : ''}
         </div>
         <div class="player-export-meta">
           <div class="player-export-meta-item">資料筆數<b>${fmtNumber(context.rows.length)} 人</b></div>
@@ -10932,14 +11061,91 @@ function renderPlayerQuadrantTab() {
   syncJobSelectIcon('quadrant_job_filter');
   const rows = professionRows();
   renderPlayerQuadrantChart(rows);
-  renderProfessionPlayerTable(rows);
+  renderPlayerCompareBox(rows);
+  renderProfessionPlayerTable(playerTableRows(rows));
 }
 
-function renderProfessionPlayerTable(rows = professionRows()) {
+// 比較玩家（使用者要求，2026-10-23）：名單是玩家象限上方篩出來的玩家；勾兩位以上時，下表只列這些人，
+// 數據只算他們都有出場的場次，比較才公平。同名不同職業各算一位
+let playerCompareKeys = new Set();
+
+// 鍵放進 data-* 屬性，不能用 \u0000（HTML 解析會換成 U+FFFD）；職業名稱固定不含「｜」，放前面就不會和名字混淆
+function playerCompareKey(row) {
+  return `${row?.job || ''}｜${row?.name || ''}`;
+}
+
+function playerCompareState(baseRows) {
+  const available = new Set(baseRows.map(playerCompareKey));
+  playerCompareKeys = new Set([...playerCompareKeys].filter(key => available.has(key)));
+  if (!playerCompareKeys.size) return null;
+  const picked = baseRows.filter(row => playerCompareKeys.has(playerCompareKey(row)));
+  const commonBattleIds = picked.slice(1).reduce(
+    (ids, row) => ids.filter(id => row.battleIds.includes(id)),
+    [...new Set(picked[0].battleIds)],
+  );
+  const rows = commonBattleIds.length
+    ? professionRows({ battleIds: commonBattleIds, keys: playerCompareKeys, ignoreMinBattles: true })
+    : [];
+  return { picked, commonBattleIds, rows };
+}
+
+function playerTableRows(baseRows = professionRows()) {
+  const compare = playerCompareState(baseRows);
+  return compare ? compare.rows : baseRows;
+}
+
+function renderPlayerCompareBox(baseRows = professionRows()) {
+  const options = document.getElementById('player_compare_options');
+  if (!options) return;
+  playerCompareState(baseRows);
+  const query = String(document.getElementById('player_compare_search')?.value || '').trim().toLowerCase();
+  const sorted = [...baseRows].sort((a, b) => jobSortValue(a.job) - jobSortValue(b.job) || a.name.localeCompare(b.name, 'zh-Hant'));
+  options.innerHTML = sorted.length
+    ? sorted.map(row => {
+      const key = playerCompareKey(row);
+      const hidden = query && !row.name.toLowerCase().includes(query) && !row.job.includes(query);
+      return `<label class="player-compare-option"${hidden ? ' hidden' : ''}><input type="checkbox" data-compare-key="${escHtml(key)}" ${playerCompareKeys.has(key) ? 'checked' : ''}> <span>${escHtml(row.name)}</span><span class="subtle">${jobIconHtml(row.job)}${escHtml(row.job)}｜${fmtNumber(row.battles)} 場</span></label>`;
+    }).join('')
+    : '<div class="subtle">上方篩選目前沒有玩家。</div>';
+  renderPlayerCompareStatus(baseRows);
+}
+
+// 勾選時只更新摘要、說明與表格，不重畫名單，捲到一半的名單不會跳回最上面
+function renderPlayerCompareStatus(baseRows = professionRows()) {
+  const summary = document.getElementById('player_compare_summary');
+  const status = document.getElementById('player_compare_status');
+  const compare = playerCompareState(baseRows);
+  if (summary) summary.textContent = compare ? `比較玩家：已選 ${fmtNumber(compare.picked.length)} 人` : '比較玩家：未選';
+  if (!status) return;
+  if (!compare) {
+    status.innerHTML = '';
+    return;
+  }
+  const names = compare.picked.map(row => `${row.name}｜${row.job}`).join('、');
+  if (compare.picked.length === 1) {
+    status.innerHTML = `<b>只選了 ${escHtml(names)}</b>：下表只列這位玩家（他的全部場次）；再勾一位以上，就只算大家都有出場的場次。`;
+    return;
+  }
+  const battles = sortBattlesByDateDescending(filteredBattlesByIds(compare.commonBattleIds));
+  status.innerHTML = battles.length
+    ? `<b>比較 ${fmtNumber(compare.picked.length)} 人</b>：${escHtml(names)}；只算共同出場的 <b>${fmtNumber(battles.length)} 場</b>。
+      <details class="player-compare-battles"><summary>共同出場的場次</summary>${battles.map(battle => `<div>${escHtml(battleDisplayLabel(battle, { includePlayers: false }))}</div>`).join('')}</details>`
+    : `<b>比較 ${fmtNumber(compare.picked.length)} 人</b>：${escHtml(names)}；在目前勾選的場次裡沒有共同出場的場次。`;
+}
+
+function setPlayerCompareKey(key, checked) {
+  if (checked) playerCompareKeys.add(key);
+  else playerCompareKeys.delete(key);
+  const rows = professionRows();
+  renderPlayerCompareStatus(rows);
+  renderProfessionPlayerTable(playerTableRows(rows));
+}
+
+function renderProfessionPlayerTable(rows = playerTableRows()) {
   const body = document.getElementById('profession_body');
   renderProfessionTableHeader();
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="${PROFESSION_TABLE_COLUMNS.length}" class="empty">目前沒有符合條件的職業資料。</td></tr>`;
+    body.innerHTML = `<tr><td colspan="${PROFESSION_TABLE_COLUMNS.length}" class="empty">${playerCompareKeys.size >= 2 ? '勾選的玩家在目前勾選的場次裡沒有共同出場的場次。' : '目前沒有符合條件的職業資料。'}</td></tr>`;
     syncProfessionScrollbars();
     return;
   }
@@ -12919,11 +13125,11 @@ function renderRulesExplain() {
   el.innerHTML = `
     <div class="explain-item"><b style="color:var(--warn); font-weight:900; font-size:20px; line-height:1.4;">這個系統不能直接判定誰打得差</b><span class="subtle">這裡先用門檻抓「值得複查」的人，再結合分工、特殊職責與指揮資訊做人工判讀。</span></div>
     <div class="explain-item"><b>第一輪主指標</b><span class="subtle">進攻團 DPS 看塔傷；防守 / 保鑣 DPS 看擊殺與人傷；素問主看化羽與淨奶量。後段篩選的切點由個人或幫會幹部自行定義。</span></div>
-    <div class="explain-item"><b>玩家查詢分工 PR 算法</b><span class="subtle">玩家查詢的進攻分、防守分、保鑣分使用目前選取場次的平均數據：先把玩家各場同分工資料平均，再和目前選取的比較對象計算各指標 PR，最後用 PR 加權。DPS 進攻分 = 塔傷 PR 50% + 擊敗 PR 15% + 助攻 PR 10% + 生存 PR 25%。DPS 防守分 / 保鑣分 = 擊敗 PR 40% + 人傷 PR 25% + 助攻 PR 10% + 生存 PR 25%。九靈防守 / 保鑣會額外加入焚骨 PR 30%，再依總權重換算。潮光會同時計算輸出型與清泉型分數並取高：進攻輸出型為塔傷50、擊敗15、助攻10、生存25、清泉15；進攻清泉型為塔傷40、擊敗5、助攻10、生存25、清泉35；防守 / 保鑣改成輔助型與輸出型取高（2026-10-23）：輔助型為助攻35、清泉35、生存30；輸出型為擊敗40、人傷25、助攻10、生存25、清泉15，其中擊敗、人傷和同組全部 DPS 比，只在潮光裡排前面不算數。素問分 = 淨治療 PR 30% + 化羽 PR 30% + 助攻 PR 10% + 生存 PR 30%。鐵衣分 = 承傷 PR 30% + 承傷/重傷 PR 30% + 助攻 PR 10% + 生存 PR 30%，並另外顯示破鐵 DPS 試算。</span></div>
+    <div class="explain-item"><b>玩家查詢分工 PR 算法</b><span class="subtle">玩家查詢的進攻分、防守分、保鑣分使用目前選取場次的平均數據：先把玩家各場同分工資料平均，再和目前選取的比較對象計算各指標 PR，最後用 PR 加權。DPS 進攻分 = 塔傷 PR 65% + 助攻 PR 10% + 生存 PR 25%（2026-10-23 起不看擊敗）。DPS 防守分 / 保鑣分 = 擊敗 PR 40% + 人傷 PR 25% + 助攻 PR 10% + 生存 PR 25%；比較對象選同職業時，擊敗改和同類職業一起比（防守：碎夢、神相一組，血河、九靈、玄機、龍吟一組；保鑣：這六個 DPS 一組）；人傷防守只比同職業，保鑣也和這六個 DPS 一起比。九靈防守 / 保鑣的焚骨改成額外加分：有燒就 +5，再加焚骨 PR × 0.10，最多 +15、總分上限 100（2026-10-23；以前焚骨 30% 放進加權平均）。潮光會同時計算輸出型與清泉型分數並取高：進攻輸出型為塔傷65、助攻10、生存25、清泉15；進攻清泉型為塔傷45、助攻10、生存25、清泉35；防守 / 保鑣改成輔助型與輸出型取高（2026-10-23）：輔助型為助攻35、清泉35、生存30；輸出型為擊敗40、人傷25、助攻10、生存25、清泉15，其中擊敗、人傷和同組全部 DPS 比，只在潮光裡排前面不算數。素問分 = 淨治療 PR 30% + 化羽 PR 30% + 助攻 PR 10% + 生存 PR 30%。鐵衣分 = 承傷 PR 30% + 承傷/重傷 PR 30% + 助攻 PR 10% + 生存 PR 30%，並另外顯示破鐵 DPS 試算。</span></div>
     <div class="explain-item"><b>高重傷只當警戒</b><span class="subtle">重傷不會單獨判斷成有問題。系統會分開看進攻/保鑣與防守兩邊的高重傷門檻，再看主責產出有沒有把重傷成本補回來。</span></div>
     <div class="explain-item"><b>系統難以判定、優先找幹部覆盤、歡迎找幹部覆盤</b><span class="subtle">DPS：兩項主指標都在後 30% 進歡迎，再加上重傷多，或主指標在最後 5%，進優先。只有一項在後 30% 時，防守 / 保鑣另有擊殺、人傷或助攻在最後 20% 進歡迎（又重傷多、主指標也在最後 20% 則進優先），只是重傷多就列系統難以判定；進攻團重傷多進歡迎（主指標也在最後 20% 則進優先），重傷不多但人傷或助攻在最後 20% 也進歡迎；都不符合但主指標在最後 20% 時，列系統難以判定。進攻 / 保鑣團沒有弱項標記，但重傷多、主指標在最後 40%，進歡迎。素問：化羽、淨奶量都在後 30% 進歡迎，再加上重傷多進優先；只有一項但重傷多，進歡迎；化羽與淨奶量的排名都在最後 30% 時，列系統難以判定。鐵衣：輸出（進攻看塔傷、防守看人傷或擊殺）和坦度（承傷、承傷/重傷）都在後 30% 進歡迎，再加上重傷多進優先；進攻鐵衣塔傷偏弱又重傷多，進歡迎；分工沒有標坦、承傷或承傷/重傷卻在同側鐵衣前 30% 的，列系統難以判定。九靈 / 潮光：焚骨 / 清泉在同側同職業後 30%、主指標在後半時，已有弱項又重傷多進優先，只有一個標記進歡迎，沒有進其他名單時列系統難以判定。本機版名單卡的最後一行「判定」寫出命中的是哪一條；公開版不顯示。</span></div>
     <div class="explain-item"><b>同分與人數少的比較組</b><span class="subtle">後 30%（重傷是前 30%）的切線如果剛好落在同分之間，同分的人一起標記；同分有 3 人以上時，這個標記只顯示、不拿來判定名單，卡片上標「同分」。比較組只有 5 人以下時（例如防守團素問每場通常 4 人），只標最低（重傷是最多）的 1 人，同分照上面處理。清泉保護看的「同側同職業前 30%」，同分的人一起算。</span></div>
-    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨；進攻團的潮光補看清泉；鐵衣補看承傷與承傷/重傷。防守／保鑣的潮光多半打輔助，人傷、擊殺低不算弱項，改看助攻與清泉是否在同側潮光後 30%：兩項都低進歡迎，再加上重傷多進優先，只有一項低時要重傷也多才進歡迎；人傷或擊殺達到同側 DPS 中位數，視為打出 DPS 水準，不進名單（2026-10-23）。潮光若清泉 > 12 或清泉位於同側同職業前 30%，且清泉數 > 自身重傷數，視為清泉有補回成本，不進單場覆盤自動名單。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦度門檻目前定為：承傷 > 5250萬 且 承傷/重傷 > 600萬，或承傷 > 3750萬 且 承傷/重傷 > 900萬；素問不適用，因為素問的承傷已經從淨奶量扣掉。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。塔傷門檻定為單場塔傷排名前 10 名，或單場塔傷 > 4000萬。承傷與塔傷門檻依 7/20 改版後的數值訂定。達標以上任一門檻，即使其他數據不佳也不會進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
+    <div class="explain-item"><b>特殊職責與排除</b><span class="subtle">九靈補看焚骨：焚骨比同側九靈第二名少 40% 以上才算偏弱（2026-10-23；以前是後 30%）；進攻團的潮光補看清泉；鐵衣補看承傷與承傷/重傷。防守／保鑣的潮光多半打輔助，人傷、擊殺低不算弱項，改看助攻與清泉是否在同側潮光後 30%：兩項都低進歡迎，再加上重傷多進優先，只有一項低時要重傷也多才進歡迎；人傷或擊殺達到同側 DPS 中位數，視為打出 DPS 水準，不進名單（2026-10-23）。潮光若清泉 > 12 或清泉位於同側同職業前 30%，且清泉數 > 自身重傷數，視為清泉有補回成本，不進單場覆盤自動名單。指揮（commander）會在單場覆盤中另外列出，不列入數據評估，建議看錄像評估決策狀況。分工未知（不確定哪團）也會另外列出，不會納入系統數據評估，建議先確認分組後再看數據。坦度門檻目前定為：承傷 > 5250萬 且 承傷/重傷 > 600萬，或承傷 > 3750萬 且 承傷/重傷 > 900萬；素問不適用，因為素問的承傷已經從淨奶量扣掉。擊殺門檻定為 >= 10 且 擊殺/重傷 >= 2，或擊殺 >= 20 且 擊殺/重傷 >= 1.5，也直接排除。塔傷門檻定為單場塔傷排名前 10 名，或單場塔傷 > 4000萬。承傷與塔傷門檻依 7/20 改版後的數值訂定。達標以上任一門檻，即使其他數據不佳也不會進入單場覆盤自動名單，且不會在單場對位個人數據中標紅。</span></div>
     <div class="explain-item"><b>素問判讀更保守</b><span class="subtle">素問主看化羽與淨奶量。單一弱項通常不直接進名單，但若再疊加高重傷仍會進待查；若化羽或淨奶量是該分組第一，則直接排除，不進自動名單。素問不適用坦度保護。需要時再由人工備註補充。</span></div>
     <div class="explain-item"><b>批次匯出 PDF</b><span class="subtle">在頁首的「資料」選單。</span></div>
   `;
@@ -13956,6 +14162,26 @@ document.getElementById('player_quadrant_x').addEventListener('change', event =>
 document.getElementById('player_quadrant_y').addEventListener('change', event => setPlayerQuadrantAxis('y', event.target.value));
 document.getElementById('btn_player_quadrant_swap').addEventListener('click', swapPlayerQuadrantAxes);
 document.getElementById('player_quadrant_center').addEventListener('change', event => setPlayerQuadrantCenter(event.target.value));
+document.getElementById('player_compare_options').addEventListener('change', event => {
+  const key = event.target?.dataset?.compareKey;
+  if (key) setPlayerCompareKey(key, event.target.checked);
+});
+document.getElementById('player_compare_search').addEventListener('input', () => {
+  const query = String(document.getElementById('player_compare_search').value || '').trim().toLowerCase();
+  document.querySelectorAll('#player_compare_options .player-compare-option').forEach(label => {
+    label.hidden = !!query && !label.textContent.toLowerCase().includes(query);
+  });
+});
+document.getElementById('btn_player_compare_clear').addEventListener('click', () => {
+  playerCompareKeys = new Set();
+  const rows = professionRows();
+  renderPlayerCompareBox(rows);
+  renderProfessionPlayerTable(playerTableRows(rows));
+});
+window.addEventListener('click', event => {
+  const picker = document.getElementById('player_compare_picker');
+  if (picker?.open && !event.target?.closest?.('#player_compare_picker')) picker.open = false;
+});
 bindPlayerQuadrantChartEvents();
 window.addEventListener('scroll', hidePlayerQuadrantTooltip, { passive: true });
 document.getElementById('btn_export_profession_pdf').addEventListener('click', exportProfessionPdf);
