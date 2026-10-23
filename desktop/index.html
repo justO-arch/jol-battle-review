@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>幫戰覆盤工具</title>
+<meta name="description" content="幫戰覆盤：單場覆盤、單場對位、重點人物、職業表現、玩家象限、小隊表現與玩家查詢（公開唯讀）。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="幫戰覆盤工具">
+<meta property="og:description" content="幫戰公開覆盤（唯讀）：單場覆盤、對位、重點人物、職業表現與玩家查詢。">
+<meta name="theme-color" content="#9b4d1d">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36' fill='none' stroke='%239b4d1d' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 3 L31 8 V17 C31 25 25 30.5 18 33 C11 30.5 5 25 5 17 V8 Z'/%3E%3Cpath d='M12 12 L24 24'/%3E%3Cpath d='M24 12 L12 24'/%3E%3C/svg%3E">
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -240,6 +247,13 @@
     border-color: var(--tk-line-e8b6aa);
   }
   .btn-danger:hover { background: var(--tk-bg-f6d5cc); }
+  .public-loading-note { margin: 12px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 12px; text-align: center; color: var(--muted); font-weight: 700; background: var(--panel); }
+  .special-role-cell { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 170px; }
+  .special-role-cell label { display: inline-flex; align-items: center; gap: 4px; margin: 0; white-space: nowrap; font-size: 12px; }
+  .special-role-cell input[type="checkbox"] { width: auto; }
+  .special-role-cell input[type="text"] { flex: 1 1 90px; min-width: 80px; }
+  .battle-scope-status { margin-left: 8px; font-weight: 700; color: var(--accent); font-size: 12px; }
+  .battle-scope-status.is-empty { color: var(--tk-fg-8b5d12); }
   .player-match-choices { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
   .player-match-title { font-weight: 700; }
   .player-match-list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -932,6 +946,10 @@
     border-bottom: 1px solid var(--tk-line-e6dbcf);
   }
   .matchup-card summary::-webkit-details-marker { display: none; }
+  .matchup-mark-chip { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+  .matchup-mark-chip.weak { color: var(--tk-fg-b42318); background: var(--warn-soft); }
+  .matchup-mark-chip.strong { color: var(--accent-2); background: var(--accent-2-soft); }
+  .matchup-card.has-weak, .matchup-nested.has-weak { border-left: 4px solid var(--tk-fg-b42318); }
   .matchup-title {
     font-size: 22px;
     font-weight: 900;
@@ -2408,7 +2426,7 @@
   body.public-landscape .mode-status {
     max-width: 260px;
     text-align: left;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
   }
   body.public-landscape .panel {
@@ -2460,7 +2478,7 @@
     margin-left: auto;
   }
   body.public-landscape .current-battle-tools label {
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
   }
   body.public-landscape .current-battle-tools select {
@@ -2557,7 +2575,7 @@
     width: 560px;
     min-width: 560px;
     table-layout: fixed;
-    font-size: 11px;
+    font-size: 12px;
   }
   body.public-landscape .matchup-compare-table th,
   body.public-landscape .matchup-compare-table td {
@@ -2596,7 +2614,7 @@
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.55;
     padding: 6px 0;
   }
@@ -2636,7 +2654,7 @@
   body.public-landscape .focus-detail-item {
     margin-bottom: 6px;
     padding: 8px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.5;
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -2719,7 +2737,7 @@
     max-width: 176px;
     min-width: 0;
     padding: 8px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
     overflow: hidden;
     scroll-snap-align: start;
@@ -3548,7 +3566,7 @@
   }
   body.public-landscape .hero-meta .mode-status {
     max-width: none;
-    font-size: 11px;
+    font-size: 12px;
   }
   .import-toast {
     position: fixed;
@@ -3825,7 +3843,7 @@
     .vs-share { display: none; }
   }
   .review-box.priority { --review-tone: var(--warn); --review-tone-soft: var(--warn-soft); }
-  .review-box.secondary { --review-tone: var(--mid); --review-tone-soft: var(--mid-soft); }
+  .review-box.secondary { --review-tone: var(--mid); --review-tone-soft: var(--mid-soft); --review-tone-text: var(--tk-fg-8b5d12); }
   .review-box.observation { --review-tone: var(--obs); --review-tone-soft: var(--obs-soft); }
   .review-box.commander { --review-tone: var(--accent-2); --review-tone-soft: var(--accent-2-soft); }
   .review-box.unknown-group { --review-tone: var(--muted); --review-tone-soft: var(--tk-bg-f1ece4); }
@@ -4087,7 +4105,7 @@
   .review-box .review-card .flag {
     border: 1px solid var(--review-tone, var(--line));
     background: transparent;
-    color: var(--review-tone, var(--text));
+    color: var(--review-tone-text, var(--review-tone, var(--text)));
     font-size: 12px;
   }
   .review-card-stats {
@@ -4119,10 +4137,10 @@
   }
   .review-card-reason b {
     margin-right: 6px;
-    color: var(--review-tone, var(--text));
+    color: var(--review-tone-text, var(--review-tone, var(--text)));
   }
   .review-card-stats dd.is-flagged {
-    color: var(--review-tone, var(--text));
+    color: var(--review-tone-text, var(--review-tone, var(--text)));
   }
   .review-box .review-card .flag.flag-mark-only {
     border-style: dashed;
@@ -4198,7 +4216,7 @@
       padding: 2px 10px;
       border-radius: 999px;
       background: var(--review-tone-soft, transparent);
-      color: var(--review-tone, var(--text));
+      color: var(--review-tone-text, var(--review-tone, var(--text)));
       font-size: 12px;
       font-weight: 800;
       opacity: 1;
@@ -4262,7 +4280,7 @@
     font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
-  .squad-highlight.build .squad-highlight-value { color: var(--mid); }
+  .squad-highlight.build .squad-highlight-value { color: var(--tk-fg-8b5d12); }
   .squad-highlight.pvp .squad-highlight-value { color: var(--chart-2); }
   .squad-highlight.kill .squad-highlight-value { color: var(--chart-1); }
   .squad-highlight.death .squad-highlight-value { color: var(--accent-2); }
@@ -4274,7 +4292,7 @@
     background: transparent;
   }
   .squad-group-row.attack > td { color: var(--chart-2); }
-  .squad-group-row.bodyguard > td { color: var(--mid); }
+  .squad-group-row.bodyguard > td { color: var(--tk-fg-8b5d12); }
   .squad-group-row.defense > td { color: var(--chart-1); }
   .squad-group-row.unknown > td { color: var(--muted); }
   .squad-bar-cell {
@@ -4466,8 +4484,8 @@
           <div class="panel-body">
             <div class="tab-panel" data-tab-panel="assignment">
               <div class="readonly-note" id="public_readonly_note" hidden>公開唯讀模式：可查看分工與報表，但不能修改分工、metadata、刪除場次或匯入 CSV。若要編輯，請先建立本機副本。</div>
-              <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。改變指揮只要在特殊職責的欄位下輸入 commander，就會默認為指揮；輸入 lag 則不列入自動覆盤觀察名單）</span></div>
-              <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為 commander 的玩家。</div>
+              <div class="assignment-alert">分工和指揮名單可修改<span class="assignment-alert-detail">（目前是電腦判讀幫戰排表，可能誤判。都可以改變分組或指揮名單。在特殊職責欄勾「指揮」就算指揮；勾「lag」則這場不列入自動覆盤名單；其他職責寫在旁邊的文字框）</span></div>
+              <div class="assignment-commander-box" id="assignment_commander_box">目前沒有標記為指揮的玩家。</div>
               <div class="assignment-commander-box" id="assignment_unknown_box" style="margin-top:-2px;">目前沒有分工未知的玩家。</div>
               <div class="assignment-role-file">
                 <button class="btn-secondary" id="btn_import_assignment_csv" type="button">匯入分工表</button>
@@ -4530,6 +4548,7 @@
               </div>
             </div>
 
+            <div class="public-loading-note" id="public_loading_note" role="status" hidden>正在載入公開資料…</div>
             <div class="tab-panel active" data-tab-panel="review">
               <div class="review-topbar">
                 <div class="settings-strip">
@@ -4671,7 +4690,7 @@
                   </select>
                 </div>
                 <div class="field" style="grid-column: 1 / -1;">
-                  <label>勾選要納入統計的場次</label>
+                  <label>勾選要納入統計的場次 <span class="battle-scope-status" id="player_battle_select_status"></span></label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
                       <button class="btn-ghost" type="button" id="btn_player_check_all">全勾</button>
@@ -4711,7 +4730,7 @@
             <div class="tab-panel" data-tab-panel="profession">
               <div class="grid-4">
                 <div class="field" style="grid-column: 1 / -1;">
-                  <label>勾選要納入統計的場次</label>
+                  <label>勾選要納入統計的場次 <span class="battle-scope-status" id="profession_battle_select_status"></span></label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
                       <button class="btn-ghost" type="button" id="btn_prof_check_all">全勾</button>
@@ -4825,7 +4844,7 @@
                   <input id="quadrant_min_battles" type="number" min="1" step="1" value="1">
                 </div>
                 <div class="field" style="grid-column: 1 / -1;">
-                  <label>勾選要納入統計的場次</label>
+                  <label>勾選要納入統計的場次 <span class="battle-scope-status" id="quadrant_battle_select_status"></span></label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
                       <button class="btn-ghost" type="button" id="btn_quadrant_check_all">全勾</button>
@@ -4915,7 +4934,7 @@
             <div class="tab-panel" data-tab-panel="squad">
               <div class="grid-4">
                 <div class="field" style="grid-column: 1 / -1;">
-                  <label>勾選要納入統計的場次</label>
+                  <label>勾選要納入統計的場次 <span class="battle-scope-status" id="squad_battle_select_status"></span></label>
                   <div class="battle-scope-bar">
                     <div class="battle-scope-actions">
                       <button class="btn-ghost" type="button" id="btn_squad_check_all">全勾</button>
@@ -5008,23 +5027,23 @@
               <div style="height:12px;"></div>
               <div class="focus-detail-grid">
                 <details class="opponent-card focus-detail-card focus-detail-card-normal">
-                  <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_build"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-normal">
-                  <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_pvp"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-normal">
-                  <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_kill"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-iron">
-                  <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_iron"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-healer">
-                  <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="team_top_healer"></div>
                 </details>
               </div>
@@ -5034,23 +5053,23 @@
               <div style="height:12px;"></div>
               <div class="focus-detail-grid">
                 <details class="opponent-card focus-detail-card focus-detail-card-normal">
-                  <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>拆塔前五 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="opponent_top_build"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-normal">
-                  <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>打人前五 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="opponent_top_pvp"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-normal">
-                  <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>擊殺前五 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="opponent_top_kill"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-iron">
-                  <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>鐵衣重點四人 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="opponent_top_iron"></div>
                 </details>
                 <details class="opponent-card focus-detail-card focus-detail-card-healer">
-                  <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:#888;">（點擊展開）</span></summary>
+                  <summary>素問重點六人 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（點擊展開）</span></summary>
                   <div class="opponent-card-body" id="opponent_top_healer"></div>
                 </details>
               </div>
@@ -5568,6 +5587,7 @@ let publicSharePayload = null;
 let publicShareUiState = null;
 let pendingReviewSnapshot = null;
 let publicShareLoadError = '';
+let publicShareLoading = false;
 // 讀取本機存檔失敗時記下原因；之後不再存檔，避免用空資料蓋掉讀不出來的原始存檔。
 // loadState 在下一行就會執行，這兩個變數必須宣告在 let state 之前。
 let stateLoadError = '';
@@ -5760,6 +5780,10 @@ function normalizeStatePayload(next = {}) {
     settings: {
       weakPct: Number(next.settings?.weakPct || 30),
       deathPct: Number(next.settings?.deathPct || 30),
+      // 單場對位的門檻（2026-10-23 起存在這裡；沒有時用預設）
+      ...Object.fromEntries(['matchupWeakPct', 'matchupStrongPct', 'matchupRosterBottomPct']
+        .filter(key => Number(next.settings?.[key]) > 0)
+        .map(key => [key, Number(next.settings[key])])),
     },
     batchExportConfig: normalizeBatchExportConfig(next.batchExportConfig),
   };
@@ -6214,7 +6238,7 @@ function renderPublicModeUi() {
     status.classList?.toggle?.('public', publicMode);
     status.classList?.toggle?.('load-error', !publicMode && !!stateLoadError);
     status.textContent = publicMode
-      ? (publicShareLoadError
+      ? (publicShareLoading ? '公開唯讀模式：正在載入公開資料…' : publicShareLoadError
         ? `公開唯讀模式：${publicShareLoadError}`
         : `公開唯讀模式${landscapeMode ? '（手機橫版檢視）' : ''}：${publicShareSummaryText(publicSharePayload?.exported_at, state?.battles) || `資料來源 ${publicShareDataUrl()}`}，不會寫入你的瀏覽器。`)
       : (stateLoadError
@@ -6319,6 +6343,12 @@ function restoreUiState(uiState = {}) {
   };
   if (document.getElementById('matchup_weak_pct')) document.getElementById('matchup_weak_pct').value = uiState.matchupWeakPct || '10';
   if (document.getElementById('matchup_roster_bottom_pct')) document.getElementById('matchup_roster_bottom_pct').value = uiState.matchupRosterBottomPct || '20';
+  // 舊匯出檔的門檻在 ui_state；現在門檻存在 state.settings，匯入時一併帶進去
+  if (state.settings) {
+    ['matchupWeakPct', 'matchupRosterBottomPct'].forEach(key => {
+      if (uiState[key] && !Number(state.settings[key])) state.settings[key] = Number(uiState[key]) || state.settings[key];
+    });
+  }
   state.batchExportConfig = normalizeBatchExportConfig(uiState.batchExportConfig || state.batchExportConfig);
   if (typeof refreshReviewOpponentFilterOptions === 'function') refreshReviewOpponentFilterOptions();
   if (typeof renderBattleFilterOptions === 'function') {
@@ -6984,7 +7014,7 @@ function isTank(player) {
 
 function isCommander(player) {
   const roles = Array.isArray(player.specialRoles) ? player.specialRoles.join(',') : '';
-  return /commander|指揮/.test(roles);
+  return /commander|指揮/i.test(roles);
 }
 
 function isLagExempt(player) {
@@ -9455,8 +9485,8 @@ function renderAssignmentTable() {
       .filter(player => isCommander(player))
       .sort(comparePlayers);
     commanderBox.innerHTML = commanders.length
-      ? `<b>目前指揮（commander）名單：</b> ${commanders.map(player => `${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}`).join('、')}`
-      : '目前沒有標記為 commander 的玩家。';
+      ? `<b>目前指揮名單：</b> ${commanders.map(player => `${escHtml(player.name)}｜${escHtml(player.job)}｜${escHtml(GROUP_LABELS[player.groupType] || '未定')}`).join('、')}`
+      : '目前沒有標記為指揮的玩家。';
   }
   if (unknownBox) {
     const unknownPlayers = [...players]
@@ -9478,7 +9508,11 @@ function renderAssignmentTable() {
         </select>
       </td>
       <td><input type="text" value="${escHtml(player.subgroup || '')}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(escJs(player.name))}','subgroup',this.value)" placeholder="例如：進攻一隊"${readonlyAttr}></td>
-      <td><input type="text" value="${escHtml((player.specialRoles || []).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(escJs(player.name))}','specialRoles',this.value)" placeholder="例如：commander,lag"${readonlyAttr}></td>
+      <td><div class="special-role-cell">
+        <label><input type="checkbox" ${isCommander(player) ? 'checked' : ''} onchange="toggleSpecialRole('${battle.id}','${escHtml(escJs(player.name))}','commander',this.checked)"${readonlyAttr}>指揮</label>
+        <label title="lag：這場不列入覆盤名單"><input type="checkbox" ${isLagExempt(player) ? 'checked' : ''} onchange="toggleSpecialRole('${battle.id}','${escHtml(escJs(player.name))}','lag',this.checked)"${readonlyAttr}>lag</label>
+        <input type="text" value="${escHtml(otherSpecialRoles(player.specialRoles).join(','))}" onchange="updatePlayerAssignment('${battle.id}','${escHtml(escJs(player.name))}','specialRoles',this.value)" placeholder="其他職責"${readonlyAttr}>
+      </div></td>
       <td>${isPublicReadOnlyMode() ? '<span class="subtle">唯讀</span>' : `<button class="btn-ghost" type="button" onclick="deleteBattlePlayer('${battle.id}','${escHtml(escJs(player.name))}')">刪除</button>`}</td>
       <td>${fmtLarge(player.buildDamage)}</td>
       <td>${fmtNumber(player.kill)}</td>
@@ -9934,7 +9968,7 @@ function renderPlayerLeaders(battleIds, options = {}) {
   box.innerHTML = `
     <details>
       <summary class="panel-title" style="margin:0 0 10px; border-radius:16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <span>建議覆盤場次統計 <span style="font-weight:400; font-size:0.85em; color:#888;">（至少出場 ${fmtNumber(minBattles)} 場；點擊可展開）</span></span>
+        <span>建議覆盤場次統計 <span style="font-weight:400; font-size:0.85em; color:var(--muted);">（至少出場 ${fmtNumber(minBattles)} 場；點擊可展開）</span></span>
         <button class="btn-primary" type="button" onclick="event.preventDefault(); event.stopPropagation(); exportCurrentPlayerLeadersPdf();">匯出建議覆盤統計</button>
       </summary>
       <div class="summary-grid">
@@ -10073,7 +10107,7 @@ function renderPlayerDetailFromContext(context) {
       </div>
     </div>
     <div class="mini-grid">
-      <div class="mini-stat">納入場次<b>${fmtNumber(battleMeta.count)} 場</b></div>
+      <div class="mini-stat">篩選範圍<b>${fmtNumber(battleMeta.count)} 場（本人出場 ${fmtNumber(player.battles)} 場）</b></div>
       <div class="mini-stat">日期範圍<b>${escHtml(battleMeta.dateRange)}</b></div>
       <div class="mini-stat">己方分布<b>${escHtml(battleMeta.teamsText)}</b></div>
       <div class="mini-stat">對手分布<b>${escHtml(battleMeta.opponentsText)}</b></div>
@@ -10865,10 +10899,21 @@ function buildPrintWindowDocument({ titleText, styleText, exportHtml, pageCss = 
 </html>`;
 }
 
+// 瀏覽器擋下彈出視窗時，以前一律說「請稍後再試」，再按一次也一樣會被擋（2026-10-23，評估報告 B-34）
+function exportFailureMessage(err, label = '匯出 PDF') {
+  return err?.popupBlocked
+    ? `${label}需要開新視窗，但被瀏覽器擋下了。請在網址列右側允許這個網站「彈出式視窗」，再按一次。`
+    : `${label}失敗，請稍後再試。`;
+}
+
 function openPrintExportWindow({ titleText, exportNode, width, height, pageCss = '', extraHead = '' }) {
   const styleText = [...document.querySelectorAll('style')].map(style => style.textContent || '').join('\n');
   const printWindow = window.open('', '_blank', `width=${width},height=${height}`);
-  if (!printWindow) throw new Error('無法開啟列印視窗。');
+  if (!printWindow) {
+    const error = new Error('無法開啟列印視窗。');
+    error.popupBlocked = true;
+    throw error;
+  }
   printWindow.document.open();
   printWindow.document.write(buildPrintWindowDocument({
     titleText,
@@ -10891,7 +10936,7 @@ async function exportCurrentPlayerPdf(options = {}) {
     openPrintExportWindow({ titleText, exportNode, width: 1440, height: 960, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert(exportFailureMessage(err));
     throw err;
   }
 }
@@ -10918,7 +10963,7 @@ async function exportCurrentPlayerLeadersPdf(options = {}) {
     openPrintExportWindow({ titleText, exportNode, width: 1440, height: 960, pageCss: '@page { size: A4 portrait; }' });
   } catch (err) {
     console.error(err);
-    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert(exportFailureMessage(err));
     throw err;
   }
 }
@@ -10947,7 +10992,7 @@ async function exportProfessionPdf(options = {}) {
     openPrintExportWindow({ titleText, exportNode, width: 1600, height: 1000, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert(exportFailureMessage(err));
     throw err;
   }
 }
@@ -10983,7 +11028,7 @@ async function exportFocusPdf(options = {}) {
     openPrintExportWindow({ titleText, exportNode, width: 1600, height: 960, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert(exportFailureMessage(err));
     throw err;
   }
 }
@@ -12323,6 +12368,41 @@ function renderMatchupAggregateTable(myList, foeList, rows = matchupDpsGroupMetr
   `;
 }
 
+// 收合時標題直接寫出弱勢、強勢的指標（2026-10-23，評估報告 B-03）；判定和表格的 * 與 # 相同
+function matchupTableMarks(myList, foeList, rows = matchupDpsGroupMetricsRows(), options = {}) {
+  const weakPct = Math.max(1, Number(options.weakPct || 10));
+  const strongPct = options.strongPct != null ? Math.max(1, Number(options.strongPct)) : null;
+  const weak = [];
+  const strong = [];
+  rows.forEach(([label, key]) => {
+    const wTotal = matchupNeedsWeakMark(key, 'total', myList, foeList, { ...options, weakPct });
+    const wAvg = matchupNeedsWeakMark(key, 'average', myList, foeList, { ...options, weakPct });
+    const sTotal = strongPct != null && !wTotal && matchupNeedsStrongMark(key, 'total', myList, foeList, { ...options, strongPct });
+    const sAvg = strongPct != null && !wAvg && matchupNeedsStrongMark(key, 'average', myList, foeList, { ...options, strongPct });
+    if (wTotal || wAvg) weak.push(label);
+    else if (sTotal || sAvg) strong.push(label);
+  });
+  return { weak, strong };
+}
+
+function mergeMatchupMarks(list, prefixes = []) {
+  const weak = [];
+  const strong = [];
+  list.forEach((marks, index) => {
+    const prefix = prefixes[index] ? `${prefixes[index]}・` : '';
+    marks.weak.forEach(label => weak.push(prefix + label));
+    marks.strong.forEach(label => strong.push(prefix + label));
+  });
+  return { weak, strong };
+}
+
+function matchupMarkChips(marks) {
+  const chip = (cls, text, labels) => labels.length
+    ? `<span class="matchup-mark-chip ${cls}" title="${escHtml(labels.join('、'))}">${text} ${fmtNumber(labels.length)}</span>`
+    : '';
+  return `${chip('weak', '弱勢', marks.weak)}${chip('strong', '強勢', marks.strong)}`;
+}
+
 function matchupPlayerGroupForSide(player, side = 'self', options = {}) {
   if (!player) return null;
   const bodyguardGroup = options.mergeBodyguardWithAttack ? 'attack' : 'defense';
@@ -12345,11 +12425,12 @@ function renderMatchupNestedSection(title, myList, foeList, options = {}) {
   const foeTitle = options.foeTitle || '對方';
   const hideRoster = !!options.hideRoster;
   const scope = options.scope || 'group';
+  const marks = matchupTableMarks(myList, foeList, rows, { scope: 'group', isDpsJob: !!options.isDpsJob, allowGroupTotalKillBuild: !!options.allowGroupTotalKillBuild, allowOverallTotalKillBuild: options.allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct });
   return `
-    <details class="matchup-nested">
+    <details class="matchup-nested${marks.weak.length ? ' has-weak' : ''}">
       <summary>
         <div class="matchup-title">${jobIconHtml(title)}${escHtml(title)}</div>
-        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
+        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人${matchupMarkChips(marks)}</div>
       </summary>
       <div class="matchup-nested-body" data-matchup-scope="${scope}">
         ${renderMatchupAggregateTable(myList, foeList, rows, { scope: 'group', isDpsJob: !!options.isDpsJob, allowGroupTotalKillBuild: !!options.allowGroupTotalKillBuild, allowOverallTotalKillBuild: options.allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct })}
@@ -12381,11 +12462,17 @@ function renderDpsBundleCard(title, myList, foeList, options = {}) {
   const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, 'self', groupOptions) === 'defense');
   const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, 'foe', groupOptions) === 'attack');
   const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, 'foe', groupOptions) === 'defense');
+  const groupMarkOptions = { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, strongPct };
+  const marks = mergeMatchupMarks([
+    matchupTableMarks(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct, strongPct }),
+    matchupTableMarks(myAttack, foeAttack, metricRows, groupMarkOptions),
+    matchupTableMarks(myDefense, foeDefense, metricRows, groupMarkOptions),
+  ], ['整體', attackGroupLabel, defenseGroupLabel]);
   return `
-    <details class="matchup-card">
+    <details class="matchup-card${marks.weak.length ? ' has-weak' : ''}">
       <summary>
         <div class="matchup-title">${jobIconHtml(title)}${escHtml(title)}</div>
-        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人</div>
+        <div class="matchup-meta">己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人${matchupMarkChips(marks)}</div>
       </summary>
       <div class="matchup-body">
         <div class="matchup-subsection" data-matchup-scope="overall">
@@ -12411,9 +12498,9 @@ function currentMatchupExportContext() {
   if (!battle) return null;
   const myPlayers = (battle.players || []).map(derivePlayer);
   const foePlayers = (battle.opponentPlayers || []).map(derivePlayer);
-  const weakPct = Math.max(1, Number(document.getElementById('matchup_weak_pct')?.value || 10));
-  const strongPct = Math.max(1, Number(document.getElementById('matchup_strong_pct')?.value || 10));
-  const rosterBottomPct = Math.max(1, Number(document.getElementById('matchup_roster_bottom_pct')?.value || 20));
+  const weakPct = matchupThreshold('matchupWeakPct');
+  const strongPct = matchupThreshold('matchupStrongPct');
+  const rosterBottomPct = matchupThreshold('matchupRosterBottomPct');
   const topBuildProtectedNames = new Set(
     [...myPlayers]
       .sort((a, b) => Number(b.buildDamage || 0) - Number(a.buildDamage || 0) || a.name.localeCompare(b.name, 'zh-Hant'))
@@ -12724,7 +12811,7 @@ async function exportBattleReviewPdf(options = {}) {
     openPrintExportWindow({ titleText, exportNode, width: 1280, height: 1000, pageCss: '@page { size: A4 landscape; }' });
   } catch (err) {
     console.error(err);
-    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert(exportFailureMessage(err));
     throw err;
   }
 }
@@ -12763,7 +12850,7 @@ async function exportMatchupPdf(options = {}) {
     });
   } catch (err) {
     console.error(err);
-    if (!options.silent) window.alert('匯出 PDF 失敗，請稍後再試。');
+    if (!options.silent) window.alert(exportFailureMessage(err));
     throw err;
   }
 }
@@ -12831,6 +12918,27 @@ function renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs) {
   `;
 }
 
+// 單場對位的三個門檻存在 state.settings（以前只在畫面上，重新整理就回到 10/10/20）；改門檻時保留展開的卡片（2026-10-23，評估報告 B-32）
+const MATCHUP_THRESHOLD_DEFAULTS = { matchupWeakPct: 10, matchupStrongPct: 10, matchupRosterBottomPct: 20 };
+
+function matchupThreshold(key) {
+  const value = Number(state.settings?.[key]);
+  const fallback = MATCHUP_THRESHOLD_DEFAULTS[key];
+  const raw = Number.isFinite(value) && value > 0 ? value : fallback;
+  return key === 'matchupRosterBottomPct' ? Math.min(100, Math.max(1, raw)) : Math.max(1, raw);
+}
+
+function setMatchupThreshold(key, value) {
+  const num = Number(value);
+  if (!state.settings) state.settings = { weakPct: 30, deathPct: 30 };
+  state.settings[key] = Number.isFinite(num) && num > 0 ? num : MATCHUP_THRESHOLD_DEFAULTS[key];
+  saveState();
+  const box = document.getElementById('single_battle_matchup_box');
+  const opened = box ? [...box.querySelectorAll('details')].map(el => el.open) : [];
+  renderSingleBattleMatchup();
+  if (box) [...box.querySelectorAll('details')].forEach((el, index) => { if (opened[index]) el.open = true; });
+}
+
 function renderSingleBattleMatchup() {
   const box = document.getElementById('single_battle_matchup_box');
   if (!box) return;
@@ -12858,9 +12966,9 @@ function renderSingleBattleMatchup() {
     .sort((a, b) => jobSortValue(a) - jobSortValue(b) || a.localeCompare(b, 'zh-Hant'));
   const dpsJobs = jobs.filter(job => job !== '素問' && job !== '鐵衣');
   const supportJobs = jobs.filter(job => job === '素問' || job === '鐵衣');
-  const weakPct = Math.max(1, Number(document.getElementById('matchup_weak_pct')?.value || 10));
-  const strongPct = Math.max(1, Number(document.getElementById('matchup_strong_pct')?.value || 10));
-  const rosterBottomPct = Math.max(1, Number(document.getElementById('matchup_roster_bottom_pct')?.value || 20));
+  const weakPct = matchupThreshold('matchupWeakPct');
+  const strongPct = matchupThreshold('matchupStrongPct');
+  const rosterBottomPct = matchupThreshold('matchupRosterBottomPct');
   const myDps = myPlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
   const foeDps = foePlayers.filter(player => player.job !== '素問' && player.job !== '鐵衣');
   box.innerHTML = `
@@ -12912,9 +13020,9 @@ function renderSingleBattleMatchup() {
       <div class="note-box">若雙方人數差異大，結果僅供參考。</div>
     </div>
   `;
-  document.getElementById('matchup_weak_pct')?.addEventListener('change', renderSingleBattleMatchup);
-  document.getElementById('matchup_strong_pct')?.addEventListener('change', renderSingleBattleMatchup);
-  document.getElementById('matchup_roster_bottom_pct')?.addEventListener('change', renderSingleBattleMatchup);
+  [['matchup_weak_pct', 'matchupWeakPct'], ['matchup_strong_pct', 'matchupStrongPct'], ['matchup_roster_bottom_pct', 'matchupRosterBottomPct']].forEach(([id, key]) => {
+    document.getElementById(id)?.addEventListener('change', event => setMatchupThreshold(key, event.target.value));
+  });
   document.getElementById('btn_export_matchup_pdf')?.addEventListener('click', exportMatchupPdf);
   requestAnimationFrame(syncMatchupTableWidthToRoster);
   document.getElementById('single_battle_matchup_box')?.querySelectorAll('details').forEach(el => {
@@ -13166,6 +13274,7 @@ function renderBattleFilterOptions(selectId) {
   if (!box) return;
   if (!state.battles.length) {
     box.innerHTML = '<div class="subtle">尚未加入場次。</div>';
+    updateBattleScopeStatus(selectId);
     return;
   }
   const checkedIds = new Set([...(box.querySelectorAll?.('input[type="checkbox"]:checked') || [])].map(input => input.value));
@@ -13175,6 +13284,7 @@ function renderBattleFilterOptions(selectId) {
   );
   if (!visibleBattles.length) {
     box.innerHTML = '<div class="subtle">目前沒有符合己方/對手篩選的場次。</div>';
+    updateBattleScopeStatus(selectId);
     return;
   }
   const hasVisibleChecked = visibleBattles.some(battle => checkedIds.has(battle.id));
@@ -13189,12 +13299,14 @@ function renderBattleFilterOptions(selectId) {
       <span>${escHtml(label)}</span>${battleResultChipHtml(battle)}
     </label>`;
   }).join('');
+  updateBattleScopeStatus(selectId);
 }
 
 function setBattleCheckboxes(selectId, checked) {
   document.querySelectorAll(`#${selectId} input[type="checkbox"]`).forEach(input => {
     input.checked = checked;
   });
+  updateBattleScopeStatus(selectId);
 }
 
 function setBattleCheckboxesByIds(selectId, ids) {
@@ -13202,6 +13314,18 @@ function setBattleCheckboxesByIds(selectId, ids) {
   document.querySelectorAll(`#${selectId} input[type="checkbox"]`).forEach(input => {
     input.checked = idSet.has(input.value);
   });
+  updateBattleScopeStatus(selectId);
+}
+
+// 場次清單標題旁寫出目前算幾場；以前一場都沒勾時等於全部場次（小隊表現是最新一場），畫面上看不出來（2026-10-23，評估報告 B-07）
+function updateBattleScopeStatus(selectId) {
+  const status = document.getElementById(`${selectId}_status`);
+  if (!status) return;
+  const inputs = [...(document.querySelectorAll?.(`#${selectId} input[type="checkbox"]`) || [])];
+  const checked = inputs.filter(input => input.checked).length;
+  const emptyText = selectId === 'squad_battle_select' ? '都沒勾＝最新一場' : `都沒勾＝全部 ${inputs.length} 場`;
+  status.textContent = !inputs.length ? '' : checked ? `已勾 ${checked}／${inputs.length} 場` : emptyText;
+  status.classList?.toggle?.('is-empty', !checked);
 }
 
 function deleteCheckedBattles(selectId) {
@@ -13534,7 +13658,7 @@ async function openNextBatchExport() {
     batchExportRunState.opened += 1;
   } catch (err) {
     console.error(err);
-    window.alert(`開啟 ${nextItem.label} 失敗，請稍後再試。`);
+    window.alert(exportFailureMessage(err, `開啟 ${nextItem.label}`));
   }
   renderBatchExportBox();
 }
@@ -13677,6 +13801,25 @@ function deleteBattlesByDateRange() {
   window.alert(`已刪除 ${fmtNumber(matches.length)} 場戰報。`);
 }
 
+// 指揮、lag 以前要在文字框打英文關鍵字（commander,lag），改成勾選框（2026-10-23，評估報告 B-33）；分工 CSV 的格式不變
+const SPECIAL_ROLE_FLAG_PATTERN = /^(commander|指揮|lag)$/i;
+
+function otherSpecialRoles(roles) {
+  return (Array.isArray(roles) ? roles : []).filter(role => !SPECIAL_ROLE_FLAG_PATTERN.test(String(role).trim()));
+}
+
+function toggleSpecialRole(battleId, playerName, role, checked) {
+  if (preventPublicWrite('修改分工')) return;
+  const battle = state.battles.find(item => item.id === battleId);
+  const player = battle ? assignmentPlayers(battle).find(item => item.name === playerName) : null;
+  if (!player) return;
+  const pattern = role === 'lag' ? /^lag$/i : /^(commander|指揮)$/i;
+  const rest = (player.specialRoles || []).filter(item => !pattern.test(String(item).trim()));
+  player.specialRoles = checked ? [...rest, role] : rest;
+  saveState();
+  refreshAll();
+}
+
 function updatePlayerAssignment(battleId, playerName, field, value) {
   if (preventPublicWrite('修改分工')) return;
   const battle = state.battles.find(item => item.id === battleId);
@@ -13684,7 +13827,10 @@ function updatePlayerAssignment(battleId, playerName, field, value) {
   const player = assignmentPlayers(battle).find(item => item.name === playerName);
   if (!player) return;
   if (field === 'specialRoles') {
-    player.specialRoles = String(value).split(',').map(item => item.trim()).filter(Boolean);
+    // 文字框只放指揮、lag 以外的職責，這兩項用勾選框；文字框裡打了也照樣認得
+    const flags = (player.specialRoles || []).filter(role => SPECIAL_ROLE_FLAG_PATTERN.test(role));
+    const typed = String(value).split(/[,，、]/).map(item => item.trim()).filter(Boolean);
+    player.specialRoles = [...new Set([...flags, ...typed])];
   } else {
     player[field] = value;
   }
@@ -14493,6 +14639,10 @@ document.getElementById('btn_delete_current_battle').addEventListener('click', (
   if (battle) deleteBattle(battle.id);
 });
 document.getElementById('btn_delete_battles_by_date').addEventListener('click', deleteBattlesByDateRange);
+document.addEventListener?.('change', event => {
+  const list = event.target?.closest?.('.checklist-box[id$="_battle_select"]');
+  if (list) updateBattleScopeStatus(list.id);
+});
 document.getElementById('btn_copy_page_link').addEventListener('click', () => {
   setDataMenuOpen(false);
   copyCurrentPageLink();
@@ -14516,6 +14666,11 @@ async function bootstrapBattleReviewApp() {
   renderRoleImportStatus();
   renderPublicModeUi();
   if (isPublicReadOnlyMode()) {
+    // 公開資料約 40 萬位元組，載入期間以前畫面上沒有任何提示（2026-10-23，評估報告 B-49）
+    publicShareLoading = true;
+    renderPublicModeUi();
+    const loadingNote = document.getElementById('public_loading_note');
+    if (loadingNote) loadingNote.hidden = false;
     try {
       await loadPublicShareSnapshot();
     } catch (err) {
@@ -14523,6 +14678,8 @@ async function bootstrapBattleReviewApp() {
       publicShareLoadError = err?.message || '公開資料讀取失敗。';
       state = emptyState();
     }
+    publicShareLoading = false;
+    if (loadingNote) loadingNote.hidden = true;
   }
   const publicLinkTab = isPublicReadOnlyMode() ? applyPublicLinkTarget() : null;
   refreshAll();

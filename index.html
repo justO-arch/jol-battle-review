@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>幫戰覆盤工具手機版</title>
+<meta name="description" content="幫戰覆盤手機版：單場覆盤、玩家查詢、職業表現與重點人物。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="幫戰覆盤工具">
+<meta property="og:description" content="幫戰覆盤手機版：單場覆盤、玩家查詢、職業表現與重點人物。完整功能請開桌機公開版。">
+<meta name="theme-color" content="#9b4d1d">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36' fill='none' stroke='%239b4d1d' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 3 L31 8 V17 C31 25 25 30.5 18 33 C11 30.5 5 25 5 17 V8 Z'/%3E%3Cpath d='M12 12 L24 24'/%3E%3Cpath d='M24 12 L12 24'/%3E%3C/svg%3E">
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -361,7 +368,7 @@
     padding: 10px 12px;
   }
   .stat-label {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
     margin-bottom: 4px;
   }
@@ -510,7 +517,7 @@
     gap: 5px;
   }
   .flag {
-    font-size: 11px;
+    font-size: 12px;
     padding: 4px 7px;
     border-radius: 999px;
     background: var(--tk-bg-f1ece4);
@@ -573,7 +580,7 @@
     display: inline-block;
     padding: 3px 7px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
   }
@@ -620,7 +627,7 @@
     gap: 6px;
     padding: 5px 9px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
   }
   .status-win { background: var(--tk-bg-dff1e5); color: var(--tk-fg-17603c); }
@@ -774,7 +781,7 @@
   body.mobile-app .note-box,
   body.mobile-app .hero-note,
   body.mobile-app .hero-tools-note {
-    font-size: 11px;
+    font-size: 12px;
   }
   body.mobile-app .inline-actions {
     display: grid;
@@ -819,7 +826,7 @@
     text-align: left;
   }
   body.mobile-app .radar-note {
-    font-size: 11px;
+    font-size: 12px;
     width: 100%;
     text-align: left;
   }
@@ -1193,7 +1200,7 @@
     margin-left: auto;
     padding: 0 8px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
   }
   .check-result.win { color: var(--accent-2); background: var(--accent-2-soft); }
@@ -1465,7 +1472,7 @@
     .vs-card { padding: 16px; gap: 16px; }
     .vs-head { gap: 8px; }
     .vs-name { font-size: 20px; }
-    .vs-sub { font-size: 11px; }
+    .vs-sub { font-size: 12px; }
     .vs-result { padding: 2px 10px; font-size: 13px; }
     .vs-vs { font-size: 14px; letter-spacing: 0.2em; }
     .vs-row {
@@ -1517,7 +1524,7 @@
     padding: 12px 0 14px;
   }
   .focus-leader-label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.14em;
     color: var(--muted);
@@ -1646,7 +1653,7 @@
     margin: 0;
   }
   .review-card-stats dt {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
   }
   .review-card-stats dd {
@@ -1815,7 +1822,7 @@
               <div class="step"><b>步驟 2：匯入分工 CSV</b><span class="subtle">分工 CSV 決定進攻 / 防守 / 保鑣與特殊職責；沒套分工前，覆盤結果不可靠。</span></div>
               <div class="step"><b>步驟 3：加入場次</b><span class="subtle">正常流程只要按這個。加入場次時，系統會自動把目前已讀取的分工 CSV 套進新場次。</span></div>
               <div class="step"><b>補救流程：重新套用分工</b><span class="subtle">平常不用按。只有你先前已加入戰報、但後來才補讀分工 CSV，或想用新版分工表重套目前場次時才需要。</span></div>
-              <div class="step"><b>步驟 4：切到右側分頁看結果</b><span class="subtle">右側分成分工、單場覆盤、玩家查詢、職業表現、判讀說明五個分頁。</span></div>
+              <div class="step"><b>步驟 4：切到上方分頁看結果</b><span class="subtle">加入後切換上方分頁查看分工、單場覆盤、玩家查詢與職業表現。</span></div>
             </div>
             <div class="field">
               <label>戰報 CSV</label>
@@ -1875,7 +1882,7 @@
 
       <div class="stack">
         <section class="panel">
-          <div class="panel-title">覆盤主區 <small>右側分頁查看分工、單場、累積與職業表現</small></div>
+          <div class="panel-title">覆盤主區 <small>切換上方分頁查看分工、單場、累積與職業表現</small></div>
           <div class="tab-bar">
             <button class="btn-secondary tab-btn" data-tab="assignment">分工</button>
             <button class="btn-secondary tab-btn" data-tab="review">單場覆盤</button>
@@ -3170,7 +3177,7 @@ function isTank(player) {
 
 function isCommander(player) {
   const roles = Array.isArray(player.specialRoles) ? player.specialRoles.join(',') : '';
-  return /commander|指揮/.test(roles);
+  return /commander|指揮/i.test(roles);
 }
 
 function isLagExempt(player) {

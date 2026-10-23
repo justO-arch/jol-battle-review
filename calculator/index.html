@@ -256,6 +256,13 @@
     box-shadow: 0 0 0 3px rgba(168,122,47,0.08);
   }
   .section-body { padding: 18px; }
+  /* 標題靠左、控制項靠右：以前 justify-content: space-between 會把菱形和標題文字分開，文字跑到中間（評估報告 C-09） */
+  .section-title > :first-child:not(:last-child) { margin-right: auto; }
+  /* 沒有內容的說明條不顯示（評估報告 C-10） */
+  .formula-note:empty { display: none; }
+  .section.is-collapsed > .section-body { display: none; }
+  .save-as-details > summary { list-style: none; }
+  .save-as-details > summary::-webkit-details-marker { display: none; }
 
   /* Form Grid */
   .form-grid {
@@ -743,7 +750,7 @@
   }
   .opt-block .section-title {
     padding: 14px 18px;
-    margin: -18px -18px 16px;
+    margin: 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
   .opt-block .section-body {
@@ -873,6 +880,10 @@
     .tab-btn { flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; font-size: 12px; }
     .tab-btn:hover { transform: none; }
     .side-watermark { display: none; }
+    /* iOS 點到字級小於 16px 的輸入框會整頁放大（評估報告 C-07） */
+    input, select, textarea { font-size: 16px !important; }
+    /* 內功/裝備比較的表格左右捲動時，屬性名稱欄固定在左邊（評估報告 C-11） */
+    #tab-neigong table th:first-child, #tab-neigong table td:first-child { position: sticky; left: 0; z-index: 1; background: #fbf6ec; min-width: 5em; }
   }
   @media (max-width: 480px) {
     .form-grid { grid-template-columns: repeat(2, 1fr); }
@@ -3371,7 +3382,7 @@
           <select id="opt_joint_sort" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;"></select>
         </div>
         <div>
-          <button type="button" onclick="runJointOptimize()" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始聯合最佳化</button>
+          <button type="button" onclick="runOptimizeWithBusy(this, runJointOptimize)" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始聯合最佳化</button>
         </div>
       </div>
       <div id="opt_joint_search_note" style="margin-top:10px;font-size:12px;color:#666666;"></div>
@@ -3561,7 +3572,7 @@
           </div>
         </div>
         <div>
-          <button type="button" onclick="runNgOptimize()" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始最佳化</button>
+          <button type="button" onclick="runOptimizeWithBusy(this, runNgOptimize)" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始最佳化</button>
         </div>
       </div>
       <div id="opt_ng_search_note" style="margin-top:10px;font-size:12px;color:#666666;"></div>
@@ -3636,7 +3647,7 @@
           <select id="opt_final_sort" style="width:100%;background:#ffffff;border:1px solid #cccccc;color:#333333;padding:6px 8px;border-radius:4px;font-size:12px;"></select>
         </div>
         <div>
-          <button type="button" onclick="runFinalOptimize()" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始最終最佳化</button>
+          <button type="button" onclick="runOptimizeWithBusy(this, runFinalOptimize)" style="width:100%;background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;">開始最終最佳化</button>
         </div>
       </div>
       <div id="opt_final_search_note" style="margin-top:10px;font-size:12px;color:#666666;"></div>
@@ -3834,9 +3845,9 @@
     </div>
   </div>
 
-  <!-- 另存新檔說明 -->
-  <div class="section" style="margin-bottom:16px;">
-    <div class="section-title">另存新檔（建立獨立存檔的複本）</div>
+  <!-- 另存新檔說明：預設收合，係數與首領排在前面（評估報告 C-12） -->
+  <details class="section save-as-details" style="margin-bottom:16px;">
+    <summary class="section-title" style="cursor:pointer;"><span>另存新檔（建立獨立存檔的複本）</span><span style="font-size:12px;font-weight:400;color:#7b6a4e;letter-spacing:0;">點開看步驟</span></summary>
     <div class="section-body">
       <div class="formula-note" style="margin-bottom:10px;">
         本計算機的所有存檔（素質數值、BOSS 預設等）存在瀏覽器的 localStorage 中。
@@ -3854,7 +3865,7 @@
         目前此檔案的識別碼：<code id="show_storage_key" style="background:#f5f5f5;padding:1px 6px;border-radius:3px;color:#996600;">jol</code>
       </div>
     </div>
-  </div>
+  </details>
 
   <div class="action-ribbon" style="gap:10px;">
     <button onclick="saveSettings()" style="background:#ffffff;border:1px solid #1a7c2a;color:#1a7c2a;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:1px;">儲存公式與 BOSS</button>
@@ -3932,7 +3943,7 @@
           </thead>
           <tbody>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_0_name" value="南海亂墟·普通" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_0_name" value="南海亂墟·普通" style="width:100%;min-width:150px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_def" value="27985" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_block" value="5439" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_critRes" value="5439" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
@@ -3941,7 +3952,7 @@
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_0_bossRes" value="27400" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_4_name" value="南海亂墟·淺海·英雄" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_4_name" value="南海亂墟·淺海·英雄" style="width:100%;min-width:150px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_def" value="31556" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_block" value="6310" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_critRes" value="6133" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
@@ -3950,7 +3961,7 @@
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_4_bossRes" value="27400" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_1_name" value="天機迷城" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_1_name" value="天機迷城" style="width:100%;min-width:150px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_1_def" value="12017" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_1_block" value="2560" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_1_critRes" value="2325" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
@@ -3959,7 +3970,7 @@
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_1_bossRes" value="9000" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_2_name" value="天機英雄" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_2_name" value="天機英雄" style="width:100%;min-width:150px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_2_def" value="17182" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_2_block" value="3568" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_2_critRes" value="3280" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
@@ -3968,7 +3979,7 @@
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_2_bossRes" value="14040" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
             </tr>
             <tr>
-              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_3_name" value="幫會外塔" style="width:90px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
+              <td style="padding:4px 8px;"><input type="text" id="set_boss_pve_3_name" value="幫會外塔" style="width:100%;min-width:150px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#0066cc;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_3_def" value="1100" style="width:80px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_3_block" value="300" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
               <td style="padding:4px 8px;"><input type="number" id="set_boss_pve_3_critRes" value="150" style="width:70px;background:#ffffff;border:1px solid #cccccc;border-radius:3px;color:#333333;padding:4px 6px;font-size:12px;"></td>
@@ -4030,7 +4041,9 @@
     <div class="section-body" style="color:#666666;font-size:13px;line-height:1.8;">
       在各頁面的屬性欄位旁點「<span style="color:#0066cc;">存入資料庫</span>」即可儲存當前數值。<br>
       點「<span style="color:#0066cc;">← 載入</span>」按鈕時先從下拉選單選擇名稱再點按鈕。<br>
-      四種類型（套裝 / 素問套裝 / 裝備配置 / 內功配置）彼此獨立；其中套裝與素問套裝最多 60 筆，裝備配置上限 100 筆，內功配置上限 200 筆。
+      四種類型（套裝 / 素問套裝 / 裝備配置 / 內功配置）彼此獨立；其中套裝與素問套裝最多 60 筆，裝備配置上限 100 筆，內功配置上限 200 筆。<br>
+      想給別人一筆裝備、內功或套裝：按那一筆的「分享碼」複製，對方按下方「貼上分享碼」匯入，不用匯出整份備份。
+      <div style="margin-top:8px;"><button onclick="importDBShareCode()" style="background:#ffffff;border:1px solid #0066cc;color:#0066cc;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;">貼上分享碼</button></div>
     </div>
   </div>
 
@@ -7277,6 +7290,55 @@ function nextFreeDBName(type, name) {
 }
 
 // 回傳實際存入的名稱；沒有存入時回傳 false
+// 單筆分享碼（評估報告 C-27）：以前想給別人一套裝備，只能匯出整份備份。分享碼只含這一筆的名稱、數值與補登分類；
+// 套路裡的成員名稱一起帶過去，但對方資料庫沒有那些成員時只能用總值
+const DB_SHARE_PREFIX = 'JOL分享碼:';
+
+function dbShareCode(type, index) {
+  const entry = DB[type]?.[index];
+  if (!entry) return '';
+  return DB_SHARE_PREFIX + JSON.stringify({ v: 1, type, name: entry.name, data: entry.data, meta: entry.meta || null });
+}
+
+function copyDBShareCode(type, index) {
+  const code = dbShareCode(type, index);
+  if (!code) return;
+  const fallback = () => prompt('複製這段分享碼：', code);
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(code).then(() => alert(`已複製「${DB[type][index].name}」的分享碼，貼給對方用資料庫頁的「貼上分享碼」匯入。`), fallback);
+  } else {
+    fallback();
+  }
+}
+
+function parseDBShareCode(text) {
+  const raw = String(text || '').trim();
+  const json = raw.startsWith(DB_SHARE_PREFIX) ? raw.slice(DB_SHARE_PREFIX.length) : raw;
+  let parsed;
+  try {
+    parsed = JSON.parse(json);
+  } catch (err) {
+    return null;
+  }
+  if (!parsed || typeof parsed !== 'object' || !Object.prototype.hasOwnProperty.call(DB, parsed.type)) return null;
+  if (typeof parsed.name !== 'string' || !parsed.name.trim() || !parsed.data || typeof parsed.data !== 'object') return null;
+  return { type: parsed.type, name: parsed.name.trim().slice(0, 20), data: parsed.data, meta: parsed.meta && typeof parsed.meta === 'object' ? parsed.meta : null };
+}
+
+function importDBShareCode(text) {
+  const input = text ?? prompt('貼上分享碼：');
+  if (input === null || input === undefined || String(input).trim() === '') return false;
+  const share = parseDBShareCode(input);
+  if (!share) {
+    alert('看不懂這段分享碼，請確認整段都有貼上（開頭是「JOL分享碼:」）。');
+    return false;
+  }
+  const savedName = dbAdd(share.type, share.name, share.data, share.meta);
+  const labels = { set: '套裝', healer: '素問套裝', gear: '裝備配置', ng: '內功配置' };
+  if (savedName) alert(`已匯入「${savedName}」到${labels[share.type] || '資料庫'}。`);
+  return savedName;
+}
+
 function dbAdd(type, name, data, meta = null) {
   const existing = findDBEntryByName(type, name);
   if (existing && existing.type !== type && !dbEntryFitsList(existing.type, DB[existing.type][existing.index])) {
@@ -7491,6 +7553,8 @@ function dbLoadNG(set, selId) {
   ngSaveCurrentVals();
   const data = getNgDBData(entry);
   NG_ATTR_ROWS.forEach(row => { ng_vals[set][row.key] = data[row.key] || 0; });
+  // 欄名跟著載入的那一筆（以前欄名不變，看不出這欄載入了什麼；評估報告 C-26）
+  ng_names[set] = String(entry.name || ng_names[set]).slice(0, 20);
   ng_db_stacks[set] = getNgDBExpandedStackItems(entry);
   if (!trySetItem(`${STORAGE_KEY}_ng_stacks`, JSON.stringify(ng_db_stacks))) alertStorageFull('疊加清單');
   persistNeigongUiState();
@@ -7542,7 +7606,10 @@ function renderDB() {
     el.innerHTML = displayItems.map(({ entry: e, index: i }) =>
       `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-bottom:1px solid #ddd;">
         <span style="color:#111;font-size:13px;">${escHtml(e.name || '')}</span>
-        <button onclick="dbDelete('${type}',${i})" style="background:none;border:1px solid #d93025;color:#d93025;padding:2px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">刪除</button>
+        <span style="display:inline-flex;gap:6px;">
+          <button onclick="copyDBShareCode('${type}',${i})" title="複製這一筆的分享碼，貼給別人用「貼上分享碼」匯入" style="background:none;border:1px solid #0066cc;color:#0066cc;padding:2px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">分享碼</button>
+          <button onclick="dbDelete('${type}',${i})" style="background:none;border:1px solid #d93025;color:#d93025;padding:2px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px;">刪除</button>
+        </span>
       </div>`
     ).join('');
   });
@@ -8641,6 +8708,8 @@ function applyOptimizePanelState(kind) {
   const btnEl = document.getElementById(btnId);
   if (summaryEl) summaryEl.style.display = expanded ? '' : 'none';
   if (resultEl) resultEl.style.display = expanded ? '' : 'none';
+  setSectionCollapsed(summaryEl, !expanded);
+  setSectionCollapsed(resultEl, !expanded);
   if (btnEl) btnEl.textContent = expanded ? '收起結果' : '展開結果';
 }
 
@@ -8659,7 +8728,14 @@ function applyOptimizeMetaSectionState(kind) {
   const panel = document.getElementById(kind === 'pending' ? 'opt_pending_panel' : 'opt_done_panel');
   const btn = document.getElementById(kind === 'pending' ? 'opt_pending_toggle_btn' : 'opt_done_toggle_btn');
   if (panel) panel.style.display = expanded ? '' : 'none';
+  setSectionCollapsed(panel, !expanded);
   if (btn) btn.textContent = expanded ? '收起' : '展開';
+}
+
+// 收起時連同外層的 section-body 一起藏起來，不然收合後還留一塊空白框（評估報告 C-05）
+function setSectionCollapsed(panel, collapsed) {
+  const section = panel?.closest?.('.section');
+  if (section?.classList) section.classList.toggle('is-collapsed', !!collapsed);
 }
 
 function toggleOptimizeMetaSection(kind) {
@@ -10690,6 +10766,24 @@ function saveGearOptimizeResultAsStack(kind, resultKey, rank = 0) {
   if (savedName) alert(`已儲存${label}套路：${savedName}`);
 }
 
+// 上下聯合、內功、最終最佳化要算一兩秒，期間畫面凍結看起來像當掉；先把按鈕改成「計算中…」讓畫面更新再算（評估報告 C-33）
+function runOptimizeWithBusy(button, fn) {
+  if (!button || button.disabled) return;
+  const label = button.textContent;
+  button.disabled = true;
+  button.textContent = '計算中…';
+  setTimeout(() => {
+    const started = Date.now();
+    try {
+      fn();
+    } finally {
+      button.disabled = false;
+      button.textContent = label;
+      button.title = `上次計算 ${((Date.now() - started) / 1000).toFixed(1)} 秒`;
+    }
+  }, 30);
+}
+
 // ===================== 最佳化結果帶到內功/裝備比較（C-22）=====================
 // 模板設定好時，我方換成模板的裸面板，一欄放整套：這組推薦＋模板身上這區沒換的部位（和最佳化的基底相同），
 // 推薦內功的核心微調加進本身特性；這樣 PVP 整套重算的數字就和最佳化相同
@@ -11593,7 +11687,7 @@ function renderNeigongInputTable() {
   if (!thead || !tbody) return;
   const thS  = 'padding:9px 10px;text-align:center;border-bottom:1px solid rgba(168,122,47,0.18);color:#6d4f25;font-size:12px;font-weight:700;background:rgba(255,249,239,0.84);';
   const lthS = 'padding:9px 12px;text-align:left;border-bottom:1px solid rgba(168,122,47,0.18);color:#6d4f25;font-size:12px;font-weight:700;background:rgba(255,249,239,0.84);';
-  const inS  = 'width:84px;background:rgba(255,252,247,0.98);border:1px solid rgba(124,98,60,0.24);border-radius:8px;color:#24384a;padding:5px 7px;font-size:12px;text-align:right;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);';
+  const inS  = 'width:100px;background:rgba(255,252,247,0.98);border:1px solid rgba(124,98,60,0.24);border-radius:8px;color:#24384a;padding:5px 7px;font-size:12px;text-align:right;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);';
   const nmS  = 'width:96px;background:rgba(255,251,245,0.98);border:1px solid rgba(124,98,60,0.24);border-radius:8px;color:#7a5320;padding:5px 7px;font-size:12px;text-align:center;font-weight:700;';
   // 第一列：DB 操作（存入/載入）
   let dbRow = `<tr style="border-bottom:1px solid rgba(168,122,47,0.18);"><th style="${lthS}"></th>`;
