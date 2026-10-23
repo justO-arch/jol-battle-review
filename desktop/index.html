@@ -3758,6 +3758,7 @@
     gap: 3px;
     min-width: 0;
     padding: 12px 0 14px;
+    container-type: inline-size;
   }
   .focus-leader-label {
     font-size: 11px;
@@ -3765,9 +3766,10 @@
     letter-spacing: 0.14em;
     color: var(--muted);
   }
+  /* 字級跟著欄寬，7 個字放得下、第 8 個字才換行（使用者要求，2026-10-23）；7.4 是 7 個字加字距 */
   .focus-leader-name {
     font-family: var(--focus-name-font);
-    font-size: 22px;
+    font-size: clamp(13px, calc(100cqi / 7.4), 22px);
     font-weight: 900;
     letter-spacing: 0.04em;
     line-height: 1.3;
@@ -3840,8 +3842,29 @@
   body [data-tab-panel="opponents"] .detail-box .note-box:last-child {
     border-bottom: 0;
   }
+  .focus-leader-player {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+    transition: none;
+  }
+  /* 公開橫版的 button 規則（12px、留白、不換行）會蓋過名字的樣式 */
+  body.public-landscape .focus-leader-player {
+    padding: 0;
+    border-radius: 0;
+    font-size: clamp(12px, calc(100cqi / 7.4), 16px);
+    white-space: normal;
+  }
+  .focus-leader-player:hover,
+  .focus-leader-player:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   @media (max-width: 1100px) {
-    .focus-leader-name { font-size: 16px; }
+    .focus-leader-name { font-size: clamp(12px, calc(100cqi / 7.4), 16px); }
     .focus-leader-value { font-size: 15px; }
   }
   @media (max-width: 640px) {
@@ -4974,11 +4997,29 @@ function focusLeaderHtml(label, row, valueText, suffix = '') {
   return `
     <div class="focus-leader">
       <span class="focus-leader-label">${escHtml(label)}</span>
-      <span class="focus-leader-name">${row ? escHtml(row.name) : '-'}</span>
+      ${row ? `<button type="button" class="focus-leader-name focus-leader-player" data-player-name="${escHtml(row.name)}" data-player-job="${escHtml(row.job || '')}">${escHtml(row.name)}</button>` : '<span class="focus-leader-name">-</span>'}
       ${row ? `<span class="focus-leader-job">${jobIconHtml(row.job)}${escHtml(row.job || '')}</span>` : ''}
       <span class="focus-leader-value">${row ? `${escHtml(valueText)}${suffix ? ` <span class="focus-leader-suffix">${escHtml(suffix)}</span>` : ''}` : ''}</span>
     </div>
   `;
+}
+
+// 點最強橫條的名字開六角圖（使用者要求，2026-10-23）：用重點人物勾選的場次，和同一側同職業的人比
+function openFocusPlayerRadar(side, name, job) {
+  openProfessionPlayerRadarModal(name, {
+    scope: side === 'opponent' ? 'focus_opponent' : 'focus_team',
+    sourceLabel: side === 'opponent' ? '對手重點人物' : '己方重點人物',
+    filters: { ownTeamFilter: 'all', opponentFilter: 'all' },
+    groupFilter: 'all',
+    battleIds: selectedFocusBattleIds(),
+    job,
+  });
+}
+
+function bindFocusLeaderRadar(cards, side) {
+  cards.querySelectorAll?.('.focus-leader-player[data-player-name]')?.forEach(button => {
+    button.addEventListener('click', () => openFocusPlayerRadar(side, button.dataset.playerName || '', button.dataset.playerJob || ''));
+  });
 }
 
 function reviewShareRatio(own, opp) {
@@ -5266,8 +5307,8 @@ function professionJobOnlyValue(row, key, format) {
 const PLAYER_QUADRANT_NON_AXIS_KEYS = ['name', 'job', 'dominantGroupType', 'wins'];
 // 預設看重傷對擊殺：重傷軸反過來，右上角就是重傷少、擊殺多（使用者決定，2026-10-22）
 const PLAYER_QUADRANT_DEFAULT_AXES = { x: 'avgDeath', y: 'avgKill' };
-// 重傷越少越好：軸反過來，重傷少的在右邊或上面（使用者要求，2026-10-22）
-const PLAYER_QUADRANT_REVERSED_KEYS = new Set(['avgDeath']);
+// 越少越好的軸反過來，少的在右邊或上面：重傷（使用者要求，2026-10-22）、人傷/擊殺數（2026-10-23）
+const PLAYER_QUADRANT_REVERSED_KEYS = new Set(['avgDeath', 'avgPvpPerKill']);
 const PLAYER_QUADRANT_LARGE_KEYS = new Set(['avgPvpDamage', 'avgPvpPerKill', 'avgBuildDamage', 'avgBuildPerDeath', 'avgTakenDamage', 'avgTakenPerDeath', 'avgHeal', 'avgNetHeal']);
 const PLAYER_QUADRANT_TOOLTIP_KEYS = ['avgKill', 'avgDeath', 'avgPvpDamage', 'avgBuildDamage', 'avgTakenDamage', 'avgHeal', 'avgNetHeal', 'avgSave', 'avgBurn', 'avgSpring'];
 const PLAYER_QUADRANT_LABEL_LIMIT = 120;
@@ -7261,7 +7302,11 @@ function aggregatePlayers(battleIds = null, { splitByJob = false, assignmentRost
 	  })).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 }
 
+// 重點人物的己方、對手兩側沒有分析對手勾選框，固定看自己那一側
+const FOCUS_RADAR_OPPONENT_SCOPES = { focus_team: false, focus_opponent: true };
+
 function isProfessionOpponentMode(scope = 'profession') {
+  if (Object.prototype.hasOwnProperty.call(FOCUS_RADAR_OPPONENT_SCOPES, scope)) return FOCUS_RADAR_OPPONENT_SCOPES[scope];
   return !!document.getElementById(`${scope}_analyze_opponent`)?.checked;
 }
 
@@ -10753,6 +10798,7 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
   }
   const reverseX = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.x);
   const reverseY = PLAYER_QUADRANT_REVERSED_KEYS.has(axes.y);
+  const reversedAxes = [[axes.x, '右', reverseX], [axes.y, '上', reverseY]].filter(([, , reversed]) => reversed);
   const xShort = playerQuadrantShortLabel(axes.x);
   const yShort = playerQuadrantShortLabel(axes.y);
   const [xLeft, xRight] = reverseX ? ['高', '低'] : ['低', '高'];
@@ -10811,7 +10857,7 @@ function renderPlayerQuadrantChart(rows = professionRows()) {
   const hiddenLabels = points.length - labels.size;
   const notes = [
     `共 ${fmtNumber(points.length)} 人，每人一個點，數值是所選場次的平均。虛線是這些人的${centerLabel}：${escHtml(playerQuadrantAxisLabel(axes.x))} ${escHtml(formatPlayerQuadrantValue(axes.x, centerXValue))}、${escHtml(playerQuadrantAxisLabel(axes.y))} ${escHtml(formatPlayerQuadrantValue(axes.y, centerYValue))}。`,
-    reverseX || reverseY ? `重傷越少越好，所以重傷軸反過來：越${reverseX ? '右' : '上'}重傷越少。` : '',
+    reversedAxes.length ? `${escHtml([...new Set(reversedAxes.map(([key]) => playerQuadrantAxisLabel(key)))].join('、'))}越少越好，所以軸反過來：${reversedAxes.map(([key, side]) => `越${side}${escHtml(playerQuadrantAxisLabel(key))}越少`).join('、')}。` : '',
     data.excluded ? `另有 ${fmtNumber(data.excluded)} 人的數值無法計算（例如擊敗為 0 時的人傷/擊殺數），沒有畫出。` : '',
     points.length > PLAYER_QUADRANT_LABEL_LIMIT
       ? `超過 ${fmtNumber(PLAYER_QUADRANT_LABEL_LIMIT)} 人時不標名字。`
@@ -12345,6 +12391,7 @@ function renderOpponentFocus() {
       ${focusLeaderHtml('焚骨最多', topBurn, topBurn ? fmtAvg(topBurn.avgBurn) : '')}
       ${focusLeaderHtml('清泉最多', topSpring, topSpring ? fmtAvg(topSpring.avgSpring) : '')}
     ` : '<div class="empty">目前沒有可用的對手原始名單資料。舊場次若未保存 opponentPlayers，需重新加入場次後才會顯示。</div>';
+    bindFocusLeaderRadar(cards, 'opponent');
   }
   renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { title: '拆塔前 5', limit: 5 });
   renderOpponentList(pvpEl, data.rows, 'avgPvpDamage', { title: '打人前 5', limit: 5 });
@@ -12406,6 +12453,7 @@ function renderTeamFocus() {
       ${focusLeaderHtml('焚骨最多', topBurn, topBurn ? fmtAvg(topBurn.avgBurn) : '')}
       ${focusLeaderHtml('清泉最多', topSpring, topSpring ? fmtAvg(topSpring.avgSpring) : '')}
     ` : '<div class="empty">目前沒有可用的己方名單資料。</div>';
+    bindFocusLeaderRadar(cards, 'team');
   }
   renderOpponentList(buildEl, data.rows, 'avgBuildDamage', { title: '拆塔前 5', limit: 5 });
   renderOpponentList(pvpEl, data.rows, 'avgPvpDamage', { title: '打人前 5', limit: 5 });
