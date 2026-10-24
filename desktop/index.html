@@ -5946,9 +5946,18 @@ function publicLandscapeViewUrl() {
 // 公開版網址可以指定分頁與場次（&tab=、&battle=），切換時網址跟著改，「資料」選單有「複製本頁連結」（2026-10-23，評估報告 B-30）
 const PUBLIC_LINK_TABS = ['review', 'matchup', 'opponents', 'profession', 'quadrant', 'squad', 'players', 'rules'];
 
-// 套用網址指定的場次（沒指定或找不到就用最新一場，不沿用匯出者當時選的場次），回傳要開的分頁
+// 重新整理時一律回到最新一場，網址的場次只在分享連結、複製的連結打開時用（使用者要求，2026-10-24）；瀏覽器讀不到時當成一般開啟
+function isPageReload() {
+  try {
+    return performance.getEntriesByType('navigation')[0]?.type === 'reload';
+  } catch (err) {
+    return false;
+  }
+}
+
+// 套用網址指定的場次（沒指定、找不到或重新整理時用最新一場，不沿用匯出者當時選的場次），回傳要開的分頁
 function applyPublicLinkTarget() {
-  const battleId = queryParamValue('battle');
+  const battleId = isPageReload() ? '' : queryParamValue('battle');
   state.activeBattleId = battleId && state.battles.some(battle => battle.id === battleId)
     ? battleId
     : (latestBattleIdFromIds(state.battles.map(battle => battle.id)) || state.activeBattleId);
@@ -13913,6 +13922,7 @@ function setActiveBattle(id) {
   state.activeBattleId = id;
   saveState();
   refreshAll();
+  checkOnlyBattleInStatsTabs(activeBattle());
   syncPublicLinkUrl();
 }
 
@@ -14390,22 +14400,22 @@ function handleAddBattle() {
     return;
   }
   refreshAll();
-  checkOnlyNewBattleInStatsTabs(battle);
+  checkOnlyBattleInStatsTabs(battle);
   resetImportFormAfterAdd();
   noteBox.textContent = `已加入場次：${battleDisplayLabel(battle, { includeResult: false })}。${resultText} 表單已清空。`;
 }
 
 // 加入新場次後，職業表現、玩家象限、小隊表現都改成只勾這一場（使用者要求，2026-10-23）；重點人物跟著「切換場次」自己換到這場。
-// 己方或對手篩選會把這場擋掉時改回全部，不然勾不到
-const NEW_BATTLE_STATS_SCOPES = [
+// 用「切換場次」選一場、打開或重新整理頁面時也一樣（2026-10-24）。己方或對手篩選會把這場擋掉時改回全部，不然勾不到
+const STATS_TAB_BATTLE_SCOPES = [
   { selectId: 'profession_battle_select', scope: 'profession' },
   { selectId: 'quadrant_battle_select', scope: 'quadrant' },
   { selectId: 'squad_battle_select', scope: 'squad' },
 ];
 
-function checkOnlyNewBattleInStatsTabs(battle) {
+function checkOnlyBattleInStatsTabs(battle) {
   if (!battle?.id) return;
-  NEW_BATTLE_STATS_SCOPES.forEach(({ selectId, scope }) => {
+  STATS_TAB_BATTLE_SCOPES.forEach(({ selectId, scope }) => {
     const ownSelect = document.getElementById(`${scope}_own_team_filter`);
     const opponentSelect = document.getElementById(`${scope}_opponent_filter`);
     if (ownSelect && !ownTeamMatchesFilter(battle.teamName, ownSelect.value || 'all')) ownSelect.value = 'all';
@@ -14849,7 +14859,10 @@ async function bootstrapBattleReviewApp() {
     if (loadingNote) loadingNote.hidden = true;
   }
   const publicLinkTab = isPublicReadOnlyMode() ? applyPublicLinkTarget() : null;
+  // 本機版打開或重新整理也從最新一場開始；統計分頁勾的場次和切換場次一致（使用者要求，2026-10-24）
+  if (!isPublicReadOnlyMode()) state.activeBattleId = latestBattleIdFromIds(state.battles.map(battle => battle.id)) || state.activeBattleId;
   refreshAll();
+  checkOnlyBattleInStatsTabs(activeBattle());
   if (isPublicReadOnlyMode()) {
     // Public data should open in a predictable state instead of replaying the publisher's private filters;
     // 網址有指定分頁、場次時照網址開
