@@ -1341,10 +1341,16 @@
     line-height: inherit;
     cursor: pointer;
   }
-  .tplcmp-drop-btn:hover,
-  .tplcmp-drop-btn:focus-visible {
+  .tplcmp-label-drop.tplcmp-drop-btn:hover,
+  .tplcmp-label-drop.tplcmp-drop-btn:focus-visible {
     background: #8f332e;
     box-shadow: 0 0 0 2px rgba(178, 72, 66, 0.25);
+  }
+  .tplcmp-label-note.tplcmp-drop-btn:hover,
+  .tplcmp-label-note.tplcmp-drop-btn:focus-visible {
+    background: #e4ddd0;
+    border-color: #b9ab94;
+    box-shadow: 0 0 0 2px rgba(107, 93, 72, 0.18);
   }
   .tplcmp-label-note { background: #f1ede6; color: #6b5d48; border-color: #ddd3c3; }
   .tplcmp-dominated {
@@ -13560,15 +13566,27 @@ function templateCompareEquippedInReady(row, panelOk) {
   return (panelOk.pvp && row.pvp.equipped) || (panelOk.pve && row.pve.equipped);
 }
 
-// 身上那件的數字是本身的貢獻，其他件是換上的變化，兩者不能比，所以身上那件不當比較對象
+// 身上那件的數字是本身的貢獻，不能直接和換上的變化比；它正好是這件換上時要換掉的那件時，留著它就是 0，
+// 換上這件三項都不比 0 好就是比不過它（2026-10-24 使用者回報：比身上那顆差的沒有標可拆）。不是要換掉的那件（例如另一個戒指）就不比
+function templateCompareComparableVector(row, other, panelOk) {
+  const values = templateCompareVector(other);
+  for (const [mode, indexes] of [['pvp', [0, 1]], ['pve', [2]]]) {
+    if (!panelOk[mode] || !other[mode].equipped) continue;
+    if (row[mode].target?.name !== other[mode].name) return null;
+    indexes.forEach(i => { values[i] = 0; });
+  }
+  return values;
+}
+
 function templateCompareDominators(row, groupRows, panelOk = { pvp: true, pve: true }) {
   const indexes = templateCompareReadyIndexes(panelOk);
   if (!indexes.length) return [];
   const values = templateCompareVector(row);
-  return groupRows.filter(other => other !== row && !templateCompareEquippedInReady(other, panelOk) && (() => {
-    const o = templateCompareVector(other);
-    return indexes.every(i => o[i] >= values[i] - TEMPLATE_COMPARE_EPS) && indexes.some(i => o[i] > values[i] + TEMPLATE_COMPARE_EPS);
-  })());
+  return groupRows.filter(other => {
+    if (other === row) return false;
+    const o = templateCompareComparableVector(row, other, panelOk);
+    return !!o && indexes.every(i => o[i] >= values[i] - TEMPLATE_COMPARE_EPS) && indexes.some(i => o[i] > values[i] + TEMPLATE_COMPARE_EPS);
+  });
 }
 
 // 每個模式各自判斷：身上那件標「身上」；面板是空的，或這件是直接加上（沒有換掉任何一件）時，加詞條一定變好，不判斷較好較差
@@ -13598,7 +13616,7 @@ function templateCompareLabels(row, groupRows, panelOk = { pvp: true, pve: true 
     if (dominators.length) {
       row.overallLabels = [dominators.some(other => other.similarKey === row.similarKey) ? '可拆' : row.kind === 'ng' ? '五行不同' : '類別不同'];
       row.dominatedBy = dominators.map(other => other.label);
-      row.dominatedByShort = dominators.map(other => other.shortName);
+      row.dominatedByShort = dominators.map(other => (templateCompareEquippedInReady(other, panelOk) ? `${other.shortName}（身上）` : other.shortName));
     }
   }
   return templateCompareViewLabels(row, 'all');
@@ -13835,7 +13853,7 @@ function renderTemplateComparePage() {
       <div class="section-title">依模板比較</div>
       <div class="section-body">
         ${renderTemplateCompareWarning(contexts, view)}
-        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}（不和身上那${unit}比）；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。${filter.kind === 'ng' ? '按「可拆 ✕」確認後從內功資料庫刪除（模板身上有的不能從這裡刪）。' : ''}</div>
+        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}；換上這${unit}會換掉的身上那${unit}也算，換上後三項都沒變好就是比不過它，寫「（身上）」；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。${filter.kind === 'ng' ? '按「可拆 ✕」「五行不同 ✕」確認後從內功資料庫刪除（模板身上有的不能從這裡刪）。' : ''}</div>
         <div class="tpl-row">
           <select id="tplcmp_kind" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('kind', this.value)">
             <option value="ng" ${filter.kind === 'ng' ? 'selected' : ''}>內功</option>
@@ -13888,8 +13906,8 @@ function renderTemplateCompareTable() {
     const total = rows.filter(row => row.group === key).length;
     return `<tr class="tplcmp-group-row"><td colspan="${columnCount}">${escHtml(groupLabels[key])}（${groupRows.length}${groupRows.length !== total ? `／${total}` : ''}）</td></tr>`
       + groupRows.map(row => {
-        const labels = templateCompareViewLabels(row, view).map(label => (label === '可拆' && canDeleteFromTemplateCompare(row)
-          ? `<button type="button" class="tplcmp-label tplcmp-label-drop tplcmp-drop-btn" data-tplcmp-key="${escHtml(row.key)}" onclick="deleteTemplateCompareItem(this.dataset.tplcmpKey)" title="從內功資料庫刪除（會先確認）">可拆 ✕</button>`
+        const labels = templateCompareViewLabels(row, view).map(label => (TEMPLATE_COMPARE_DELETE_LABELS.includes(label) && canDeleteFromTemplateCompare(row)
+          ? `<button type="button" class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'} tplcmp-drop-btn" data-tplcmp-key="${escHtml(row.key)}" onclick="deleteTemplateCompareItem(this.dataset.tplcmpKey)" title="從內功資料庫刪除（會先確認）">${label} ✕</button>`
           : `<span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${label}</span>`)).join('');
         const actions = modes.filter(mode => !row[mode].equipped).map(mode =>
           `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
@@ -14000,9 +14018,12 @@ function undoTemplateSwap() {
   renderTemplateComparePage();
 }
 
-// 「可拆」可以直接從內功資料庫刪除（2026-10-24 使用者要求）；在任一個模板身上的不能從這裡刪，刪了模板會找不到
+// 「可拆」「五行不同」可以直接從內功資料庫刪除，五行不同的由使用者自己判斷是不是湊周天要用的（2026-10-24 使用者要求）；
+// 在任一個模板身上的不能從這裡刪，刪了模板會找不到
+const TEMPLATE_COMPARE_DELETE_LABELS = ['可拆', '五行不同'];
+
 function canDeleteFromTemplateCompare(row) {
-  return row.kind === 'ng' && row.overallLabels.includes('可拆') && !row.pvp.equipped && !row.pve.equipped;
+  return row.kind === 'ng' && row.overallLabels.some(label => TEMPLATE_COMPARE_DELETE_LABELS.includes(label)) && !row.pvp.equipped && !row.pve.equipped;
 }
 
 function templateCompareDeleteRefs(names) {
@@ -14025,6 +14046,7 @@ function deleteTemplateCompareItem(key) {
   const lines = [
     `確定從內功資料庫刪除 ${names.join('、')}？`,
     `明顯較 ${row.dominatedByShort.join('、')} 差。`,
+    ...(row.overallLabels.includes('五行不同') ? ['比下它的五行都和它不同：如果它是湊周天或湊土 4 顆要用的，先別刪。'] : []),
     ...(refs.length ? [`這顆還在：${refs.join('、')}；刪除後那裡會顯示資料庫找不到。`] : []),
     '此操作無法復原，要救回只能用備份匯入。',
   ];
