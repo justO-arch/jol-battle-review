@@ -5494,11 +5494,13 @@ const OWN_TEAM_FILTER_LABELS = {
 };
 // 頁面一載入就會讀存檔並套用對照（loadState），必須宣告在 `let state` 之前
 // 同一幫會在不同戰報的名稱寫法（2026-10-19 使用者確認）；永夜與永夜星河⛱劍照維持分開
+// 永夜星河⛱劍照改名劍照霜寒⛱，用新名稱（2026-10-24 使用者確認）
 const TEAM_NAME_ALIASES = {
   '涅槃': '℘涅槃༄',
   '落雨梨花': '落雨梨花ꕥ',
   '緣心云醉': '緣心雲醉',
   '緣心': '緣心雲醉',
+  '永夜星河⛱劍照': '劍照霜寒⛱',
 };
 const PLAYER_COHORT_LABELS = {
   all: '所有職業',
@@ -5944,14 +5946,12 @@ function publicLandscapeViewUrl() {
 // 公開版網址可以指定分頁與場次（&tab=、&battle=），切換時網址跟著改，「資料」選單有「複製本頁連結」（2026-10-23，評估報告 B-30）
 const PUBLIC_LINK_TABS = ['review', 'matchup', 'opponents', 'profession', 'quadrant', 'squad', 'players', 'rules'];
 
-// 套用網址指定的場次（找不到就用最新一場），回傳要開的分頁
+// 套用網址指定的場次（沒指定或找不到就用最新一場，不沿用匯出者當時選的場次），回傳要開的分頁
 function applyPublicLinkTarget() {
   const battleId = queryParamValue('battle');
-  if (battleId) {
-    state.activeBattleId = state.battles.some(battle => battle.id === battleId)
-      ? battleId
-      : (latestBattleIdFromIds(state.battles.map(battle => battle.id)) || state.activeBattleId);
-  }
+  state.activeBattleId = battleId && state.battles.some(battle => battle.id === battleId)
+    ? battleId
+    : (latestBattleIdFromIds(state.battles.map(battle => battle.id)) || state.activeBattleId);
   const tab = queryParamValue('tab');
   return PUBLIC_LINK_TABS.includes(tab) ? tab : 'review';
 }
@@ -5965,10 +5965,13 @@ function publicPageLinkUrl() {
   return url;
 }
 
+// 位址列只在看的不是最新一場時寫 &battle=：以前一打開就寫入當時最新的場次，發布新場次後重新整理仍停在舊場次（2026-10-24 使用者回報）。
+// 「複製本頁連結」照樣帶場次
 function syncPublicLinkUrl() {
   if (!isPublicReadOnlyMode() || typeof history === 'undefined' || typeof history.replaceState !== 'function') return;
   try {
     const url = publicPageLinkUrl();
+    if (state.activeBattleId === latestBattleIdFromIds(state.battles.map(battle => battle.id))) url.searchParams.delete('battle');
     history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
   } catch (err) {
     // 網址改不了不影響使用
