@@ -1336,6 +1336,16 @@
   .tplcmp-label-mixed { background: #fbf1dc; color: #8a5a12; border-color: #e6cfa0; }
   .tplcmp-label-bad { background: #f6e4e2; color: #b24842; border-color: #e3bcb8; }
   .tplcmp-label-drop { background: #b24842; color: #ffffff; }
+  .tplcmp-drop-btn {
+    font-family: inherit;
+    line-height: inherit;
+    cursor: pointer;
+  }
+  .tplcmp-drop-btn:hover,
+  .tplcmp-drop-btn:focus-visible {
+    background: #8f332e;
+    box-shadow: 0 0 0 2px rgba(178, 72, 66, 0.25);
+  }
   .tplcmp-label-note { background: #f1ede6; color: #6b5d48; border-color: #ddd3c3; }
   .tplcmp-dominated {
     max-width: 20em;
@@ -13825,7 +13835,7 @@ function renderTemplateComparePage() {
       <div class="section-title">依模板比較</div>
       <div class="section-body">
         ${renderTemplateCompareWarning(contexts, view)}
-        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}（不和身上那${unit}比）；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。</div>
+        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}（不和身上那${unit}比）；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。${filter.kind === 'ng' ? '按「可拆 ✕」確認後從內功資料庫刪除（模板身上有的不能從這裡刪）。' : ''}</div>
         <div class="tpl-row">
           <select id="tplcmp_kind" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('kind', this.value)">
             <option value="ng" ${filter.kind === 'ng' ? 'selected' : ''}>內功</option>
@@ -13878,7 +13888,9 @@ function renderTemplateCompareTable() {
     const total = rows.filter(row => row.group === key).length;
     return `<tr class="tplcmp-group-row"><td colspan="${columnCount}">${escHtml(groupLabels[key])}（${groupRows.length}${groupRows.length !== total ? `／${total}` : ''}）</td></tr>`
       + groupRows.map(row => {
-        const labels = templateCompareViewLabels(row, view).map(label => `<span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${label}</span>`).join('');
+        const labels = templateCompareViewLabels(row, view).map(label => (label === '可拆' && canDeleteFromTemplateCompare(row)
+          ? `<button type="button" class="tplcmp-label tplcmp-label-drop tplcmp-drop-btn" data-tplcmp-key="${escHtml(row.key)}" onclick="deleteTemplateCompareItem(this.dataset.tplcmpKey)" title="從內功資料庫刪除（會先確認）">可拆 ✕</button>`
+          : `<span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${label}</span>`)).join('');
         const actions = modes.filter(mode => !row[mode].equipped).map(mode =>
           `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
         const target = view === 'all' ? templateCompareTargetText(row) : templateCompareSideText(row[view]);
@@ -13985,6 +13997,47 @@ function undoTemplateSwap() {
   templateState = normalizeTemplateState(state);
   templateCompareFilter.target = target;
   saveTemplates({ keepSwapHistory: true });
+  renderTemplateComparePage();
+}
+
+// 「可拆」可以直接從內功資料庫刪除（2026-10-24 使用者要求）；在任一個模板身上的不能從這裡刪，刪了模板會找不到
+function canDeleteFromTemplateCompare(row) {
+  return row.kind === 'ng' && row.overallLabels.includes('可拆') && !row.pvp.equipped && !row.pve.equipped;
+}
+
+function templateCompareDeleteRefs(names) {
+  const refs = [];
+  ['ng', 'gear'].forEach(type => DB[type].forEach(entry => {
+    if (!names.includes(entry?.name) && getNgDBStackItems(entry).some(name => names.includes(name))) refs.push(`套路「${entry.name}」`);
+  }));
+  Object.entries(ng_db_stacks).forEach(([set, items]) => {
+    if ((items || []).some(name => names.includes(name))) refs.push(`內功/裝備比較 ${set.toUpperCase()} 欄的疊加清單`);
+  });
+  return refs;
+}
+
+function deleteTemplateCompareItem(key) {
+  const row = computeTemplateCompareRows('ng').rows.find(item => item.key === key);
+  if (!row || !canDeleteFromTemplateCompare(row)) return;
+  const names = row.names.filter(name => DB.ng.some(entry => entry?.name === name));
+  if (!names.length) return;
+  const refs = templateCompareDeleteRefs(names);
+  const lines = [
+    `確定從內功資料庫刪除 ${names.join('、')}？`,
+    `明顯較 ${row.dominatedByShort.join('、')} 差。`,
+    ...(refs.length ? [`這顆還在：${refs.join('、')}；刪除後那裡會顯示資料庫找不到。`] : []),
+    '此操作無法復原，要救回只能用備份匯入。',
+  ];
+  if (!confirm(lines.join('\n'))) return;
+  const removed = DB.ng.map((entry, index) => ({ entry, index })).filter(item => names.includes(item.entry?.name));
+  removed.slice().reverse().forEach(item => DB.ng.splice(item.index, 1));
+  if (!dbPersist('ng')) {
+    removed.forEach(item => DB.ng.splice(item.index, 0, item.entry));
+    return;
+  }
+  renderDB();
+  refreshDBDropdowns();
+  renderOptimizePage();
   renderTemplateComparePage();
 }
 
