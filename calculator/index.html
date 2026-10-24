@@ -1337,6 +1337,13 @@
   .tplcmp-label-bad { background: #f6e4e2; color: #b24842; border-color: #e3bcb8; }
   .tplcmp-label-drop { background: #b24842; color: #ffffff; }
   .tplcmp-label-note { background: #f1ede6; color: #6b5d48; border-color: #ddd3c3; }
+  .tplcmp-dominated {
+    max-width: 20em;
+    margin-top: 2px;
+    color: #b24842;
+    font-size: 12px;
+    font-weight: bold;
+  }
   .tplcmp-multi {
     position: relative;
     display: inline-block;
@@ -13463,7 +13470,7 @@ function templateCompareCandidates(kind) {
         && ['pvp_gear', 'pve_gear', 'unique_gear'].includes(meta.category) && OPTIMIZE_GEAR_SLOT_CAPACITY[meta.slot])
       .map(({ entry, index, meta }) => ({
         key: `gear:${entry.name}`, kind, group: meta.slot, groupLabel: OPTIMIZE_GEAR_SLOT_LABELS[meta.slot], label: entry.name,
-        names: [entry.name], pvp: entry, pve: entry, detail: OPTIMIZE_GEAR_CATEGORY_LABELS[meta.category] || '',
+        shortName: entry.name, names: [entry.name], pvp: entry, pve: entry, detail: OPTIMIZE_GEAR_CATEGORY_LABELS[meta.category] || '',
         similarKey: meta.category, excluded: isOptimizeItemExcluded('gear', index),
       }));
   }
@@ -13486,6 +13493,8 @@ function templateCompareCandidates(kind) {
     return {
       key: `ng:${base}`, kind: 'ng', group: core, groupLabel: core,
       label: list.length > 1 ? `${base}（${list.map(item => item.suffix || '無後綴').join('／')}）` : list[0].entry.name,
+      // 同核心互比只寫評分；評分後面的註記要留著，資料庫有「貫天12181(四金一火)」「貫天12181(五金)」
+      shortName: base.replace(/^\D+/u, '') || base,
       names: list.map(item => item.entry.name), pvp: pvpItem.entry, pve: pveItem.entry,
       detail: templateTagText(tags), similarKey: tags.slice().sort().join(','),
       excluded: list.some(item => isOptimizeItemExcluded('ng', item.index)),
@@ -13532,11 +13541,23 @@ function templateCompareProblems(ctx) {
   return problems;
 }
 
-function templateCompareDominators(row, groupRows) {
+// 只比設定好的模板：面板是空的那一邊，% 沒有意義（2026-10-24）
+function templateCompareReadyIndexes(panelOk) {
+  return [...(panelOk.pvp ? [0, 1] : []), ...(panelOk.pve ? [2] : [])];
+}
+
+function templateCompareEquippedInReady(row, panelOk) {
+  return (panelOk.pvp && row.pvp.equipped) || (panelOk.pve && row.pve.equipped);
+}
+
+// 身上那件的數字是本身的貢獻，其他件是換上的變化，兩者不能比，所以身上那件不當比較對象
+function templateCompareDominators(row, groupRows, panelOk = { pvp: true, pve: true }) {
+  const indexes = templateCompareReadyIndexes(panelOk);
+  if (!indexes.length) return [];
   const values = templateCompareVector(row);
-  return groupRows.filter(other => other !== row && (() => {
+  return groupRows.filter(other => other !== row && !templateCompareEquippedInReady(other, panelOk) && (() => {
     const o = templateCompareVector(other);
-    return o.every((v, i) => v >= values[i] - TEMPLATE_COMPARE_EPS) && o.some((v, i) => v > values[i] + TEMPLATE_COMPARE_EPS);
+    return indexes.every(i => o[i] >= values[i] - TEMPLATE_COMPARE_EPS) && indexes.some(i => o[i] > values[i] + TEMPLATE_COMPARE_EPS);
   })());
 }
 
@@ -13557,19 +13578,17 @@ function templateCompareModeLabels(row, mode, panelOk) {
 
 function templateCompareLabels(row, groupRows, panelOk = { pvp: true, pve: true }) {
   row.dominatedBy = [];
+  row.dominatedByShort = [];
   row.modeLabels = { pvp: templateCompareModeLabels(row, 'pvp', panelOk), pve: templateCompareModeLabels(row, 'pve', panelOk) };
   row.overallLabels = [];
   // 可拆決定要不要拆，PVP、PVE 三項一起看，和同組其他件比（不是和身上那件比），所以可以同時是「較好」又「可拆」；
-  // 內功要五行相同、裝備要類別相同，否則只標出來
-  if (!row.pvp.equipped && !row.pve.equipped && panelOk.pvp && panelOk.pve) {
-    const dominators = templateCompareDominators(row, groupRows);
-    const similar = dominators.filter(other => other.similarKey === row.similarKey);
-    if (similar.length) {
-      row.overallLabels = ['可拆'];
-      row.dominatedBy = similar.map(other => other.label);
-    } else if (dominators.length) {
-      row.overallLabels = [row.kind === 'ng' ? '五行不同' : '類別不同'];
+  // 內功要五行相同、裝備要類別相同，否則只標出來。比下它的每一件都列出，五行由使用者自己看（2026-10-24 使用者要求）
+  if (!templateCompareEquippedInReady(row, panelOk)) {
+    const dominators = templateCompareDominators(row, groupRows, panelOk);
+    if (dominators.length) {
+      row.overallLabels = [dominators.some(other => other.similarKey === row.similarKey) ? '可拆' : row.kind === 'ng' ? '五行不同' : '類別不同'];
       row.dominatedBy = dominators.map(other => other.label);
+      row.dominatedByShort = dominators.map(other => other.shortName);
     }
   }
   return templateCompareViewLabels(row, 'all');
@@ -13702,7 +13721,11 @@ function renderTemplateCompareWarning(contexts, view = 'all') {
     .filter(item => item.problems.length)
     .map(item => `<div>${TEMPLATE_MODE_LABELS[item.mode]} 模板：${item.problems.map(escHtml).join('；')}</div>`);
   if (!lines.length) return '';
-  return `<div class="tplcmp-warning">${lines.join('')}<div>模板還沒設定好：身上沒填的那一格只能算「直接加上」，不顯示較好、較差；數值面板或 PVP 敵方是空的時，數字沒有意義，也不判斷可拆。請先到模板頁設定。</div></div>`;
+  const ready = TEMPLATE_MODES.filter(mode => isTemplateModeReady(mode, contexts[mode].tpl));
+  const dominanceText = ready.length === 2 ? ''
+    : ready.length === 0 ? '「可拆」與「明顯較…差」也不判斷。'
+    : `「可拆」與「明顯較…差」只比 ${ready[0] === 'pvp' ? 'PVP 攻擊、防禦' : 'PVE 攻擊'}。`;
+  return `<div class="tplcmp-warning">${lines.join('')}<div>模板還沒設定好：身上沒填的那一格只能算「直接加上」，不顯示較好、較差；數值面板或 PVP 敵方是空的那一邊，數字沒有意義，不判斷較好較差。${dominanceText}請先到模板頁設定。</div></div>`;
 }
 
 function renderTemplateComparePage() {
@@ -13802,7 +13825,7 @@ function renderTemplateComparePage() {
       <div class="section-title">依模板比較</div>
       <div class="section-body">
         ${renderTemplateCompareWarning(contexts, view)}
-        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。「可拆」決定要不要拆，一律看 PVP 與 PVE 三項。</div>
+        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}（不和身上那${unit}比）；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。</div>
         <div class="tpl-row">
           <select id="tplcmp_kind" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('kind', this.value)">
             <option value="ng" ${filter.kind === 'ng' ? 'selected' : ''}>內功</option>
@@ -13860,9 +13883,9 @@ function renderTemplateCompareTable() {
           `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
         const target = view === 'all' ? templateCompareTargetText(row) : templateCompareSideText(row[view]);
         return `<tr${equippedHere(row) ? ' class="tplcmp-equipped"' : ''}>
-          <td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div></td>
+          <td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div>${row.dominatedByShort.length ? `<div class="tplcmp-dominated">明顯較 ${row.dominatedByShort.map(escHtml).join('、')} 差</div>` : ''}</td>
           ${metricColumns.map(([, value]) => `<td class="tplcmp-num">${fmtTemplatePct(value(row))}</td>`).join('')}
-          <td>${labels}${row.dominatedBy.length ? `<div class="tpl-note">同組三項都更好：${row.dominatedBy.slice(0, 2).map(escHtml).join('、')}${row.dominatedBy.length > 2 ? ` 等 ${row.dominatedBy.length} 件` : ''}</div>` : ''}</td>
+          <td>${labels}</td>
           <td class="tplcmp-small">${target}</td>
           <td class="tplcmp-small">${templateCompareChangeText(row, contexts, view)}</td>
           <td>${actions}</td>
