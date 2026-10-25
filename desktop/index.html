@@ -12424,6 +12424,8 @@ function matchupValueLabel(list, key, mode = 'average') {
 
 function matchupNeedsWeakMark(key, mode, myList, foeList, options = {}) {
   if (!myList.length || !foeList.length) return false;
+  // 己方這一組沒有九靈是隊伍規劃，焚骨、焚骨比例是 0 不算弱勢；有九靈但沒燒照舊標（使用者決定，2026-10-25）
+  if (['burnCount', 'burnPerKill'].includes(key) && !myList.some(player => player.job === '九靈')) return false;
   const scope = options.scope || 'group';
   const isDpsJob = !!options.isDpsJob;
   const allowSimpleAverageKillBuild = !!options.allowSimpleAverageKillBuild;
@@ -12451,6 +12453,8 @@ function matchupNeedsWeakMark(key, mode, myList, foeList, options = {}) {
 
 function matchupNeedsStrongMark(key, mode, myList, foeList, options = {}) {
   if (!myList.length || !foeList.length) return false;
+  // 對方這一組沒有九靈同樣是隊伍規劃，己方焚骨、焚骨比例不因此標強勢（使用者決定，2026-10-25）
+  if (['burnCount', 'burnPerKill'].includes(key) && !foeList.some(player => player.job === '九靈')) return false;
   const scope = options.scope || 'group';
   const isDpsJob = !!options.isDpsJob;
   const allowSimpleAverageKillBuild = !!options.allowSimpleAverageKillBuild;
