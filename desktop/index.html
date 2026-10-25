@@ -12354,6 +12354,8 @@ function renderMatchupRoster(title, rows, options = {}) {
   const foeList = options.foeList || [];
   const weakOptions = options.weakOptions || {};
   const bottomPct = Math.max(1, Number(options.bottomPct || 20));
+  // metricLists：某個指標改用另一組人判斷弱勢；值是 null 時這個指標不標紅
+  const metricLists = options.metricLists || {};
   return `
     <div class="matchup-roster-box" data-has-players="true">
       <div class="matchup-roster-title">${escHtml(title)}</div>
@@ -12361,8 +12363,10 @@ function renderMatchupRoster(title, rows, options = {}) {
         <div class="matchup-roster-item">
           <b>${escHtml(player.name)}</b><br>
           ${matchupRosterMetricConfig(player).map(([label, key]) => {
+            const lists = metricLists[key];
             const isWeak = highlightWeak
-              && matchupMetricWeakForRoster(key, myList, foeList, weakOptions)
+              && lists !== null
+              && matchupMetricWeakForRoster(key, lists?.myList || myList, lists?.foeList || foeList, weakOptions)
               && !matchupShouldSuppressRosterWeak(key, rows, bottomPct)
               && !matchupRosterProtected(player)
               && matchupIsBottomPercentPlayer(player, key, rows, bottomPct);
@@ -12551,18 +12555,20 @@ function renderMatchupAggregateTable(myList, foeList, rows = matchupDpsGroupMetr
         </tr>
       </thead>
       <tbody>
-        ${rows.map(([label, key]) => {
-          const wTotal = matchupNeedsWeakMark(key, 'total', myList, foeList, { ...options, weakPct });
-          const wAvg = matchupNeedsWeakMark(key, 'average', myList, foeList, { ...options, weakPct });
-          const sTotal = strongPct != null && !wTotal && matchupNeedsStrongMark(key, 'total', myList, foeList, { ...options, strongPct });
-          const sAvg = strongPct != null && !wAvg && matchupNeedsStrongMark(key, 'average', myList, foeList, { ...options, strongPct });
+        ${rows.map(([label, key, lists]) => {
+          const rowMy = lists?.myList || myList;
+          const rowFoe = lists?.foeList || foeList;
+          const wTotal = matchupNeedsWeakMark(key, 'total', rowMy, rowFoe, { ...options, weakPct });
+          const wAvg = matchupNeedsWeakMark(key, 'average', rowMy, rowFoe, { ...options, weakPct });
+          const sTotal = strongPct != null && !wTotal && matchupNeedsStrongMark(key, 'total', rowMy, rowFoe, { ...options, strongPct });
+          const sAvg = strongPct != null && !wAvg && matchupNeedsStrongMark(key, 'average', rowMy, rowFoe, { ...options, strongPct });
           return `
           <tr>
             <td>${escHtml(label)}</td>
-            <td class="${wTotal ? 'matchup-weak' : sTotal ? 'matchup-strong' : ''}">${wTotal ? '*' : sTotal ? '#' : ''}${matchupValueLabel(myList, key, 'total')}</td>
-            <td class="${wAvg ? 'matchup-weak' : sAvg ? 'matchup-strong' : ''}">${wAvg ? '*' : sAvg ? '#' : ''}${matchupValueLabel(myList, key, 'average')}</td>
-            <td class="matchup-divider">${matchupValueLabel(foeList, key, 'total')}</td>
-            <td>${matchupValueLabel(foeList, key, 'average')}</td>
+            <td class="${wTotal ? 'matchup-weak' : sTotal ? 'matchup-strong' : ''}">${wTotal ? '*' : sTotal ? '#' : ''}${matchupValueLabel(rowMy, key, 'total')}</td>
+            <td class="${wAvg ? 'matchup-weak' : sAvg ? 'matchup-strong' : ''}">${wAvg ? '*' : sAvg ? '#' : ''}${matchupValueLabel(rowMy, key, 'average')}</td>
+            <td class="matchup-divider">${matchupValueLabel(rowFoe, key, 'total')}</td>
+            <td>${matchupValueLabel(rowFoe, key, 'average')}</td>
           </tr>
           `;
         }).join('')}
@@ -12579,11 +12585,13 @@ function matchupTableMarks(myList, foeList, rows = matchupDpsGroupMetricsRows(),
   const strongPct = options.strongPct != null ? Math.max(1, Number(options.strongPct)) : null;
   const weak = [];
   const strong = [];
-  rows.forEach(([label, key]) => {
-    const wTotal = matchupNeedsWeakMark(key, 'total', myList, foeList, { ...options, weakPct });
-    const wAvg = matchupNeedsWeakMark(key, 'average', myList, foeList, { ...options, weakPct });
-    const sTotal = strongPct != null && !wTotal && matchupNeedsStrongMark(key, 'total', myList, foeList, { ...options, strongPct });
-    const sAvg = strongPct != null && !wAvg && matchupNeedsStrongMark(key, 'average', myList, foeList, { ...options, strongPct });
+  rows.forEach(([label, key, lists]) => {
+    const rowMy = lists?.myList || myList;
+    const rowFoe = lists?.foeList || foeList;
+    const wTotal = matchupNeedsWeakMark(key, 'total', rowMy, rowFoe, { ...options, weakPct });
+    const wAvg = matchupNeedsWeakMark(key, 'average', rowMy, rowFoe, { ...options, weakPct });
+    const sTotal = strongPct != null && !wTotal && matchupNeedsStrongMark(key, 'total', rowMy, rowFoe, { ...options, strongPct });
+    const sAvg = strongPct != null && !wAvg && matchupNeedsStrongMark(key, 'average', rowMy, rowFoe, { ...options, strongPct });
     if (wTotal || wAvg) weak.push(label);
     else if (sTotal || sAvg) strong.push(label);
   });
@@ -12619,6 +12627,31 @@ function matchupPlayerGroupForSide(player, side = 'self', options = {}) {
   return null;
 }
 
+// 所有DPS卡的兩張小表交叉對位：己方進攻+保鑣比對方防守、己方防守比對方進攻+保鑣；塔傷列兩張表都比雙方進攻+保鑣，
+// 防守組名單不因塔傷列標紅。各職業卡照舊同組比同組（使用者決定，2026-10-25）
+function matchupGroupSections(myList, foeList, metricRows, options = {}) {
+  const groupOptions = { mergeBodyguardWithAttack: !!options.mergeBodyguardWithAttack };
+  const attackName = groupOptions.mergeBodyguardWithAttack ? '進攻+保鑣' : '進攻';
+  const defenseName = groupOptions.mergeBodyguardWithAttack ? '防守' : '防守+保鑣';
+  const pick = (list, side, group) => list.filter(player => matchupPlayerGroupForSide(player, side, groupOptions) === group);
+  const myAttack = pick(myList, 'self', 'attack');
+  const myDefense = pick(myList, 'self', 'defense');
+  const foeAttack = pick(foeList, 'foe', 'attack');
+  const foeDefense = pick(foeList, 'foe', 'defense');
+  if (!options.crossGroups) {
+    return [
+      { scope: 'attack', title: `${attackName}組`, myLabel: `${attackName}組`, foeLabel: `${attackName}組`, myList: myAttack, foeList: foeAttack, rows: metricRows, rosterLists: {} },
+      { scope: 'defense', title: `${defenseName}組`, myLabel: `${defenseName}組`, foeLabel: `${defenseName}組`, myList: myDefense, foeList: foeDefense, rows: metricRows, rosterLists: {} },
+    ];
+  }
+  const attackPair = { myList: myAttack, foeList: foeAttack };
+  const rows = metricRows.map(([label, key]) => key === 'buildDamage' ? [`${label}（雙方${attackName}）`, key, attackPair] : [label, key]);
+  return [
+    { scope: 'attack', title: `己方${attackName} vs 對方${defenseName}`, myLabel: `${attackName}組`, foeLabel: `${defenseName}組`, myList: myAttack, foeList: foeDefense, rows, rosterLists: { buildDamage: attackPair } },
+    { scope: 'defense', title: `己方${defenseName} vs 對方${attackName}`, myLabel: `${defenseName}組`, foeLabel: `${attackName}組`, myList: myDefense, foeList: foeAttack, rows, rosterLists: { buildDamage: null } },
+  ];
+}
+
 function renderMatchupNestedSection(title, myList, foeList, options = {}) {
   const rows = options.metricRows || matchupDpsGroupMetricsRows();
   const myTitle = options.myTitle || '己方';
@@ -12637,7 +12670,7 @@ function renderMatchupNestedSection(title, myList, foeList, options = {}) {
         ${hideRoster ? '' : `
         <div class="matchup-roster-scroll">
           <div class="matchup-rosters">
-            ${renderMatchupRoster(myTitle, myList, { highlightWeak: true, myList, foeList, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob: !!options.isDpsJob, allowGroupTotalKillBuild: !!options.allowGroupTotalKillBuild, allowOverallTotalKillBuild: options.allowOverallTotalKillBuild, weakPct: options.weakPct } })}
+            ${renderMatchupRoster(myTitle, myList, { highlightWeak: true, myList, foeList, metricLists: options.rosterLists, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob: !!options.isDpsJob, allowGroupTotalKillBuild: !!options.allowGroupTotalKillBuild, allowOverallTotalKillBuild: options.allowOverallTotalKillBuild, weakPct: options.weakPct } })}
             ${renderMatchupRoster(foeTitle, foeList)}
           </div>
         </div>`}
@@ -12655,13 +12688,7 @@ function renderDpsBundleCard(title, myList, foeList, options = {}) {
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const weakPct = Math.max(1, Number(options.weakPct || 10));
   const strongPct = options.strongPct != null ? Math.max(1, Number(options.strongPct)) : null;
-  const groupOptions = { mergeBodyguardWithAttack: !!options.mergeBodyguardWithAttack };
-  const attackGroupLabel = groupOptions.mergeBodyguardWithAttack ? '進攻+保鑣組' : '進攻組';
-  const defenseGroupLabel = groupOptions.mergeBodyguardWithAttack ? '防守組' : '防守+保鑣組';
-  const myAttack = myList.filter(player => matchupPlayerGroupForSide(player, 'self', groupOptions) === 'attack');
-  const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, 'self', groupOptions) === 'defense');
-  const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, 'foe', groupOptions) === 'attack');
-  const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, 'foe', groupOptions) === 'defense');
+  const sections = matchupGroupSections(myList, foeList, metricRows, { mergeBodyguardWithAttack: !!options.mergeBodyguardWithAttack, crossGroups: !!options.crossGroups });
   // 外層卡片只算「整體」表；進攻+保鑣組、防守組的小卡各自寫自己的弱勢、強勢，不再併進外層重複計算（使用者決定，2026-10-23）
   const marks = matchupTableMarks(myList, foeList, metricRows, { scope: 'overall', isDpsJob, allowOverallTotalKillBuild, weakPct, strongPct });
   return `
@@ -12682,8 +12709,7 @@ function renderDpsBundleCard(title, myList, foeList, options = {}) {
             </div>
           </div>`}
         </div>
-        ${renderMatchupNestedSection(attackGroupLabel, myAttack, foeAttack, { scope: 'attack', metricRows, myTitle: `己方 ${title}・${attackGroupLabel}`, foeTitle: `對方 ${title}・${attackGroupLabel}`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, strongPct, bottomPct: options.bottomPct })}
-        ${renderMatchupNestedSection(defenseGroupLabel, myDefense, foeDefense, { scope: 'defense', metricRows, myTitle: `己方 ${title}・${defenseGroupLabel}`, foeTitle: `對方 ${title}・${defenseGroupLabel}`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, strongPct, bottomPct: options.bottomPct })}
+        ${sections.map(section => renderMatchupNestedSection(section.title, section.myList, section.foeList, { scope: section.scope, metricRows: section.rows, rosterLists: section.rosterLists, myTitle: `己方 ${title}・${section.myLabel}`, foeTitle: `對方 ${title}・${section.foeLabel}`, isDpsJob, hideRoster: hideGroupRoster, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct, strongPct, bottomPct: options.bottomPct })).join('')}
       </div>
     </details>
   `;
@@ -12772,13 +12798,7 @@ function renderMatchupExportJobBundle(title, myList, foeList, options = {}) {
   const allowOverallTotalKillBuild = options.allowOverallTotalKillBuild !== false;
   const titleClass = matchupExportTitleClass(title);
   const metaText = `己方 ${fmtNumber(myList.length)} 人 / 對方 ${fmtNumber(foeList.length)} 人`;
-  const groupOptions = { mergeBodyguardWithAttack: !!options.mergeBodyguardWithAttack };
-  const attackGroupLabel = groupOptions.mergeBodyguardWithAttack ? '進攻+保鑣組' : '進攻組';
-  const defenseGroupLabel = groupOptions.mergeBodyguardWithAttack ? '防守組' : '防守+保鑣組';
-  const myAttack = myList.filter(player => matchupPlayerGroupForSide(player, 'self', groupOptions) === 'attack');
-  const myDefense = myList.filter(player => matchupPlayerGroupForSide(player, 'self', groupOptions) === 'defense');
-  const foeAttack = foeList.filter(player => matchupPlayerGroupForSide(player, 'foe', groupOptions) === 'attack');
-  const foeDefense = foeList.filter(player => matchupPlayerGroupForSide(player, 'foe', groupOptions) === 'defense');
+  const sections = matchupGroupSections(myList, foeList, metricRows, { mergeBodyguardWithAttack: !!options.mergeBodyguardWithAttack, crossGroups: !!options.crossGroups });
   return `
     ${renderMatchupExportPage(
       title,
@@ -12789,24 +12809,15 @@ function renderMatchupExportJobBundle(title, myList, foeList, options = {}) {
       '',
       { pageBreakBefore: !!options.pageBreakBefore }
     )}
-    ${renderMatchupExportPage(
+    ${sections.map(section => renderMatchupExportPage(
       title,
       titleClass,
       metaText,
-      attackGroupLabel,
-      renderMatchupAggregateTable(myAttack, foeAttack, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
-      `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(matchupRosterTitleWithCount(`己方 ${title}・${attackGroupLabel}`, myAttack), myAttack, { highlightWeak: true, myList: myAttack, foeList: foeAttack, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(matchupRosterTitleWithCount(`對方 ${title}・${attackGroupLabel}`, foeAttack), foeAttack)}</div></div>`,
+      section.title,
+      renderMatchupAggregateTable(section.myList, section.foeList, section.rows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
+      `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(matchupRosterTitleWithCount(`己方 ${title}・${section.myLabel}`, section.myList), section.myList, { highlightWeak: true, myList: section.myList, foeList: section.foeList, metricLists: section.rosterLists, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(matchupRosterTitleWithCount(`對方 ${title}・${section.foeLabel}`, section.foeList), section.foeList)}</div></div>`,
       { pageBreakBefore: true }
-    )}
-    ${renderMatchupExportPage(
-      title,
-      titleClass,
-      metaText,
-      defenseGroupLabel,
-      renderMatchupAggregateTable(myDefense, foeDefense, metricRows, { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct, strongPct: options.strongPct }),
-      `<div class="matchup-roster-scroll"><div class="matchup-rosters">${renderMatchupRoster(matchupRosterTitleWithCount(`己方 ${title}・${defenseGroupLabel}`, myDefense), myDefense, { highlightWeak: true, myList: myDefense, foeList: foeDefense, bottomPct: options.bottomPct, weakOptions: { scope: 'group', isDpsJob, allowGroupTotalKillBuild, allowOverallTotalKillBuild, weakPct: options.weakPct } })}${renderMatchupRoster(matchupRosterTitleWithCount(`對方 ${title}・${defenseGroupLabel}`, foeDefense), foeDefense)}</div></div>`,
-      { pageBreakBefore: true }
-    )}
+    )).join('')}
   `;
 }
 
@@ -12842,7 +12853,7 @@ function renderMatchupExportSheet(context) {
       </div>
 
       <div class="matchup-grid">
-        ${renderMatchupExportJobBundle('所有DPS（排除鐵衣、素問）', myDps, foeDps, { mergeBodyguardWithAttack: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true })}
+        ${renderMatchupExportJobBundle('所有DPS（排除鐵衣、素問）', myDps, foeDps, { mergeBodyguardWithAttack: true, crossGroups: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct, pageBreakBefore: true })}
         ${dpsJobs.map(job => {
           const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
           const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
@@ -13174,7 +13185,7 @@ function renderSingleBattleMatchup() {
     </div>
     ${renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs)}
     <div class="matchup-grid">
-      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, { hideOverallRoster: true, mergeBodyguardWithAttack: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
+      ${renderDpsBundleCard('所有DPS（排除鐵衣、素問）', myDps, foeDps, { hideOverallRoster: true, mergeBodyguardWithAttack: true, crossGroups: true, allowGroupTotalKillBuild: true, allowOverallTotalKillBuild: true, weakPct, strongPct, bottomPct: rosterBottomPct })}
       ${dpsJobs.map(job => {
         const myList = myPlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
         const foeList = foePlayers.filter(player => player.job === job).sort(compareMatchupRosterPlayers);
@@ -13188,7 +13199,7 @@ function renderSingleBattleMatchup() {
     </div>
     <div style="font-weight:800; color:var(--accent); margin:20px 0 8px;">門檻設定與說明</div>
     <div class="matchup-setting-stack">
-      <div class="note-box">對手分工採假設性規則：有拿資源且塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT / 10000)}萬 歸類防守組；其餘塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併比較，防守獨立比較。</div>
+      <div class="note-box">對手分工採假設性規則：有拿資源且塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT / 10000)}萬 歸類防守組；其餘塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併，防守獨立。所有DPS 卡按實際交手比較：己方進攻+保鑣對對方防守、己方防守對對方進攻+保鑣；兩張表的塔傷列都比雙方進攻+保鑣的塔傷，防守組名單不因塔傷列標紅。各職業卡仍是進攻+保鑣對進攻+保鑣、防守對防守。</div>
       <div class="matchup-setting-row">
         <div class="field">
           <label>弱勢標紅門檻 %</label>
