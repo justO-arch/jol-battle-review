@@ -13775,9 +13775,11 @@ function renderTemplateComparePage() {
       if (!ctx.gear.some(item => item.meta.slot === slot && item.name === target[slot])) target[slot] = '';
     });
   });
+  // 「靈」筆畫多，直接照名稱排會把靈韻版全排到最後；先照去掉靈韻的名稱排，一般版在前、靈韻版緊接在後（使用者要求，2026-10-26）
   const groupOrder = filter.kind === 'gear'
     ? (a, b) => (GEAR_SLOT_SORT_ORDER[a] || 99) - (GEAR_SLOT_SORT_ORDER[b] || 99)
-    : (a, b) => a.localeCompare(b, 'zh-Hant');
+    : (a, b) => getNgConflictName(a).localeCompare(getNgConflictName(b), 'zh-Hant')
+      || Number(a.startsWith('靈韻')) - Number(b.startsWith('靈韻'));
   const groupKeys = [...new Set(rows.map(row => row.group))].sort(groupOrder);
   const groupLabels = Object.fromEntries(groupKeys.map(key => [key, rows.find(row => row.group === key)?.groupLabel || key]));
   const labelKeys = [...TEMPLATE_COMPARE_LABEL_ORDER, TEMPLATE_COMPARE_NO_LABEL].filter(label => rows.some(row => templateCompareRowLabels(row, view).includes(label)));
