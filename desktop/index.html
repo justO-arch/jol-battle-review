@@ -4702,7 +4702,7 @@
                         <select id="player_own_team_filter">
                           <option value="all">全部</option>
                           <option value="zouyu">驟雨初歇</option>
-                          <option value="daruniu">大汝牛</option>
+                          <option value="daruniu">反派☪</option>
                           <option value="yijian">一劍飛花</option>
                           <option value="flower_other">花舞或其他</option>
                         </select>
@@ -4741,7 +4741,7 @@
                         <select id="profession_own_team_filter">
                           <option value="all">全部</option>
                           <option value="zouyu">驟雨初歇</option>
-                          <option value="daruniu">大汝牛</option>
+                          <option value="daruniu">反派☪</option>
                           <option value="yijian">一劍飛花</option>
                           <option value="flower_other">花舞或其他</option>
                         </select>
@@ -4855,7 +4855,7 @@
                         <select id="quadrant_own_team_filter">
                           <option value="all">全部</option>
                           <option value="zouyu">驟雨初歇</option>
-                          <option value="daruniu">大汝牛</option>
+                          <option value="daruniu">反派☪</option>
                           <option value="yijian">一劍飛花</option>
                           <option value="flower_other">花舞或其他</option>
                         </select>
@@ -4945,7 +4945,7 @@
                         <select id="squad_own_team_filter">
                           <option value="all">全部</option>
                           <option value="zouyu">驟雨初歇</option>
-                          <option value="daruniu">大汝牛</option>
+                          <option value="daruniu">反派☪</option>
                           <option value="yijian">一劍飛花</option>
                           <option value="flower_other">花舞或其他</option>
                         </select>
@@ -5488,7 +5488,7 @@ const PLAYER_GROUP_FILTER_LABELS = {
 const OWN_TEAM_FILTER_LABELS = {
   all: '全部',
   zouyu: '驟雨初歇',
-  daruniu: '大汝牛',
+  daruniu: '反派☪',
   yijian: '一劍飛花',
   flower_other: '花舞或其他',
 };
@@ -9844,9 +9844,10 @@ function ownTeamMatchesFilter(teamName, filterKey = 'all') {
   const value = String(teamName || '').trim();
   if (filterKey === 'all') return true;
   if (filterKey === 'zouyu') return value === '驟雨初歇';
-  if (filterKey === 'daruniu') return value === '大汝牛';
+  // 大汝牛改名反派☪（使用者確認，2026-10-31）：篩選鍵沿用 daruniu，舊名也算同一組
+  if (filterKey === 'daruniu') return value === '反派☪' || value === '大汝牛';
   if (filterKey === 'yijian') return value === '一劍飛花';
-  if (filterKey === 'flower_other') return value !== '驟雨初歇' && value !== '大汝牛' && value !== '一劍飛花';
+  if (filterKey === 'flower_other') return !['驟雨初歇', '反派☪', '大汝牛', '一劍飛花'].includes(value);
   return true;
 }
 
