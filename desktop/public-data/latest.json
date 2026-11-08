@@ -1,7 +1,7 @@
 {
   "app": "battle_review",
   "version": 1,
-  "exported_at": "2026-11-08T02:44:59.538Z",
+  "exported_at": "2026-11-08T02:52:03.325Z",
   "state": {
     "battles": [
       {
@@ -77771,7 +77771,7 @@
         "id": "battle_1786068280379_cphtho",
         "date": "2026-08-06",
         "sourceLabel": "213059",
-        "opponent": "六月雪",
+        "opponent": "六月雪❄",
         "teamName": "驟雨初歇",
         "result": "win",
         "players": [
@@ -79895,7 +79895,7 @@
         "id": "battle_1786068254304_t0m0gj",
         "date": "2026-08-06",
         "sourceLabel": "22539",
-        "opponent": "六月雪",
+        "opponent": "六月雪❄",
         "teamName": "驟雨初歇",
         "result": "loss",
         "players": [
