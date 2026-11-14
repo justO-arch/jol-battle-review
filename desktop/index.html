@@ -8031,8 +8031,16 @@ function inferAutoProfessionGroupType(player) {
   return initialGroup;
 }
 
+// 有對手分工表的場次，對手玩家帶 opponentAssigned，用表上的團別；其他照塔傷規則推測。混編場次對面的己方成員也有 groupType，但沒有這個標記，照舊推測（2026-11-14）
+const OPPONENT_ASSIGNED_GROUP_TYPES = ['attack', 'defense', 'bodyguard'];
+
 function inferOpponentProfessionGroupType(player) {
+  if (player?.opponentAssigned && OPPONENT_ASSIGNED_GROUP_TYPES.includes(player.groupType)) return player.groupType;
   return inferAutoProfessionGroupType(player);
+}
+
+function battleHasOpponentAssignment(battle) {
+  return (battle?.opponentPlayers || []).some(player => player.opponentAssigned);
 }
 
 function opponentPerspectiveResult(result) {
@@ -12876,7 +12884,7 @@ function renderMatchupExportSheet(context) {
             <div class="mini-stat">弱勢標紅門檻<b>${fmtNumber(weakPct)}%</b></div>
             <div class="mini-stat">強勢標綠門檻<b>${fmtNumber(strongPct)}%</b></div>
             <div class="mini-stat">個人弱勢後段<b>${fmtNumber(rosterBottomPct)}%</b></div>
-            <div class="mini-stat">對手分工<b>塔傷/擊殺推測</b></div>
+            <div class="mini-stat">對手分工<b>${battleHasOpponentAssignment(battle) ? '對手分工表' : '塔傷/擊殺推測'}</b></div>
           </div>
         </div>
       </div>
@@ -13149,7 +13157,7 @@ function renderMatchupJobCountCard(battle, myPlayers, foePlayers, jobs) {
           </div>
         `).join('')}
       </div>
-      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，<span class="vs-sub-warn">對方分組依資源與塔傷推測</span>（規則見最下方說明）。${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
+      <div class="vs-sub">DPS 不含鐵衣、素問；進攻與保鑣合併計算，${battleHasOpponentAssignment(battle) ? '對方分組照匯入的對手分工表。' : '<span class="vs-sub-warn">對方分組依資源與塔傷推測</span>（規則見最下方說明）。'}${myUngrouped || foeUngrouped ? `分組未定的 DPS（己方 ${fmtNumber(myUngrouped)} 人、對方 ${fmtNumber(foeUngrouped)} 人）不列入分組。` : ''}</div>
     </div>
   `;
 }
@@ -13228,7 +13236,7 @@ function renderSingleBattleMatchup() {
     </div>
     <div style="font-weight:800; color:var(--accent); margin:20px 0 8px;">門檻設定與說明</div>
     <div class="matchup-setting-stack">
-      <div class="note-box">對手分工採假設性規則：有拿資源且塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT / 10000)}萬 歸類防守組；其餘塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併，防守獨立。所有DPS 卡按實際交手比較：己方進攻+保鑣對對方防守、己方防守對對方進攻+保鑣；兩張表的塔傷列都比雙方進攻+保鑣的塔傷，防守組名單不因塔傷列標紅。各職業卡仍是進攻+保鑣對進攻+保鑣、防守對防守。</div>
+      <div class="note-box">${battleHasOpponentAssignment(battle) ? '本場已匯入對手分工表，對手團別照表上的進攻／防守；表上沒有的人才用下列假設性規則。' : ''}對手分工採假設性規則：有拿資源且塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_RESOURCE_DEFENSE_BUILD_LIMIT / 10000)}萬 歸類防守組；其餘塔傷 >= ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 先歸類進攻組，塔傷 < ${fmtNumber(AUTO_ASSIGNMENT_BUILD_DAMAGE_THRESHOLD)} 歸類防守組；若已歸類進攻但塔傷 < 5000萬且擊殺 > 5，推測為保鑣。單場對位所有職業都會將進攻與保鑣合併，防守獨立。所有DPS 卡按實際交手比較：己方進攻+保鑣對對方防守、己方防守對對方進攻+保鑣；兩張表的塔傷列都比雙方進攻+保鑣的塔傷，防守組名單不因塔傷列標紅。各職業卡仍是進攻+保鑣對進攻+保鑣、防守對防守。</div>
       <div class="matchup-setting-row">
         <div class="field">
           <label>弱勢標紅門檻 %</label>

@@ -1113,9 +1113,11 @@
             "death": 11,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "葉輕揚",
@@ -1130,9 +1132,11 @@
             "death": 9,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夢雲熙",
@@ -1147,9 +1151,11 @@
             "death": 12,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "懲星",
@@ -1164,9 +1170,11 @@
             "death": 10,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "宇宙第一甜妹",
@@ -1181,9 +1189,11 @@
             "death": 1,
             "saveCount": 10,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "給給給給給給給",
@@ -1198,9 +1208,11 @@
             "death": 0,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "一曲清风共晚吟",
@@ -1215,9 +1227,11 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "蝶戀雪喵",
@@ -1232,9 +1246,11 @@
             "death": 0,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "就鬧丶",
@@ -1249,9 +1265,11 @@
             "death": 0,
             "saveCount": 21,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "花語祈",
@@ -1266,9 +1284,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 10,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "情緣說我一五五",
@@ -1283,9 +1303,11 @@
             "death": 1,
             "saveCount": 3,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "十言丶",
@@ -1300,9 +1322,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "與煙的貓貓",
@@ -1317,9 +1341,11 @@
             "death": 0,
             "saveCount": 20,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "宵宸",
@@ -1334,9 +1360,11 @@
             "death": 12,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "麻齁燒酒",
@@ -1351,9 +1379,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "金兔",
@@ -1368,9 +1398,11 @@
             "death": 9,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "師清漪",
@@ -1385,9 +1417,11 @@
             "death": 1,
             "saveCount": 10,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "被窩丷",
@@ -1402,9 +1436,11 @@
             "death": 1,
             "saveCount": 8,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "碧卡波",
@@ -1419,9 +1455,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 24,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "此時",
@@ -1436,9 +1474,11 @@
             "death": 0,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "忆忧",
@@ -1453,9 +1493,11 @@
             "death": 3,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "絮兒",
@@ -1470,9 +1512,11 @@
             "death": 0,
             "saveCount": 7,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "莉磨",
@@ -1487,9 +1531,11 @@
             "death": 6,
             "saveCount": 0,
             "burnCount": 18,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "折弦",
@@ -1504,9 +1550,11 @@
             "death": 11,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "水餃睡覺覺",
@@ -1521,9 +1569,11 @@
             "death": 3,
             "saveCount": 0,
             "burnCount": 49,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "云熙",
@@ -1538,9 +1588,11 @@
             "death": 10,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "仔仔乄",
@@ -1555,9 +1607,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "蟹新達",
@@ -1572,9 +1626,11 @@
             "death": 16,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "听夜",
@@ -1589,9 +1645,11 @@
             "death": 7,
             "saveCount": 12,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "农村喂鸡哥",
@@ -1606,9 +1664,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "别吵",
@@ -1623,9 +1683,11 @@
             "death": 7,
             "saveCount": 15,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "荔枝青茶",
@@ -1640,9 +1702,11 @@
             "death": 1,
             "saveCount": 14,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "七歲",
@@ -1657,9 +1721,11 @@
             "death": 0,
             "saveCount": 7,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "娩煙的貓貓",
@@ -1674,9 +1740,11 @@
             "death": 9,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夏啾",
@@ -1691,9 +1759,11 @@
             "death": 0,
             "saveCount": 4,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夜禍",
@@ -1708,9 +1778,11 @@
             "death": 6,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "血無痕",
@@ -1725,9 +1797,11 @@
             "death": 12,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "知暌",
@@ -1742,9 +1816,11 @@
             "death": 6,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "那由它",
@@ -1759,9 +1835,11 @@
             "death": 0,
             "saveCount": 22,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "曖情丶",
@@ -1776,9 +1854,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "茻泥馬步茻了",
@@ -1793,9 +1873,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "吹雪乂",
@@ -1810,9 +1892,11 @@
             "death": 5,
             "saveCount": 14,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "三七丶",
@@ -1827,9 +1911,11 @@
             "death": 0,
             "saveCount": 9,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "臻芯",
@@ -1844,9 +1930,11 @@
             "death": 1,
             "saveCount": 20,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "宇宙第一田地",
@@ -1861,9 +1949,11 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夢栩",
@@ -1878,9 +1968,11 @@
             "death": 1,
             "saveCount": 9,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "小狼狗",
@@ -1895,9 +1987,11 @@
             "death": 1,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夢曦",
@@ -1912,9 +2006,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "殊異",
@@ -1929,9 +2025,11 @@
             "death": 0,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "薄荷涼涼丶",
@@ -1946,9 +2044,11 @@
             "death": 5,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "貓貓毛帽",
@@ -1963,9 +2063,11 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "此刻",
@@ -1980,9 +2082,11 @@
             "death": 0,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "不假",
@@ -1997,9 +2101,11 @@
             "death": 0,
             "saveCount": 14,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "安九丶",
@@ -2014,9 +2120,11 @@
             "death": 7,
             "saveCount": 0,
             "burnCount": 19,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "妍敏丶",
@@ -2031,9 +2139,11 @@
             "death": 0,
             "saveCount": 10,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "檸檬甜甜丶",
@@ -2048,9 +2158,11 @@
             "death": 0,
             "saveCount": 8,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "洛水豚",
@@ -2065,9 +2177,11 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "紅蝶舞清風",
@@ -2082,9 +2196,11 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "碧海潮聲",
@@ -2099,9 +2215,11 @@
             "death": 10,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "霜刀龍丷丿",
@@ -2116,9 +2234,11 @@
             "death": 5,
             "saveCount": 15,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           }
         ],
         "opponentSummary": {
@@ -3303,9 +3423,11 @@
             "death": 10,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "葉輕揚",
@@ -3320,9 +3442,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "十言丶",
@@ -3337,9 +3461,11 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "宇宙第一甜妹",
@@ -3354,9 +3480,11 @@
             "death": 5,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "霜刀龍丷丿",
@@ -3371,9 +3499,11 @@
             "death": 8,
             "saveCount": 15,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "忆忧",
@@ -3388,9 +3518,11 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "給給給給給給給",
@@ -3405,9 +3537,11 @@
             "death": 0,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "小狼狗",
@@ -3422,9 +3556,11 @@
             "death": 1,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "就鬧丶",
@@ -3439,9 +3575,11 @@
             "death": 0,
             "saveCount": 17,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "花語祈",
@@ -3456,9 +3594,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 34,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "一曲清风共晚吟",
@@ -3473,9 +3613,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "水餃睡覺覺",
@@ -3490,9 +3632,11 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 42,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "懲星",
@@ -3507,9 +3651,11 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夢雲熙",
@@ -3524,9 +3670,11 @@
             "death": 6,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "麻齁燒酒",
@@ -3541,9 +3689,11 @@
             "death": 6,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "被窩丷",
@@ -3558,9 +3708,11 @@
             "death": 0,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "碧卡波",
@@ -3575,9 +3727,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 33,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "此時",
@@ -3592,9 +3746,11 @@
             "death": 1,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "蝶戀雪喵",
@@ -3609,9 +3765,11 @@
             "death": 0,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夢栩",
@@ -3626,9 +3784,11 @@
             "death": 1,
             "saveCount": 5,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "金兔",
@@ -3643,9 +3803,11 @@
             "death": 9,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "莉磨",
@@ -3660,9 +3822,11 @@
             "death": 0,
             "saveCount": 0,
             "burnCount": 43,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "别吵",
@@ -3677,9 +3841,11 @@
             "death": 3,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "折弦",
@@ -3694,9 +3860,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "絮兒",
@@ -3711,9 +3879,11 @@
             "death": 1,
             "saveCount": 12,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "貓貓毛帽",
@@ -3728,9 +3898,11 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "蟹新達",
@@ -3745,9 +3917,11 @@
             "death": 6,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "慕淵丨孤影",
@@ -3762,9 +3936,11 @@
             "death": 1,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "听夜",
@@ -3779,9 +3955,11 @@
             "death": 16,
             "saveCount": 10,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "农村喂鸡哥",
@@ -3796,9 +3974,11 @@
             "death": 9,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "宵宸",
@@ -3813,9 +3993,11 @@
             "death": 17,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "荔枝青茶",
@@ -3830,9 +4012,11 @@
             "death": 1,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "七歲",
@@ -3847,9 +4031,11 @@
             "death": 0,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "娩煙的貓貓",
@@ -3864,9 +4050,11 @@
             "death": 7,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夜禍",
@@ -3881,9 +4069,11 @@
             "death": 7,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "血無痕",
@@ -3898,9 +4088,11 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "知暌",
@@ -3915,9 +4107,11 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "吹雪乂",
@@ -3932,9 +4126,11 @@
             "death": 6,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "那由它",
@@ -3949,9 +4145,11 @@
             "death": 0,
             "saveCount": 19,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "與煙的貓貓",
@@ -3966,9 +4164,11 @@
             "death": 0,
             "saveCount": 14,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "茻泥馬步茻了",
@@ -3983,9 +4183,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "三七丶",
@@ -4000,9 +4202,11 @@
             "death": 0,
             "saveCount": 12,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "臻芯",
@@ -4017,9 +4221,11 @@
             "death": 1,
             "saveCount": 12,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "宇宙第一田地",
@@ -4034,9 +4240,11 @@
             "death": 3,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "曖情丶",
@@ -4051,9 +4259,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夏啾",
@@ -4068,9 +4278,11 @@
             "death": 0,
             "saveCount": 5,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "夢曦",
@@ -4085,9 +4297,11 @@
             "death": 7,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "安九丶",
@@ -4102,9 +4316,11 @@
             "death": 0,
             "saveCount": 0,
             "burnCount": 31,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "殊異",
@@ -4119,9 +4335,11 @@
             "death": 1,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "薄荷涼涼丶",
@@ -4136,9 +4354,11 @@
             "death": 2,
             "saveCount": 18,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "進攻二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "情緣說我一五五",
@@ -4153,9 +4373,11 @@
             "death": 1,
             "saveCount": 3,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "此刻",
@@ -4170,9 +4392,11 @@
             "death": 0,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "不假",
@@ -4187,9 +4411,11 @@
             "death": 1,
             "saveCount": 14,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "云熙",
@@ -4204,9 +4430,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "妍敏丶",
@@ -4221,9 +4449,11 @@
             "death": 0,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "機動一隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "檸檬甜甜丶",
@@ -4238,9 +4468,11 @@
             "death": 0,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "仔仔乄",
@@ -4255,9 +4487,11 @@
             "death": 9,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "bodyguard",
+            "subgroup": "機動二隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "師清漪",
@@ -4272,9 +4506,11 @@
             "death": 4,
             "saveCount": 11,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "attack",
+            "subgroup": "進攻三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "洛水豚",
@@ -4289,9 +4525,11 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守三隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           },
           {
             "name": "碧海潮聲",
@@ -4306,9 +4544,11 @@
             "death": 8,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
-            "specialRoles": []
+            "groupType": "defense",
+            "subgroup": "防守四隊",
+            "specialRoles": [],
+            "assignmentConfidence": "high",
+            "opponentAssigned": true
           }
         ],
         "opponentSummary": {
