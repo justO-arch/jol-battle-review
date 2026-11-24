@@ -1,7 +1,7 @@
 {
   "app": "battle_review",
   "version": 1,
-  "exported_at": "2026-11-24T05:03:27.287Z",
+  "exported_at": "2026-11-24T05:19:57.524Z",
   "state": {
     "battles": [
       {
@@ -187,10 +187,10 @@
             "death": 5,
             "saveCount": 13,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "defense",
+            "subgroup": "防守三隊(塔前左)",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "medium"
           },
           {
             "name": "李豬恩",
@@ -295,10 +295,10 @@
             "death": 7,
             "saveCount": 0,
             "burnCount": 7,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "defense",
+            "subgroup": "防守四隊(塔前右)",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "high"
           },
           {
             "name": "熹妃派丶",
@@ -871,10 +871,10 @@
             "death": 10,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "attack",
+            "subgroup": "進攻二-1隊",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "medium"
           },
           {
             "name": "蟹新達",
@@ -1015,10 +1015,10 @@
             "death": 5,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "defense",
+            "subgroup": "防守三隊(塔前左)",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "high"
           },
           {
             "name": "龍猫",
@@ -2390,10 +2390,10 @@
             "death": 1,
             "saveCount": 6,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "defense",
+            "subgroup": "防守三隊(塔前左)",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "medium"
           },
           {
             "name": "拳嘯",
@@ -2516,10 +2516,10 @@
             "death": 4,
             "saveCount": 0,
             "burnCount": 22,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "defense",
+            "subgroup": "防守四隊(塔前右)",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "high"
           },
           {
             "name": "王嘉鵝",
@@ -3182,10 +3182,10 @@
             "death": 2,
             "saveCount": 0,
             "burnCount": 0,
-            "groupType": "unknown",
-            "subgroup": "",
+            "groupType": "attack",
+            "subgroup": "進攻二-1隊",
             "specialRoles": [],
-            "assignmentConfidence": "low"
+            "assignmentConfidence": "medium"
           },
           {
             "name": "貓貓馬卡龍",
