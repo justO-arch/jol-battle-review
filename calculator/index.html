@@ -1336,22 +1336,8 @@
   .tplcmp-label-mixed { background: #fbf1dc; color: #8a5a12; border-color: #e6cfa0; }
   .tplcmp-label-bad { background: #f6e4e2; color: #b24842; border-color: #e3bcb8; }
   .tplcmp-label-drop { background: #b24842; color: #ffffff; }
-  .tplcmp-drop-btn {
-    font-family: inherit;
-    line-height: inherit;
-    cursor: pointer;
-  }
-  .tplcmp-label-drop.tplcmp-drop-btn:hover,
-  .tplcmp-label-drop.tplcmp-drop-btn:focus-visible {
-    background: #8f332e;
-    box-shadow: 0 0 0 2px rgba(178, 72, 66, 0.25);
-  }
-  .tplcmp-label-note.tplcmp-drop-btn:hover,
-  .tplcmp-label-note.tplcmp-drop-btn:focus-visible {
-    background: #e4ddd0;
-    border-color: #b9ab94;
-    box-shadow: 0 0 0 2px rgba(107, 93, 72, 0.18);
-  }
+  .db-btn.tplcmp-delete { color: #a43630; border-color: #c38c87; white-space: nowrap; }
+  .db-btn.tplcmp-delete:hover, .db-btn.tplcmp-delete:focus-visible { background: #a43630; border-color: #a43630; color: #fff; }
   .tplcmp-label-note { background: #f1ede6; color: #6b5d48; border-color: #ddd3c3; }
   .tplcmp-dominated {
     max-width: 20em;
@@ -13855,7 +13841,7 @@ function renderTemplateComparePage() {
       <div class="section-title">依模板比較</div>
       <div class="section-body">
         ${renderTemplateCompareWarning(contexts, view)}
-        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}；換上這${unit}會換掉的身上那${unit}也算，換上後三項都沒變好就是比不過它，寫「（身上）」；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。${filter.kind === 'ng' ? '按「可拆 ✕」「五行不同 ✕」確認後從內功資料庫刪除（模板身上有的不能從這裡刪）。' : ''}</div>
+        <div class="formula-note" style="margin-bottom:10px;">只算詞條，不含內功核心效果、周天效果與套裝效果。數字是「換上這件」比「目前身上」多或少幾 %：${metricNote}。身上那件顯示的是它本身的貢獻。名稱下方的紅字「明顯較…差」列出同${filter.kind === 'ng' ? '核心' : '部位'}裡 PVP 與 PVE 三項都不比它差、至少一項更好的那幾${unit}；換上這${unit}會換掉的身上那${unit}也算，換上後三項都沒變好就是比不過它，寫「（身上）」；其中有${filter.kind === 'ng' ? '五行' : '類別'}相同的標「可拆」，都不同的標「${filter.kind === 'ng' ? '五行不同' : '類別不同'}」。${filter.kind === 'ng' ? '每顆內功都可從最左欄刪除；模板身上使用中的內功會一起卸下。' : ''}</div>
         <div class="tpl-row">
           <select id="tplcmp_kind" class="db-sel tplcmp-select" onchange="setTemplateCompareFilter('kind', this.value)">
             <option value="ng" ${filter.kind === 'ng' ? 'selected' : ''}>內功</option>
@@ -13897,7 +13883,8 @@ function renderTemplateCompareTable() {
     ...(modes.includes('pvp') ? [['PVP 攻擊', row => row.pvp.metrics?.atk], ['PVP 防禦', row => row.pvp.metrics?.def]] : []),
     ...(modes.includes('pve') ? [['PVE 攻擊', row => row.pve.metrics?.atk]] : []),
   ];
-  const columnCount = metricColumns.length + 5;
+  const showDelete = filter.kind === 'ng';
+  const columnCount = metricColumns.length + 5 + Number(showDelete);
   const equippedHere = row => modes.some(mode => row[mode].equipped);
   const tableRows = groupKeys.map(key => {
     const groupRows = shownRows.filter(row => row.group === key).sort((a, b) => {
@@ -13908,14 +13895,14 @@ function renderTemplateCompareTable() {
     const total = rows.filter(row => row.group === key).length;
     return `<tr class="tplcmp-group-row"><td colspan="${columnCount}">${escHtml(groupLabels[key])}（${groupRows.length}${groupRows.length !== total ? `／${total}` : ''}）</td></tr>`
       + groupRows.map(row => {
-        const labels = templateCompareViewLabels(row, view).map(label => (TEMPLATE_COMPARE_DELETE_LABELS.includes(label) && canDeleteFromTemplateCompare(row)
-          ? `<button type="button" class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'} tplcmp-drop-btn" data-tplcmp-key="${escHtml(row.key)}" onclick="deleteTemplateCompareItem(this.dataset.tplcmpKey)" title="從內功資料庫刪除（會先確認）">${label} ✕</button>`
-          : `<span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${label}</span>`)).join('');
+        const labels = templateCompareViewLabels(row, view).map(label =>
+          `<span class="tplcmp-label tplcmp-label-${TEMPLATE_COMPARE_LABEL_CLASS[label] || 'note'}">${label}</span>`).join('');
+        const deleteCell = showDelete ? `<td><button type="button" class="db-btn tplcmp-delete" aria-label="刪除 ${escHtml(row.label)}" data-tplcmp-key="${escHtml(row.key)}" onclick="deleteTemplateCompareItem(this.dataset.tplcmpKey)">刪除</button></td>` : '';
         const actions = modes.filter(mode => !row[mode].equipped).map(mode =>
           `<button type="button" class="db-btn" data-tplcmp-mode="${mode}" data-tplcmp-key="${escHtml(row.key)}" onclick="swapTemplateItemFromCompare(this.dataset.tplcmpMode, this.dataset.tplcmpKey)">${TEMPLATE_MODE_LABELS[mode]} 換上</button>`).join('');
         const target = view === 'all' ? templateCompareTargetText(row) : templateCompareSideText(row[view]);
         return `<tr${equippedHere(row) ? ' class="tplcmp-equipped"' : ''}>
-          <td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div>${row.dominatedByShort.length ? `<div class="tplcmp-dominated">明顯較 ${row.dominatedByShort.map(escHtml).join('、')} 差</div>` : ''}</td>
+          ${deleteCell}<td>${escHtml(row.label)}${row.excluded ? ' <span class="tplcmp-label tplcmp-label-note">已排除</span>' : ''}<div class="tpl-note">${escHtml(row.detail)}</div>${row.dominatedByShort.length ? `<div class="tplcmp-dominated">明顯較 ${row.dominatedByShort.map(escHtml).join('、')} 差</div>` : ''}</td>
           ${metricColumns.map(([, value]) => `<td class="tplcmp-num">${fmtTemplatePct(value(row))}</td>`).join('')}
           <td>${labels}</td>
           <td class="tplcmp-small">${target}</td>
@@ -13927,7 +13914,7 @@ function renderTemplateCompareTable() {
   const emptyText = rows.length ? '沒有符合篩選的項目。' : '沒有可以比較的項目。';
   area.innerHTML = `<div class="tplcmp-table-wrap">
     <table class="tplcmp-table">
-      <thead><tr><th>名稱</th>${metricColumns.map(([label]) => `<th>${label}</th>`).join('')}<th>判讀</th><th>換掉誰</th><th>周天／件數變化</th><th>操作</th></tr></thead>
+      <thead><tr>${showDelete ? '<th>刪除</th>' : ''}<th>名稱</th>${metricColumns.map(([label]) => `<th>${label}</th>`).join('')}<th>判讀</th><th>換掉誰</th><th>周天／件數變化</th><th>操作</th></tr></thead>
       <tbody>${tableRows || `<tr><td colspan="${columnCount}" class="tpl-note">${emptyText}</td></tr>`}</tbody>
     </table>
   </div>`;
@@ -14020,14 +14007,6 @@ function undoTemplateSwap() {
   renderTemplateComparePage();
 }
 
-// 「可拆」「五行不同」可以直接從內功資料庫刪除，五行不同的由使用者自己判斷是不是湊周天要用的（2026-10-24 使用者要求）；
-// 在任一個模板身上的不能從這裡刪，刪了模板會找不到
-const TEMPLATE_COMPARE_DELETE_LABELS = ['可拆', '五行不同'];
-
-function canDeleteFromTemplateCompare(row) {
-  return row.kind === 'ng' && row.overallLabels.some(label => TEMPLATE_COMPARE_DELETE_LABELS.includes(label)) && !row.pvp.equipped && !row.pve.equipped;
-}
-
 function templateCompareDeleteRefs(names) {
   const refs = [];
   ['ng', 'gear'].forEach(type => DB[type].forEach(entry => {
@@ -14041,24 +14020,56 @@ function templateCompareDeleteRefs(names) {
 
 function deleteTemplateCompareItem(key) {
   const row = computeTemplateCompareRows('ng').rows.find(item => item.key === key);
-  if (!row || !canDeleteFromTemplateCompare(row)) return;
+  if (!row) return;
   const names = row.names.filter(name => DB.ng.some(entry => entry?.name === name));
   if (!names.length) return;
   const refs = templateCompareDeleteRefs(names);
+  const previous = getTemplateState();
+  const usesItem = state => TEMPLATE_MODES.some(mode => state[mode].ng.some(name => names.includes(name)));
+  const wornModes = TEMPLATE_MODES.filter(mode => previous[mode].ng.some(name => names.includes(name)));
   const lines = [
     `確定從內功資料庫刪除 ${names.join('、')}？`,
-    `明顯較 ${row.dominatedByShort.join('、')} 差。`,
+    ...(wornModes.length ? [`將同時從 ${wornModes.map(mode => TEMPLATE_MODE_LABELS[mode]).join('、')} 模板卸下這顆內功。`] : []),
+    ...(row.dominatedByShort.length ? [`明顯較 ${row.dominatedByShort.join('、')} 差。`] : []),
     ...(row.overallLabels.includes('五行不同') ? ['比下它的五行都和它不同：如果它是湊周天或湊土 4 顆要用的，先別刪。'] : []),
     ...(refs.length ? [`這顆還在：${refs.join('、')}；刪除後那裡會顯示資料庫找不到。`] : []),
     '此操作無法復原，要救回只能用備份匯入。',
   ];
   if (!confirm(lines.join('\n'))) return;
-  const removed = DB.ng.map((entry, index) => ({ entry, index })).filter(item => names.includes(item.entry?.name));
-  removed.slice().reverse().forEach(item => DB.ng.splice(item.index, 1));
+  // 先存卸下後的模板，確保資料庫刪除時兩邊都已經解除了引用。
+  if (wornModes.length) {
+    templateState = normalizeTemplateState(previous);
+    for (const mode of wornModes) {
+      const tpl = templateState[mode];
+      const cls = templateClassFlags(tpl.cls);
+      if (templatePanelHasValues(tpl.self)) {
+        for (const name of tpl.ng.filter(name => names.includes(name))) {
+          addTemplateItemToPanel(tpl.self, mode, findNgDBEntry(name), cls, -1);
+        }
+      }
+      tpl.ng = tpl.ng.filter(name => !names.includes(name));
+    }
+    if (!saveTemplates({ keepSwapHistory: true })) {
+      templateState = previous;
+      return;
+    }
+  }
+  const previousNg = DB.ng;
+  DB.ng = previousNg.filter(entry => !names.includes(entry?.name));
   if (!dbPersist('ng')) {
-    removed.forEach(item => DB.ng.splice(item.index, 0, item.entry));
+    DB.ng = previousNg;
+    if (wornModes.length) {
+      templateState = previous;
+      if (!saveTemplates({ keepSwapHistory: true })) {
+        templateState = loadTemplates();
+        templateSwapHistory = [];
+        renderTemplateComparePage();
+      }
+    }
     return;
   }
+  // 舊的換裝快照不能把已刪除的內功重新穿回去。
+  if (wornModes.length || templateSwapHistory.some(snapshot => usesItem(JSON.parse(snapshot).state))) templateSwapHistory = [];
   renderDB();
   refreshDBDropdowns();
   renderOptimizePage();
